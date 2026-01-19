@@ -7,6 +7,7 @@
 
 import ActivityKit
 import Kingfisher
+import LocalAuthentication
 import SwiftUI
 
 struct ProfileView: View {
@@ -28,6 +29,30 @@ struct ProfileView: View {
                     isWebVPNDisableAlertPresented = true
                 } else {
                     globalManager.isWebVPNModeEnabled = newValue
+                }
+            }
+        )
+
+        let privacyToggleBinding = Binding<Bool>(
+            get: { globalManager.isPrivacyEnabled },
+            set: { newValue in
+                if newValue == false && globalManager.isPrivacyEnabled {
+                    // 试图关闭隐私保护，需要验证身份
+                    let context = LAContext()
+                    var error: NSError?
+                    if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+                        context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "验证身份以关闭隐私保护") { success, _ in
+                            if success {
+                                DispatchQueue.main.async {
+                                    globalManager.isPrivacyEnabled = false
+                                }
+                            }
+                        }
+                    } else {
+                        globalManager.isPrivacyEnabled = false
+                    }
+                } else {
+                    globalManager.isPrivacyEnabled = newValue
                 }
             }
         )
@@ -144,7 +169,13 @@ struct ProfileView: View {
                 }
             }
 
-            Section(header: Text("设置"), footer: Text("实时活动/灵动岛将会显示：上课前20分钟、上课中和下课后5分钟的课程状态")) {
+            Section(
+                header: Text("设置"),
+                footer: VStack(alignment: .leading, spacing: 8) {
+                    Text("隐私保护开启后，首页成绩将默认隐藏。访问成绩详情或关闭此项功能前均需通过身份验证。")
+                    Text("实时活动/灵动岛将会显示：上课前20分钟、上课中和下课后5分钟的课程状态")
+                }
+            ) {
                 Picker(selection: $globalManager.appearance) {
                     Text("浅色模式").tag("light")
                     Text("深色模式").tag("dark")
@@ -161,6 +192,10 @@ struct ProfileView: View {
                     ColoredLabel(title: "开启通知", iconName: "bell", color: .green)
                 }
                 .onChange(of: globalManager.isNotificationEnabled, { _, _ in NotificationManager.shared.toggle() })
+
+                Toggle(isOn: privacyToggleBinding) {
+                    ColoredLabel(title: "开启隐私保护", iconName: "faceid", color: .green)
+                }
 
                 Toggle(isOn: $globalManager.isBackgroundTaskEnabled) {
                     ColoredLabel(title: "开启后台任务", iconName: "bell.badge", color: .blue)

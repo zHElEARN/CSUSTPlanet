@@ -62,11 +62,11 @@ extension MMKVHelper {
         }
         MMKV.initialize(rootDir: mmkvDirectoryURL.path)
         guard let defaultMMKV = MMKV(
-            mmapID: Constants.mmkvID,
-            cryptKey: nil,
-            rootPath: mmkvDirectoryURL.path,
-            mode: .multiProcess,
-            expectedCapacity: 0
+                mmapID: Constants.mmkvID,
+                cryptKey: nil,
+                rootPath: mmkvDirectoryURL.path,
+                mode: .multiProcess,
+                expectedCapacity: 0
         ) else {
             fatalError("Failed to initialize MMKV with ID: \(Constants.mmkvID)")
         }
@@ -220,6 +220,11 @@ extension MMKVHelper {
     var isBackgroundTaskEnabled: Bool {
         get { bool(forKey: "GlobalVars.isBackgroundTaskEnabled") ?? false }
         set { set(forKey: "GlobalVars.isBackgroundTaskEnabled", newValue) }
+    }
+
+    var isPrivacyEnabled: Bool {
+        get { bool(forKey: "GlobalVars.isPrivacyEnabled") ?? false }
+        set { set(forKey: "GlobalVars.isPrivacyEnabled", newValue) }
     }
 
     var userId: String? {

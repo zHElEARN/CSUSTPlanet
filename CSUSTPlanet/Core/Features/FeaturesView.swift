@@ -6,6 +6,7 @@
 //
 
 import InjectHotReload
+import LocalAuthentication
 import SwiftUI
 
 struct FeaturesView: View {
@@ -86,9 +87,9 @@ struct FeaturesView: View {
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: spacing)], spacing: spacing) {
                 HeroCard(destination: CourseScheduleView(), title: "我的课表", subtitle: "每周课程", icon: "calendar", gradient: .purple)
-                HeroCard(destination: GradeQueryView(), title: "成绩查询", subtitle: "GPA / 成绩详细", icon: "doc.text.magnifyingglass", gradient: .blue)
+                HeroCard(destination: GradeQueryView(), title: "成绩查询", subtitle: "GPA / 成绩详细", icon: "doc.text.magnifyingglass", gradient: .blue, requiresAuth: true)
                 HeroCard(destination: ExamScheduleView(), title: "考试安排", subtitle: "考场 / 时间", icon: "pencil.and.outline", gradient: .orange)
-                HeroCard(destination: GradeAnalysisView(), title: "成绩分析", subtitle: "可视化图表", icon: "chart.bar.xaxis", gradient: .green)
+                HeroCard(destination: GradeAnalysisView(), title: "成绩分析", subtitle: "可视化图表", icon: "chart.bar.xaxis", gradient: .green, requiresAuth: true)
             }
         }
         .padding(.horizontal, horizontalPadding)
@@ -226,6 +227,7 @@ struct FeaturesView: View {
 // MARK: - Custom Card Components
 
 private struct HeroCard<Destination: View>: View {
+    @EnvironmentObject var globalManager: GlobalManager
     @Namespace var namespace
 
     let destination: Destination
@@ -233,51 +235,91 @@ private struct HeroCard<Destination: View>: View {
     let subtitle: String
     let icon: String
     let gradient: Color
+    var requiresAuth: Bool = false
+
+    @State private var shouldNavigate = false
 
     var body: some View {
-        TrackLink(destination: destination) {
-            ZStack(alignment: .bottomLeading) {
-                // Background
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [gradient.opacity(0.85), gradient],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+        Group {
+            if requiresAuth && globalManager.isPrivacyEnabled {
+                // 需要验证时，使用自定义点击逻辑
+                cardContent
+                    .onTapGesture {
+                        authenticate()
+                    }
+                    .background(
+                        NavigationLink(destination: destination, isActive: $shouldNavigate) {
+                            EmptyView()
+                        }
                     )
-
-                // Decor Icon
-                Image(systemName: icon)
-                    .font(.system(size: 60))
-                    .foregroundColor(.white.opacity(0.15))
-                    .offset(x: 10, y: 10)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-
-                // Content
-                VStack(alignment: .leading, spacing: 4) {
-                    Image(systemName: icon)
-                        .font(.title2)
-                        .foregroundColor(.white)
-                        .padding(.bottom, 8)
-
-                    Text(title)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    Text(subtitle)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(1)
+            } else {
+                // 不需要验证时，使用原有 TrackLink（带埋点）
+                TrackLink(destination: destination) {
+                    cardContent
                 }
-                .padding(16)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: gradient.opacity(0.3), radius: 8, x: 0, y: 4)
-            .frame(height: 120)
+        }
+    }
+
+    private var cardContent: some View {
+        ZStack(alignment: .bottomLeading) {
+            // Background
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [gradient.opacity(0.85), gradient],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            // Decor Icon
+            Image(systemName: icon)
+                .font(.system(size: 60))
+                .foregroundColor(.white.opacity(0.15))
+                .offset(x: 10, y: 10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+
+            // Content
+            VStack(alignment: .leading, spacing: 4) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .padding(.bottom, 8)
+
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                Text(subtitle)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white.opacity(0.8))
+                    .lineLimit(1)
+            }
+            .padding(16)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: gradient.opacity(0.3), radius: 8, x: 0, y: 4)
+        .frame(height: 120)
+    }
+
+    private func authenticate() {
+        let context = LAContext()
+        var error: NSError?
+
+        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "验证身份以访问\(title)") { success, _ in
+                if success {
+                    DispatchQueue.main.async {
+                        shouldNavigate = true
+                    }
+                }
+            }
+        } else {
+            shouldNavigate = true
         }
     }
 }

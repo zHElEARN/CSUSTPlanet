@@ -25,6 +25,7 @@ class GlobalManager: ObservableObject {
         isWebVPNModeEnabled = MMKVHelper.shared.isWebVPNModeEnabled
         isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
         isBackgroundTaskEnabled = MMKVHelper.shared.isBackgroundTaskEnabled
+        isPrivacyEnabled = MMKVHelper.shared.isPrivacyEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
         TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
@@ -65,6 +66,10 @@ class GlobalManager: ObservableObject {
             MMKVHelper.shared.isBackgroundTaskEnabled = isBackgroundTaskEnabled
             TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
         }
+    }
+
+    @Published var isPrivacyEnabled: Bool {
+        didSet { MMKVHelper.shared.isPrivacyEnabled = isPrivacyEnabled }
     }
 
     @Published var isFromElectricityWidget: Bool = false

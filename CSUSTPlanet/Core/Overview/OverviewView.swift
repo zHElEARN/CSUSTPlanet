@@ -6,10 +6,12 @@
 //
 
 import CSUSTKit
+import LocalAuthentication
 import SwiftUI
 
 struct OverviewView: View {
     @StateObject var viewModel = OverviewViewModel()
+    @EnvironmentObject var globalManager: GlobalManager
     @Environment(\.horizontalSizeClass) var sizeClass
 
     var body: some View {
@@ -305,20 +307,38 @@ private struct EmptyCourseCard: View {
 
 private struct HomeGradeCard: View {
     let analysisData: GradeAnalysisData?
+    @EnvironmentObject var globalManager: GlobalManager
+    @State private var isRevealed = false
 
     var body: some View {
-        TrackLink(destination: GradeQueryView()) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "chart.bar.fill")
-                        .foregroundStyle(.green)
-                    Spacer()
-                    Text("GPA")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
+        Group {
+            if isRevealed {
+                TrackLink(destination: GradeQueryView()) {
+                    content
                 }
+                .buttonStyle(.plain)
+            } else {
+                content
+                    .onTapGesture {
+                        authenticate()
+                    }
+            }
+        }
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "chart.bar.fill")
+                    .foregroundStyle(.green)
                 Spacer()
+                Text("GPA")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            if isRevealed {
                 if let gradeData = analysisData {
                     Text(String(format: "%.2f", gradeData.overallGPA))
                         .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -335,14 +355,59 @@ private struct HomeGradeCard: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+            } else {
+                Text("****")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                Text("点击查看成绩")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .padding(16)
-            .frame(height: 130)
-            .frame(maxWidth: .infinity)
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .padding(16)
+        .frame(height: 130)
+        .frame(maxWidth: .infinity)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private func authenticate() {
+        // 如果用户在设置里关闭了隐私保护，则直接显示数据
+        guard globalManager.isPrivacyEnabled else {
+            withAnimation(.spring()) {
+                isRevealed = true
+            }
+            return
+        }
+
+        let context = LAContext()
+        var error: NSError?
+
+        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+            let reason = "验证身份以查看成绩数据"
+
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, authenticationError in
+                if success {
+                    DispatchQueue.main.async {
+                        withAnimation(.spring()) {
+                            isRevealed = true
+                        }
+                    }
+                } else {
+                    if let laError = authenticationError as? LAError {
+                        switch laError.code {
+                        case .userCancel, .appCancel, .systemCancel:
+                            break
+                        default:
+                            // 可以在这里扩展 Toast 提示
+                            break
+                        }
+                    }
+                }
+            }
+        } else {
+            isRevealed = true
+        }
     }
 }
 
