@@ -6,11 +6,9 @@
 //
 
 import CSUSTKit
-import InjectHotReload
 import SwiftUI
 
 struct CourseCardView: View {
-    @ObserveInjection var inject
     @State var isShowingDetail = false
 
     let course: EduHelper.Course
@@ -65,6 +63,5 @@ struct CourseCardView: View {
         .sheet(isPresented: $isShowingDetail) {
             CourseScheduleDetailView(course: course, session: session, isPresented: $isShowingDetail)
         }
-        .enableInjection()
     }
 }

@@ -18,7 +18,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
 
-        setupInjectionIII()
         setupStorage()
         setupNotificationCenter()
         setupUI()
@@ -40,12 +39,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             KeychainHelper.shared.deleteAll()
             MMKVHelper.shared.hasLaunchedBefore = true
         }
-    }
-
-    func setupInjectionIII() {
-        #if DEBUG
-            Bundle(path: "/Applications/InjectionIII.app/Contents/Resources/iOSInjection.bundle")?.load()
-        #endif
     }
 
     func setupUI() {

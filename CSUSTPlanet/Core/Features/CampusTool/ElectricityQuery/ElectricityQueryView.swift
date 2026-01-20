@@ -5,13 +5,10 @@
 //  Created by Zhe_Learn on 2025/7/9.
 //
 
-import InjectHotReload
 import SwiftData
 import SwiftUI
 
 struct ElectricityQueryView: View {
-    @ObserveInjection var inject
-
     @State var isShowingAddDormSheet: Bool = false
 
     @Query var dorms: [Dorm]
@@ -49,7 +46,6 @@ struct ElectricityQueryView: View {
         .sheet(isPresented: $isShowingAddDormSheet) {
             AddDormitoryView(isShowingAddDormSheet: $isShowingAddDormSheet)
         }
-        .enableInjection()
         .trackView("ElectricityQuery")
     }
 }

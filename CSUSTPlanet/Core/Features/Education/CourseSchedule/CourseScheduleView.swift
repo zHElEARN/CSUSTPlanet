@@ -7,14 +7,11 @@
 
 import AlertToast
 import CSUSTKit
-import InjectHotReload
 import SwiftUI
 
 // MARK: - CourseScheduleView
 
 struct CourseScheduleView: View {
-    @ObserveInjection var inject
-
     @StateObject var viewModel = CourseScheduleViewModel()
 
     let colSpacing: CGFloat = 2  // 列间距
@@ -71,7 +68,6 @@ struct CourseScheduleView: View {
             CourseSemesterView()
                 .environmentObject(viewModel)
         }
-        .enableInjection()
         .trackView("CourseSchedule")
     }
 

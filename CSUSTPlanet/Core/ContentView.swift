@@ -5,13 +5,10 @@
 //  Created by Zhe_Learn on 2025/7/7.
 //
 
-import InjectHotReload
 import SwiftUI
 import Toasts
 
 struct ContentView: View {
-    @ObserveInjection var inject
-
     @EnvironmentObject var globalManager: GlobalManager
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.presentToast) var presentToast
@@ -120,7 +117,6 @@ struct ContentView: View {
             default: break
             }
         }
-        .enableInjection()
     }
 }
 

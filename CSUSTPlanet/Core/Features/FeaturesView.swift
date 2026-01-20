@@ -5,12 +5,9 @@
 //  Created by Zhe_Learn on 2025/7/8.
 //
 
-import InjectHotReload
 import SwiftUI
 
 struct FeaturesView: View {
-    @ObserveInjection var inject
-
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var globalManager: GlobalManager
 
@@ -60,7 +57,6 @@ struct FeaturesView: View {
             PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
                 .environmentObject(physicsExperimentManager)
         }
-        .enableInjection()
         .trackView("Features")
     }
 

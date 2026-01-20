@@ -6,7 +6,6 @@ target 'CSUSTPlanet' do
   # Pods for CSUSTPlanet
   pod 'MMKV'
   pod 'FLEX', :configurations => ['Debug']
-  pod 'InjectHotReload'
 end
 
 target 'CSUSTPlanetWidgetExtension' do

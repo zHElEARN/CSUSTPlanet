@@ -7,7 +7,6 @@
 
 import Alamofire
 import Charts
-import InjectHotReload
 import SwiftData
 import SwiftUI
 
@@ -33,7 +32,6 @@ private enum ChartTimeRange: String, CaseIterable, Identifiable {
 }
 
 struct DormDetailView: View {
-    @ObserveInjection var inject
     @ObservedObject var viewModel: DormElectricityViewModel
     @Bindable var dorm: Dorm
 
@@ -107,7 +105,6 @@ struct DormDetailView: View {
         } message: {
             Text("确定要取消定时查询吗？")
         }
-        .enableInjection()
         .trackView("DormDetail")
     }
 }
