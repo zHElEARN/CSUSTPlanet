@@ -247,11 +247,9 @@ private struct HeroCard<Destination: View>: View {
                     .onTapGesture {
                         authenticate()
                     }
-                    .background(
-                        NavigationLink(destination: destination, isActive: $shouldNavigate) {
-                            EmptyView()
-                        }
-                    )
+                    .navigationDestination(isPresented: $shouldNavigate) {
+                        destination
+                    }
             } else {
                 // 不需要验证时，使用原有 TrackLink（带埋点）
                 TrackLink(destination: destination) {

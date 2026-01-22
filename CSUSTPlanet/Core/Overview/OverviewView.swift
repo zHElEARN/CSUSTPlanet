@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2025/12/12.
 //
 
+import AlertToast
 import CSUSTKit
 import LocalAuthentication
 import SwiftUI
@@ -308,7 +309,9 @@ private struct EmptyCourseCard: View {
 private struct HomeGradeCard: View {
     let analysisData: GradeAnalysisData?
     @EnvironmentObject var globalManager: GlobalManager
+    @Environment(\.scenePhase) var scenePhase
     @State private var isRevealed = false
+    @State private var showAuthError = false
 
     var body: some View {
         Group {
@@ -323,6 +326,18 @@ private struct HomeGradeCard: View {
                         authenticate()
                     }
             }
+        }
+
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                isRevealed = false
+            }
+        }
+        .onDisappear {
+            isRevealed = false
+        }
+        .toast(isPresenting: $showAuthError) {
+            AlertToast(displayMode: .hud, type: .error(.red), title: "验证失败", subTitle: "请确保面容ID/指纹可用")
         }
     }
 
@@ -399,8 +414,8 @@ private struct HomeGradeCard: View {
                         case .userCancel, .appCancel, .systemCancel:
                             break
                         default:
-                            // 可以在这里扩展 Toast 提示
-                            break
+                            UINotificationFeedbackGenerator().notificationOccurred(.error)
+                            showAuthError = true
                         }
                     }
                 }
