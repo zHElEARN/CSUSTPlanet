@@ -64,8 +64,8 @@ class AuthManager: ObservableObject {
         CookieHelper.shared.clearCookies()
         try await ssoHelper.login(username: username, password: password)
         TrackHelper.shared.event(category: "Auth", action: "Login", name: "Account", value: 1)
-        KeychainHelper.shared.ssoUsername = username
-        KeychainHelper.shared.ssoPassword = password
+        KeychainUtil.ssoUsername = username
+        KeychainUtil.ssoPassword = password
         let profile = try await ssoHelper.getLoginUser()
         ssoProfile = profile
         MMKVHelper.shared.userId = profile.userAccount
@@ -84,8 +84,8 @@ class AuthManager: ObservableObject {
             defer { isSSOLoggingOut = false }
             try? await ssoHelper.logout()
             CookieHelper.shared.save()
-            KeychainHelper.shared.ssoUsername = nil
-            KeychainHelper.shared.ssoPassword = nil
+            KeychainUtil.ssoUsername = nil
+            KeychainUtil.ssoPassword = nil
             MMKVHelper.shared.userId = nil
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
@@ -132,7 +132,7 @@ class AuthManager: ObservableObject {
                 allLogin()
                 return
             }
-            guard let username = KeychainHelper.shared.ssoUsername, let password = KeychainHelper.shared.ssoPassword else {
+            guard let username = KeychainUtil.ssoUsername, let password = KeychainUtil.ssoPassword else {
                 Logger.authManager.debug("ssoRelogin: 统一身份认证未登录，密码未保存，不操作")
                 return
             }

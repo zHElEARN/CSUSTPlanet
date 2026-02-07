@@ -38,7 +38,7 @@ struct AboutView: View {
                         Label("清除所有MMKV数据", systemImage: "trash").foregroundColor(.red)
                     }
 
-                    Button(action: { KeychainHelper.shared.deleteAll() }) {
+                    Button(action: { KeychainUtil.deleteAll() }) {
                         Label("清除所有Keychain数据", systemImage: "trash").foregroundColor(.red)
                     }
 

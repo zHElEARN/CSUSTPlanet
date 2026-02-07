@@ -71,7 +71,6 @@
 			membershipExceptions = (
 				"Extensions/Logger+Extension.swift",
 				Helpers/CookieHelper.swift,
-				Helpers/KeychainHelper.swift,
 				Helpers/MMKVHelper.swift,
 				Models/ImageActivityItemSource.swift,
 				Models/Storage/CourseScheduleData.swift,
@@ -84,6 +83,7 @@
 				Utils/ColorUtil.swift,
 				Utils/Constants.swift,
 				Utils/CourseScheduleUtil.swift,
+				Utils/KeychainUtil.swift,
 				Utils/SharedModelUtil.swift,
 			);
 			target = 00E89C5F2E2C88D800B43162 /* CSUSTPlanetWidgetExtension */;
@@ -116,8 +116,6 @@
 		};
 		00BBB2AF2EEEE5C10047AEEF /* Configs */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Configs;
 			sourceTree = "<group>";
 		};
@@ -333,9 +331,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CSUSTPlanet/Pods-CSUSTPlanet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CSUSTPlanet/Pods-CSUSTPlanet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
