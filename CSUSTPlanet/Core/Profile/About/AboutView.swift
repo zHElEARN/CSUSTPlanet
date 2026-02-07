@@ -25,7 +25,7 @@ struct AboutView: View {
             Section("应用信息") {
                 InfoRow(label: "版本号", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "未知版本")
                 InfoRow(label: "构建号", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "未知构建")
-                InfoRow(label: "运行环境", value: AppEnvironmentUtil.environment.rawValue)
+                InfoRow(label: "运行环境", value: EnvironmentUtil.environment.rawValue)
             }
 
             #if DEBUG
