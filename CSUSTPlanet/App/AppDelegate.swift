@@ -21,7 +21,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         setupStorage()
         setupNotificationCenter()
         setupUI()
-        setupCleaner()
         setupTipKit()
 
         ActivityHelper.shared.setup()
@@ -66,25 +65,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             name: UIApplication.willEnterForegroundNotification,
             object: nil
         )
-    }
-
-    func setupCleaner() {
-        DispatchQueue.global(qos: .background).async {
-            let fileManager = FileManager.default
-            let tempDir = fileManager.temporaryDirectory
-            do {
-                let fileURLs = try fileManager.contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil)
-
-                for url in fileURLs {
-                    if url.lastPathComponent.contains("CFNetworkDownload") {
-                        try fileManager.removeItem(at: url)
-                        Logger.appDelegate.debug("已清理垃圾文件: \(url.lastPathComponent)")
-                    }
-                }
-            } catch {
-                Logger.appDelegate.error("清理 tmp 失败: \(error)")
-            }
-        }
     }
 
     func setupTipKit() {
