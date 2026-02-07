@@ -18,7 +18,7 @@
 	</array>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)$(CSUSTPLANET_KEYCHAIN_SUFFIX)</string>
+		<string>$(CSUSTPLANET_KEYCHAIN_ID)</string>
 	</array>
 </dict>
 </plist>
