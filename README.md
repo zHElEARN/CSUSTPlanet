@@ -15,9 +15,8 @@
 
 ## 构建
 
-
 > [!IMPORTANT]
-> **构建要求**：由于长理星球集成了一些特定的 **App Capabilities**，构建本项目需要具备 **Apple Developer Program** 会员资格。使用免费开发者账号可能导致签名失败或无法正常编译。
+> **构建要求**：由于长理星球集成了一些特定的 **App Capabilities**，构建本项目需要具备 **Apple Developer Program** 会员资格。使用免费开发者账号可能导致签名失败或无法正常编译
 
 ### 步骤
 
@@ -51,7 +50,7 @@
      复制构建配置模板文件，并填入你的开发者团队信息：
 
      ```bash
-     cp Configs/User.xcconfig.template Configs/User.
+     cp Configs/User.xcconfig.template Configs/User.xcconfig
 
      ```
 
