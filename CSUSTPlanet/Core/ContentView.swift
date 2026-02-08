@@ -25,47 +25,15 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            TabView(selection: $globalManager.selectedTab) {
-                OverviewView()
-                    .tabItem {
-                        Image(uiImage: UIImage(systemName: "rectangle.stack")!)
-                        Text(TabItem.overview.rawValue)
-                    }
-                    .tag(TabItem.overview)
-                FeaturesView()
-                    .tabItem {
-                        Image(uiImage: UIImage(systemName: "square.grid.2x2")!)
-                        Text(TabItem.features.rawValue)
-                    }
-                    .tag(TabItem.features)
-                ProfileView()
-                    .tabItem {
-                        Image(uiImage: UIImage(systemName: "person")!)
-                        Text(TabItem.profile.rawValue)
-                    }
-                    .tag(TabItem.profile)
-            }
-            .trackRoot("App")
-            .navigationTitle(globalManager.selectedTab.rawValue)
-            .toolbarTitleDisplayMode(.inline)
-            .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
-                ElectricityQueryView()
-                    .trackRoot("Widget")
-            }
-            .navigationDestination(isPresented: $globalManager.isFromCourseScheduleWidget) {
-                CourseScheduleView()
-                    .trackRoot("Widget")
-            }
-            .navigationDestination(isPresented: $globalManager.isFromGradeAnalysisWidget) {
-                GradeAnalysisView()
-                    .trackRoot("Widget")
-            }
-            .navigationDestination(isPresented: $globalManager.isFromUrgentCoursesWidget) {
-                UrgentCoursesView()
-                    .trackRoot("Widget")
-            }
+        TabView(selection: $globalManager.selectedTab) {
+            OverviewView()
+                .tag(TabItem.overview)
+            FeaturesView()
+                .tag(TabItem.features)
+            ProfileView()
+                .tag(TabItem.profile)
         }
+        .trackRoot("App")
 
         // MARK: 全局Toast状态
 
@@ -109,6 +77,7 @@ struct ContentView: View {
 
         .onOpenURL { url in
             guard url.scheme == "csustplanet", url.host == "widgets" else { return }
+            globalManager.selectedTab = TabItem.overview
             switch url.pathComponents.dropFirst().first {
             case "electricity": globalManager.isFromElectricityWidget = true
             case "gradeAnalysis": globalManager.isFromGradeAnalysisWidget = true

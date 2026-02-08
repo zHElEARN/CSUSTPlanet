@@ -11,84 +11,109 @@ import SwiftUI
 struct OverviewView: View {
     @StateObject var viewModel = OverviewViewModel()
     @Environment(\.horizontalSizeClass) var sizeClass
+    @EnvironmentObject var globalManager: GlobalManager
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // 头部欢迎语
-                HomeHeaderView(greeting: viewModel.greeting, weekInfo: viewModel.weekInfo)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // 头部欢迎语
+                    HomeHeaderView(greeting: viewModel.greeting, weekInfo: viewModel.weekInfo)
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+
+                    // 今日课程
+                    HomeCourseCarousel(viewModel: viewModel)
+
+                    // 核心数据网格 (成绩 + 电量)
+                    HStack(spacing: 16) {
+                        HomeGradeCard(analysisData: viewModel.currentGradeAnalysis)
+                        HomeElectricityCard(primaryDorm: viewModel.primaryDorm, exhaustionInfo: viewModel.electricityExhaustionInfo)
+                    }
                     .padding(.horizontal)
-                    .padding(.top, 10)
 
-                // 今日课程
-                HomeCourseCarousel(viewModel: viewModel)
+                    // 作业与考试
+                    let columns = sizeClass == .regular ? [GridItem(.flexible(), spacing: 24), GridItem(.flexible(), spacing: 24)] : [GridItem(.flexible(), spacing: 24)]
 
-                // 核心数据网格 (成绩 + 电量)
-                HStack(spacing: 16) {
-                    HomeGradeCard(analysisData: viewModel.currentGradeAnalysis)
-                    HomeElectricityCard(primaryDorm: viewModel.primaryDorm, exhaustionInfo: viewModel.electricityExhaustionInfo)
-                }
-                .padding(.horizontal)
+                    LazyVGrid(columns: columns, spacing: 24) {
+                        // 待提交作业
+                        VStack(spacing: 12) {
+                            HomeSectionHeader(
+                                title: "待提交作业",
+                                icon: "doc.text.fill",
+                                color: .red,
+                                destination: UrgentCoursesView()
+                            )
 
-                // 作业与考试
-                let columns = sizeClass == .regular ? [GridItem(.flexible(), spacing: 24), GridItem(.flexible(), spacing: 24)] : [GridItem(.flexible(), spacing: 24)]
-
-                LazyVGrid(columns: columns, spacing: 24) {
-                    // 待提交作业
-                    VStack(spacing: 12) {
-                        HomeSectionHeader(
-                            title: "待提交作业",
-                            icon: "doc.text.fill",
-                            color: .red,
-                            destination: UrgentCoursesView()
-                        )
-
-                        let courses = viewModel.urgentCourses
-                        if courses.isEmpty {
-                            if viewModel.urgentCoursesData?.value == nil {
-                                HomeEmptyStateView(icon: "doc.text", text: "暂无数据，请前往详情页加载")
+                            let courses = viewModel.urgentCourses
+                            if courses.isEmpty {
+                                if viewModel.urgentCoursesData?.value == nil {
+                                    HomeEmptyStateView(icon: "doc.text", text: "暂无数据，请前往详情页加载")
+                                } else {
+                                    HomeEmptyStateView(icon: "doc.text", text: "暂无待提交作业")
+                                }
                             } else {
-                                HomeEmptyStateView(icon: "doc.text", text: "暂无待提交作业")
+                                HomeUrgentListView(viewModel: viewModel)
                             }
-                        } else {
-                            HomeUrgentListView(viewModel: viewModel)
+                        }
+
+                        // 考试安排
+                        VStack(spacing: 12) {
+                            HomeSectionHeader(
+                                title: "考试安排",
+                                icon: "calendar.badge.clock",
+                                color: .orange,
+                                destination: ExamScheduleView()
+                            )
+
+                            let pendingExams = viewModel.pendingExams
+                            if pendingExams.isEmpty {
+                                if viewModel.examScheduleData?.value == nil {
+                                    HomeEmptyStateView(icon: "calendar.badge.exclamationmark", text: "暂无数据，请前往详情页加载")
+                                } else {
+                                    HomeEmptyStateView(icon: "calendar.badge.checkmark", text: "近期没有考试")
+                                }
+                            } else {
+                                HomeExamListView(viewModel: viewModel)
+                            }
                         }
                     }
+                    .padding(.horizontal)
 
-                    // 考试安排
-                    VStack(spacing: 12) {
-                        HomeSectionHeader(
-                            title: "考试安排",
-                            icon: "calendar.badge.clock",
-                            color: .orange,
-                            destination: ExamScheduleView()
-                        )
-
-                        let pendingExams = viewModel.pendingExams
-                        if pendingExams.isEmpty {
-                            if viewModel.examScheduleData?.value == nil {
-                                HomeEmptyStateView(icon: "calendar.badge.exclamationmark", text: "暂无数据，请前往详情页加载")
-                            } else {
-                                HomeEmptyStateView(icon: "calendar.badge.checkmark", text: "近期没有考试")
-                            }
-                        } else {
-                            HomeExamListView(viewModel: viewModel)
-                        }
-                    }
+                    Spacer(minLength: 40)
                 }
-                .padding(.horizontal)
-
-                Spacer(minLength: 40)
+                .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
+                .frame(maxWidth: .infinity)
+                .padding(.top, sizeClass == .regular ? 20 : 0)
             }
-            .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
-            .frame(maxWidth: .infinity)
-            .padding(.top, sizeClass == .regular ? 20 : 0)
+            .navigationTitle("概览")
+            .toolbarTitleDisplayMode(.inline)
+            .background(Color(.systemGroupedBackground))
+            .onAppear {
+                viewModel.loadData()
+            }
+            .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
+                ElectricityQueryView()
+                    .trackRoot("Widget")
+            }
+            .navigationDestination(isPresented: $globalManager.isFromCourseScheduleWidget) {
+                CourseScheduleView()
+                    .trackRoot("Widget")
+            }
+            .navigationDestination(isPresented: $globalManager.isFromGradeAnalysisWidget) {
+                GradeAnalysisView()
+                    .trackRoot("Widget")
+            }
+            .navigationDestination(isPresented: $globalManager.isFromUrgentCoursesWidget) {
+                UrgentCoursesView()
+                    .trackRoot("Widget")
+            }
+            .trackView("Overview")
         }
-        .background(Color(.systemGroupedBackground))
-        .onAppear {
-            viewModel.loadData()
+        .tabItem {
+            Image(uiImage: UIImage(systemName: "rectangle.stack")!)
+            Text("概览")
         }
-        .trackView("Overview")
     }
 }
 

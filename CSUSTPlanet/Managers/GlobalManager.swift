@@ -9,9 +9,9 @@ import Foundation
 import SwiftUI
 
 enum TabItem: String {
-    case overview = "概览"
-    case features = "全部功能"
-    case profile = "我的"
+    case overview
+    case features
+    case profile
 }
 
 @MainActor

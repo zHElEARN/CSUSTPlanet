@@ -23,41 +23,49 @@ struct FeaturesView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: sizeClass == .regular ? 32 : 28) {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: sizeClass == .regular ? 32 : 28) {
 
-                educationalSystemSection
+                    educationalSystemSection
 
-                moocSection
+                    moocSection
 
-                campusToolsSection
+                    campusToolsSection
 
-                if sizeClass == .regular {
-                    HStack(alignment: .top, spacing: spacing) {
-                        physicsSection
-                        examQuerySection
+                    if sizeClass == .regular {
+                        HStack(alignment: .top, spacing: spacing) {
+                            physicsSection
+                            examQuerySection
+                        }
+                        .padding(.horizontal, horizontalPadding)
+                    } else {
+                        VStack(spacing: spacing) {
+                            physicsSection
+                            examQuerySection
+                        }
+                        .padding(.horizontal, horizontalPadding)
                     }
-                    .padding(.horizontal, horizontalPadding)
-                } else {
-                    VStack(spacing: spacing) {
-                        physicsSection
-                        examQuerySection
-                    }
-                    .padding(.horizontal, horizontalPadding)
+
+                    Color.clear.frame(height: 20)
                 }
-
-                Color.clear.frame(height: 20)
+                .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
+                .frame(maxWidth: .infinity)
+                .padding(.top, sizeClass == .regular ? 20 : 0)
             }
-            .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
-            .frame(maxWidth: .infinity)
-            .padding(.top, sizeClass == .regular ? 20 : 0)
+            .navigationTitle("全部功能")
+            .toolbarTitleDisplayMode(.inline)
+            .background(Color(uiColor: .systemGroupedBackground))
+            .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
+                PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
+                    .environmentObject(physicsExperimentManager)
+            }
+            .trackView("Features")
         }
-        .background(Color(uiColor: .systemGroupedBackground))
-        .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
-            PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
-                .environmentObject(physicsExperimentManager)
+        .tabItem {
+            Image(uiImage: UIImage(systemName: "square.grid.2x2")!)
+            Text("全部功能")
         }
-        .trackView("Features")
     }
 
     // MARK: - Extracted Subviews (各个板块)
