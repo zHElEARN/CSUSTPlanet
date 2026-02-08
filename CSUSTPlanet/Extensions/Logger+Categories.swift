@@ -1,5 +1,5 @@
 //
-//  Logger+Extension.swift
+//  Logger+Categories.swift
 //  CSUSTPlanet
 //
 //  Created by Zachary Liu on 2025/12/16.
