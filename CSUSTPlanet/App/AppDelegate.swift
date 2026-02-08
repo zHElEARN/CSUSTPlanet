@@ -20,7 +20,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         setupStorage()
         setupNotificationCenter()
-        setupUI()
         setupTipKit()
 
         ActivityHelper.shared.setup()
@@ -38,17 +37,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             KeychainUtil.deleteAll()
             MMKVHelper.shared.hasLaunchedBefore = true
         }
-    }
-
-    func setupUI() {
-        let tabBarAppearance = {
-            let tabBarAppearance = UITabBarAppearance()
-            tabBarAppearance.configureWithTransparentBackground()
-            tabBarAppearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-            return tabBarAppearance
-        }()
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
     }
 
     func setupNotificationCenter() {
