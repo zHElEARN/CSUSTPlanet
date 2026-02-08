@@ -86,7 +86,6 @@ struct CampusMapView: View {
         }
         .navigationTitle("校园地图")
         .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $viewModel.searchText, prompt: "搜索地址")
         .sheet(isPresented: $viewModel.isOnlineMapShown) {
             SafariView(url: url).trackView("CampusMapOnline")
         }
