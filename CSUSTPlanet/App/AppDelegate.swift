@@ -18,7 +18,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
 
-        setupNotificationCenter()
         setupTipKit()
 
         ActivityHelper.shared.setup()
@@ -29,22 +28,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     // MARK: - Setup Methods
-
-    func setupNotificationCenter() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification,
-            object: nil
-        )
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appWillEnterForeground),
-            name: UIApplication.willEnterForegroundNotification,
-            object: nil
-        )
-    }
 
     func setupTipKit() {
         #if DEBUG
@@ -78,48 +61,5 @@ extension AppDelegate {
 extension AppDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .badge])
-    }
-}
-
-// MARK: - App Lifecycle
-
-extension AppDelegate {
-    @objc
-    private func appDidEnterBackground() {
-        Logger.appDelegate.debug("App进入后台: appDidEnterBackground")
-        ActivityHelper.shared.autoUpdateActivity()
-
-        TrackHelper.shared.event(category: "Lifecycle", action: "Background")
-
-        lastBackgroundDate = .now
-    }
-
-    @objc
-    private func appWillEnterForeground() {
-        Logger.appDelegate.debug("App回到前台: appWillEnterForeground")
-        ActivityHelper.shared.autoUpdateActivity()
-
-        if !isFirstAppear {
-            checkAndRelogin()
-            TrackHelper.shared.event(category: "Lifecycle", action: "Foreground")
-        }
-
-        if isFirstAppear {
-            isFirstAppear = false
-            TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
-        }
-    }
-
-    private func checkAndRelogin() {
-        let threshold: TimeInterval = 3 * 60
-        guard let backgroundDate = lastBackgroundDate else { return }
-
-        let timeInterval = Date().timeIntervalSince(backgroundDate)
-        if timeInterval > threshold {
-            Logger.appDelegate.debug("App后台停留时间 (\(timeInterval)s) 超过阈值，执行 SSO Relogin")
-            AuthManager.shared.ssoRelogin()
-        } else {
-            Logger.appDelegate.debug("App后台停留时间 (\(timeInterval)s) 不足 3 分钟，跳过 Relogin")
-        }
     }
 }

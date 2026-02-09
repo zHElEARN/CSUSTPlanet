@@ -12,6 +12,7 @@ extension Logger {
     private static var appSubsystem = Constants.appBundleID
     private static var widgetSubsystem = Constants.widgetBundleID
 
+    static let app = Logger(subsystem: appSubsystem, category: "App")
     static let appDelegate = Logger(subsystem: appSubsystem, category: "AppDelegate")
     static let authManager = Logger(subsystem: appSubsystem, category: "AuthManager")
     static let activityHelper = Logger(subsystem: appSubsystem, category: "ActivityHelper")
