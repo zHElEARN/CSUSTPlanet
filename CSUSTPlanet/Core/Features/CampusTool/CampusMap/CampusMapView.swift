@@ -67,6 +67,7 @@ struct CampusMapView: View {
             }
             .padding()
         }
+        .toolbar(.hidden, for: .tabBar)
         .background(
             WillDisappearHandler {
                 viewModel.isBuildingsListShown = false

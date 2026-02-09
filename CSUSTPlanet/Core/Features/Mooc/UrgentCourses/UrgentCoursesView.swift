@@ -24,28 +24,6 @@ struct UrgentCoursesView: View {
         .padding(.vertical, 8)
     }
 
-    // MARK: - Empty State
-
-    @ViewBuilder
-    private var emptyState: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "book.closed")
-                .font(.system(size: 40))
-                .foregroundColor(.secondary)
-                .padding(.bottom, 8)
-
-            Text("暂无待提交作业")
-                .font(.headline)
-
-            Text("当前没有需要提交作业的课程")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 20)
-    }
-
     // MARK: - Body
 
     var body: some View {
