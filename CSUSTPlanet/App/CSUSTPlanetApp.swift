@@ -32,7 +32,6 @@ struct CSUSTPlanetApp: App {
 
         ActivityHelper.shared.setup()
         NotificationManager.shared.setup()
-        TrackHelper.shared.setup()
     }
 
     var body: some Scene {
