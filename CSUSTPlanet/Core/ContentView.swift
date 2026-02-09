@@ -35,6 +35,14 @@ struct ContentView: View {
         }
         .trackRoot("App")
 
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.tabBarMinimizeBehavior(.onScrollDown)
+            } else {
+                view
+            }
+        }
+
         // MARK: 全局Toast状态
 
         .onChange(of: authManager.isShowingSSOInfo) { _, newValue in
@@ -67,6 +75,8 @@ struct ContentView: View {
             presentToast(ToastValue(icon: Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red), message: "网络课程中心登录错误"))
             authManager.isShowingMoocError = false
         }
+
+        // MARK: - 主题设置 & 用户协议弹窗
 
         .preferredColorScheme(preferredColorScheme)
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
