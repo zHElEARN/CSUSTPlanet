@@ -238,7 +238,7 @@ struct GradeAnalysisView: View {
         }
         .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
         .navigationTitle("成绩分析")
-        .toolbarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {

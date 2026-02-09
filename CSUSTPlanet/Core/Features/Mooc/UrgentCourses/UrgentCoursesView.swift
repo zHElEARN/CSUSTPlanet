@@ -60,7 +60,7 @@ struct UrgentCoursesView: View {
                 }
                 .listStyle(.insetGrouped)
             } else {
-                emptyState
+                ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交作业的课程"))
                     .background(Color(.systemGroupedBackground))
             }
         }
