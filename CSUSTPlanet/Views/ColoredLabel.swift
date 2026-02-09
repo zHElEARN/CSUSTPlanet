@@ -22,7 +22,7 @@ struct ColoredLabel: View {
                 .frame(width: 29, height: 29)
                 .background(
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(color)
+                        .fill(color.gradient)
                 )
         }
     }
