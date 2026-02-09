@@ -21,6 +21,20 @@ struct CSUSTPlanetApp: App {
     private static var isFirstAppear = true
     private static var lastBackgroundDate: Date?
 
+    init() {
+        #if DEBUG
+            try? Tips.resetDatastore()
+        #endif
+        try? Tips.configure([
+            .displayFrequency(.immediate),
+            .datastoreLocation(.applicationDefault),
+        ])
+
+        ActivityHelper.shared.setup()
+        NotificationManager.shared.setup()
+        TrackHelper.shared.setup()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

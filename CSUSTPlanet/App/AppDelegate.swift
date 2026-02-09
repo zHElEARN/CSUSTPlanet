@@ -12,35 +12,9 @@ import TipKit
 import UIKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {
-    private var isFirstAppear = true
-    private var lastBackgroundDate: Date?
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
-
-        setupTipKit()
-
-        ActivityHelper.shared.setup()
-        NotificationManager.shared.setup()
-        TrackHelper.shared.setup()
-
         return true
-    }
-
-    // MARK: - Setup Methods
-
-    func setupTipKit() {
-        #if DEBUG
-            try? Tips.resetDatastore()
-        #endif
-        try? Tips.configure([
-            .displayFrequency(.immediate),
-            .datastoreLocation(.applicationDefault),
-        ])
-    }
-
-    deinit {
-        NotificationCenter.default.removeObserver(self)
     }
 }
 
