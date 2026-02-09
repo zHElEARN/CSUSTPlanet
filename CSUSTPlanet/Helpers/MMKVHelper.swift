@@ -28,7 +28,26 @@ class MMKVHelper {
 
     private init() {}
 
-    private var defaultMMKV: MMKV?
+    private var mmkv: MMKV = {
+        guard let mmkvDirectoryURL = Constants.mmkvDirectoryURL else {
+            fatalError("Failed to get MMKV directory URL")
+        }
+
+        MMKV.initialize(rootDir: mmkvDirectoryURL.path)
+        guard
+            let instance = MMKV(
+                mmapID: Constants.mmkvID,
+                cryptKey: nil,
+                rootPath: mmkvDirectoryURL.path,
+                mode: .multiProcess,
+                expectedCapacity: 0
+            )
+        else {
+            fatalError("Failed to initialize MMKV with ID: \(Constants.mmkvID)")
+        }
+
+        return instance
+    }()
 
     private let jsonEncoder = {
         let encoder = JSONEncoder()
@@ -56,77 +75,54 @@ class MMKVHelper {
 // MARK: - Methods
 
 extension MMKVHelper {
-    func setup() {
-        guard let mmkvDirectoryURL = Constants.mmkvDirectoryURL else {
-            fatalError("Failed to get MMKV directory URL")
-        }
-        MMKV.initialize(rootDir: mmkvDirectoryURL.path)
-        guard let defaultMMKV = MMKV(
-            mmapID: Constants.mmkvID,
-            cryptKey: nil,
-            rootPath: mmkvDirectoryURL.path,
-            mode: .multiProcess,
-            expectedCapacity: 0
-        ) else {
-            fatalError("Failed to initialize MMKV with ID: \(Constants.mmkvID)")
-        }
-        self.defaultMMKV = defaultMMKV
-    }
-
     func close() {
-        guard let defaultMMKV = defaultMMKV else { return }
-        defaultMMKV.sync()
-        defaultMMKV.close()
-        self.defaultMMKV = nil
+        mmkv.sync()
+        mmkv.close()
     }
 
     func clearAll() {
-        defaultMMKV?.clearAll()
-    }
-
-    func sync() {
-        defaultMMKV?.sync()
+        mmkv.clearAll()
     }
 
     func removeValue(forKey key: String) {
-        defaultMMKV?.removeValue(forKey: key)
+        mmkv.removeValue(forKey: key)
     }
 
     func checkContentChanged() {
-        defaultMMKV?.checkContentChanged()
+        mmkv.checkContentChanged()
     }
 }
 
 // MARK: - Setters
 
 extension MMKVHelper {
-    func set(forKey key: String, _ value: String) {
-        defaultMMKV?.set(value, forKey: key)
+    private func set(forKey key: String, _ value: String) {
+        mmkv.set(value, forKey: key)
     }
 
-    func set(forKey key: String, _ value: Int) {
-        defaultMMKV?.set(Int64(value), forKey: key)
+    private func set(forKey key: String, _ value: Int) {
+        mmkv.set(Int64(value), forKey: key)
     }
 
-    func set(forKey key: String, _ value: Bool) {
-        defaultMMKV?.set(value, forKey: key)
+    private func set(forKey key: String, _ value: Bool) {
+        mmkv.set(value, forKey: key)
     }
 
-    func set(forKey key: String, _ value: Float) {
-        defaultMMKV?.set(value, forKey: key)
+    private func set(forKey key: String, _ value: Float) {
+        mmkv.set(value, forKey: key)
     }
 
-    func set(forKey key: String, _ value: Double) {
-        defaultMMKV?.set(value, forKey: key)
+    private func set(forKey key: String, _ value: Double) {
+        mmkv.set(value, forKey: key)
     }
 
-    func set(forKey key: String, _ value: Data) {
-        defaultMMKV?.set(value, forKey: key)
+    private func set(forKey key: String, _ value: Data) {
+        mmkv.set(value, forKey: key)
     }
 
-    func set<Type: Encodable>(forKey key: String, _ value: Type) {
+    private func set<Type: Encodable>(forKey key: String, _ value: Type) {
         if let data = try? jsonEncoder.encode(value) {
-            defaultMMKV?.set(data, forKey: key)
+            mmkv.set(data, forKey: key)
         }
     }
 }
@@ -134,50 +130,44 @@ extension MMKVHelper {
 // MARK: - Getters
 
 extension MMKVHelper {
-    func string(forKey key: String) -> String? {
-        defaultMMKV?.string(forKey: key)
+    private func string(forKey key: String) -> String? {
+        mmkv.string(forKey: key)
     }
 
-    func int(forKey key: String) -> Int? {
-        guard let defaultMMKV = defaultMMKV else { return nil }
-        if defaultMMKV.contains(key: key) {
-            return Int(defaultMMKV.int64(forKey: key))
+    private func int(forKey key: String) -> Int? {
+        if mmkv.contains(key: key) {
+            return Int(mmkv.int64(forKey: key))
         }
         return nil
     }
 
-    func bool(forKey key: String) -> Bool? {
-        guard let defaultMMKV = defaultMMKV else { return nil }
-        if defaultMMKV.contains(key: key) {
-            return defaultMMKV.bool(forKey: key)
+    private func bool(forKey key: String) -> Bool? {
+        if mmkv.contains(key: key) {
+            return mmkv.bool(forKey: key)
         }
         return nil
     }
 
-    func float(forKey key: String) -> Float? {
-        guard let defaultMMKV = defaultMMKV else { return nil }
-        if defaultMMKV.contains(key: key) {
-            return defaultMMKV.float(forKey: key)
+    private func float(forKey key: String) -> Float? {
+        if mmkv.contains(key: key) {
+            return mmkv.float(forKey: key)
         }
         return nil
     }
 
-    func double(forKey key: String) -> Double? {
-        guard let defaultMMKV = defaultMMKV else { return nil }
-        if defaultMMKV.contains(key: key) {
-            return defaultMMKV.double(forKey: key)
+    private func double(forKey key: String) -> Double? {
+        if mmkv.contains(key: key) {
+            return mmkv.double(forKey: key)
         }
         return nil
     }
 
-    func data(forKey key: String) -> Data? {
-        guard let defaultMMKV = defaultMMKV else { return nil }
-        return defaultMMKV.data(forKey: key)
+    private func data(forKey key: String) -> Data? {
+        return mmkv.data(forKey: key)
     }
 
-    func object<Type: Decodable>(forKey key: String, as type: Type.Type) -> Type? {
-        guard let defaultMMKV = defaultMMKV else { return nil }
-        guard let data = defaultMMKV.data(forKey: key) else {
+    private func object<Type: Decodable>(forKey key: String, as type: Type.Type) -> Type? {
+        guard let data = mmkv.data(forKey: key) else {
             return nil
         }
         return try? jsonDecoder.decode(type, from: data)

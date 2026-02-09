@@ -18,7 +18,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
 
-        setupStorage()
         setupNotificationCenter()
         setupTipKit()
 
@@ -30,14 +29,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     // MARK: - Setup Methods
-
-    func setupStorage() {
-        MMKVHelper.shared.setup()
-        if !MMKVHelper.shared.hasLaunchedBefore {
-            KeychainUtil.deleteAll()
-            MMKVHelper.shared.hasLaunchedBefore = true
-        }
-    }
 
     func setupNotificationCenter() {
         NotificationCenter.default.addObserver(

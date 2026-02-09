@@ -61,7 +61,6 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: GradeAnalysisIntent, in context: Context) async -> Timeline<GradeAnalysisEntry> {
-        MMKVHelper.shared.setup()
         defer {
             MMKVHelper.shared.close()
         }

@@ -19,7 +19,6 @@ struct TodayCoursesProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: TodayCoursesIntent, in context: Context) async -> Timeline<TodayCoursesEntry> {
-        MMKVHelper.shared.setup()
         defer {
             MMKVHelper.shared.close()
         }
