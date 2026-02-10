@@ -11,10 +11,19 @@ struct ColoredLabel: View {
     let title: String
     let iconName: String
     let color: Color
+    let textColor: Color
+
+    init(title: String, iconName: String, color: Color, textColor: Color? = nil) {
+        self.title = title
+        self.iconName = iconName
+        self.color = color
+        self.textColor = textColor ?? .primary
+    }
 
     var body: some View {
         Label {
             Text(title)
+                .foregroundColor(textColor)
         } icon: {
             Image(systemName: iconName)
                 .font(.system(size: 13, weight: .semibold))

@@ -1,5 +1,5 @@
 //
-//  NotificationSettingsView.swift
+//  DormNotificationSettingsView.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/7/17.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct NotificationSettingsView: View {
+struct DormNotificationSettingsView: View {
     @Binding var isPresented: Bool
 
     @State private var selectedHour: Int = Calendar.current.component(.hour, from: .now)
@@ -103,7 +103,7 @@ struct NotificationSettingsView: View {
 
 #Preview {
     NavigationStack {
-        NotificationSettingsView(
+        DormNotificationSettingsView(
             isPresented: .constant(true),
             onConfirm: {
                 _, _ in
