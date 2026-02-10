@@ -145,9 +145,9 @@ struct ProfileView: View {
                     }
                 }
 
-                Section(header: Text("设置"), footer: Text("实时活动/灵动岛将会显示：上课前20分钟、上课中和下课后5分钟的课程状态")) {
+                Section(header: Text("设置")) {
                     HStack {
-                        ColoredLabel(title: "外观主题", iconName: "paintbrush", color: .purple)
+                        ColoredLabel(title: "外观主题")
 
                         Spacer()
 
@@ -162,35 +162,35 @@ struct ProfileView: View {
                     }
 
                     Toggle(isOn: webVPNToggleBinding) {
-                        ColoredLabel(title: "开启WebVPN模式（实验）", iconName: "globe", color: .orange)
+                        ColoredLabel(title: "开启WebVPN模式（实验）", description: "通过WebVPN模式访问校园网资源")
                     }
 
                     Toggle(isOn: $globalManager.isNotificationEnabled) {
-                        ColoredLabel(title: "开启通知", iconName: "bell", color: .green)
+                        ColoredLabel(title: "开启通知", description: "用于宿舍电量定时查询提醒通知")
                     }
                     .onChange(of: globalManager.isNotificationEnabled, { _, _ in NotificationManager.shared.toggle() })
 
                     Toggle(isOn: $globalManager.isBackgroundTaskEnabled) {
-                        ColoredLabel(title: "开启后台任务", iconName: "bell.badge", color: .blue)
+                        ColoredLabel(title: "开启后台任务", description: "开启后应用可以在后台定期刷新课程，并在成绩更新时发送通知（后台任务受系统调度）")
                     }
 
                     Toggle(isOn: $globalManager.isLiveActivityEnabled) {
-                        ColoredLabel(title: "启用实时活动/灵动岛", iconName: "bolt.circle", color: .yellow)
+                        ColoredLabel(title: "启用实时活动/灵动岛", description: "实时活动/灵动岛将会显示：上课前20分钟、上课中和下课后5分钟的课程状态")
                     }
                     .onChange(of: globalManager.isLiveActivityEnabled, { _, _ in ActivityHelper.shared.autoUpdateActivity() })
                 }
 
                 Section(header: Text("帮助与支持")) {
                     TrackLink(destination: AboutView()) {
-                        ColoredLabel(title: "关于", iconName: "info.circle", color: .teal)
+                        ColoredLabel(title: "关于 长理星球")
                     }
 
                     TrackLink(destination: FeedbackView()) {
-                        ColoredLabel(title: "意见反馈", iconName: "bubble.left.and.bubble.right", color: .green)
+                        ColoredLabel(title: "意见反馈")
                     }
 
                     TrackLink(destination: UserAgreementView()) {
-                        ColoredLabel(title: "用户协议", iconName: "doc.text", color: .indigo)
+                        ColoredLabel(title: "长理星球 用户协议")
                     }
                 }
             }
