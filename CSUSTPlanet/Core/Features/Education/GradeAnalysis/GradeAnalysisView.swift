@@ -148,7 +148,7 @@ struct GradeAnalysisView: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("绩点分布")
+                    Text("绩点/成绩分布")
                         .font(.headline)
                     Spacer()
                     Picker("分布类型", selection: $viewModel.selectedDistributionChartType) {
@@ -193,6 +193,7 @@ struct GradeAnalysisView: View {
                 }
                 .frame(height: 220)
                 .padding()
+                .animation(.easeInOut, value: viewModel.selectedDistributionChartType)
             }
         }
     }

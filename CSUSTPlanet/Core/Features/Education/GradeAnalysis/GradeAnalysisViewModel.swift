@@ -20,7 +20,7 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
 
     enum DistributionChartType: String, CaseIterable {
         case gradePoint = "绩点"
-        case gradeRange = "成绩段"
+        case gradeRange = "成绩"
     }
 
     // 绩点到成绩段的映射
