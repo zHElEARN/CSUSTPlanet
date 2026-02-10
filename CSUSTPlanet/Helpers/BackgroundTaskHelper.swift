@@ -25,7 +25,7 @@ final class BackgroundTaskHelper {
     private init() {}
 
     private let tasks: [BackgroundTaskProvider] = [
-        GradeBackgroundTask(),
+        GradeBackgroundTask()
         // ElectricityBackgroundTask(),
     ]
 
