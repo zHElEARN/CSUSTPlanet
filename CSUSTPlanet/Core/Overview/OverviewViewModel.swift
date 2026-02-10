@@ -59,13 +59,33 @@ class OverviewViewModel: ObservableObject {
         return semester
     }
 
-    var todayCourses: [(course: CourseDisplayInfo, isCurrent: Bool)]? {
-        guard let schedule = courseScheduleData?.value else { return nil }
-        return CourseScheduleUtil.getUnfinishedCourses(
-            semesterStartDate: schedule.semesterStartDate,
-            now: Date(),
-            courses: schedule.courses
-        )
+
+    enum CourseDisplayState {
+        case loading // No data available
+        case beforeSemester(days: Int?)
+        case inSemester(courses: [(course: CourseDisplayInfo, isCurrent: Bool)])
+        case afterSemester
+    }
+
+    var courseDisplayState: CourseDisplayState {
+        guard let data = courseScheduleData?.value else { return .loading }
+        
+        let status = CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: Date())
+        
+        switch status {
+        case .beforeSemester:
+            let days = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: Date())
+            return .beforeSemester(days: days)
+        case .afterSemester:
+            return .afterSemester
+        case .inSemester:
+            let courses = CourseScheduleUtil.getUnfinishedCourses(
+                semesterStartDate: data.semesterStartDate,
+                now: Date(),
+                courses: data.courses
+            )
+            return .inSemester(courses: courses)
+        }
     }
 
     var currentGradeAnalysis: GradeAnalysisData? {

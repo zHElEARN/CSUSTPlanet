@@ -210,11 +210,47 @@ private struct HomeCourseCarousel: View {
             )
             .padding(.horizontal)
 
-            if let todaysFinishedCourses = viewModel.todayCourses {
-                if !todaysFinishedCourses.isEmpty {
+            switch viewModel.courseDisplayState {
+            case .loading:
+                EmptyCourseCard(text: "暂无课程数据", icon: "cloud.sun.fill")
+                    .padding(.horizontal)
+                    .padding(.bottom, 10)
+
+            case .beforeSemester(let days):
+                if let days = days {
+                    if days > CourseScheduleUtil.semesterStartThreshold {
+                        EmptyCourseCard(
+                            text: CourseScheduleUtil.getHolidayMessage(for: Date()),
+                            subtitle: "学期未开始",
+                            icon: "party.popper.fill"
+                        )
+                        .padding(.horizontal)
+                        .padding(.bottom, 10)
+                    } else {
+                        EmptyCourseCard(
+                            text: "学期未开始",
+                            subtitle: "距离开学还有 \(days) 天",
+                            icon: "calendar.badge.clock"
+                        )
+                        .padding(.horizontal)
+                        .padding(.bottom, 10)
+                    }
+                } else {
+                    EmptyCourseCard(text: "学期未开始", icon: "calendar")
+                        .padding(.horizontal)
+                        .padding(.bottom, 10)
+                }
+
+            case .afterSemester:
+                EmptyCourseCard(text: "本学期已结束，祝你假期愉快！", icon: "case.fill")
+                    .padding(.horizontal)
+                    .padding(.bottom, 10)
+
+            case .inSemester(let courses):
+                if !courses.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            ForEach(Array(todaysFinishedCourses.enumerated()), id: \.offset) { _, item in
+                            ForEach(Array(courses.enumerated()), id: \.offset) { _, item in
                                 CourseCard(
                                     course: item.course.course,
                                     session: item.course.session,
@@ -227,14 +263,10 @@ private struct HomeCourseCarousel: View {
                         .padding(.vertical, 10)
                     }
                 } else {
-                    EmptyCourseCard()
+                    EmptyCourseCard(text: "今天没有课，好好休息吧 ~", icon: "checkmark.circle.fill")
                         .padding(.horizontal)
                         .padding(.bottom, 10)
                 }
-            } else {
-                EmptyCourseCard(text: "暂无课程数据")
-                    .padding(.horizontal)
-                    .padding(.bottom, 10)
             }
         }
     }
@@ -310,21 +342,34 @@ private struct CourseCard: View {
 
 private struct EmptyCourseCard: View {
     var text: String = "今天没有课，好好休息吧 ~"
+    var subtitle: String? = nil
+    var icon: String = "cup.and.saucer.fill"
 
     var body: some View {
         HStack {
-            Image(systemName: "cup.and.saucer.fill")
+            Image(systemName: icon)
                 .font(.largeTitle)
-            Text(text)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(text)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.leading, 8)
         }
         .padding()
         .frame(height: 100)
         .frame(maxWidth: .infinity)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .foregroundStyle(.secondary)
     }
 }
 
