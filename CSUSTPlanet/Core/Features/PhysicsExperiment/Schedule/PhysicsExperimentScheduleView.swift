@@ -17,7 +17,11 @@ struct PhysicsExperimentScheduleView: View {
     var body: some View {
         Group {
             if viewModel.data?.value.isEmpty ?? true {
-                emptyStateView
+                ContentUnavailableView(
+                    "暂无实验安排",
+                    systemImage: "flask",
+                    description: Text("没有找到任何大物实验安排信息")
+                )
             } else {
                 List {
                     if let data = viewModel.data {
@@ -76,14 +80,6 @@ struct PhysicsExperimentScheduleView: View {
             viewModel.loadSchedules()
         }
         .trackView("PhysicsExperimentSchedule")
-    }
-
-    private var emptyStateView: some View {
-        ContentUnavailableView(
-            "暂无实验安排",
-            systemImage: "flask",
-            description: Text("没有找到任何大物实验安排信息")
-        )
     }
 }
 
