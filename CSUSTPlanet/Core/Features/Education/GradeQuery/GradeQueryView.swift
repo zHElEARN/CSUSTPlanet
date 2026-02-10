@@ -180,7 +180,15 @@ struct GradeQueryView: View {
             statsSection
                 .padding(.horizontal)
                 .padding(.vertical)
-                .background(.ultraThinMaterial)
+                .apply { view in
+                    if #available(iOS 26.0, *) {
+                        view
+                            .glassEffect()
+                            .padding(.horizontal)
+                    } else {
+                        view.background(.ultraThinMaterial)
+                    }
+                }
         }
         .searchable(text: $viewModel.searchText, prompt: "搜索课程")
         .toast(isPresenting: $viewModel.isShowingError) {
