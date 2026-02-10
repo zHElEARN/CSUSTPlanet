@@ -73,21 +73,23 @@ struct GradeAnalysisView: View {
     // MARK: - Semester Analysis Section
 
     @ViewBuilder
-    private func semesterAnalysisSection(_ gradeAnalysisData: GradeAnalysisData) -> some View {
+    private func semesterAnalysisSection(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
         VStack(spacing: 30) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("学期平均成绩/GPA")
+                    Text(isShareable ? "学期\(viewModel.selectedChartType.rawValue)" : "学期平均成绩/GPA")
                         .font(.headline)
                     Spacer()
-                    Picker("图表类型", selection: $viewModel.selectedChartType) {
-                        ForEach(GradeAnalysisViewModel.ChartType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+                    if !isShareable {
+                        Picker("图表类型", selection: $viewModel.selectedChartType) {
+                            ForEach(GradeAnalysisViewModel.ChartType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
                         }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .fixedSize()
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
                 }
                 .padding(.horizontal)
 
@@ -148,17 +150,19 @@ struct GradeAnalysisView: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Text("绩点/成绩分布")
+                    Text(isShareable ? "\(viewModel.selectedDistributionChartType.rawValue)分布" : "绩点/成绩分布")
                         .font(.headline)
                     Spacer()
-                    Picker("分布类型", selection: $viewModel.selectedDistributionChartType) {
-                        ForEach(GradeAnalysisViewModel.DistributionChartType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+                    if !isShareable {
+                        Picker("分布类型", selection: $viewModel.selectedDistributionChartType) {
+                            ForEach(GradeAnalysisViewModel.DistributionChartType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
                         }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .fixedSize()
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
                 }
                 .padding(.horizontal)
 
@@ -201,10 +205,10 @@ struct GradeAnalysisView: View {
     // MARK: - Analysis Content
 
     @ViewBuilder
-    private func analysisContent(_ gradeAnalysisData: GradeAnalysisData) -> some View {
+    private func analysisContent(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
         VStack(spacing: 20) {
             summaryCard(gradeAnalysisData)
-            semesterAnalysisSection(gradeAnalysisData)
+            semesterAnalysisSection(gradeAnalysisData, isShareable: isShareable)
         }
     }
 
@@ -235,7 +239,7 @@ struct GradeAnalysisView: View {
     @ViewBuilder
     private var shareableView: some View {
         if let gradeAnalysisData = viewModel.analysisData {
-            analysisContent(gradeAnalysisData)
+            analysisContent(gradeAnalysisData, isShareable: true)
                 .padding(.vertical)
                 .frame(width: UIScreen.main.bounds.width)
                 .background(Color(.systemGroupedBackground))
