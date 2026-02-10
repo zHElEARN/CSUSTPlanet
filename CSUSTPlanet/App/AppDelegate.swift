@@ -6,9 +6,7 @@
 //
 
 import Foundation
-import MMKV
 import OSLog
-import TipKit
 import UIKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {

@@ -56,6 +56,22 @@ enum CourseScheduleUtil {
         return formatter
     }()
 
+    /// 开学前多少天内显示具体倒计时，超过此天数则显示鼓励语
+    static let semesterStartThreshold: Int = 7
+
+    /// 假期鼓励语
+    static let holidayMessages: [String] = [
+        "好好享受假期吧！",
+        "假期余额充足。",
+        "今天只管玩！",
+        "享受当下的闲暇时光吧！",
+        "去看看外面的世界。",
+        "休息是为了走更远的路。",
+        "祝你今天玩得开心！",
+        "假期就该轻松点。",
+        "还没开学，再睡会？",
+    ]
+
     private static let calendar = Calendar.current
 
     // MARK: - Methods
@@ -322,6 +338,17 @@ enum CourseScheduleUtil {
         }
 
         return nil
+    }
+
+    /// 根据日期获取一条随机假期文案
+    /// - Parameter date: 基准日期，用于固定同一天的文案（或使用随机）
+    /// - Returns: 文案字符串
+    static func getHolidayMessage(for date: Date) -> String {
+        // 使用日期作为种子，保证同一天看到的文案是一致的，避免 Widget 刷新导致文案乱跳
+        let calendar = Calendar.current
+        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: date) ?? 0
+        let index = dayOfYear % holidayMessages.count
+        return holidayMessages[index]
     }
 }
 

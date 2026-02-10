@@ -30,6 +30,7 @@ struct CSUSTPlanetApp: App {
             .datastoreLocation(.applicationDefault),
         ])
 
+        BackgroundTaskHelper.shared.registerAllTasks()
         ActivityHelper.shared.setup()
         NotificationManager.shared.setup()
     }
@@ -53,6 +54,7 @@ struct CSUSTPlanetApp: App {
             ActivityHelper.shared.autoUpdateActivity()
             if !Self.isFirstAppear {
                 checkAndRelogin()
+                BackgroundTaskHelper.shared.cancelAllTasks()
                 TrackHelper.shared.event(category: "Lifecycle", action: "Active")
             }
             if Self.isFirstAppear {
@@ -62,6 +64,7 @@ struct CSUSTPlanetApp: App {
         case .inactive:
             Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
             ActivityHelper.shared.autoUpdateActivity()
+            BackgroundTaskHelper.shared.scheduleAllTasks()
             TrackHelper.shared.event(category: "Lifecycle", action: "Inactive")
             Self.lastBackgroundDate = .now
         case .background:

@@ -26,6 +26,10 @@
 	<string>$(CSUSTPLANET_MATOMO_USER_ID_SALT)</string>
 	<key>ConfigMatomoDimensionIDAppFullVersion</key>
 	<string>$(CSUSTPLANET_MATOMO_DIMENSION_ID_APP_FULL_VERSION)</string>
+	<key>ConfigBackgroundGradeID</key>
+	<string>$(CSUSTPLANET_BACKGROUND_GRADE_ID)</string>
+	<key>ConfigBackgroundElectricityID</key>
+	<string>$(CSUSTPLANET_BACKGROUND_ELECTRICITY_ID)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -69,6 +73,12 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(CSUSTPLANET_BACKGROUND_GRADE_ID)</string>
+		<string>$(CSUSTPLANET_BACKGROUND_ELECTRICITY_ID)</string>
 	</array>
 </dict>
 </plist>
