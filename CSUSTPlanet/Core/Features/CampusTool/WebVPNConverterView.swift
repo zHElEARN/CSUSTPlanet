@@ -190,7 +190,6 @@ struct WebVPNConverterView: View {
             }
         }
         .navigationTitle("WebVPN 转换")
-        .toolbarTitleDisplayMode(.inline)
         .sheet(isPresented: $isShowingSafari) {
             if let url = URL(string: resultUrl) {
                 SafariView(url: url)

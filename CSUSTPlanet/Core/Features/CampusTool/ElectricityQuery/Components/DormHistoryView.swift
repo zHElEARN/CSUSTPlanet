@@ -43,7 +43,6 @@ struct DormHistoryView: View {
             }
         }
         .navigationTitle("历史记录")
-        .navigationBarTitleDisplayMode(.inline)
         .onAppear { viewModel.updateSortedRecords(for: dorm) }
         .onChange(of: dorm.records) { viewModel.updateSortedRecords(for: dorm) }
         .trackView("DormHistory")
