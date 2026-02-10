@@ -13,10 +13,31 @@ import WidgetKit
 
 @MainActor
 class GradeAnalysisViewModel: NSObject, ObservableObject {
+    enum ChartType: String, CaseIterable {
+        case averageGrade = "平均成绩"
+        case gpa = "GPA"
+    }
+
+    enum DistributionChartType: String, CaseIterable {
+        case gradePoint = "绩点"
+        case gradeRange = "成绩段"
+    }
+
+    // 绩点到成绩段的映射
+    static let gradePointToRangeMap: [Double: String] = {
+        var map: [Double: String] = [:]
+        for range in ColorUtil.gradeRanges {
+            map[range.point] = range.range
+        }
+        return map
+    }()
+
     @Published var errorMessage: String = ""
     @Published var warningMessage: String = ""
     @Published var data: Cached<[EduHelper.CourseGrade]>?
     @Published var weightedAverageGrade: Double?
+    @Published var selectedChartType: ChartType = .averageGrade
+    @Published var selectedDistributionChartType: DistributionChartType = .gradePoint
 
     @Published var isLoading: Bool = false
     @Published var isShowingWarning: Bool = false
