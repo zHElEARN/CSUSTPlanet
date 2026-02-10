@@ -165,7 +165,13 @@ struct CourseScheduleView: View {
             headerView(for: week, semesterStartDate: semesterStartDate)
                 .apply { view in
                     if #available(iOS 26.0, *) {
-                        view.glassEffect()
+                        view
+                            .background {
+                                Rectangle()
+                                    .fill(.clear)
+                                    .glassEffect()
+                                    .padding(.horizontal, 4)
+                            }
                     } else {
                         view.background(.ultraThinMaterial)
                     }
