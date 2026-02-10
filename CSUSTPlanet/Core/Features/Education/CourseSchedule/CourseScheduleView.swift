@@ -139,30 +139,33 @@ struct CourseScheduleView: View {
         .padding(.horizontal)
         .padding(.vertical, 8)
         .background(Color(.systemBackground))
-        .overlay(
-            Divider().opacity(0.6),
-            alignment: .bottom
-        )
+        // .overlay(Divider().opacity(0.6), alignment: .bottom)
     }
 
     // MARK: - 单周课表页面
 
     @ViewBuilder
     private func tableView(for week: Int, semesterStartDate: Date, weeklyCourses: [Int: [CourseDisplayInfo]]) -> some View {
-        VStack(spacing: 0) {
+        // 课表网格
+        ScrollView {
+            ZStack(alignment: .topLeading) {
+                // 背景网格
+                backgroundGrid
+
+                // 课程视图
+                coursesOverlay(for: week, weeklyCourses: weeklyCourses)
+            }
+        }
+        .safeAreaInset(edge: .top) {
             // 星期头部（日期和周几）
             headerView(for: week, semesterStartDate: semesterStartDate)
-
-            // 课表网格
-            ScrollView {
-                ZStack(alignment: .topLeading) {
-                    // 背景网格
-                    backgroundGrid
-
-                    // 课程视图
-                    coursesOverlay(for: week, weeklyCourses: weeklyCourses)
+                .apply { view in
+                    if #available(iOS 26.0, *) {
+                        view.glassEffect()
+                    } else {
+                        view.background(.ultraThinMaterial)
+                    }
                 }
-            }
         }
     }
 
@@ -210,7 +213,6 @@ struct CourseScheduleView: View {
         .padding(.top, 6)
         .padding(.bottom, 6)
         .padding(.horizontal, 5)
-        .background(Color(.systemBackground))
     }
 
     // MARK: - 背景网格视图
