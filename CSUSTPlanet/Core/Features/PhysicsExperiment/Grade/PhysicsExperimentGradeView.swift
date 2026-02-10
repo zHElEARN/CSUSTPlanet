@@ -41,7 +41,13 @@ struct PhysicsExperimentGradeView: View {
             viewModel.loadGrades()
         }
         .navigationTitle("大物实验成绩")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data.count)项成绩")
+            } else {
+                view
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {

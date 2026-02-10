@@ -68,7 +68,13 @@ struct UrgentCoursesView: View {
             }
         }
         .navigationTitle("待提交作业")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data?.value.courses.count ?? 0)门课程")
+            } else {
+                view
+            }
+        }
         .trackView("UrgentCourses")
     }
 }

@@ -40,6 +40,13 @@ struct CourseScheduleView: View {
             }
         }
         .navigationTitle("我的课表")
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle(viewModel.selectedSemester == nil ? "默认学期" : "学期" + (viewModel.selectedSemester ?? ""))
+            } else {
+                view
+            }
+        }
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -97,14 +104,11 @@ struct CourseScheduleView: View {
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
 
-                HStack(spacing: 4) {
+                if #unavailable(iOS 26.0) {
                     Text(viewModel.selectedSemester ?? "默认学期")
-                    if viewModel.realCurrentWeek == nil {
-                        Text("• 非学期内")
-                    }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .font(.caption)
-                .foregroundColor(.secondary)
             }
 
             Spacer()

@@ -207,6 +207,13 @@ struct GradeQueryView: View {
         }
         .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
         .navigationTitle("成绩查询")
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data?.value.count ?? 0)门课程成绩")
+            } else {
+                view
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
         .environment(\.editMode, .constant(viewModel.isSelectionMode ? .active : .inactive))
         .trackView("GradeQuery")

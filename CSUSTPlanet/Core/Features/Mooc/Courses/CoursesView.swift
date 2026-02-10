@@ -39,7 +39,14 @@ struct CoursesView: View {
             viewModel.loadCourses()
         }
         .navigationTitle("课程列表")
-        .toolbarTitleDisplayMode(.large)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.courses.count)门课程")
+            } else {
+                view
+            }
+        }
+        // .toolbarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {

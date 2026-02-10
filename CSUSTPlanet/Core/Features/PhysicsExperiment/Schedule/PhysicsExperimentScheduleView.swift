@@ -34,7 +34,13 @@ struct PhysicsExperimentScheduleView: View {
             }
         }
         .navigationTitle("大物实验安排")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data?.value.count ?? 0)个实验")
+            } else {
+                view
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { isLoginPresented = true }) {

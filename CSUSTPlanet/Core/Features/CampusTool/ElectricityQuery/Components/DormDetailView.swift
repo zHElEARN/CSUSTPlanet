@@ -90,7 +90,6 @@ struct DormDetailView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("宿舍详情")
-        .navigationBarTitleDisplayMode(.inline)
         .alert("清除记录", isPresented: $showDeleteAlert) {
             Button("取消", role: .cancel) {}
             Button("确认清除", role: .destructive) {

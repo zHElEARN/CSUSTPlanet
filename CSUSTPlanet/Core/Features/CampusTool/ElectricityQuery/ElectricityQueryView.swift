@@ -35,7 +35,13 @@ struct ElectricityQueryView: View {
             }
         }
         .navigationTitle("电量查询")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(dorms.count)个宿舍")
+            } else {
+                view
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(action: { isShowingAddDormSheet = true }) {

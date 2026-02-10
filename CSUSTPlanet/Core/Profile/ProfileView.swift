@@ -179,7 +179,6 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("我的")
-            // .toolbarTitleDisplayMode(.inline)
             .sheet(isPresented: $viewModel.isLoginSheetPresented) {
                 SSOLoginView(isShowingLoginSheet: $viewModel.isLoginSheetPresented)
             }
