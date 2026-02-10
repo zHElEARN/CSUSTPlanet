@@ -14,23 +14,9 @@ struct ProfileView: View {
     @EnvironmentObject var globalManager: GlobalManager
     @EnvironmentObject var notificationManager: NotificationManager
 
-    @State private var isLoginSheetPresented = false
-    @State private var isWebVPNSheetPresented = false
-    @State private var isWebVPNDisableAlertPresented = false
+    @StateObject private var viewModel = ProfileViewModel()
 
     var body: some View {
-        let webVPNToggleBinding = Binding<Bool>(
-            get: { globalManager.isWebVPNModeEnabled },
-            set: { newValue in
-                if newValue == true && !globalManager.isWebVPNModeEnabled {
-                    isWebVPNSheetPresented = true
-                } else if newValue == false && globalManager.isWebVPNModeEnabled {
-                    isWebVPNDisableAlertPresented = true
-                } else {
-                    globalManager.isWebVPNModeEnabled = newValue
-                }
-            }
-        )
 
         NavigationStack {
             Form {
@@ -114,9 +100,9 @@ struct ProfileView: View {
                             .disabled(!authManager.isSSOLoggedIn)
                         }
 
-                        Button(action: authManager.ssoLogout) {
+                        Button(action: viewModel.showLogoutAlert) {
                             HStack {
-                                ColoredLabel(title: "全部退出登录", iconName: "arrow.right.circle", color: .red, textColor: .red)
+                                ColoredLabel(title: "退出登录", iconName: "arrow.right.circle", color: .red, textColor: .red)
                                 Spacer()
                                 if authManager.isSSOLoggingOut {
                                     ProgressView()
@@ -133,7 +119,7 @@ struct ProfileView: View {
                         }
                     } else {
                         Button(action: {
-                            isLoginSheetPresented = true
+                            viewModel.isLoginSheetPresented = true
                         }) {
                             HStack {
                                 ColoredLabel(title: "登录统一认证账号", iconName: "person.crop.circle.badge.plus", color: .blue)
@@ -161,23 +147,21 @@ struct ProfileView: View {
                         .frame(width: 150)
                     }
 
-                    Toggle(isOn: webVPNToggleBinding) {
+                    Toggle(isOn: $viewModel.isWebVPNEnabled) {
                         ColoredLabel(title: "开启WebVPN模式（实验）", description: "通过WebVPN模式访问校园网资源")
                     }
 
-                    Toggle(isOn: $globalManager.isNotificationEnabled) {
+                    Toggle(isOn: $viewModel.isNotificationEnabled) {
                         ColoredLabel(title: "开启通知", description: "用于宿舍电量定时查询提醒通知")
                     }
-                    .onChange(of: globalManager.isNotificationEnabled, { _, _ in NotificationManager.shared.toggle() })
 
                     Toggle(isOn: $globalManager.isBackgroundTaskEnabled) {
                         ColoredLabel(title: "开启后台任务", description: "开启后应用可以在后台定期刷新课程，并在成绩更新时发送通知（后台任务受系统调度）")
                     }
 
-                    Toggle(isOn: $globalManager.isLiveActivityEnabled) {
+                    Toggle(isOn: $viewModel.isLiveActivityEnabled) {
                         ColoredLabel(title: "启用实时活动/灵动岛", description: "实时活动/灵动岛将会显示：上课前20分钟、上课中和下课后5分钟的课程状态")
                     }
-                    .onChange(of: globalManager.isLiveActivityEnabled, { _, _ in ActivityHelper.shared.autoUpdateActivity() })
                 }
 
                 Section(header: Text("帮助与支持")) {
@@ -196,20 +180,23 @@ struct ProfileView: View {
             }
             .navigationTitle("我的")
             .toolbarTitleDisplayMode(.inline)
-            .sheet(isPresented: $isLoginSheetPresented) {
-                SSOLoginView(isShowingLoginSheet: $isLoginSheetPresented)
+            .sheet(isPresented: $viewModel.isLoginSheetPresented) {
+                SSOLoginView(isShowingLoginSheet: $viewModel.isLoginSheetPresented)
             }
-            .sheet(isPresented: $isWebVPNSheetPresented) {
-                WebVPNGuideView(isPresented: $isWebVPNSheetPresented)
+            .sheet(isPresented: $viewModel.isWebVPNSheetPresented) {
+                WebVPNGuideView(isPresented: $viewModel.isWebVPNSheetPresented)
             }
-            .alert("关闭 WebVPN 模式", isPresented: $isWebVPNDisableAlertPresented) {
+            .alert("关闭 WebVPN 模式", isPresented: $viewModel.isWebVPNDisableAlertPresented) {
                 Button("取消", role: .cancel) {}
-                Button("关闭并重启", role: .destructive) {
-                    globalManager.isWebVPNModeEnabled = false
-                    exit(0)
-                }
+                Button("关闭并重启", role: .destructive, action: viewModel.dismissWebVPNDisableAlert)
             } message: {
                 Text("关闭 WebVPN 模式需要重启应用才能生效。")
+            }
+            .alert("退出登录", isPresented: $viewModel.isLogoutAlertPresented) {
+                Button("取消", role: .cancel) {}
+                Button("退出", role: .destructive, action: viewModel.confirmLogout)
+            } message: {
+                Text("确定要退出登录吗？")
             }
             .alert("错误", isPresented: $notificationManager.isShowingError) {
                 Button("确定", role: .cancel) {}
