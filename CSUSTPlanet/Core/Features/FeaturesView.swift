@@ -14,6 +14,7 @@ struct FeaturesView: View {
     @Environment(\.horizontalSizeClass) var sizeClass
 
     @State private var isPhysicsExperimentLoginPresented: Bool = false
+    @State private var isAnnualReviewPresented: Bool = false
     @StateObject var physicsExperimentManager = PhysicsExperimentManager.shared
 
     private let spacing: CGFloat = 12
@@ -26,7 +27,7 @@ struct FeaturesView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: sizeClass == .regular ? 32 : 28) {
-                    AnnualReviewBanner()
+                    AnnualReviewBanner(isPresented: $isAnnualReviewPresented)
                         .padding(.top, 10)
 
                     educationalSystemSection
@@ -60,6 +61,9 @@ struct FeaturesView: View {
             .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
                 PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
                     .environmentObject(physicsExperimentManager)
+            }
+            .fullScreenCover(isPresented: $isAnnualReviewPresented) {
+                AnnualReviewView(isPresented: $isAnnualReviewPresented)
             }
             .trackView("Features")
         }
@@ -363,24 +367,12 @@ private struct StatusBadge: View {
 // MARK: - 2025 年度总结 Banner
 
 private struct AnnualReviewBanner: View {
-    @Namespace private var namespace
-    // 1. 定义一个 refreshID 用于强制刷新视图状态
-    @State private var refreshID = UUID()
+    @Binding var isPresented: Bool
 
     var body: some View {
-        TrackLink(
-            destination: AnnualReviewView().apply { view in
-                if #available(iOS 18.0, *) {
-                    view.navigationTransition(.zoom(sourceID: "annualReview", in: namespace))
-                        // 2. 在目标页面消失时，更新 refreshID
-                        .onDisappear {
-                            refreshID = UUID()
-                        }
-                } else {
-                    view
-                }
-            }
-        ) {
+        Button {
+            isPresented = true
+        } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(
@@ -448,22 +440,9 @@ private struct AnnualReviewBanner: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 20)
             }
-            // 3. 将 ID 绑定到 ZStack 上
-            // 当 refreshID 变化时，这个视图会被销毁并重新创建，从而重置 transitionSource 状态
-            .id(refreshID)
             .background(Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .contentShape(.rect(cornerRadius: 20, style: .continuous))
-            .apply { view in
-                if #available(iOS 18.0, *) {
-                    view.matchedTransitionSource(id: "annualReview", in: namespace) { configuration in
-                        configuration.background(Color.clear)
-                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    }
-                } else {
-                    view
-                }
-            }
         }
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, 20)
