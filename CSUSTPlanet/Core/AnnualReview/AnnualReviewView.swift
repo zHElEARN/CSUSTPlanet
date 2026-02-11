@@ -12,51 +12,149 @@ struct AnnualReviewView: View {
     @StateObject private var viewModel = AnnualReviewViewModel()
     @Binding var isPresented: Bool
 
+    @State private var currentScrollID: Int? = 0
+
+    @State private var isScrollLocked: Bool = false
+    @State private var animatedPages: Set<Int> = []
+
     var body: some View {
-        NavigationStack {
+        ZStack(alignment: .topTrailing) {
             Group {
                 if viewModel.isLoading {
                     ProgressView("正在生成年度报告...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let data = viewModel.reviewData {
-                    TabView {
-                        ProfilePage(data: data)
-                            .tag(0)
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ProfilePage(
+                                data: data,
+                                startAnimation: currentScrollID == 0,
+                                onAnimationEnd: {
+                                    unlockScroll(for: 0)
+                                }
+                            )
+                            .containerRelativeFrame([.horizontal, .vertical])
+                            .id(0)
 
-                        TimeSchedulePage(data: data)
-                            .tag(1)
+                            TimeSchedulePage(data: data)
+                                .containerRelativeFrame([.horizontal, .vertical])
+                                .id(1)
 
-                        SpacePeoplePage(data: data)
-                            .tag(2)
+                            SpacePeoplePage(data: data)
+                                .containerRelativeFrame([.horizontal, .vertical])
+                                .id(2)
 
-                        if data.moocAvailable {
-                            MoocPage(data: data)
-                                .tag(3)
+                            if data.moocAvailable {
+                                MoocPage(data: data)
+                                    .containerRelativeFrame([.horizontal, .vertical])
+                                    .id(3)
+                            }
+
+                            GradesPage(data: data)
+                                .containerRelativeFrame([.horizontal, .vertical])
+                                .id(data.moocAvailable ? 4 : 3)
+
+                            DormPage(data: data)
+                                .containerRelativeFrame([.horizontal, .vertical])
+                                .id(data.moocAvailable ? 5 : 4)
                         }
-                        GradesPage(data: data)
-                            .tag(4)
-
-                        DormPage(data: data)
-                            .tag(5)
+                        .scrollTargetLayout()
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .always))
-                    .indexViewStyle(.page(backgroundDisplayMode: .always))
+                    .scrollTargetBehavior(.paging)
+                    .scrollIndicators(.hidden)
+                    .scrollPosition(id: $currentScrollID)
+                    .ignoresSafeArea(edges: .bottom)
+                    .scrollDisabled(isScrollLocked)
+                    .onChange(of: currentScrollID) { oldValue, newID in
+                        if let id = newID {
+                            handlePageChange(pageID: id)
+                        }
+                    }
+
+                    GeometryReader { proxy in
+                        let totalPages = data.moocAvailable ? 6 : 5
+                        let progress = CGFloat((currentScrollID ?? 0) + 1) / CGFloat(totalPages)
+
+                        ZStack(alignment: .top) {
+                            Capsule()
+                                .frame(width: 4)
+                                .foregroundStyle(.gray.opacity(0.3))
+
+                            Capsule()
+                                .frame(width: 4, height: proxy.size.height * progress)
+                                .foregroundStyle(.blue)
+                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: currentScrollID)
+                        }
+                        .frame(maxHeight: .infinity)
+                    }
+                    .frame(width: 10)
+                    .padding(.trailing, 2)
+                    .padding(.vertical, 40)
                 } else {
                     ContentUnavailableView("无数据", systemImage: "xmark.bin")
                 }
             }
-            .navigationTitle("2025 年度报告")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭") {
-                        isPresented = false
+
+            Button {
+                isPresented = false
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Color.primary)
+                    .frame(width: 32, height: 32)
+                    .padding(6)
+                    .background {
+                        if #available(iOS 26.0, *) {
+                            Color.clear
+                        } else {
+                            Circle()
+                                .fill(.regularMaterial)
+                                .stroke(.primary.opacity(0.05), lineWidth: 0.5)
+                                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        }
                     }
+                    .contentShape(Circle())
+            }
+            .apply { view in
+                if #available(iOS 26.0, *) {
+                    view
+                        .background(Circle().fill(.white.opacity(0.01)))
+                        .glassEffect()
+                        .clipShape(Circle())
+                } else {
+                    view
                 }
             }
-            .onAppear {
-                viewModel.compute()
+            .padding(.top, 15)
+            .padding(.trailing, 20)
+        }
+        .onAppear {
+            viewModel.compute()
+            if currentScrollID == 0 {
+                lockScroll(for: 0)
             }
         }
+    }
+
+    private func handlePageChange(pageID: Int) {
+        if !animatedPages.contains(pageID) {
+            if pageID == 0 {
+                lockScroll(for: pageID)
+            }
+        }
+    }
+
+    private func lockScroll(for pageID: Int) {
+        print("🔒 锁定滚动: Page \(pageID)")
+        isScrollLocked = true
+    }
+
+    private func unlockScroll(for pageID: Int) {
+        print("🔓 解锁滚动: Page \(pageID)")
+        withAnimation {
+            isScrollLocked = false
+        }
+        animatedPages.insert(pageID)
     }
 }
 
