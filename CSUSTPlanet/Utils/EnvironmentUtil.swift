@@ -1,5 +1,5 @@
 //
-//  AppEnvironmentUtil.swift
+//  EnvironmentUtil.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/7/19.
@@ -13,7 +13,7 @@ enum AppEnvironment: String {
     case appStore = "AppStore"
 }
 
-enum AppEnvironmentUtil {
+enum EnvironmentUtil {
     static let environment: AppEnvironment = {
         #if DEBUG
             return .debug

@@ -12,15 +12,19 @@ struct CoursesView: View {
     @StateObject var viewModel = CoursesViewModel()
 
     var body: some View {
-        Form {
-            if viewModel.isLoading {
-                ProgressView("加载中...")
-                    .progressViewStyle(.circular)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            } else if viewModel.filteredCourses.isEmpty {
-                emptyStateSection
+        Group {
+            if viewModel.filteredCourses.isEmpty {
+                ContentUnavailableView("暂无课程信息", systemImage: "book.closed", description: Text(viewModel.searchText.isEmpty ? "没有找到任何课程信息" : "没有找到匹配的课程"))
             } else {
-                courseListSection
+                Form {
+                    Section {
+                        ForEach(viewModel.filteredCourses, id: \.self) { course in
+                            TrackLink(destination: CourseDetailView(course: course)) {
+                                courseCard(course: course)
+                            }
+                        }
+                    }
+                }
             }
         }
         .searchable(text: $viewModel.searchText, prompt: "搜索课程")
@@ -35,48 +39,28 @@ struct CoursesView: View {
             viewModel.loadCourses()
         }
         .navigationTitle("课程列表")
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.courses.count)门课程")
+            } else {
+                view
+            }
+        }
+        // .toolbarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: viewModel.loadCourses) {
-                    Label("刷新课程列表", systemImage: "arrow.clockwise")
+                if viewModel.isLoading {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .scaleEffect(0.9, anchor: .center)
+                } else {
+                    Button(action: viewModel.loadCourses) {
+                        Label("刷新", systemImage: "arrow.clockwise")
+                    }
                 }
-                .disabled(viewModel.isLoading)
             }
         }
         .trackView("Courses")
-    }
-
-    // MARK: - Form Sections
-
-    private var emptyStateSection: some View {
-        Section {
-            VStack(spacing: 8) {
-                Image(systemName: "book.closed")
-                    .font(.system(size: 40))
-                    .foregroundColor(.secondary)
-                    .padding(.bottom, 8)
-
-                Text("暂无课程信息")
-                    .font(.headline)
-
-                Text(viewModel.searchText.isEmpty ? "没有找到任何课程信息" : "没有找到匹配的课程")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-        }
-    }
-
-    private var courseListSection: some View {
-        Section {
-            ForEach(viewModel.filteredCourses, id: \.self) { course in
-                TrackLink(destination: CourseDetailView(course: course)) {
-                    courseCard(course: course)
-                }
-            }
-        }
     }
 
     private func courseCard(course: MoocHelper.Course) -> some View {

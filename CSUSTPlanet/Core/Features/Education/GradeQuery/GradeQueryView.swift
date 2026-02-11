@@ -10,7 +10,6 @@ import CSUSTKit
 import SwiftUI
 
 struct GradeQueryView: View {
-    @Environment(\.colorScheme) var colorScheme: ColorScheme
     @StateObject var viewModel = GradeQueryViewModel()
 
     // MARK: - Stat Item
@@ -181,8 +180,15 @@ struct GradeQueryView: View {
             statsSection
                 .padding(.horizontal)
                 .padding(.vertical)
-                .background(.ultraThinMaterial)
-
+                .apply { view in
+                    if #available(iOS 26.0, *) {
+                        view
+                            .glassEffect()
+                            .padding(.horizontal)
+                    } else {
+                        view.background(.ultraThinMaterial)
+                    }
+                }
         }
         .searchable(text: $viewModel.searchText, prompt: "搜索课程")
         .toast(isPresenting: $viewModel.isShowingError) {
@@ -201,6 +207,13 @@ struct GradeQueryView: View {
         }
         .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
         .navigationTitle("成绩查询")
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data?.value.count ?? 0)门课程成绩")
+            } else {
+                view
+            }
+        }
         .navigationBarTitleDisplayMode(.inline)
         .environment(\.editMode, .constant(viewModel.isSelectionMode ? .active : .inactive))
         .trackView("GradeQuery")
@@ -225,16 +238,15 @@ struct GradeQueryView: View {
             }
         }
         ToolbarItem(placement: .primaryAction) {
-            Button(action: { viewModel.loadCourseGrades() }) {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
-                } else {
+            if viewModel.isLoading {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .scaleEffect(0.9, anchor: .center)
+            } else {
+                Button(action: { viewModel.loadCourseGrades() }) {
                     Label("查询", systemImage: "arrow.clockwise")
                 }
             }
-            .disabled(viewModel.isLoading)
         }
     }
 

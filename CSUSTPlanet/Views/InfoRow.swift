@@ -5,12 +5,9 @@
 //  Created by Zhe_Learn on 2025/10/29.
 //
 
-import InjectHotReload
 import SwiftUI
 
 struct InfoRow: View {
-    @ObserveInjection var inject
-
     init(icon: (String, Color)? = nil, label: String, value: String) {
         self.icon = icon
         self.label = label
@@ -60,6 +57,5 @@ struct InfoRow: View {
                 }
             }
         }
-        .enableInjection()
     }
 }

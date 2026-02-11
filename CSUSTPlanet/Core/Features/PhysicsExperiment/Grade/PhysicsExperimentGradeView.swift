@@ -14,11 +14,21 @@ struct PhysicsExperimentGradeView: View {
     @State private var isLoginPresented: Bool = false
 
     var body: some View {
-        Form {
+        Group {
             if viewModel.data.isEmpty {
-                emptyStateSection
+                ContentUnavailableView(
+                    "暂无成绩信息",
+                    systemImage: "chart.bar.doc.horizontal",
+                    description: Text("没有找到任何大物实验成绩信息")
+                )
             } else {
-                gradeListSection
+                Form {
+                    Section {
+                        ForEach(viewModel.data, id: \.itemName) { grade in
+                            gradeCard(grade: grade)
+                        }
+                    }
+                }
             }
         }
         .toast(isPresenting: $viewModel.isShowingError) {
@@ -41,7 +51,13 @@ struct PhysicsExperimentGradeView: View {
             viewModel.loadGrades()
         }
         .navigationTitle("大物实验成绩")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data.count)项成绩")
+            } else {
+                view
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
@@ -67,35 +83,6 @@ struct PhysicsExperimentGradeView: View {
     }
 
     // MARK: - Form Sections
-
-    private var emptyStateSection: some View {
-        Section {
-            VStack(spacing: 8) {
-                Image(systemName: "chart.bar.doc.horizontal")
-                    .font(.system(size: 40))
-                    .foregroundColor(.secondary)
-                    .padding(.bottom, 8)
-
-                Text("暂无成绩信息")
-                    .font(.headline)
-
-                Text("没有找到任何大物实验成绩信息")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-        }
-    }
-
-    private var gradeListSection: some View {
-        Section {
-            ForEach(viewModel.data, id: \.itemName) { grade in
-                gradeCard(grade: grade)
-            }
-        }
-    }
 
     private func gradeCard(grade: PhysicsExperimentHelper.CourseGrade) -> some View {
         VStack(alignment: .leading, spacing: 10) {

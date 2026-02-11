@@ -25,8 +25,8 @@ class SSOLoginViewModel: ObservableObject {
 
     @Published var selectedTab = 0
 
-    @Published var username: String = KeychainHelper.shared.ssoUsername ?? ""
-    @Published var password: String = KeychainHelper.shared.ssoPassword ?? ""
+    @Published var username: String = KeychainUtil.ssoUsername ?? ""
+    @Published var password: String = KeychainUtil.ssoPassword ?? ""
     @Published var isPasswordVisible: Bool = false
 
     @Published var captchaImageData: Data? = nil
@@ -146,8 +146,8 @@ class SSOLoginViewModel: ObservableObject {
                 isShowingBrowser = false
                 isShowingLoginSheet = false
                 if mode == .username {
-                    KeychainHelper.shared.ssoUsername = username
-                    KeychainHelper.shared.ssoPassword = password
+                    KeychainUtil.ssoUsername = username
+                    KeychainUtil.ssoPassword = password
                 }
             } catch {
                 isShowingError = true

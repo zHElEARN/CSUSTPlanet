@@ -17,7 +17,11 @@ struct PhysicsExperimentScheduleView: View {
     var body: some View {
         Group {
             if viewModel.data?.value.isEmpty ?? true {
-                emptyStateView
+                ContentUnavailableView(
+                    "暂无实验安排",
+                    systemImage: "flask",
+                    description: Text("没有找到任何大物实验安排信息")
+                )
             } else {
                 List {
                     if let data = viewModel.data {
@@ -34,7 +38,13 @@ struct PhysicsExperimentScheduleView: View {
             }
         }
         .navigationTitle("大物实验安排")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data?.value.count ?? 0)个实验")
+            } else {
+                view
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { isLoginPresented = true }) {
@@ -70,14 +80,6 @@ struct PhysicsExperimentScheduleView: View {
             viewModel.loadSchedules()
         }
         .trackView("PhysicsExperimentSchedule")
-    }
-
-    private var emptyStateView: some View {
-        ContentUnavailableView(
-            "暂无实验安排",
-            systemImage: "flask",
-            description: Text("没有找到任何大物实验安排信息")
-        )
     }
 }
 

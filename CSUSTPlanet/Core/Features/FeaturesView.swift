@@ -5,12 +5,9 @@
 //  Created by Zhe_Learn on 2025/7/8.
 //
 
-import InjectHotReload
 import SwiftUI
 
 struct FeaturesView: View {
-    @ObserveInjection var inject
-
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var globalManager: GlobalManager
 
@@ -19,56 +16,62 @@ struct FeaturesView: View {
     @State private var isPhysicsExperimentLoginPresented: Bool = false
     @StateObject var physicsExperimentManager = PhysicsExperimentManager.shared
 
-    private let spacing: CGFloat = 16
+    private let spacing: CGFloat = 12
 
     private var horizontalPadding: CGFloat {
         return sizeClass == .regular ? 32 : 20
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: sizeClass == .regular ? 32 : 28) {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: sizeClass == .regular ? 32 : 28) {
 
-                educationalSystemSection
+                    educationalSystemSection
 
-                moocSection
+                    moocSection
 
-                campusToolsSection
+                    campusToolsSection
 
-                if sizeClass == .regular {
-                    HStack(alignment: .top, spacing: spacing) {
-                        physicsSection
-                        examQuerySection
+                    if sizeClass == .regular {
+                        HStack(alignment: .top, spacing: spacing) {
+                            physicsSection
+                            examQuerySection
+                        }
+                        .padding(.horizontal, horizontalPadding)
+                    } else {
+                        VStack(spacing: spacing) {
+                            physicsSection
+                            examQuerySection
+                        }
+                        .padding(.horizontal, horizontalPadding)
                     }
-                    .padding(.horizontal, horizontalPadding)
-                } else {
-                    VStack(spacing: spacing) {
-                        physicsSection
-                        examQuerySection
-                    }
-                    .padding(.horizontal, horizontalPadding)
+
+                    Color.clear.frame(height: 20)
                 }
-
-                Color.clear.frame(height: 20)
+                .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
+                .frame(maxWidth: .infinity)
+                .padding(.top, sizeClass == .regular ? 20 : 0)
             }
-            .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
-            .frame(maxWidth: .infinity)
-            .padding(.top, sizeClass == .regular ? 20 : 0)
+            .navigationTitle("全部功能")
+            .background(Color(uiColor: .systemGroupedBackground))
+            .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
+                PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
+                    .environmentObject(physicsExperimentManager)
+            }
+            .trackView("Features")
         }
-        .background(Color(uiColor: .systemGroupedBackground))
-        .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
-            PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
-                .environmentObject(physicsExperimentManager)
+        .tabItem {
+            Image(uiImage: UIImage(systemName: "square.grid.2x2")!)
+            Text("全部功能")
         }
-        .enableInjection()
-        .trackView("Features")
     }
 
-    // MARK: - Extracted Subviews (各个板块)
+    // MARK: - Extracted Subviews
 
     private var educationalSystemSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "教务系统", icon: "graduationcap.fill", color: .blue) {
+            sectionHeader(title: "教务系统", color: .blue) {
                 Group {
                     if authManager.isSSOLoggingIn {
                         StatusBadge(text: "统一身份认证登录中")
@@ -84,11 +87,11 @@ struct FeaturesView: View {
                 }
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: spacing)], spacing: spacing) {
-                HeroCard(destination: CourseScheduleView(), title: "我的课表", subtitle: "每周课程", icon: "calendar", gradient: .purple)
-                HeroCard(destination: GradeQueryView(), title: "成绩查询", subtitle: "GPA / 成绩详细", icon: "doc.text.magnifyingglass", gradient: .blue)
-                HeroCard(destination: ExamScheduleView(), title: "考试安排", subtitle: "考场 / 时间", icon: "pencil.and.outline", gradient: .orange)
-                HeroCard(destination: GradeAnalysisView(), title: "成绩分析", subtitle: "可视化图表", icon: "chart.bar.xaxis", gradient: .green)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
+                HeroCard(destination: CourseScheduleView(), title: "我的课表", icon: "calendar", color: .purple)
+                HeroCard(destination: GradeQueryView(), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
+                HeroCard(destination: ExamScheduleView(), title: "考试安排", icon: "pencil.and.outline", color: .orange)
+                HeroCard(destination: GradeAnalysisView(), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
             }
         }
         .padding(.horizontal, horizontalPadding)
@@ -96,7 +99,7 @@ struct FeaturesView: View {
 
     private var moocSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "网络课程中心", icon: "book.closed.fill", color: .indigo) {
+            sectionHeader(title: "网络课程中心", color: .indigo) {
                 Group {
                     if authManager.isSSOLoggingIn {
                         StatusBadge(text: "统一身份认证登录中")
@@ -112,9 +115,9 @@ struct FeaturesView: View {
                 }
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: spacing)], spacing: spacing) {
-                MediumCard(destination: CoursesView(), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
-                MediumCard(destination: UrgentCoursesView(), title: "待提交作业", icon: "list.bullet.clipboard", color: .red)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
+                HeroCard(destination: CoursesView(), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
+                HeroCard(destination: UrgentCoursesView(), title: "待提交作业", icon: "list.bullet.clipboard", color: .red)
             }
         }
         .padding(.horizontal, horizontalPadding)
@@ -122,7 +125,7 @@ struct FeaturesView: View {
 
     private var campusToolsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader(title: "校园工具", icon: "wrench.and.screwdriver.fill", color: .orange)
+            sectionHeader(title: "校园工具", color: .orange)
                 .padding(.horizontal, horizontalPadding)
 
             if sizeClass == .regular {
@@ -154,7 +157,7 @@ struct FeaturesView: View {
 
     private var physicsSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "大学物理实验", icon: "atom", color: .purple) {
+            sectionHeader(title: "大学物理实验", color: .purple) {
                 Button {
                     isPhysicsExperimentLoginPresented = true
                 } label: {
@@ -188,7 +191,7 @@ struct FeaturesView: View {
 
     private var examQuerySection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "其他考试查询", icon: "magnifyingglass.circle", color: .indigo)
+            sectionHeader(title: "其他考试查询", color: .indigo)
 
             VStack(spacing: 0) {
                 ToolRow(destination: CETView(), title: "四六级查询", icon: "character.book.closed", color: .indigo)
@@ -206,15 +209,10 @@ struct FeaturesView: View {
     // MARK: - Components Helper
 
     @ViewBuilder
-    private func sectionHeader<Content: View>(title: String, icon: String, color: Color, @ViewBuilder actions: () -> Content = { EmptyView() }) -> some View {
+    private func sectionHeader<Content: View>(title: String, color: Color, @ViewBuilder actions: () -> Content = { EmptyView() }) -> some View {
         HStack(alignment: .center) {
-            Label {
-                Text(title)
-                    .font(.title3.bold())
-            } icon: {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-            }
+            Text(title)
+                .font(.title3.bold())
 
             Spacer()
 
@@ -224,65 +222,7 @@ struct FeaturesView: View {
 }
 
 // MARK: - Custom Card Components
-
 private struct HeroCard<Destination: View>: View {
-    @Namespace var namespace
-
-    let destination: Destination
-    let title: String
-    let subtitle: String
-    let icon: String
-    let gradient: Color
-
-    var body: some View {
-        TrackLink(destination: destination) {
-            ZStack(alignment: .bottomLeading) {
-                // Background
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [gradient.opacity(0.85), gradient],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                // Decor Icon
-                Image(systemName: icon)
-                    .font(.system(size: 60))
-                    .foregroundColor(.white.opacity(0.15))
-                    .offset(x: 10, y: 10)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-
-                // Content
-                VStack(alignment: .leading, spacing: 4) {
-                    Image(systemName: icon)
-                        .font(.title2)
-                        .foregroundColor(.white)
-                        .padding(.bottom, 8)
-
-                    Text(title)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    Text(subtitle)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(1)
-                }
-                .padding(16)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: gradient.opacity(0.3), radius: 8, x: 0, y: 4)
-            .frame(height: 120)
-        }
-    }
-}
-
-private struct MediumCard<Destination: View>: View {
     let destination: Destination
     let title: String
     let icon: String
@@ -290,29 +230,32 @@ private struct MediumCard<Destination: View>: View {
 
     var body: some View {
         TrackLink(destination: destination) {
-            HStack {
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundColor(color)
-                    .frame(width: 40, height: 40)
-                    .background(color.opacity(0.12))
-                    .cornerRadius(10)
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(color.gradient)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(.white.opacity(0.1), lineWidth: 0.5)
+                    )
 
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                VStack(alignment: .leading) {
+                    Image(systemName: icon)
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(height: 28)
 
-                Spacer()
+                    Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.secondary.opacity(0.5))
+                    Text(title)
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(.white.opacity(0.95))
+                        .frame(height: 20)
+                }
+                .padding(14)
             }
-            .padding(12)
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
-            .cornerRadius(14)
-            .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
         }
+        .buttonStyle(PlainButtonStyle())
+        .frame(height: 90)
     }
 }
 
@@ -343,29 +286,11 @@ private struct ServiceSquare<Destination: View>: View {
     }
 }
 
-private struct ToolRow<Destination: View, Accessory: View>: View {
+private struct ToolRow<Destination: View>: View {
     let destination: Destination
     let title: String
     let icon: String
     let color: Color
-    var accessory: (() -> Accessory)? = nil
-
-    init(destination: Destination, title: String, icon: String, color: Color, @ViewBuilder accessory: @escaping () -> Accessory) {
-        self.destination = destination
-        self.title = title
-        self.icon = icon
-        self.color = color
-        self.accessory = accessory
-    }
-
-    // Overload for no accessory
-    init(destination: Destination, title: String, icon: String, color: Color) where Accessory == EmptyView {
-        self.destination = destination
-        self.title = title
-        self.icon = icon
-        self.color = color
-        self.accessory = nil
-    }
 
     var body: some View {
         TrackLink(destination: destination) {
@@ -374,7 +299,7 @@ private struct ToolRow<Destination: View, Accessory: View>: View {
                     .font(.body)
                     .foregroundColor(.white)
                     .frame(width: 28, height: 28)
-                    .background(color)
+                    .background(color.gradient)
                     .cornerRadius(7)
 
                 Text(title)
@@ -382,10 +307,6 @@ private struct ToolRow<Destination: View, Accessory: View>: View {
                     .foregroundColor(.primary)
 
                 Spacer()
-
-                if let accessory = accessory {
-                    accessory()
-                }
 
                 Image(systemName: "chevron.right")
                     .font(.caption)

@@ -7,14 +7,11 @@
 
 import AlertToast
 import CSUSTKit
-import InjectHotReload
 import SwiftUI
 
 // MARK: - CourseScheduleView
 
 struct CourseScheduleView: View {
-    @ObserveInjection var inject
-
     @StateObject var viewModel = CourseScheduleViewModel()
 
     let colSpacing: CGFloat = 2  // 列间距
@@ -43,6 +40,13 @@ struct CourseScheduleView: View {
             }
         }
         .navigationTitle("我的课表")
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle(viewModel.selectedSemester == nil ? "默认学期" : "学期" + (viewModel.selectedSemester ?? ""))
+            } else {
+                view
+            }
+        }
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -71,7 +75,6 @@ struct CourseScheduleView: View {
             CourseSemesterView()
                 .environmentObject(viewModel)
         }
-        .enableInjection()
         .trackView("CourseSchedule")
     }
 
@@ -101,14 +104,11 @@ struct CourseScheduleView: View {
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
 
-                HStack(spacing: 4) {
+                if #unavailable(iOS 26.0) {
                     Text(viewModel.selectedSemester ?? "默认学期")
-                    if viewModel.realCurrentWeek == nil {
-                        Text("• 非学期内")
-                    }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .font(.caption)
-                .foregroundColor(.secondary)
             }
 
             Spacer()
@@ -143,30 +143,39 @@ struct CourseScheduleView: View {
         .padding(.horizontal)
         .padding(.vertical, 8)
         .background(Color(.systemBackground))
-        .overlay(
-            Divider().opacity(0.6),
-            alignment: .bottom
-        )
+        // .overlay(Divider().opacity(0.6), alignment: .bottom)
     }
 
     // MARK: - 单周课表页面
 
     @ViewBuilder
     private func tableView(for week: Int, semesterStartDate: Date, weeklyCourses: [Int: [CourseDisplayInfo]]) -> some View {
-        VStack(spacing: 0) {
+        // 课表网格
+        ScrollView {
+            ZStack(alignment: .topLeading) {
+                // 背景网格
+                backgroundGrid
+
+                // 课程视图
+                coursesOverlay(for: week, weeklyCourses: weeklyCourses)
+            }
+        }
+        .safeAreaInset(edge: .top) {
             // 星期头部（日期和周几）
             headerView(for: week, semesterStartDate: semesterStartDate)
-
-            // 课表网格
-            ScrollView {
-                ZStack(alignment: .topLeading) {
-                    // 背景网格
-                    backgroundGrid
-
-                    // 课程视图
-                    coursesOverlay(for: week, weeklyCourses: weeklyCourses)
+                .apply { view in
+                    if #available(iOS 26.0, *) {
+                        view
+                            .background {
+                                Rectangle()
+                                    .fill(.clear)
+                                    .glassEffect()
+                                    .padding(.horizontal, 4)
+                            }
+                    } else {
+                        view.background(.ultraThinMaterial)
+                    }
                 }
-            }
         }
     }
 
@@ -214,7 +223,6 @@ struct CourseScheduleView: View {
         .padding(.top, 6)
         .padding(.bottom, 6)
         .padding(.horizontal, 5)
-        .background(Color(.systemBackground))
     }
 
     // MARK: - 背景网格视图

@@ -44,7 +44,6 @@ struct CourseDetailView: View {
             viewModel.loadTests()
         }
         .navigationTitle(viewModel.courseInfo.name)
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {

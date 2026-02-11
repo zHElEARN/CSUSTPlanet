@@ -260,9 +260,8 @@ struct ExamScheduleView: View {
                         .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: { viewModel.loadExams() }) {
-                        Label("查询", systemImage: "magnifyingglass")
+                        Label("查询", systemImage: "arrow.clockwise")
                     }
-                    .disabled(viewModel.isLoading)
                 }
             }
         }
@@ -276,7 +275,14 @@ struct ExamScheduleView: View {
             Text("是否将所有考试安排添加到系统日历？")
         }
         .navigationTitle("考试安排")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共 \(viewModel.data?.value.count ?? 0) 门考试")
+            } else {
+                view
+            }
+        }
+        .toolbarTitleDisplayMode(.large)
         .trackView("ExamSchedule")
     }
 }

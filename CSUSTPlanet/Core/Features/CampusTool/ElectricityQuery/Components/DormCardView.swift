@@ -174,7 +174,7 @@ struct DormCardView: View {
             Text("确定要取消定时查询吗？")
         }
         .sheet(isPresented: $viewModel.isShowNotificationSettings) {
-            NotificationSettingsView(
+            DormNotificationSettingsView(
                 isPresented: $viewModel.isShowNotificationSettings,
                 onConfirm: { hour, minute in
                     viewModel.handleNotificationSettings(dorm, scheduleHour: hour, scheduleMinute: minute)

@@ -5,13 +5,10 @@
 //  Created by Zhe_Learn on 2025/7/9.
 //
 
-import InjectHotReload
 import SwiftData
 import SwiftUI
 
 struct ElectricityQueryView: View {
-    @ObserveInjection var inject
-
     @State var isShowingAddDormSheet: Bool = false
 
     @Query var dorms: [Dorm]
@@ -38,7 +35,13 @@ struct ElectricityQueryView: View {
             }
         }
         .navigationTitle("电量查询")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(dorms.count)个宿舍")
+            } else {
+                view
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(action: { isShowingAddDormSheet = true }) {
@@ -49,7 +52,6 @@ struct ElectricityQueryView: View {
         .sheet(isPresented: $isShowingAddDormSheet) {
             AddDormitoryView(isShowingAddDormSheet: $isShowingAddDormSheet)
         }
-        .enableInjection()
         .trackView("ElectricityQuery")
     }
 }

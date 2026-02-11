@@ -82,12 +82,24 @@ struct WeeklyCoursesEntryView: View {
         switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: entry.date) {
         case .beforeSemester:
             VStack {
-                Text("学期未开始")
-                if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: entry.date) {
-                    Text("还有 \(daysUntilStart) 天开学")
-                        .font(.system(size: 12))
+                if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: entry.date),
+                    daysUntilStart > CourseScheduleUtil.semesterStartThreshold
+                {
+                    Text(CourseScheduleUtil.getHolidayMessage(for: entry.date))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.primary)
+                    Text("学期未开始")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
                         .padding(.top, 2)
+                } else {
+                    Text("学期未开始")
+                    if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: entry.date) {
+                        Text("还有 \(daysUntilStart) 天开学")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.primary)
+                            .padding(.top, 2)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)

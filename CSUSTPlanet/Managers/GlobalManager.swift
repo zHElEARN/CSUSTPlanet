@@ -9,9 +9,9 @@ import Foundation
 import SwiftUI
 
 enum TabItem: String {
-    case overview = "概览"
-    case features = "全部功能"
-    case profile = "我的"
+    case overview
+    case features
+    case profile
 }
 
 @MainActor
@@ -24,10 +24,12 @@ class GlobalManager: ObservableObject {
         isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
         isWebVPNModeEnabled = MMKVHelper.shared.isWebVPNModeEnabled
         isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
+        isBackgroundTaskEnabled = MMKVHelper.shared.isBackgroundTaskEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
         TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
         TrackHelper.shared.event(category: "WebVPN", action: "Status", name: isWebVPNModeEnabled ? "Enabled" : "Disabled")
+        TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
     }
 
     @Published var selectedTab: TabItem = .overview
@@ -57,6 +59,12 @@ class GlobalManager: ObservableObject {
     }
     @Published var isNotificationEnabled: Bool {
         didSet { MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled }
+    }
+    @Published var isBackgroundTaskEnabled: Bool {
+        didSet {
+            MMKVHelper.shared.isBackgroundTaskEnabled = isBackgroundTaskEnabled
+            TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
+        }
     }
 
     @Published var isFromElectricityWidget: Bool = false

@@ -1,20 +1,16 @@
 //
-//  KeychainHelper.swift
+//  KeychainUtil.swift
 //  CSUSTPlanet
 //
-//  Created by Zhe_Learn on 2025/7/8.
+//  Created by Zhe_Learn on 2026/2/8.
 //
 
 import Foundation
 
-final class KeychainHelper {
-    static let shared = KeychainHelper()
-
-    private init() {}
-
+enum KeychainUtil {
     // MARK: - Core Methods
 
-    func set(_ data: Data?, forKey key: String) {
+    static private func set(_ data: Data?, forKey key: String) {
         guard let data = data else {
             delete(forKey: key)
             return
@@ -27,7 +23,7 @@ final class KeychainHelper {
         SecItemAdd(newQuery as CFDictionary, nil)
     }
 
-    func getData(forKey key: String) -> Data? {
+    static private func getData(forKey key: String) -> Data? {
         var query = baseQuery(key: key)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
@@ -38,7 +34,7 @@ final class KeychainHelper {
 
     // MARK: - Convenience Methods
 
-    func set(_ string: String?, forKey key: String) {
+    static private func set(_ string: String?, forKey key: String) {
         guard let string = string else {
             delete(forKey: key)
             return
@@ -46,19 +42,17 @@ final class KeychainHelper {
         set(string.data(using: .utf8), forKey: key)
     }
 
-    func getString(forKey key: String) -> String? {
+    static private func getString(forKey key: String) -> String? {
         guard let data = getData(forKey: key) else { return nil }
         return String(data: data, encoding: .utf8)
     }
 
-    // MARK: - Helper
-
-    func delete(forKey key: String) {
+    static private func delete(forKey key: String) {
         let query = baseQuery(key: key)
         SecItemDelete(query as CFDictionary)
     }
 
-    func deleteAll() {
+    static func deleteAll() {
         let secClasses: [CFTypeRef] = [
             kSecClassGenericPassword,
             kSecClassInternetPassword,
@@ -76,7 +70,7 @@ final class KeychainHelper {
         }
     }
 
-    private func baseQuery(key: String) -> [String: Any] {
+    static private func baseQuery(key: String) -> [String: Any] {
         return [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
@@ -87,28 +81,28 @@ final class KeychainHelper {
 
 // MARK: - Business Properties
 
-extension KeychainHelper {
-    var physicsExperimentUsername: String? {
+extension KeychainUtil {
+    static var physicsExperimentUsername: String? {
         get { getString(forKey: "PhysicsExperimentUsername") }
         set { set(newValue, forKey: "PhysicsExperimentUsername") }
     }
 
-    var physicsExperimentPassword: String? {
+    static var physicsExperimentPassword: String? {
         get { getString(forKey: "PhysicsExperimentPassword") }
         set { set(newValue, forKey: "PhysicsExperimentPassword") }
     }
 
-    var ssoUsername: String? {
+    static var ssoUsername: String? {
         get { getString(forKey: "SSOUsername") }
         set { set(newValue, forKey: "SSOUsername") }
     }
 
-    var ssoPassword: String? {
+    static var ssoPassword: String? {
         get { getString(forKey: "SSOPassword") }
         set { set(newValue, forKey: "SSOPassword") }
     }
 
-    var cookies: Data? {
+    static var cookies: Data? {
         get { getData(forKey: "Cookies") }
         set { set(newValue, forKey: "Cookies") }
     }

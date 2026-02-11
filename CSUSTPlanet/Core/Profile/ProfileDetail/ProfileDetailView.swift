@@ -33,11 +33,15 @@ struct ProfileDetailView: View {
                     InfoRow(label: "邮箱", value: ssoProfile.email ?? "未设置")
                     InfoRow(label: "所属院系", value: ssoProfile.deptName)
                 } else {
-                    ErrorView(message: "统一认证信息加载失败").padding()
+                    ContentUnavailableView(
+                        "加载失败",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text("统一认证信息加载失败")
+                    )
                 }
             }
 
-            Section(header: Text("教务信息")) {
+            Section {
                 if viewModel.isEduProfileLoading {
                     LoadingView()
                 } else if let eduProfile = viewModel.eduProfile {
@@ -50,11 +54,19 @@ struct ProfileDetailView: View {
                     InfoRow(label: "性别", value: eduProfile.gender)
                     InfoRow(label: "名族", value: eduProfile.ethnicity)
                 } else {
-                    ErrorView(message: "教务信息加载失败").padding()
+                    ContentUnavailableView(
+                        "加载失败",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text("教务信息加载失败")
+                    )
+                }
+            } header: {
+                SectionHeaderWithRefresh(title: "教务信息") {
+                    viewModel.loadEduProfile()
                 }
             }
 
-            Section(header: Text("网络课程中心信息")) {
+            Section {
                 if viewModel.isMoocProfileLoading {
                     LoadingView()
                 } else if let moocProfile = viewModel.moocProfile {
@@ -63,7 +75,15 @@ struct ProfileDetailView: View {
                     InfoRow(label: "总在线时间", value: moocProfile.totalOnlineTime)
                     InfoRow(label: "登录次数", value: "\(moocProfile.loginCount)")
                 } else {
-                    ErrorView(message: "网络课程中心信息加载失败").padding()
+                    ContentUnavailableView(
+                        "加载失败",
+                        systemImage: "exclamationmark.triangle",
+                        description: Text("网络课程中心信息加载失败")
+                    )
+                }
+            } header: {
+                SectionHeaderWithRefresh(title: "网络课程中心信息") {
+                    viewModel.loadMoocProfile()
                 }
             }
         }
@@ -71,24 +91,6 @@ struct ProfileDetailView: View {
             Button("确定", role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage)
-        }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button {
-                        viewModel.loadEduProfile()
-                    } label: {
-                        Label("刷新教务信息", systemImage: "arrow.clockwise")
-                    }
-                    Button {
-                        viewModel.loadMoocProfile()
-                    } label: {
-                        Label("刷新网络课程中心信息", systemImage: "arrow.clockwise")
-                    }
-                } label: {
-                    Label("更多操作", systemImage: "ellipsis.circle")
-                }
-            }
         }
         .navigationTitle("个人详情")
         .onAppear {
@@ -98,27 +100,29 @@ struct ProfileDetailView: View {
         .trackView("ProfileDetail")
     }
 
+    struct SectionHeaderWithRefresh: View {
+        let title: String
+        let onRefresh: () -> Void
+
+        var body: some View {
+            HStack {
+                Text(title)
+                Spacer()
+                Button(action: onRefresh) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.subheadline)
+                        .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
     struct LoadingView: View {
         var body: some View {
             HStack {
                 Spacer()
                 ProgressView("加载中...")
-                Spacer()
-            }
-        }
-    }
-
-    struct ErrorView: View {
-        let message: String
-        var body: some View {
-            HStack {
-                Spacer()
-                VStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.largeTitle)
-                        .padding()
-                    Text(message)
-                }
                 Spacer()
             }
         }

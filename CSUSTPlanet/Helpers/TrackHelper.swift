@@ -12,29 +12,28 @@ import OSLog
 final class TrackHelper {
     static let shared = TrackHelper()
 
-    private(set) var tracker: MatomoTracker
+    private init() {}
 
-    private init() {
-        tracker = MatomoTracker(siteId: Constants.matomoSiteID, baseURL: URL(string: Constants.matomoURL)!)
-    }
-
-    func setup() {
+    private lazy var tracker: MatomoTracker = {
+        let instance = MatomoTracker(siteId: Constants.matomoSiteID, baseURL: URL(string: Constants.matomoURL)!)
         #if DEBUG
-            tracker.logger = DefaultLogger(minLevel: .debug)
+            instance.logger = DefaultLogger(minLevel: .debug)
         #endif
-
         if let index = Int(Constants.matomoDimensionIDAppFullVersion),
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         {
-            tracker.setDimension("\(version) (\(buildNumber))", forIndex: index)
+            instance.setDimension("\(version) (\(buildNumber))", forIndex: index)
         }
-        tracker.dispatchInterval = 60
-
-        Logger.trackHelper.debug("初始化 MatomoTracker")
-
-        updateUserID(MMKVHelper.shared.userId)
-    }
+        instance.dispatchInterval = 60
+        Logger.trackHelper.debug("初始化 MatomoTracker 完成")
+        if let currentUserId = MMKVHelper.shared.userId {
+            let hashedUserId = self.hashUserID(currentUserId)
+            instance.userId = hashedUserId
+            Logger.trackHelper.debug("初始化时同步用户ID: \(hashedUserId)")
+        }
+        return instance
+    }()
 
     func views(path: [String]) {
         tracker.track(view: path)
@@ -64,11 +63,7 @@ final class TrackHelper {
             Logger.trackHelper.debug("用户ID已清空")
             return
         }
-
-        let inputData = Data((rawID + Constants.matomoUserIDSalt).utf8)
-        let hashed = SHA256.hash(data: inputData)
-        let finalID = hashed.prefix(16).map { String(format: "%02x", $0) }.joined()
-
+        let finalID = hashUserID(rawID)
         tracker.userId = finalID
         Logger.trackHelper.debug("用户ID已脱敏并更新: \(finalID)")
     }
@@ -76,5 +71,13 @@ final class TrackHelper {
     func updateIsOptedOut(_ isOptedOut: Bool) {
         tracker.isOptedOut = isOptedOut
         Logger.trackHelper.debug("更新用户是否拒绝跟踪: \(isOptedOut)")
+    }
+}
+
+extension TrackHelper {
+    private func hashUserID(_ rawID: String) -> String {
+        let inputData = Data((rawID + Constants.matomoUserIDSalt).utf8)
+        let hashed = SHA256.hash(data: inputData)
+        return hashed.prefix(16).map { String(format: "%02x", $0) }.joined()
     }
 }

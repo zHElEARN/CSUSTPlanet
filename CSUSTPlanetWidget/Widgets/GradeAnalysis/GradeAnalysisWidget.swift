@@ -61,10 +61,10 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: GradeAnalysisIntent, in context: Context) async -> Timeline<GradeAnalysisEntry> {
-        MMKVHelper.shared.setup()
         defer {
             MMKVHelper.shared.close()
         }
+        MMKVHelper.shared.checkContentChanged()
         Logger.gradeAnalysisWidget.info("GradeAnalysisProvider: 开始获取成绩分析数据")
 
         var finalData: Cached<[EduHelper.CourseGrade]>? = nil
@@ -84,7 +84,7 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
         if (try? await ssoHelper.getLoginUser()) == nil {
             Logger.gradeAnalysisWidget.info("GradeAnalysisProvider: 未找到有效Cookie，尝试使用账号密码登录")
             // 保存的cookie无效，尝试账号密码登录
-            if let username = KeychainHelper.shared.ssoUsername, let password = KeychainHelper.shared.ssoPassword {
+            if let username = KeychainUtil.ssoUsername, let password = KeychainUtil.ssoPassword {
                 hasValidSession = (try? await ssoHelper.login(username: username, password: password)) != nil
             } else {
                 hasValidSession = false

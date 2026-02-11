@@ -24,28 +24,6 @@ struct UrgentCoursesView: View {
         .padding(.vertical, 8)
     }
 
-    // MARK: - Empty State
-
-    @ViewBuilder
-    private var emptyState: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "book.closed")
-                .font(.system(size: 40))
-                .foregroundColor(.secondary)
-                .padding(.bottom, 8)
-
-            Text("暂无待提交作业")
-                .font(.headline)
-
-            Text("当前没有需要提交作业的课程")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 20)
-    }
-
     // MARK: - Body
 
     var body: some View {
@@ -60,7 +38,7 @@ struct UrgentCoursesView: View {
                 }
                 .listStyle(.insetGrouped)
             } else {
-                emptyState
+                ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交作业的课程"))
                     .background(Color(.systemGroupedBackground))
             }
         }
@@ -90,7 +68,13 @@ struct UrgentCoursesView: View {
             }
         }
         .navigationTitle("待提交作业")
-        .toolbarTitleDisplayMode(.inline)
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.data?.value.courses.count ?? 0)门课程")
+            } else {
+                view
+            }
+        }
         .trackView("UrgentCourses")
     }
 }

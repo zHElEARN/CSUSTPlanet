@@ -146,7 +146,6 @@ struct GradeDetailView: View {
             .padding()
         }
         .background(Color(.systemGroupedBackground))
-        .toolbarTitleDisplayMode(.inline)
         .task { viewModel.task(courseGrade) }
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)

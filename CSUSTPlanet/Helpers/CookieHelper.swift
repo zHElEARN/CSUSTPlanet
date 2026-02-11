@@ -16,7 +16,7 @@ final class CookieHelper {
 
     private init() {
         let configuration = URLSessionConfiguration.default
-        if let data = KeychainHelper.shared.cookies {
+        if let data = KeychainUtil.cookies {
             if let cookies = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSArray.self, HTTPCookie.self], from: data) as? [HTTPCookie] {
                 for cookie in cookies {
                     configuration.httpCookieStorage?.setCookie(cookie)
@@ -37,7 +37,7 @@ final class CookieHelper {
                 }
             }
         }
-        KeychainHelper.shared.cookies = nil
+        KeychainUtil.cookies = nil
     }
 
     func updateCookies(_ cookies: [HTTPCookie]) {
@@ -48,6 +48,6 @@ final class CookieHelper {
     func save() {
         guard let cookies = session.sessionConfiguration.httpCookieStorage?.cookies else { return }
         let data = try? NSKeyedArchiver.archivedData(withRootObject: cookies, requiringSecureCoding: true)
-        KeychainHelper.shared.cookies = data
+        KeychainUtil.cookies = data
     }
 }

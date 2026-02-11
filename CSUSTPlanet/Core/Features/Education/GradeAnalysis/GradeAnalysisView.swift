@@ -73,79 +73,107 @@ struct GradeAnalysisView: View {
     // MARK: - Semester Analysis Section
 
     @ViewBuilder
-    private func semesterAnalysisSection(_ gradeAnalysisData: GradeAnalysisData) -> some View {
+    private func semesterAnalysisSection(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
         VStack(spacing: 30) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("学期平均成绩")
-                    .font(.headline)
-                    .padding(.horizontal)
-
-                Chart(gradeAnalysisData.semesterAverageGrades, id: \.semester) { item in
-                    LineMark(
-                        x: .value("学期", item.semester),
-                        y: .value("平均成绩", item.average)
-                    )
-                    .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
-                    .lineStyle(StrokeStyle(lineWidth: 3))
-                    PointMark(
-                        x: .value("学期", item.semester),
-                        y: .value("平均成绩", item.average)
-                    )
-                    .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
-                    .annotation(position: .top) {
-                        Text(String(format: "%.1f", item.average))
-                            .font(.system(size: 10))
-                            .padding(4)
-                            .background(ColorUtil.dynamicColor(grade: item.average).opacity(0.2))
-                            .cornerRadius(4)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(isShareable ? "学期\(viewModel.selectedChartType.rawValue)" : "学期平均成绩/GPA")
+                        .font(.headline)
+                    Spacer()
+                    if !isShareable {
+                        Picker("图表类型", selection: $viewModel.selectedChartType) {
+                            ForEach(GradeAnalysisViewModel.ChartType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .fixedSize()
                     }
                 }
-                .chartYAxis {
-                    AxisMarks(values: .automatic(desiredCount: 5))
+                .padding(.horizontal)
+
+                if viewModel.selectedChartType == .averageGrade {
+                    Chart(gradeAnalysisData.semesterAverageGrades, id: \.semester) { item in
+                        LineMark(
+                            x: .value("学期", item.semester),
+                            y: .value("平均成绩", item.average)
+                        )
+                        .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
+                        .lineStyle(StrokeStyle(lineWidth: 3))
+                        PointMark(
+                            x: .value("学期", item.semester),
+                            y: .value("平均成绩", item.average)
+                        )
+                        .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
+                        .annotation(position: .top) {
+                            Text(String(format: "%.1f", item.average))
+                                .font(.system(size: 10))
+                                .padding(4)
+                                .background(ColorUtil.dynamicColor(grade: item.average).opacity(0.2))
+                                .cornerRadius(4)
+                        }
+                    }
+                    .chartYAxis {
+                        AxisMarks(values: .automatic(desiredCount: 5))
+                    }
+                    .frame(height: 250)
+                    .padding()
+                } else {
+                    Chart(gradeAnalysisData.semesterGPAs, id: \.semester) { item in
+                        LineMark(
+                            x: .value("学期", item.semester),
+                            y: .value("GPA", item.gpa)
+                        )
+                        .foregroundStyle(ColorUtil.dynamicColor(point: item.gpa))
+                        .lineStyle(StrokeStyle(lineWidth: 3))
+                        PointMark(
+                            x: .value("学期", item.semester),
+                            y: .value("GPA", item.gpa)
+                        )
+                        .foregroundStyle(ColorUtil.dynamicColor(point: item.gpa))
+                        .annotation(position: .top) {
+                            Text(String(format: "%.2f", item.gpa))
+                                .font(.system(size: 10))
+                                .padding(4)
+                                .background(ColorUtil.dynamicColor(point: item.gpa).opacity(0.2))
+                                .cornerRadius(4)
+                        }
+                    }
+                    .chartYAxis {
+                        AxisMarks(values: .automatic(desiredCount: 5))
+                    }
+                    .frame(height: 250)
+                    .padding()
                 }
-                .frame(height: 250)
-                .padding()
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("学期GPA")
-                    .font(.headline)
-                    .padding(.horizontal)
-
-                Chart(gradeAnalysisData.semesterGPAs, id: \.semester) { item in
-                    LineMark(
-                        x: .value("学期", item.semester),
-                        y: .value("GPA", item.gpa)
-                    )
-                    .foregroundStyle(ColorUtil.dynamicColor(point: item.gpa))
-                    .lineStyle(StrokeStyle(lineWidth: 3))
-                    PointMark(
-                        x: .value("学期", item.semester),
-                        y: .value("GPA", item.gpa)
-                    )
-                    .foregroundStyle(ColorUtil.dynamicColor(point: item.gpa))
-                    .annotation(position: .top) {
-                        Text(String(format: "%.2f", item.gpa))
-                            .font(.system(size: 10))
-                            .padding(4)
-                            .background(ColorUtil.dynamicColor(point: item.gpa).opacity(0.2))
-                            .cornerRadius(4)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(isShareable ? "\(viewModel.selectedDistributionChartType.rawValue)分布" : "绩点/成绩分布")
+                        .font(.headline)
+                    Spacer()
+                    if !isShareable {
+                        Picker("分布类型", selection: $viewModel.selectedDistributionChartType) {
+                            ForEach(GradeAnalysisViewModel.DistributionChartType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .fixedSize()
                     }
                 }
-                .chartYAxis {
-                    AxisMarks(values: .automatic(desiredCount: 5))
-                }
-                .frame(height: 250)
-                .padding()
-            }
+                .padding(.horizontal)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("绩点分布")
-                    .font(.headline)
-                    .padding(.horizontal)
                 Chart(gradeAnalysisData.gradePointDistribution, id: \.gradePoint) { item in
                     BarMark(
-                        x: .value("绩点", String(format: "%.1f", item.gradePoint)),
+                        x: .value(
+                            viewModel.selectedDistributionChartType == .gradePoint ? "绩点" : "成绩段",
+                            viewModel.selectedDistributionChartType == .gradePoint
+                                ? String(format: "%.1f", item.gradePoint)
+                                : (GradeAnalysisViewModel.gradePointToRangeMap[item.gradePoint] ?? "")
+                        ),
                         y: .value("课程数", item.count)
                     )
                     .foregroundStyle(ColorUtil.dynamicColor(point: item.gradePoint))
@@ -158,11 +186,18 @@ struct GradeAnalysisView: View {
                             .cornerRadius(4)
                     }
                 }
+                .chartXAxis {
+                    AxisMarks {
+                        AxisValueLabel()
+                            .font(viewModel.selectedDistributionChartType == .gradeRange ? .system(size: 9) : .system(size: 11))
+                    }
+                }
                 .chartYAxis {
                     AxisMarks(values: .automatic(desiredCount: 5))
                 }
                 .frame(height: 220)
                 .padding()
+                .animation(.easeInOut, value: viewModel.selectedDistributionChartType)
             }
         }
     }
@@ -170,10 +205,10 @@ struct GradeAnalysisView: View {
     // MARK: - Analysis Content
 
     @ViewBuilder
-    private func analysisContent(_ gradeAnalysisData: GradeAnalysisData) -> some View {
+    private func analysisContent(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
         VStack(spacing: 20) {
             summaryCard(gradeAnalysisData)
-            semesterAnalysisSection(gradeAnalysisData)
+            semesterAnalysisSection(gradeAnalysisData, isShareable: isShareable)
         }
     }
 
@@ -204,7 +239,7 @@ struct GradeAnalysisView: View {
     @ViewBuilder
     private var shareableView: some View {
         if let gradeAnalysisData = viewModel.analysisData {
-            analysisContent(gradeAnalysisData)
+            analysisContent(gradeAnalysisData, isShareable: true)
                 .padding(.vertical)
                 .frame(width: UIScreen.main.bounds.width)
                 .background(Color(.systemGroupedBackground))
@@ -238,7 +273,7 @@ struct GradeAnalysisView: View {
         }
         .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
         .navigationTitle("成绩分析")
-        .toolbarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Menu {

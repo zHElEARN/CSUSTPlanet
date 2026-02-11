@@ -26,7 +26,7 @@ enum Constants {
         return mmkvDir
     }()
     static var mmkvID: String {
-        switch AppEnvironmentUtil.environment {
+        switch EnvironmentUtil.environment {
         case .debug: return "debug"
         case .testFlight: return "testFlight"
         case .appStore: return "appStore"
@@ -37,7 +37,7 @@ enum Constants {
     private static let apiHostDev = AssetUtil.bundleInfo(forKey: "ConfigApiHostDev")
 
     static var backendHost: String {
-        switch AppEnvironmentUtil.environment {
+        switch EnvironmentUtil.environment {
         case .appStore, .testFlight:
             return apiHostProd
         case .debug:
@@ -52,11 +52,14 @@ enum Constants {
     static let matomoDimensionIDAppFullVersion = AssetUtil.bundleInfo(forKey: "ConfigMatomoDimensionIDAppFullVersion")
 
     static var matomoSiteID: String {
-        switch AppEnvironmentUtil.environment {
+        switch EnvironmentUtil.environment {
         case .appStore, .testFlight:
             return matomoSiteIDProd
         case .debug:
             return matomoSiteIDDev
         }
     }
+
+    static let backgroundGradeID = AssetUtil.bundleInfo(forKey: "ConfigBackgroundGradeID")
+    static let backgroundElectricityID = AssetUtil.bundleInfo(forKey: "ConfigBackgroundElectricityID")
 }

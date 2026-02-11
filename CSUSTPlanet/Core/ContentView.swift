@@ -5,13 +5,10 @@
 //  Created by Zhe_Learn on 2025/7/7.
 //
 
-import InjectHotReload
 import SwiftUI
 import Toasts
 
 struct ContentView: View {
-    @ObserveInjection var inject
-
     @EnvironmentObject var globalManager: GlobalManager
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.presentToast) var presentToast
@@ -28,45 +25,21 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            TabView(selection: $globalManager.selectedTab) {
-                OverviewView()
-                    .tabItem {
-                        Image(uiImage: UIImage(systemName: "rectangle.stack")!)
-                        Text(TabItem.overview.rawValue)
-                    }
-                    .tag(TabItem.overview)
-                FeaturesView()
-                    .tabItem {
-                        Image(uiImage: UIImage(systemName: "square.grid.2x2")!)
-                        Text(TabItem.features.rawValue)
-                    }
-                    .tag(TabItem.features)
-                ProfileView()
-                    .tabItem {
-                        Image(uiImage: UIImage(systemName: "person")!)
-                        Text(TabItem.profile.rawValue)
-                    }
-                    .tag(TabItem.profile)
-            }
-            .trackRoot("App")
-            .navigationTitle(globalManager.selectedTab.rawValue)
-            .toolbarTitleDisplayMode(.inline)
-            .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
-                ElectricityQueryView()
-                    .trackRoot("Widget")
-            }
-            .navigationDestination(isPresented: $globalManager.isFromCourseScheduleWidget) {
-                CourseScheduleView()
-                    .trackRoot("Widget")
-            }
-            .navigationDestination(isPresented: $globalManager.isFromGradeAnalysisWidget) {
-                GradeAnalysisView()
-                    .trackRoot("Widget")
-            }
-            .navigationDestination(isPresented: $globalManager.isFromUrgentCoursesWidget) {
-                UrgentCoursesView()
-                    .trackRoot("Widget")
+        TabView(selection: $globalManager.selectedTab) {
+            OverviewView()
+                .tag(TabItem.overview)
+            FeaturesView()
+                .tag(TabItem.features)
+            ProfileView()
+                .tag(TabItem.profile)
+        }
+        .trackRoot("App")
+
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.tabBarMinimizeBehavior(.onScrollDown)
+            } else {
+                view
             }
         }
 
@@ -103,6 +76,8 @@ struct ContentView: View {
             authManager.isShowingMoocError = false
         }
 
+        // MARK: - 主题设置 & 用户协议弹窗
+
         .preferredColorScheme(preferredColorScheme)
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
             UserAgreementView().interactiveDismissDisabled(true)
@@ -112,6 +87,7 @@ struct ContentView: View {
 
         .onOpenURL { url in
             guard url.scheme == "csustplanet", url.host == "widgets" else { return }
+            globalManager.selectedTab = TabItem.overview
             switch url.pathComponents.dropFirst().first {
             case "electricity": globalManager.isFromElectricityWidget = true
             case "gradeAnalysis": globalManager.isFromGradeAnalysisWidget = true
@@ -120,7 +96,6 @@ struct ContentView: View {
             default: break
             }
         }
-        .enableInjection()
     }
 }
 
