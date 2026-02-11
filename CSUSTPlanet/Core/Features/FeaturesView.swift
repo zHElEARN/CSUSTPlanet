@@ -26,6 +26,8 @@ struct FeaturesView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: sizeClass == .regular ? 32 : 28) {
+                    AnnualReviewBanner()
+                        .padding(.top, 10)
 
                     educationalSystemSection
 
@@ -356,6 +358,135 @@ private struct StatusBadge: View {
         .padding(.vertical, 6)
         .background(Capsule().fill(Color.secondary.opacity(0.1)))
         .foregroundColor(.secondary)
+    }
+}
+// MARK: - 2025 年度总结 Banner
+
+private struct AnnualReviewBanner: View {
+    @Namespace private var namespace
+    // 1. 定义一个 refreshID 用于强制刷新视图状态
+    @State private var refreshID = UUID()
+
+    var body: some View {
+        TrackLink(
+            destination: AnnualReviewView().apply { view in
+                if #available(iOS 18.0, *) {
+                    view.navigationTransition(.zoom(sourceID: "annualReview", in: namespace))
+                        // 2. 在目标页面消失时，更新 refreshID
+                        .onDisappear {
+                            refreshID = UUID()
+                        }
+                } else {
+                    view
+                }
+            }
+        ) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            stops: [
+                                .init(color: Color(hex: "1A1C2E"), location: 0),
+                                .init(color: Color(hex: "2D325A"), location: 1),
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                GeometryReader { geo in
+                    ZStack {
+                        Circle()
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            .frame(width: geo.size.width * 0.8)
+                            .offset(x: geo.size.width * 0.4, y: -geo.size.height * 0.2)
+
+                        Circle()
+                            .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                            .frame(width: geo.size.width * 1.2)
+                            .offset(x: geo.size.width * 0.3, y: -geo.size.height * 0.4)
+                    }
+                }
+                .clipped()
+
+                HStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("MEMORIES ARCHIVE 2025")
+                            .font(.system(size: 10, weight: .black, design: .monospaced))
+                            .foregroundColor(.blue.opacity(0.8))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.blue.opacity(0.15))
+                            .cornerRadius(4)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("2025 长理星球")
+                                .font(.system(size: 20, weight: .bold))
+                            Text("年度总结")
+                                .font(.system(size: 24, weight: .heavy))
+                        }
+                        .foregroundColor(.white)
+
+                        Text("看看你在长理度过的 2025 年")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.6))
+                            .padding(.top, 4)
+                    }
+
+                    Spacer()
+
+                    ZStack {
+                        Circle()
+                            .fill(RadialGradient(colors: [.blue.opacity(0.3), .clear], center: .center, startRadius: 1, endRadius: 40))
+                            .frame(width: 80, height: 80)
+
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 30))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 20)
+            }
+            // 3. 将 ID 绑定到 ZStack 上
+            // 当 refreshID 变化时，这个视图会被销毁并重新创建，从而重置 transitionSource 状态
+            .id(refreshID)
+            .background(Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .contentShape(.rect(cornerRadius: 20, style: .continuous))
+            .apply { view in
+                if #available(iOS 18.0, *) {
+                    view.matchedTransitionSource(id: "annualReview", in: namespace) { configuration in
+                        configuration.background(Color.clear)
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    }
+                } else {
+                    view
+                }
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 20)
+        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+    }
+}
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a: UInt64
+        let r: UInt64
+        let g: UInt64
+        let b: UInt64
+        switch hex.count {
+        case 3: (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default: (a, r, g, b) = (1, 1, 1, 0)
+        }
+        self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: Double(a) / 255)
     }
 }
 
