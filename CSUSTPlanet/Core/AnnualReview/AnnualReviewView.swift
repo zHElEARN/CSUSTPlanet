@@ -9,16 +9,26 @@ import SwiftUI
 
 struct AnnualReviewView: View {
     @StateObject private var viewModel = AnnualReviewViewModel()
+    @Binding var isPresented: Bool
 
     var body: some View {
-        ScrollView {
-        }
-        .onAppear {
-            viewModel.compute()
+        NavigationStack {
+            ScrollView {
+            }
+            .onAppear {
+                viewModel.compute()
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭") {
+                        isPresented = false
+                    }
+                }
+            }
         }
     }
 }
 
 #Preview {
-    AnnualReviewView()
+    AnnualReviewView(isPresented: .constant(true))
 }
