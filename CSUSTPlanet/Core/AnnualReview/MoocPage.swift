@@ -18,8 +18,13 @@ struct MoocPage: View {
                 .padding(.top)
 
             VStack(spacing: 15) {
-                StatCard(title: "总在线时长", value: "\(data.moocTotalOnlineMinutes ?? 0) 分钟")
-                StatCard(title: "登录次数", value: "\(data.moocLoginCount ?? 0) 次")
+                if let totalOnlineMinutes = data.moocTotalOnlineMinutes, let loginCount = data.moocLoginCount {
+                    StatCard(title: "总在线时长", value: "\(totalOnlineMinutes) 分钟")
+                    StatCard(title: "登录次数", value: "\(loginCount) 次")
+                } else {
+                    Text("暂无数据")
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding()
 

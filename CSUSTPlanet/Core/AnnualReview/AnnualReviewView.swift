@@ -26,37 +26,43 @@ struct AnnualReviewView: View {
                 } else if let data = viewModel.reviewData {
                     ScrollView {
                         VStack(spacing: 0) {
+                            AnnualReviewStartPage()
+                                .containerRelativeFrame([.horizontal, .vertical])
+                                .id(0)
+
                             ProfilePage(
                                 data: data,
-                                startAnimation: currentScrollID == 0,
+                                startAnimation: currentScrollID == 1,
                                 onAnimationEnd: {
-                                    unlockScroll(for: 0)
+                                    unlockScroll(for: 1)
                                 }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
-                            .id(0)
+                            .id(1)
 
                             TimeSchedulePage(data: data)
                                 .containerRelativeFrame([.horizontal, .vertical])
-                                .id(1)
+                                .id(2)
 
                             SpacePeoplePage(data: data)
                                 .containerRelativeFrame([.horizontal, .vertical])
-                                .id(2)
+                                .id(3)
 
-                            if data.moocAvailable {
-                                MoocPage(data: data)
-                                    .containerRelativeFrame([.horizontal, .vertical])
-                                    .id(3)
-                            }
+                            MoocPage(data: data)
+                                .containerRelativeFrame([.horizontal, .vertical])
+                                .id(4)
 
                             GradesPage(data: data)
                                 .containerRelativeFrame([.horizontal, .vertical])
-                                .id(data.moocAvailable ? 4 : 3)
+                                .id(5)
 
                             DormPage(data: data)
                                 .containerRelativeFrame([.horizontal, .vertical])
-                                .id(data.moocAvailable ? 5 : 4)
+                                .id(6)
+
+                            AnnualReviewEndPage()
+                                .containerRelativeFrame([.horizontal, .vertical])
+                                .id(7)
                         }
                         .scrollTargetLayout()
                     }
@@ -72,7 +78,7 @@ struct AnnualReviewView: View {
                     }
 
                     GeometryReader { proxy in
-                        let totalPages = data.moocAvailable ? 6 : 5
+                        let totalPages = 8
                         let progress = CGFloat((currentScrollID ?? 0) + 1) / CGFloat(totalPages)
 
                         ZStack(alignment: .top) {
@@ -89,7 +95,7 @@ struct AnnualReviewView: View {
                     }
                     .frame(width: 10)
                     .padding(.trailing, 2)
-                    .padding(.vertical, 40)
+                    .padding(.vertical, 20)
                 } else {
                     ContentUnavailableView("无数据", systemImage: "xmark.bin")
                 }
@@ -130,27 +136,22 @@ struct AnnualReviewView: View {
         }
         .onAppear {
             viewModel.compute()
-            if currentScrollID == 0 {
-                lockScroll(for: 0)
-            }
         }
     }
 
     private func handlePageChange(pageID: Int) {
         if !animatedPages.contains(pageID) {
-            if pageID == 0 {
+            if pageID == 1 {
                 lockScroll(for: pageID)
             }
         }
     }
 
     private func lockScroll(for pageID: Int) {
-        print("🔒 锁定滚动: Page \(pageID)")
         isScrollLocked = true
     }
 
     private func unlockScroll(for pageID: Int) {
-        print("🔓 解锁滚动: Page \(pageID)")
         withAnimation {
             isScrollLocked = false
         }
