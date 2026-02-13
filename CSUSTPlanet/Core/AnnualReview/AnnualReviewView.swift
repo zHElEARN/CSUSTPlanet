@@ -179,7 +179,7 @@ struct AnnualReviewView: View {
 
     private func handlePageChange(pageID: Int) {
         if !animatedPages.contains(pageID) {
-            if pageID == 0 || pageID == 1 || pageID == 2 || pageID == 3 || pageID == 4 || pageID == 5 || pageID == 6 || pageID == 7 {
+            if pageID == 0 || pageID == 1 || pageID == 2 || pageID == 3 || pageID == 4 || pageID == 5 || pageID == 6 {
                 lockScroll(for: pageID)
             }
         }
