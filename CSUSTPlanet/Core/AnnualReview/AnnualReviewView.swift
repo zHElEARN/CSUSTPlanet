@@ -26,9 +26,14 @@ struct AnnualReviewView: View {
                 } else if let data = viewModel.reviewData {
                     ScrollView {
                         VStack(spacing: 0) {
-                            AnnualReviewStartPage()
-                                .containerRelativeFrame([.horizontal, .vertical])
-                                .id(0)
+                            AnnualReviewStartPage(
+                                startAnimation: currentScrollID == 0,
+                                onAnimationEnd: {
+                                    unlockScroll(for: 0)
+                                }
+                            )
+                            .containerRelativeFrame([.horizontal, .vertical])
+                            .id(0)
 
                             ProfilePage(
                                 data: data,
@@ -40,25 +45,55 @@ struct AnnualReviewView: View {
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(1)
 
-                            TimeSchedulePage(data: data)
-                                .containerRelativeFrame([.horizontal, .vertical])
-                                .id(2)
+                            TimeSchedulePage(
+                                data: data,
+                                startAnimation: currentScrollID == 2,
+                                onAnimationEnd: {
+                                    unlockScroll(for: 2)
+                                }
+                            )
+                            .containerRelativeFrame([.horizontal, .vertical])
+                            .id(2)
 
-                            SpacePeoplePage(data: data)
-                                .containerRelativeFrame([.horizontal, .vertical])
-                                .id(3)
+                            SpacePeoplePage(
+                                data: data,
+                                startAnimation: currentScrollID == 3,
+                                onAnimationEnd: {
+                                    unlockScroll(for: 3)
+                                }
+                            )
+                            .containerRelativeFrame([.horizontal, .vertical])
+                            .id(3)
 
-                            MoocPage(data: data)
-                                .containerRelativeFrame([.horizontal, .vertical])
-                                .id(4)
+                            MoocPage(
+                                data: data,
+                                startAnimation: currentScrollID == 4,
+                                onAnimationEnd: {
+                                    unlockScroll(for: 4)
+                                }
+                            )
+                            .containerRelativeFrame([.horizontal, .vertical])
+                            .id(4)
 
-                            GradesPage(data: data)
-                                .containerRelativeFrame([.horizontal, .vertical])
-                                .id(5)
+                            GradesPage(
+                                data: data,
+                                startAnimation: currentScrollID == 5,
+                                onAnimationEnd: {
+                                    unlockScroll(for: 5)
+                                }
+                            )
+                            .containerRelativeFrame([.horizontal, .vertical])
+                            .id(5)
 
-                            DormPage(data: data)
-                                .containerRelativeFrame([.horizontal, .vertical])
-                                .id(6)
+                            DormPage(
+                                data: data,
+                                startAnimation: currentScrollID == 6,
+                                onAnimationEnd: {
+                                    unlockScroll(for: 6)
+                                }
+                            )
+                            .containerRelativeFrame([.horizontal, .vertical])
+                            .id(6)
 
                             AnnualReviewEndPage()
                                 .containerRelativeFrame([.horizontal, .vertical])
@@ -136,12 +171,15 @@ struct AnnualReviewView: View {
         }
         .onAppear {
             viewModel.compute()
+            if currentScrollID == 0 && !animatedPages.contains(0) {
+                lockScroll(for: 0)
+            }
         }
     }
 
     private func handlePageChange(pageID: Int) {
         if !animatedPages.contains(pageID) {
-            if pageID == 1 {
+            if pageID == 0 || pageID == 1 || pageID == 2 || pageID == 3 || pageID == 4 || pageID == 5 || pageID == 6 || pageID == 7 {
                 lockScroll(for: pageID)
             }
         }

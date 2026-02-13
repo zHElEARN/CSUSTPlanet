@@ -26,7 +26,7 @@ struct AnnualReviewData {
     /// 学号
     let studentID: String
     /// 入学日期
-    let enrollmentDate: String
+    let enrollmentDate: Date?
 
     // MARK: - 成绩
     /// 年度总 GPA
@@ -104,6 +104,12 @@ final class AnnualReviewViewModel: ObservableObject {
     /// 下半年学期
     private lazy var semester2 = "\(year)-\(year+1)-1"
 
+    private let enrollmentDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMM"
+        return formatter
+    }()
+
     @Published var isLoading = false
 
     @Published var reviewData: AnnualReviewData?
@@ -176,7 +182,7 @@ final class AnnualReviewViewModel: ObservableObject {
             /// 学号
             let studentID = eduProfile.studentID
             /// 入学日期
-            let enrollmentDate = eduProfile.enrollmentDate
+            let enrollmentDate = enrollmentDateFormatter.date(from: eduProfile.enrollmentDate)
 
             // MARK: - 成绩
             /// 年度总 GPA
