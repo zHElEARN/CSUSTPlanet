@@ -368,6 +368,46 @@ private struct StatusBadge: View {
 
 private struct AnnualReviewBanner: View {
     @Binding var isPresented: Bool
+    @Environment(\.colorScheme) var colorScheme
+
+    // 主题色 - 与 AnnualReview 保持一致
+    private let accentColor = Color(hex: "00E096")
+
+    private var backgroundGradient: LinearGradient {
+        if colorScheme == .dark {
+            // 深色模式 - 与 AnnualReview 一致的深黑色
+            return LinearGradient(
+                stops: [
+                    .init(color: Color(hex: "0D0D0D"), location: 0),
+                    .init(color: Color(hex: "1C1C1E"), location: 1),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        } else {
+            // 浅色模式 - 柔和的浅色渐变
+            return LinearGradient(
+                stops: [
+                    .init(color: Color(hex: "F5F5F7"), location: 0),
+                    .init(color: Color(hex: "E8E8EA"), location: 1),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+
+    private var primaryTextColor: Color {
+        colorScheme == .dark ? .white : Color(hex: "1C1C1E")
+    }
+
+    private var secondaryTextColor: Color {
+        colorScheme == .dark ? Color(hex: "8E8E93") : Color(hex: "6E6E73")
+    }
+
+    private var decorCircleColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.05)
+    }
 
     var body: some View {
         Button {
@@ -375,26 +415,17 @@ private struct AnnualReviewBanner: View {
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            stops: [
-                                .init(color: Color(hex: "1A1C2E"), location: 0),
-                                .init(color: Color(hex: "2D325A"), location: 1),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(backgroundGradient)
 
                 GeometryReader { geo in
                     ZStack {
                         Circle()
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            .stroke(decorCircleColor, lineWidth: 1)
                             .frame(width: geo.size.width * 0.8)
                             .offset(x: geo.size.width * 0.4, y: -geo.size.height * 0.2)
 
                         Circle()
-                            .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                            .stroke(decorCircleColor.opacity(0.5), lineWidth: 1)
                             .frame(width: geo.size.width * 1.2)
                             .offset(x: geo.size.width * 0.3, y: -geo.size.height * 0.4)
                     }
@@ -405,10 +436,10 @@ private struct AnnualReviewBanner: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("MEMORIES ARCHIVE 2025")
                             .font(.system(size: 10, weight: .black, design: .monospaced))
-                            .foregroundColor(.blue.opacity(0.8))
+                            .foregroundColor(accentColor)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(Color.blue.opacity(0.15))
+                            .background(accentColor.opacity(0.15))
                             .cornerRadius(4)
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -417,11 +448,11 @@ private struct AnnualReviewBanner: View {
                             Text("年度总结")
                                 .font(.system(size: 24, weight: .heavy))
                         }
-                        .foregroundColor(.white)
+                        .foregroundColor(primaryTextColor)
 
                         Text("看看你在长理度过的 2025 年")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(secondaryTextColor)
                             .padding(.top, 4)
                     }
 
@@ -429,12 +460,12 @@ private struct AnnualReviewBanner: View {
 
                     ZStack {
                         Circle()
-                            .fill(RadialGradient(colors: [.blue.opacity(0.3), .clear], center: .center, startRadius: 1, endRadius: 40))
+                            .fill(RadialGradient(colors: [accentColor.opacity(0.3), .clear], center: .center, startRadius: 1, endRadius: 40))
                             .frame(width: 80, height: 80)
 
                         Image(systemName: "sparkles")
                             .font(.system(size: 30))
-                            .foregroundColor(.white.opacity(0.8))
+                            .foregroundColor(accentColor.opacity(colorScheme == .dark ? 0.9 : 0.8))
                     }
                 }
                 .padding(.horizontal, 24)
@@ -446,7 +477,7 @@ private struct AnnualReviewBanner: View {
         }
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, 20)
-        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 10, x: 0, y: 5)
     }
 }
 
