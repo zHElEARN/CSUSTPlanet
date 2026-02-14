@@ -55,13 +55,6 @@ struct AnnualReviewStartPage: View {
                         .tracking(2)
 
                     Spacer()
-
-                    // 状态指示灯
-                    Circle()
-                        .fill(accentColor)
-                        .frame(width: 6, height: 6)
-                        .shadow(color: accentColor.opacity(0.5), radius: 4)
-                        .opacity(showDecor ? 1 : 0)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 60)

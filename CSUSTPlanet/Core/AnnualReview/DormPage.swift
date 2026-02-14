@@ -18,15 +18,14 @@ struct DormPage: View {
     // MARK: - Internal States
     @State private var hasAnimated = false
     @State private var showHeader = false
-    @State private var showRoomCard = false
-    @State private var showStats = false
-    @State private var showExtremes = false
+    @State private var showContent = false
+    @State private var selectedDormIndex = 0  // 用于切换多个宿舍
 
     // MARK: - Constants
     private let themeBg = Color(hex: "0D0D0D")
     private let textPrimary = Color(hex: "FFFFFF")
     private let textSecondary = Color(hex: "8E8E93")
-    private let electricYellow = Color(hex: "FFD60A")  // 专属电量黄
+    private let electricYellow = Color(hex: "FFD60A")
     private let cardBg = Color(hex: "1C1C1E")
 
     var body: some View {
@@ -34,217 +33,179 @@ struct DormPage: View {
             // 1. 背景层
             themeBg.ignoresSafeArea()
 
-            // 2. 装饰性背景 (电路轨迹)
+            // 2. 装饰性背景 (电路轨迹) - 优化了走线，使其更紧凑
             GeometryReader { geo in
-                let w = geo.size.width
-                let h = geo.size.height
-
                 Path { path in
-                    // 模拟电路板走线
-                    path.move(to: CGPoint(x: w * 0.2, y: 0))
-                    path.addLine(to: CGPoint(x: w * 0.2, y: h * 0.3))
-                    path.addLine(to: CGPoint(x: w * 0.8, y: h * 0.3))  // 横向折线
-                    path.addLine(to: CGPoint(x: w * 0.8, y: h * 0.7))
-                    path.addLine(to: CGPoint(x: w * 0.5, y: h * 0.7))
-                    path.addLine(to: CGPoint(x: w * 0.5, y: h))
+                    path.move(to: CGPoint(x: geo.size.width * 0.1, y: 0))
+                    path.addLine(to: CGPoint(x: geo.size.width * 0.1, y: geo.size.height * 0.2))
+                    path.addLine(to: CGPoint(x: geo.size.width * 0.9, y: geo.size.height * 0.25))
+                    path.addLine(to: CGPoint(x: geo.size.width * 0.9, y: geo.size.height * 0.6))
+                    path.addLine(to: CGPoint(x: geo.size.width * 0.1, y: geo.size.height * 0.7))
                 }
-                .stroke(electricYellow.opacity(0.15), style: StrokeStyle(lineWidth: 2, lineCap: .square, dash: [10, 10]))
-
-                // 装饰节点
-                Circle()
-                    .fill(electricYellow.opacity(0.1))
-                    .frame(width: 150, height: 150)
-                    .position(x: w * 0.8, y: h * 0.3)
-                    .blur(radius: 30)
+                .stroke(electricYellow.opacity(0.1), style: StrokeStyle(lineWidth: 1, dash: [8, 12]))
             }
 
             // 3. 内容层
             VStack(spacing: 0) {
-                // --- 顶部索引 ---
-                VStack(alignment: .leading, spacing: 8) {
+                // --- 顶部标题 ---
+                VStack(alignment: .leading, spacing: 4) {
                     Text("SECTION 06")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundStyle(electricYellow)
                         .tracking(2)
 
-                    Text("DORMITORY LIFE")
-                        .font(.system(size: 24, weight: .bold))
+                    Text("DORMITORY")
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundStyle(textPrimary)
                         .tracking(1)
 
-                    Text("校园生活空间")
-                        .font(.system(size: 14))
+                    Text("宿舍电量与充值数据统计")
+                        .font(.system(size: 13))
                         .foregroundStyle(textSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
-                .padding(.top, 60)
+                .padding(.top, 50)
                 .opacity(showHeader ? 1 : 0)
-                .offset(y: showHeader ? 0 : -20)
 
-                Spacer()
+                if !data.dormElectricityStats.isEmpty {
+                    let currentStat = data.dormElectricityStats[selectedDormIndex]
 
-                if let stat = data.dormElectricityStats.first {
-                    // --- 核心：门牌号卡片 ---
-                    VStack(spacing: 0) {
-                        // 顶部装饰条
-                        Rectangle()
-                            .fill(electricYellow)
-                            .frame(height: 4)
-
-                        VStack(spacing: 20) {
-                            HStack {
-                                Image(systemName: "house.fill")
-                                    .foregroundStyle(textSecondary)
-                                Spacer()
-                                Text(stat.campusName)
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundStyle(textSecondary)
+                    // --- 宿舍切换选择器 (仅在有多个宿舍时显示) ---
+                    if data.dormElectricityStats.count > 1 {
+                        Picker("选择宿舍", selection: $selectedDormIndex) {
+                            ForEach(0..<data.dormElectricityStats.count, id: \.self) { index in
+                                Text(data.dormElectricityStats[index].room).tag(index)
                             }
-
-                            VStack(spacing: 4) {
-                                Text(stat.buildingName)
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(textPrimary)
-
-                                Text(stat.room)
-                                    .font(.system(size: 80, weight: .heavy, design: .monospaced))  // 巨大的房间号
-                                    .foregroundStyle(textPrimary)
-                                    .tracking(-2)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.5)
-                            }
-                            .frame(height: 120)
                         }
-                        .padding(24)
-                        .background(cardBg)
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 24)
+                        .opacity(showContent ? 1 : 0)
                     }
-                    .padding(.horizontal, 24)
-                    .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
-                    .opacity(showRoomCard ? 1 : 0)
-                    .scaleEffect(showRoomCard ? 1 : 0.95)
 
-                    Spacer()
+                    Spacer(minLength: 20)
 
-                    // --- 数据：交互行为 ---
-                    HStack(spacing: 16) {
-                        DormStatBox(
-                            icon: "bolt.fill",
-                            label: "购电充值次数",
-                            value: "\(stat.chargeCount)",
-                            unit: "次",
-                            accent: electricYellow
-                        )
+                    // --- 核心信息卡片 ---
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(alignment: .bottom) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(currentStat.campusName)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(textSecondary)
+                                Text(currentStat.buildingName)
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(textPrimary)
+                            }
+                            Spacer()
+                            Text(currentStat.room)
+                                .font(.system(size: 32, weight: .heavy, design: .monospaced))
+                                .foregroundStyle(electricYellow)
+                        }
 
-                        DormStatBox(
-                            icon: "magnifyingglass",
-                            label: "电量关注次数",  // 替换“查询”
-                            value: "\(stat.queryCount)",
-                            unit: "次",
-                            accent: textPrimary
-                        )
+                        Divider().background(textSecondary.opacity(0.2))
+
+                        // 数据网格
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                            DormMiniStat(label: "充值次数", value: "\(currentStat.chargeCount)", unit: "次", color: electricYellow)
+                            DormMiniStat(label: "查询次数", value: "\(currentStat.queryCount)", unit: "次", color: textPrimary)
+                        }
                     }
+                    .padding(24)
+                    .background(cardBg)
+                    .cornerRadius(16)
                     .padding(.horizontal, 24)
-                    .opacity(showStats ? 1 : 0)
-                    .offset(y: showStats ? 0 : 20)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 20)
 
-                    // --- 数据：极值记录 ---
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("电量波动极值记录")
-                            .font(.system(size: 12, weight: .bold))
+                    Spacer(minLength: 20)
+
+                    // --- 极值数据分析卡片 ---
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("HISTORY / 历史电量极值记录")
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(textSecondary)
-                            .padding(.top, 16)
 
-                        HStack(spacing: 0) {
-                            VStack(alignment: .leading) {
+                        HStack(spacing: 12) {
+                            // 最高电量
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text("历史最高剩余")
-                                    .font(.system(size: 10))
+                                    .font(.system(size: 11))
                                     .foregroundStyle(textSecondary)
-                                Text(String(format: "%.1f", stat.maxElectricity))
-                                    .font(.system(size: 20, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(textPrimary)
-                                Text("度")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(textSecondary)
+                                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                                    Text(String(format: "%.1f", currentStat.maxElectricity))
+                                        .font(.system(size: 24, weight: .bold, design: .monospaced))
+                                        .foregroundStyle(textPrimary)
+                                    Text("度").font(.system(size: 10)).foregroundStyle(textSecondary)
+                                }
                             }
+                            .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white.opacity(0.03))
+                            .cornerRadius(12)
 
-                            // 简单的视觉分割
-                            Rectangle()
-                                .fill(textSecondary.opacity(0.2))
-                                .frame(width: 1, height: 30)
-
-                            VStack(alignment: .leading) {
-                                Text("历史最低剩余")  // 很有危机感的数据
-                                    .font(.system(size: 10))
+                            // 最低电量
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("历史最低剩余")
+                                    .font(.system(size: 11))
                                     .foregroundStyle(textSecondary)
-                                Text(String(format: "%.1f", stat.minElectricity))
-                                    .font(.system(size: 20, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(electricYellow)  // 低电量用黄色标示
-                                Text("度")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(textSecondary)
+                                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                                    Text(String(format: "%.1f", currentStat.minElectricity))
+                                        .font(.system(size: 24, weight: .bold, design: .monospaced))
+                                        .foregroundStyle(electricYellow)
+                                    Text("度").font(.system(size: 10)).foregroundStyle(textSecondary)
+                                }
                             }
+                            .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.leading, 24)
+                            .background(Color.white.opacity(0.03))
+                            .cornerRadius(12)
                         }
-                        .padding(20)
-                        .background(cardBg)
-                        .cornerRadius(12)
                     }
+                    .padding(24)
+                    .background(cardBg.opacity(0.5))
+                    .cornerRadius(16)
                     .padding(.horizontal, 24)
-                    .padding(.bottom, 40)
-                    .opacity(showExtremes ? 1 : 0)
-                    .offset(y: showExtremes ? 0 : 20)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 30)
 
                 } else {
                     // 无数据状态
-                    VStack {
+                    VStack(spacing: 16) {
                         Image(systemName: "house.slash")
                             .font(.system(size: 40))
-                            .foregroundStyle(textSecondary.opacity(0.5))
-                        Text("暂无宿舍绑定信息")
+                            .foregroundStyle(textSecondary.opacity(0.3))
+                        Text("暂无宿舍绑定及用电信息")
                             .font(.system(size: 14))
                             .foregroundStyle(textSecondary)
-                            .padding(.top, 8)
                     }
-                    .padding(.bottom, 100)
-                    .opacity(showRoomCard ? 1 : 0)
+                    .frame(maxHeight: .infinity)
                 }
+
+                Spacer()
+
+                // 底部标注
+                Text("数据基于 APP 内手动查询与充值记录统计")
+                    .font(.system(size: 10))
+                    .foregroundStyle(textSecondary.opacity(0.3))
+                    .padding(.bottom, 40)
             }
         }
+        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: selectedDormIndex)
         .onChange(of: startAnimation) { _, newValue in
-            if newValue && !hasAnimated {
-                performAnimation()
-            }
+            if newValue && !hasAnimated { performAnimation() }
         }
         .onAppear {
-            if startAnimation && !hasAnimated {
-                performAnimation()
-            }
+            if startAnimation && !hasAnimated { performAnimation() }
         }
     }
 
-    // MARK: - Animation Sequence
     private func performAnimation() {
         hasAnimated = true
-
-        withAnimation(.easeOut(duration: 0.5)) {
-            showHeader = true
-        }
-
+        withAnimation(.easeOut(duration: 0.4)) { showHeader = true }
         withAnimation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.2)) {
-            showRoomCard = true
+            showContent = true
         }
-
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.4)) {
-            showStats = true
-        }
-
-        withAnimation(.easeOut(duration: 0.5).delay(0.6)) {
-            showExtremes = true
-        }
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
             onAnimationEnd()
         }
@@ -253,35 +214,26 @@ struct DormPage: View {
 
 // MARK: - Subviews
 
-struct DormStatBox: View {
-    let icon: String
+struct DormMiniStat: View {
     let label: String
     let value: String
     let unit: String
-    let accent: Color
+    let color: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundStyle(accent)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(value)
-                    .font(.system(size: 28, weight: .bold, design: .monospaced))
-                    .foregroundStyle(Color(hex: "FFFFFF"))
-
-                HStack(spacing: 2) {
-                    Text(label)
-                    Text(unit)
-                }
-                .font(.system(size: 10))
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.system(size: 12))
                 .foregroundStyle(Color(hex: "8E8E93"))
+            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                Text(value)
+                    .font(.system(size: 24, weight: .bold, design: .monospaced))
+                    .foregroundStyle(color)
+                Text(unit)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color(hex: "8E8E93"))
             }
         }
-        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(hex: "1C1C1E"))
-        .cornerRadius(12)
     }
 }

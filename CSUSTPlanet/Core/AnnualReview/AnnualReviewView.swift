@@ -13,24 +13,27 @@ struct AnnualReviewView: View {
     @Binding var isPresented: Bool
 
     @State private var currentScrollID: Int? = 0
-
     @State private var isScrollLocked: Bool = false
     @State private var animatedPages: Set<Int> = []
 
+    // MARK: - Constants
+    private let accentColor = Color(hex: "00E096")
+    private let textSecondary = Color(hex: "8E8E93")
+    private let totalPages = 8
+
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .trailing) {
             Group {
                 if viewModel.isLoading {
                     ProgressView("正在生成年度报告...")
+                        .tint(accentColor)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let data = viewModel.reviewData {
                     ScrollView {
                         VStack(spacing: 0) {
                             AnnualReviewStartPage(
                                 startAnimation: currentScrollID == 0,
-                                onAnimationEnd: {
-                                    unlockScroll(for: 0)
-                                }
+                                onAnimationEnd: { unlockScroll(for: 0) }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(0)
@@ -38,9 +41,7 @@ struct AnnualReviewView: View {
                             ProfilePage(
                                 data: data,
                                 startAnimation: currentScrollID == 1,
-                                onAnimationEnd: {
-                                    unlockScroll(for: 1)
-                                }
+                                onAnimationEnd: { unlockScroll(for: 1) }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(1)
@@ -48,9 +49,7 @@ struct AnnualReviewView: View {
                             TimeSchedulePage(
                                 data: data,
                                 startAnimation: currentScrollID == 2,
-                                onAnimationEnd: {
-                                    unlockScroll(for: 2)
-                                }
+                                onAnimationEnd: { unlockScroll(for: 2) }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(2)
@@ -58,9 +57,7 @@ struct AnnualReviewView: View {
                             SpacePeoplePage(
                                 data: data,
                                 startAnimation: currentScrollID == 3,
-                                onAnimationEnd: {
-                                    unlockScroll(for: 3)
-                                }
+                                onAnimationEnd: { unlockScroll(for: 3) }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(3)
@@ -68,9 +65,7 @@ struct AnnualReviewView: View {
                             MoocPage(
                                 data: data,
                                 startAnimation: currentScrollID == 4,
-                                onAnimationEnd: {
-                                    unlockScroll(for: 4)
-                                }
+                                onAnimationEnd: { unlockScroll(for: 4) }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(4)
@@ -78,9 +73,7 @@ struct AnnualReviewView: View {
                             GradesPage(
                                 data: data,
                                 startAnimation: currentScrollID == 5,
-                                onAnimationEnd: {
-                                    unlockScroll(for: 5)
-                                }
+                                onAnimationEnd: { unlockScroll(for: 5) }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(5)
@@ -88,9 +81,7 @@ struct AnnualReviewView: View {
                             DormPage(
                                 data: data,
                                 startAnimation: currentScrollID == 6,
-                                onAnimationEnd: {
-                                    unlockScroll(for: 6)
-                                }
+                                onAnimationEnd: { unlockScroll(for: 6) }
                             )
                             .containerRelativeFrame([.horizontal, .vertical])
                             .id(6)
@@ -104,70 +95,76 @@ struct AnnualReviewView: View {
                     .scrollTargetBehavior(.paging)
                     .scrollIndicators(.hidden)
                     .scrollPosition(id: $currentScrollID)
-                    .ignoresSafeArea(edges: .bottom)
+                    .ignoresSafeArea()  // 保持原始安全区设计
                     .scrollDisabled(isScrollLocked)
-                    .onChange(of: currentScrollID) { oldValue, newID in
+                    .onChange(of: currentScrollID) { _, newID in
                         if let id = newID {
                             handlePageChange(pageID: id)
                         }
                     }
 
-                    GeometryReader { proxy in
-                        let totalPages = 8
-                        let progress = CGFloat((currentScrollID ?? 0) + 1) / CGFloat(totalPages)
+                    // --- 优化后的右侧紧凑导航栏 ---
+                    VStack(spacing: 12) {
+                        // 1. 数字索引
+                        VStack(spacing: 2) {
+                            Text(String(format: "%02d", (currentScrollID ?? 0) + 1))
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundStyle(accentColor)
 
+                            Rectangle()
+                                .fill(textSecondary.opacity(0.3))
+                                .frame(width: 12, height: 1)
+
+                            Text(String(format: "%02d", totalPages))
+                                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                .foregroundStyle(textSecondary.opacity(0.6))
+                        }
+
+                        // 2. 纵向微缩进度条
                         ZStack(alignment: .top) {
                             Capsule()
-                                .frame(width: 4)
-                                .foregroundStyle(.gray.opacity(0.3))
+                                .fill(Color.white.opacity(0.1))
+                                .frame(width: 3, height: 60)
 
                             Capsule()
-                                .frame(width: 4, height: proxy.size.height * progress)
-                                .foregroundStyle(.blue)
-                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: currentScrollID)
+                                .fill(accentColor)
+                                .frame(width: 3, height: 60 * CGFloat((currentScrollID ?? 0) + 1) / CGFloat(totalPages))
+                                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: currentScrollID)
                         }
-                        .frame(maxHeight: .infinity)
                     }
-                    .frame(width: 10)
-                    .padding(.trailing, 2)
-                    .padding(.vertical, 20)
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 2)
+                    .background {
+                        // 独立的背景块，确保不会与页面内容混淆
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.black.opacity(0.4))
+                            .background(BlurView(style: .systemUltraThinMaterialDark))  // 磨砂玻璃效果
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .padding(.trailing, 4)
                 } else {
                     ContentUnavailableView("无数据", systemImage: "xmark.bin")
                 }
             }
 
-            Button {
-                isPresented = false
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.primary)
-                    .frame(width: 32, height: 32)
-                    .padding(6)
-                    .background {
-                        if #available(iOS 26.0, *) {
-                            Color.clear
-                        } else {
+            // --- 悬浮关闭按钮 (顶部对齐) ---
+            VStack {
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 24, height: 24)
+                        .background(
                             Circle()
-                                .fill(.regularMaterial)
-                                .stroke(.primary.opacity(0.05), lineWidth: 0.5)
-                                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                        }
-                    }
-                    .contentShape(Circle())
-            }
-            .apply { view in
-                if #available(iOS 26.0, *) {
-                    view
-                        .background(Circle().fill(.white.opacity(0.01)))
-                        .glassEffect()
-                        .clipShape(Circle())
-                } else {
-                    view
+                                .fill(Color(hex: "2C2C2E").opacity(0.9))
+                        )
+                        .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 2)
                 }
+                Spacer()  // 强行将按钮推到顶部
             }
-            .padding(.top, 15)
-            .padding(.trailing, 20)
+            .padding(.trailing, 10)
         }
         .onAppear {
             viewModel.compute()
@@ -179,7 +176,7 @@ struct AnnualReviewView: View {
 
     private func handlePageChange(pageID: Int) {
         if !animatedPages.contains(pageID) {
-            if pageID == 0 || pageID == 1 || pageID == 2 || pageID == 3 || pageID == 4 || pageID == 5 || pageID == 6 {
+            if (0...6).contains(pageID) {
                 lockScroll(for: pageID)
             }
         }
@@ -197,6 +194,11 @@ struct AnnualReviewView: View {
     }
 }
 
-#Preview {
-    AnnualReviewView(isPresented: .constant(true))
+// 简单的磨砂玻璃辅助视图
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        UIVisualEffectView(effect: UIBlurEffect(style: style))
+    }
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }

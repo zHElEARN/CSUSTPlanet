@@ -26,10 +26,9 @@ struct MoocPage: View {
     private let themeBg = Color(hex: "0D0D0D")
     private let textPrimary = Color(hex: "FFFFFF")
     private let textSecondary = Color(hex: "8E8E93")
-    private let terminalGreen = Color(hex: "00E096")  // 特有的终端绿
+    private let accentColor = Color(hex: "00E096")
     private let errorRed = Color(hex: "FF453A")
 
-    // Check if data is valid
     private var hasValidData: Bool {
         return data.moocAvailable && data.moocTotalOnlineMinutes != nil
     }
@@ -39,40 +38,30 @@ struct MoocPage: View {
             // 1. 背景层
             themeBg.ignoresSafeArea()
 
-            // 2. 装饰性背景 (数字脉冲)
-            ZStack {
-                if hasValidData {
-                    ForEach(0..<3) { i in
-                        Circle()
-                            .stroke(terminalGreen.opacity(0.1), lineWidth: 1)
-                            .frame(width: 200 + CGFloat(i * 100), height: 200 + CGFloat(i * 100))
-                            .scaleEffect(showStatus ? 1.2 : 0.8)
-                            .opacity(showStatus ? 0 : 0.3)
-                            .animation(
-                                Animation.easeOut(duration: 3)
-                                    .repeatForever(autoreverses: false)
-                                    .delay(Double(i) * 0.5),
-                                value: showStatus
-                            )
-                    }
-                }
+            // 2. 装饰性背景 (背景光晕)
+            if hasValidData {
+                Circle()
+                    .fill(accentColor.opacity(0.03))
+                    .frame(width: 400, height: 400)
+                    .blur(radius: 60)
+                    .opacity(showData ? 1 : 0)
             }
 
             // 3. 内容层
             VStack(spacing: 0) {
-                // --- 顶部索引 ---
+                // --- 顶部标题 ---
                 VStack(alignment: .leading, spacing: 8) {
                     Text("SECTION 04")
                         .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(terminalGreen)
+                        .foregroundStyle(accentColor)
                         .tracking(2)
 
-                    Text("DIGITAL FOOTPRINT")
+                    Text("ONLINE LEARNING")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundStyle(textPrimary)
                         .tracking(1)
 
-                    Text("网络课程云端日志")
+                    Text("网络课程平台学习统计")
                         .font(.system(size: 14))
                         .foregroundStyle(textSecondary)
                 }
@@ -84,12 +73,11 @@ struct MoocPage: View {
 
                 Spacer()
 
-                // --- 状态指示器 ---
-                HStack(spacing: 12) {
+                // --- 数据状态指示 ---
+                HStack(spacing: 8) {
                     Circle()
-                        .fill(hasValidData ? terminalGreen : errorRed)
-                        .frame(width: 8, height: 8)
-                        .shadow(color: (hasValidData ? terminalGreen : errorRed).opacity(0.8), radius: 6)
+                        .fill(hasValidData ? accentColor : errorRed)
+                        .frame(width: 6, height: 6)
                         .opacity(pulseOpacity)
                         .onAppear {
                             withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
@@ -97,79 +85,53 @@ struct MoocPage: View {
                             }
                         }
 
-                    Text(hasValidData ? "CONNECTION ESTABLISHED" : "NO SIGNAL DETECTED")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundStyle(hasValidData ? terminalGreen : errorRed)
-                        .tracking(1)
+                    Text(hasValidData ? "网络课程平台数据同步成功" : "无法获取网络课程平台学习记录")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(hasValidData ? accentColor : errorRed)
 
                     Spacer()
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 20)
+                .padding(.bottom, 16)
                 .opacity(showStatus ? 1 : 0)
 
-                // --- 核心数据展示 ---
+                // --- 核心数据面板 ---
                 if let minutes = data.moocTotalOnlineMinutes, let logins = data.moocLoginCount, hasValidData {
-                    VStack(spacing: 2) {
-                        // 1. 在线时长卡片 (模拟终端窗口)
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack {
-                                Image(systemName: "clock")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(terminalGreen)
-                                Text("SESSION_DURATION_TOTAL")
-                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(terminalGreen.opacity(0.8))
-                            }
-
-                            HStack(alignment: .lastTextBaseline) {
-                                Text("\(minutes)")
-                                    .font(.system(size: 60, weight: .heavy, design: .monospaced))
-                                    .foregroundStyle(textPrimary)
-                                    .tracking(-2)
-
-                                Text("MINS")
-                                    .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(terminalGreen)
-                                    .padding(.leading, 4)
-                            }
-
-                            Text("云端累计在线时长")
-                                .font(.system(size: 14))
+                    VStack(spacing: 0) {
+                        // 1. 累计在线时长
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("累计在线时长")
+                                .font(.system(size: 12))
                                 .foregroundStyle(textSecondary)
+
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                                Text("\(minutes)")
+                                    .font(.system(size: 56, weight: .heavy, design: .monospaced))
+                                    .foregroundStyle(textPrimary)
+
+                                Text("分钟")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundStyle(accentColor)
+                            }
                         }
                         .padding(24)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(hex: "1C1C1E"))
-                        .overlay(
-                            Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(terminalGreen.opacity(0.3)),
-                            alignment: .top
-                        )
 
-                        // 2. 登录次数卡片
+                        Divider()
+                            .background(textSecondary.opacity(0.1))
+                            .padding(.horizontal, 24)
+
+                        // 2. 登录次数
                         HStack {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Image(systemName: "network")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(textSecondary)
-                                    Text("ACCESS_LOGS")
-                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                        .foregroundStyle(textSecondary)
-                                }
-
-                                Text("平台访问会话次数")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(textSecondary)
-                            }
+                            Text("网络课程平台登录访问次数")
+                                .font(.system(size: 14))
+                                .foregroundStyle(textSecondary)
 
                             Spacer()
 
-                            HStack(alignment: .firstTextBaseline) {
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
                                 Text("\(logins)")
-                                    .font(.system(size: 32, weight: .bold, design: .monospaced))
+                                    .font(.system(size: 28, weight: .bold, design: .monospaced))
                                     .foregroundStyle(textPrimary)
                                 Text("次")
                                     .font(.system(size: 12))
@@ -177,37 +139,49 @@ struct MoocPage: View {
                             }
                         }
                         .padding(24)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(hex: "1C1C1E").opacity(0.5))
                     }
+                    .background(Color(hex: "1C1C1E"))
+                    .cornerRadius(16)
                     .padding(.horizontal, 24)
                     .opacity(showData ? 1 : 0)
                     .offset(y: showData ? 0 : 20)
-                } else {
-                    // 无数据状态
-                    VStack(spacing: 16) {
-                        Image(systemName: "icloud.slash")
-                            .font(.system(size: 48))
-                            .foregroundStyle(textSecondary.opacity(0.3))
 
-                        Text("当前账号未检测到网络课程学习记录")
-                            .font(.system(size: 14))
-                            .foregroundStyle(textSecondary)
+                } else {
+                    // --- 异常/无数据状态 ---
+                    VStack(spacing: 20) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 32))
+                            .foregroundStyle(textSecondary.opacity(0.5))
+
+                        VStack(spacing: 8) {
+                            Text("无法同步网络课程平台数据")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(textPrimary)
+
+                            Text("可能原因：学校服务器离线、登录授权过期或当前账号无学习记录。请尝试重新打开报告，或等待学校平台服务恢复后再试。")
+                                .font(.system(size: 13))
+                                .foregroundStyle(textSecondary)
+                                .lineSpacing(4)
+                                .multilineTextAlignment(.center)
+                        }
                     }
-                    .frame(maxWidth: .infinity, maxHeight: 200)
-                    .background(Color(hex: "1C1C1E").opacity(0.3))
-                    .cornerRadius(12)
-                    .padding(24)
+                    .padding(32)
+                    .frame(maxWidth: .infinity)
+                    .background(Color(hex: "1C1C1E").opacity(0.5))
+                    .cornerRadius(16)
+                    .padding(.horizontal, 24)
                     .opacity(showData ? 1 : 0)
                 }
 
                 Spacer()
 
-                // 底部装饰
-                Text("// END OF STREAM")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(textSecondary.opacity(0.2))
-                    .padding(.bottom, 40)
+                // 底部提示信息
+                if hasValidData {
+                    Text("数据来源：网络课程平台后台记录")
+                        .font(.system(size: 10))
+                        .foregroundStyle(textSecondary.opacity(0.3))
+                        .padding(.bottom, 40)
+                }
             }
         }
         .onChange(of: startAnimation) { _, newValue in
@@ -222,21 +196,11 @@ struct MoocPage: View {
         }
     }
 
-    // MARK: - Animation Sequence
     private func performAnimation() {
         hasAnimated = true
-
-        withAnimation(.easeOut(duration: 0.5)) {
-            showHeader = true
-        }
-
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.2)) {
-            showStatus = true
-        }
-
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.4)) {
-            showData = true
-        }
+        withAnimation(.easeOut(duration: 0.5)) { showHeader = true }
+        withAnimation(.spring().delay(0.2)) { showStatus = true }
+        withAnimation(.spring().delay(0.4)) { showData = true }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             onAnimationEnd()
