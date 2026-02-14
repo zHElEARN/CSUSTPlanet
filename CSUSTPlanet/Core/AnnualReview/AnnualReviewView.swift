@@ -17,16 +17,21 @@ struct AnnualReviewView: View {
     @State private var animatedPages: Set<Int> = []
 
     // MARK: - Constants
+    private let themeBg = Color(hex: "0D0D0D")
     private let accentColor = Color(hex: "00E096")
     private let textSecondary = Color(hex: "8E8E93")
     private let totalPages = 8
 
     var body: some View {
         ZStack(alignment: .trailing) {
+            // 固定深色背景，不受系统主题影响
+            themeBg.ignoresSafeArea()
+
             Group {
                 if viewModel.isLoading {
                     ProgressView("正在生成年度报告...")
                         .tint(accentColor)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let data = viewModel.reviewData {
                     ScrollView {
@@ -144,6 +149,7 @@ struct AnnualReviewView: View {
                     .padding(.trailing, 4)
                 } else {
                     ContentUnavailableView("无数据", systemImage: "xmark.bin")
+                        .foregroundStyle(.white)
                 }
             }
 
