@@ -82,6 +82,8 @@ class AuthManager: ObservableObject {
             isSSOLoggingOut = true
             TrackHelper.shared.event(category: "Auth", action: "Logout")
             defer { isSSOLoggingOut = false }
+            try? await eduHelper?.authService.logout()
+            try? await moocHelper?.logout()
             try? await ssoHelper.logout()
             CookieHelper.shared.save()
             KeychainUtil.ssoUsername = nil
