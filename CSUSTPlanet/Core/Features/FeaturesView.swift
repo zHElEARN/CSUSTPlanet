@@ -23,12 +23,23 @@ struct FeaturesView: View {
         return sizeClass == .regular ? 32 : 20
     }
 
+    private var shouldShowAnnualReviewBanner: Bool {
+        let calendar = Calendar.current
+        let cutoffComponents = DateComponents(year: 2026, month: 3, day: 14)
+        guard let cutoffDate = calendar.date(from: cutoffComponents) else {
+            return true
+        }
+        return Date() < cutoffDate
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: sizeClass == .regular ? 32 : 28) {
-                    AnnualReviewBanner(isPresented: $isAnnualReviewPresented)
-                        .padding(.top, 10)
+                    if shouldShowAnnualReviewBanner {
+                        AnnualReviewBanner(isPresented: $isAnnualReviewPresented)
+                            .padding(.top, 10)
+                    }
 
                     educationalSystemSection
 
