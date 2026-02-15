@@ -182,6 +182,9 @@ struct AnnualReviewView: View {
                 handlePageChange(pageID: currentID)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
+            handleScreenshot()
+        }
     }
 
     private func handlePageChange(pageID: Int) {
@@ -225,6 +228,14 @@ struct AnnualReviewView: View {
             isScrollLocked = false
         }
         animatedPages.insert(pageID)
+    }
+
+    private func handleScreenshot() {
+        TrackHelper.shared.event(
+            category: "AnnualReview",
+            action: "Screenshot"
+        )
+        TrackHelper.shared.flush()
     }
 }
 
