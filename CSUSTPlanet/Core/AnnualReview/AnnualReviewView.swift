@@ -172,15 +172,43 @@ struct AnnualReviewView: View {
             }
             .padding(.trailing, 10)
         }
+        .trackView("AnnualReview")
         .onAppear {
             viewModel.compute()
             if currentScrollID == 0 && !animatedPages.contains(0) {
                 lockScroll(for: 0)
             }
+            if let currentID = currentScrollID {
+                handlePageChange(pageID: currentID)
+            }
         }
     }
 
     private func handlePageChange(pageID: Int) {
+        // 页面埋点
+        let pageName: String
+        switch pageID {
+        case 0:
+            pageName = "AnnualReviewStartPage"
+        case 1:
+            pageName = "AnnualReviewProfilePage"
+        case 2:
+            pageName = "AnnualReviewTimeSchedulePage"
+        case 3:
+            pageName = "AnnualReviewSpacePeoplePage"
+        case 4:
+            pageName = "AnnualReviewMoocPage"
+        case 5:
+            pageName = "AnnualReviewGradesPage"
+        case 6:
+            pageName = "AnnualReviewDormPage"
+        case 7:
+            pageName = "AnnualReviewEndPage"
+        default:
+            pageName = "AnnualReviewUnknownPage"
+        }
+        TrackHelper.shared.views(path: ["App", "Features", "AnnualReview", pageName])
+
         if !animatedPages.contains(pageID) {
             if (0...6).contains(pageID) {
                 lockScroll(for: pageID)
