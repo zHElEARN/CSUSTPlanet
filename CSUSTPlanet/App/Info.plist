@@ -30,6 +30,8 @@
 	<string>$(CSUSTPLANET_BACKGROUND_GRADE_ID)</string>
 	<key>ConfigBackgroundElectricityID</key>
 	<string>$(CSUSTPLANET_BACKGROUND_ELECTRICITY_ID)</string>
+	<key>ConfigSentryDSN</key>
+	<string>$(CSUSTPLANET_SENTRY_DSN)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

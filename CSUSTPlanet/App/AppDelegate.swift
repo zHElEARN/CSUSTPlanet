@@ -7,11 +7,21 @@
 
 import Foundation
 import OSLog
+import Sentry
 import UIKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+
+        SentrySDK.start { options in
+            options.dsn = Constants.sentryDSN
+            #if DEBUG
+                options.debug = true
+            #endif
+            options.environment = EnvironmentUtil.environment.rawValue
+        }
+
         return true
     }
 }

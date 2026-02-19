@@ -62,4 +62,6 @@ enum Constants {
 
     static let backgroundGradeID = AssetUtil.bundleInfo(forKey: "ConfigBackgroundGradeID")
     static let backgroundElectricityID = AssetUtil.bundleInfo(forKey: "ConfigBackgroundElectricityID")
+
+    static let sentryDSN = AssetUtil.bundleInfo(forKey: "ConfigSentryDSN")
 }

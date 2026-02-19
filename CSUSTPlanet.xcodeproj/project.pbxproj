@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 00011BEE2F4786B4003A88B0 /* Sentry */; };
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
 		00CD22612E6757E6008AB82B /* Toasts in Frameworks */ = {isa = PBXBuildFile; productRef = 00CD22602E6757E6008AB82B /* Toasts */; };
 		00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 00E573582F1F4E3A00440D8D /* CSUSTKit */; };
@@ -117,8 +118,6 @@
 		};
 		00BBB2AF2EEEE5C10047AEEF /* Configs */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Configs;
 			sourceTree = "<group>";
 		};
@@ -141,6 +140,7 @@
 				00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */,
 				00E579E52F1F512500440D8D /* AlertToast in Frameworks */,
 				00CD22612E6757E6008AB82B /* Toasts in Frameworks */,
+				00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
 				00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */,
 				00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */,
@@ -236,6 +236,7 @@
 				00E574AA2F1F4F0400440D8D /* MatomoTracker */,
 				00E575FA2F1F4F6B00440D8D /* Kingfisher */,
 				00E579E42F1F512500440D8D /* AlertToast */,
+				00011BEE2F4786B4003A88B0 /* Sentry */,
 			);
 			productName = CSUSTPlanet;
 			productReference = 007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */;
@@ -296,6 +297,7 @@
 				00E574A92F1F4F0400440D8D /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */,
 				00E575F92F1F4F6B00440D8D /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				00E579E32F1F512500440D8D /* XCRemoteSwiftPackageReference "AlertToast" */,
+				00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 007CF85C2E1BD68900E319F2 /* Products */;
@@ -334,9 +336,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CSUSTPlanet/Pods-CSUSTPlanet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CSUSTPlanet/Pods-CSUSTPlanet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -742,6 +748,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.5.0;
+			};
+		};
 		0041FC6B2E2AA269007F383F /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
@@ -793,6 +807,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		00011BEE2F4786B4003A88B0 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
+		};
 		0041FC6C2E2AA269007F383F /* MarkdownUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0041FC6B2E2AA269007F383F /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
