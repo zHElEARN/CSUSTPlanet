@@ -16,9 +16,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         SentrySDK.start { options in
             options.dsn = Constants.sentryDSN
-            #if DEBUG
-                options.debug = true
-            #endif
+            // #if DEBUG
+            //     options.debug = true
+            // #endif
             options.environment = EnvironmentUtil.environment.rawValue
         }
 

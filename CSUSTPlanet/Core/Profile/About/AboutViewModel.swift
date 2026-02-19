@@ -7,6 +7,7 @@
 
 import CSUSTKit
 import Foundation
+import Sentry
 
 #if DEBUG
     import FLEX
@@ -221,6 +222,10 @@ final class AboutViewModel: ObservableObject {
 
         func showFlexExplorer() {
             FLEXManager.shared.showExplorer()
+        }
+
+        func captureTestError() {
+            SentrySDK.capture(message: "Test Error")
         }
     #endif
 }

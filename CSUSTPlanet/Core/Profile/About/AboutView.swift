@@ -46,6 +46,10 @@ struct AboutView: View {
                     Button(action: { viewModel.showFlexExplorer() }) {
                         Label("Flipboard Explorer", systemImage: "ladybug.fill").foregroundColor(.blue)
                     }
+
+                    Button(action: { viewModel.captureTestError() }) {
+                        Label("发送测试错误到Sentry", systemImage: "exclamationmark.triangle.fill").foregroundColor(.orange)
+                    }
                 }
             #endif
         }

@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import Sentry
 import SwiftData
 
 enum SharedModelUtil {
@@ -32,6 +33,7 @@ enum SharedModelUtil {
                 configurations: [config]
             )
         } catch {
+            SentrySDK.capture(error: error)
             Logger.sharedModel.error("ModelContainer 初始化失败: \(error)")
             fatalError("ModelContainer 初始化失败: \(error)")
         }

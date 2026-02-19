@@ -14,11 +14,10 @@ enum Constants {
     static let appBundleID = AssetUtil.bundleInfo(forKey: "ConfigAppBundleID")
     static let widgetBundleID = AssetUtil.bundleInfo(forKey: "ConfigWidgetBundleID")
 
-    static let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
+    static let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)!
 
-    static let mmkvDirectoryURL: URL? = {
-        guard let sharedURL = sharedContainerURL else { return nil }
-        let mmkvDir = sharedURL.appendingPathComponent("mmkv")
+    static let mmkvDirectoryURL: URL = {
+        let mmkvDir = sharedContainerURL.appendingPathComponent("mmkv")
         let fileManager = FileManager.default
         if !fileManager.fileExists(atPath: mmkvDir.path) {
             try? fileManager.createDirectory(at: mmkvDir, withIntermediateDirectories: true)

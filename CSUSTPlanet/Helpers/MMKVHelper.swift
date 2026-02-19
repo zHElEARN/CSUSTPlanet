@@ -7,6 +7,7 @@
 
 import CSUSTKit
 import Foundation
+import Sentry
 
 #if canImport(MMKVCore)
     import MMKVCore
@@ -29,9 +30,7 @@ class MMKVHelper {
     private init() {}
 
     private var mmkv: MMKV = {
-        guard let mmkvDirectoryURL = Constants.mmkvDirectoryURL else {
-            fatalError("Failed to get MMKV directory URL")
-        }
+        let mmkvDirectoryURL = Constants.mmkvDirectoryURL
 
         MMKV.initialize(rootDir: mmkvDirectoryURL.path)
         guard
@@ -43,6 +42,7 @@ class MMKVHelper {
                 expectedCapacity: 0
             )
         else {
+            SentrySDK.capture(message: "无法初始化MMKV实例ID: \(Constants.mmkvID)")
             fatalError("Failed to initialize MMKV with ID: \(Constants.mmkvID)")
         }
 
