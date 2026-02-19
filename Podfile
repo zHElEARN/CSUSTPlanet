@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 platform :ios, '17.0'
 
 target 'CSUSTPlanet' do
@@ -5,7 +7,7 @@ target 'CSUSTPlanet' do
 
   # Pods for CSUSTPlanet
   pod 'MMKV'
-  pod 'FLEX', :configurations => ['Debug']
+  pod 'FLEX', configurations: ['Debug']
 end
 
 target 'CSUSTPlanetWidgetExtension' do

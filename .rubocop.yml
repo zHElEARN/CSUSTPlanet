@@ -1,0 +1,12 @@
+Naming/FileName:
+  Exclude:
+    - "fastlane/Appfile"
+    - "fastlane/Matchfile"
+
+Metrics/BlockLength:
+  Exclude:
+    - "fastlane/Fastfile"
+
+Metrics/MethodLength:
+  Exclude:
+    - "fastlane/Fastfile"
