@@ -100,6 +100,14 @@ platform :ios do
       output_directory: output_dir,
       output_name: output_name
     )
+    # 上传符号文件到 Sentry
+    sentry_debug_files_upload(
+      auth_token: ENV['SENTRY_AUTH_TOKEN'],
+      org_slug: ENV['SENTRY_ORG_SLUG'],
+      project_slug: ENV['SENTRY_PROJECT_SLUG'],
+      url: ENV['SENTRY_URL'],
+      include_sources: true
+    )
     # 上传至 TestFlight
     upload_to_testflight(
       api_key: api_key,

@@ -2,6 +2,7 @@ Naming/FileName:
   Exclude:
     - "fastlane/Appfile"
     - "fastlane/Matchfile"
+    - "fastlane/Pluginfile"
 
 Metrics/BlockLength:
   Exclude:
