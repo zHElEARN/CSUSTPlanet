@@ -7,6 +7,7 @@
 
 import AppIntents
 import OSLog
+import Sentry
 import SwiftData
 import SwiftUI
 import TipKit
@@ -22,6 +23,14 @@ struct CSUSTPlanetApp: App {
     private static var lastBackgroundDate: Date?
 
     init() {
+        SentrySDK.start { options in
+            options.dsn = Constants.sentryDSN
+            // #if DEBUG
+            //     options.debug = true
+            // #endif
+            options.environment = EnvironmentUtil.environment.rawValue
+        }
+
         #if DEBUG
             try? Tips.resetDatastore()
         #endif
