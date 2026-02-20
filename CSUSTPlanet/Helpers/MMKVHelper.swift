@@ -222,6 +222,11 @@ extension MMKVHelper {
             }
         }
     }
+
+    var hasCleanedUpDuplicateElectricityRecords: Bool {
+        get { bool(forKey: "GlobalVars.hasCleanedUpDuplicateElectricityRecords") ?? false }
+        set { set(forKey: "GlobalVars.hasCleanedUpDuplicateElectricityRecords", newValue) }
+    }
 }
 
 // MARK: - Cached

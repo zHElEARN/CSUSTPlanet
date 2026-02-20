@@ -21,6 +21,7 @@ extension Logger {
     static let electricityBindingUtil = Logger(subsystem: appSubsystem, category: "ElectricityBindingUtil")
     static let trackHelper = Logger(subsystem: appSubsystem, category: "TrackHelper")
     static let backgroundTaskHelper = Logger(subsystem: appSubsystem, category: "BackgroundTaskHelper")
+    static let electricityRecordCleaner = Logger(subsystem: appSubsystem, category: "ElectricityRecordCleaner")
 
     static let gradeBackgroundTask = Logger(subsystem: appSubsystem, category: "GradeBackgroundTask")
 

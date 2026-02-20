@@ -69,6 +69,7 @@ struct CSUSTPlanetApp: App {
             if Self.isFirstAppear {
                 Self.isFirstAppear = false
                 TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
+                runDataCleanupTaskIfNeed()
             }
         case .inactive:
             Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
@@ -93,6 +94,15 @@ struct CSUSTPlanetApp: App {
             AuthManager.shared.ssoRelogin()
         } else {
             Logger.app.debug("App后台停留时间 (\(timeInterval)s) 不足 20 分钟，跳过 Relogin")
+        }
+    }
+
+    private func runDataCleanupTaskIfNeed() {
+        guard !MMKVHelper.shared.hasCleanedUpDuplicateElectricityRecords else { return }
+        Task {
+            let cleaner = ElectricityRecordCleaner(modelContainer: SharedModelUtil.container)
+            await cleaner.cleanUpDuplicateRecords()
+            MMKVHelper.shared.hasCleanedUpDuplicateElectricityRecords = true
         }
     }
 }
