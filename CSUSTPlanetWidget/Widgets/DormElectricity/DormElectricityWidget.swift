@@ -29,69 +29,56 @@ struct DormElectricityWidget: Widget {
 
 // MARK: - Preview
 
-#Preview("Small - 未配置", as: .systemSmall) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Small - 未配置", as: .systemSmall, widget: { DormElectricityWidget() }) {
     DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil)
 }
 
-#Preview("Medium - 未配置", as: .systemMedium) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Medium - 未配置", as: .systemMedium, widget: { DormElectricityWidget() }) {
     DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil)
 }
 
-#Preview("Large - 未配置", as: .systemLarge) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Large - 未配置", as: .systemLarge, widget: { DormElectricityWidget() }) {
     DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil)
 }
 
-#Preview("Small - 半完整", as: .systemSmall) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Small - 半完整", as: .systemSmall, widget: { DormElectricityWidget() }) {
     DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil)
 }
 
-#Preview("Medium - 半完整", as: .systemMedium) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Medium - 半完整", as: .systemMedium, widget: { DormElectricityWidget() }) {
     DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil)
 }
 
-#Preview("Large - 半完整", as: .systemLarge) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Large - 半完整", as: .systemLarge, widget: { DormElectricityWidget() }) {
     DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil)
 }
 
-#Preview("Small - 完整", as: .systemSmall) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Small - 完整", as: .systemSmall, widget: { DormElectricityWidget() }) {
     DormElectricityEntry.mockEntry
 }
 
-#Preview("Medium - 完整", as: .systemMedium) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Medium - 完整", as: .systemMedium, widget: { DormElectricityWidget() }) {
     DormElectricityEntry.mockEntry
 }
 
-#Preview("Large - 完整", as: .systemLarge) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Large - 完整", as: .systemLarge, widget: { DormElectricityWidget() }) {
     DormElectricityEntry.mockEntry
 }
 
-#Preview("Medium - 完整（单电量）", as: .systemMedium) {
-    DormElectricityWidget()
-} timeline: {
+#Preview("Medium - 完整（单电量）", as: .systemMedium, widget: { DormElectricityWidget() }) {
     DormElectricityEntry(
         date: .now,
         configuration: .mockIntent,
-        records: [
-            .init(electricity: 30, date: .now.addingTimeInterval(-86400))
-        ],
+        records: [.init(electricity: 30, date: .now.addingTimeInterval(-86400))],
+        lastFetchDate: .now
+    )
+}
+
+#Preview("Large - 完整（单电量）", as: .systemLarge, widget: { DormElectricityWidget() }) {
+    DormElectricityEntry(
+        date: .now,
+        configuration: .mockIntent,
+        records: [.init(electricity: 30, date: .now.addingTimeInterval(-86400))],
         lastFetchDate: .now
     )
 }

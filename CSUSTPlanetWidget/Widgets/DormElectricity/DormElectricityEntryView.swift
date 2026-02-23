@@ -28,7 +28,7 @@ struct DormElectricityEntryView: View {
                 VStack(spacing: 0) {
                     headerView(dorm: dorm, last: entry.last)
                     if family == .systemSmall || entry.last == nil {
-                        Divider()
+                        Divider().padding(.vertical, 4)
                     }
                     contentView(last: entry.last, bounds: entry.bounds, records: entry.records)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
