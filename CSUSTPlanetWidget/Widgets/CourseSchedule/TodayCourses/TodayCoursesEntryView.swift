@@ -326,21 +326,3 @@ struct TodayCoursesEntryView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
-
-#Preview(as: .systemSmall) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
-}
-
-#Preview(as: .systemMedium) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
-}
-
-#Preview(as: .systemLarge) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
-}
