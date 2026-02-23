@@ -9,11 +9,11 @@ import WidgetKit
 
 struct TodayCoursesProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> TodayCoursesEntry {
-        mockTodayCoursesEntry()
+        return .mockEntry
     }
 
     func snapshot(for configuration: TodayCoursesIntent, in context: Context) async -> TodayCoursesEntry {
-        mockTodayCoursesEntry()
+        return .mockEntry
     }
 
     func timeline(for configuration: TodayCoursesIntent, in context: Context) async -> Timeline<TodayCoursesEntry> {

@@ -23,20 +23,14 @@ struct TodayCoursesWidget: Widget {
     }
 }
 
-#Preview(as: .systemSmall) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
+#Preview(as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry
 }
 
-#Preview(as: .systemMedium) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
+#Preview(as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry
 }
 
-#Preview(as: .systemLarge) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
+#Preview(as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry
 }
