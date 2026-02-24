@@ -70,7 +70,7 @@
 		006CA2AE2E2D01F300340655 /* Exceptions for "CSUSTPlanet" folder in "CSUSTPlanetWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"Extensions/DayOfWeek+Formatter.swift.swift",
+				"Extensions/DayOfWeek+Formatter.swift",
 				"Extensions/Logger+Categories.swift",
 				"Extensions/View+Apply.swift",
 				Helpers/CookieHelper.swift,

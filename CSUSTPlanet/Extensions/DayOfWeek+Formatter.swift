@@ -1,5 +1,5 @@
 //
-//  DayOfWeek+Formatter.swift.swift
+//  DayOfWeek+Formatter.swift
 //  CSUSTPlanet
 //
 //  Created by Zachary Liu on 2026/2/25.
