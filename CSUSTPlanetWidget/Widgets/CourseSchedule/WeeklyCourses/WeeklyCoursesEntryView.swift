@@ -9,168 +9,8 @@ import CSUSTKit
 import SwiftUI
 import WidgetKit
 
-private let courses = [
-    EduHelper.Course(
-        courseName: "软件工程概论", groupName: nil, teacher: "胡立辉高级实验师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: Optional("金6-102")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 3, 5, 7, 9, 11, 13], startSection: 7, endSection: 8,
-                dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金12-205")
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "体育(三)", groupName: Optional("(24计算机跆拳道男11)"), teacher: "余新畅无",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], startSection: 3,
-                endSection: 4, dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金西田径场1")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "美术鉴赏(艺术及其他)", groupName: nil, teacher: "赵晖(14)讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 9,
-                endSection: 10, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金12-215")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "无人机设计与空天科技导论（自然科学）", groupName: nil, teacher: "张云菲副教授,陈良宇讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8], startSection: 9, endSection: 10,
-                dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: nil
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8], startSection: 9, endSection: 10,
-                dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: nil
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "大学物理B（下）", groupName: nil, teacher: "张华林讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 5,
-                endSection: 6, dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金12-106")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "离散结构", groupName: nil, teacher: "肖红光副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], startSection: 1,
-                endSection: 2, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金12-106")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], startSection: 7,
-                endSection: 8, dayOfWeek: EduHelper.DayOfWeek.friday, classroom: Optional("金13-105")
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "写作与沟通", groupName: nil, teacher: "陈璐（12）副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金6-304")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "程序设计、算法与数据结构（三）", groupName: nil, teacher: "陈曦(小)副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.friday, classroom: Optional("金12-107")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], startSection: 5, endSection: 6,
-                dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金12-107")
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "操作系统", groupName: nil, teacher: "胡晋彬副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 1,
-                endSection: 2, dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: Optional("金12-109")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "马克思主义基本原理", groupName: nil, teacher: "廖苗副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 5,
-                endSection: 6, dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: Optional("金12-116")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "大学物理实验B", groupName: nil, teacher: "蔡爱军讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [2], startSection: 7, endSection: 8, dayOfWeek: EduHelper.DayOfWeek.wednesday,
-                classroom: Optional("金12-500")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "操作系统实验（开源）", groupName: nil, teacher: "胡晋彬副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: nil
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [6, 8, 10, 12, 14], startSection: 5, endSection: 6,
-                dayOfWeek: EduHelper.DayOfWeek.friday, classroom: nil
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "线性代数", groupName: nil, teacher: "李铭副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [2, 4, 6, 8, 10, 12, 14], startSection: 1, endSection: 2,
-                dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金6-107")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], startSection: 7, endSection: 8,
-                dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: Optional("金6-107")
-            ),
-        ]
-    ),
-]
-
-func mockWeeklyCoursesEntry() -> WeeklyCoursesEntry {
-    let semesterDateFormatter = DateFormatter()
-    semesterDateFormatter.dateFormat = "yyyy-MM-dd"
-
-    let data = CourseScheduleData(semester: "2025-2026-1", semesterStartDate: semesterDateFormatter.date(from: "2025-09-07")!, courses: courses)
-
-    let timeDateFormatter = DateFormatter()
-    timeDateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-
-    return WeeklyCoursesEntry(
-        date: timeDateFormatter.date(from: "2025-09-21 17:55")!,
-        configuration: WeeklyCoursesIntent(),
-        data: data
-    )
-}
-
 struct WeeklyCoursesEntryView: View {
-    @Environment(\.widgetFamily) var widgetFamily
+    @Environment(\.widgetFamily) var family
 
     var entry: WeeklyCoursesProvider.Entry
 
@@ -282,7 +122,7 @@ struct WeeklyCoursesEntryView: View {
     }
 
     func headerView(for week: Int, semesterStartDate: Date) -> some View {
-        let dates = getDatesForWeek(week, semesterStartDate: semesterStartDate)
+        let dates = CourseScheduleUtil.getDatesForWeek(semesterStartDate: semesterStartDate, week: week)
         let monthFormatter = DateFormatter()
         monthFormatter.dateFormat = "M"
         let monthString = monthFormatter.string(from: dates.first ?? Date())
@@ -302,15 +142,16 @@ struct WeeklyCoursesEntryView: View {
             .frame(width: timeColWidth)
 
             ForEach(Array(zip(EduHelper.DayOfWeek.allCases, dates)), id: \.0) { day, date in
+                let isToday = CourseScheduleUtil.isToday(date)
                 VStack {
-                    Text(dayOfWeekToString(day))
+                    Text(day.chineseShortString)
                         .font(.subheadline)
-                        .foregroundStyle(isToday(date) ? .primary : .secondary)
-                        .fontWeight(isToday(date) ? .bold : .regular)
+                        .foregroundStyle(isToday ? .primary : .secondary)
+                        .fontWeight(isToday ? .bold : .regular)
                     Text(dayFormatter.string(from: date))
                         .font(.subheadline)
-                        .foregroundStyle(isToday(date) ? .primary : .secondary)
-                        .fontWeight(isToday(date) ? .bold : .regular)
+                        .foregroundStyle(isToday ? .primary : .secondary)
+                        .fontWeight(isToday ? .bold : .regular)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -327,10 +168,10 @@ struct WeeklyCoursesEntryView: View {
                             .font(.caption)
                             .fontWeight(.medium)
                         // sectionTime 数组索引从0开始
-                        if section - 1 < sectionTime.count {
-                            Text(sectionTime[section - 1].0)
+                        if section - 1 < CourseScheduleUtil.sectionTimeString.count {
+                            Text(CourseScheduleUtil.sectionTimeString[section - 1].0)
                                 .font(.system(size: 10))
-                            Text(sectionTime[section - 1].1)
+                            Text(CourseScheduleUtil.sectionTimeString[section - 1].1)
                                 .font(.system(size: 10))
                         }
                     }
@@ -415,14 +256,6 @@ struct WeeklyCoursesEntryView: View {
         }
     }
 
-    let sectionTime: [(String, String)] = [
-        ("08:00", "08:45"), ("08:55", "09:40"),  // 大节 1
-        ("10:10", "10:55"), ("11:05", "11:50"),  // 大节 2
-        ("14:00", "14:45"), ("14:55", "15:40"),  // 大节 3
-        ("16:10", "16:55"), ("17:05", "17:50"),  // 大节 4
-        ("19:30", "20:15"), ("20:25", "21:10"),  // 大节 5
-    ]
-
     let colSpacing: CGFloat = 4
     let rowSpacing: CGFloat = 4
     let timeColWidth: CGFloat = 35
@@ -478,44 +311,4 @@ struct WeeklyCoursesEntryView: View {
         let x = CGFloat(day.rawValue)
         return timeColWidth + colSpacing + (x * columnWidth) + (x * colSpacing)
     }
-
-    func getDatesForWeek(_ week: Int, semesterStartDate: Date) -> [Date] {
-        var dates: [Date] = []
-        guard let calendar = Calendar(identifier: .gregorian) as Calendar? else { return [] }
-
-        // 计算该周的周日是哪一天
-        let daysToAdd = (week - 1) * 7
-        guard let firstDayOfWeek = calendar.date(byAdding: .day, value: daysToAdd, to: semesterStartDate) else { return [] }
-
-        // 从周日开始，生成7天的日期
-        for i in 0..<7 {
-            if let date = calendar.date(byAdding: .day, value: i, to: firstDayOfWeek) {
-                dates.append(date)
-            }
-        }
-        return dates
-    }
-
-    func dayOfWeekToString(_ day: EduHelper.DayOfWeek) -> String {
-        switch day {
-        case .sunday: return "日"
-        case .monday: return "一"
-        case .tuesday: return "二"
-        case .wednesday: return "三"
-        case .thursday: return "四"
-        case .friday: return "五"
-        case .saturday: return "六"
-        }
-    }
-
-    func isToday(_ date: Date) -> Bool {
-        let calendar = Calendar.current
-        return calendar.isDate(date, inSameDayAs: entry.date)
-    }
-}
-
-#Preview(as: .systemLarge) {
-    WeeklyCoursesWidget()
-} timeline: {
-    mockWeeklyCoursesEntry()
 }
