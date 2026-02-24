@@ -20,7 +20,7 @@ struct TodayCoursesEntryView: View {
         Group {
             if let data = entry.data {
                 VStack(spacing: 0) {
-                    headerView(date: entry.date, data: data)
+                    CourseWidgetHeaderView(family: family, title: "当前课程", date: entry.date, data: data)
 
                     Divider().padding(.vertical, 4)
 
@@ -28,74 +28,11 @@ struct TodayCoursesEntryView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
-                emptyView
+                CourseWidgetEmptyView()
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
         .widgetURL(URL(string: "csustplanet://widgets/courseSchedule"))
-    }
-
-    // MARK: - Empty View
-
-    var emptyView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "calendar.badge.exclamationmark")
-                .font(.title)
-                .foregroundStyle(.gray.opacity(0.8))
-
-            VStack(spacing: 4) {
-                Text("暂无课表数据")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-
-                Text("请先在 App 中查询课表")
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    // MARK: - Header View
-
-    @ViewBuilder
-    func headerView(date: Date, data: CourseScheduleData) -> some View {
-        HStack(alignment: .center, spacing: 6) {
-            if family != .systemSmall {
-                Text("当前课程")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.primary)
-                Text(data.semester ?? "默认学期")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-            }
-            Text("周\(CourseScheduleUtil.getDayOfWeek(date).stringValue)")
-                .font(.system(size: 14))
-                .foregroundStyle(.red)
-
-            Spacer()
-
-            switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date) {
-            case .beforeSemester:
-                Text("学期未开始")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-            case .afterSemester:
-                Text("学期已结束")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-            case .inSemester:
-                if let currentWeek = CourseScheduleUtil.getCurrentWeek(semesterStartDate: data.semesterStartDate, now: date) {
-                    Text("第 \(currentWeek) 周")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.primary)
-                } else {
-                    Text("无法计算当前周")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.red)
-                }
-            }
-        }
     }
 
     // MARK: - Content View
@@ -104,36 +41,13 @@ struct TodayCoursesEntryView: View {
     func contentView(date: Date, data: CourseScheduleData) -> some View {
         switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date) {
         case .beforeSemester:
-            beforeSemesterView(date: date, data: data)
+            CourseWidgetBeforeSemesterView(date: date, data: data)
         case .afterSemester:
             Text("学期已结束")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.primary)
         case .inSemester:
             inSemesterView(date: date, data: data)
-        }
-    }
-
-    // MARK: - Before Semester View
-
-    @ViewBuilder
-    func beforeSemesterView(date: Date, data: CourseScheduleData) -> some View {
-        VStack(spacing: 4) {
-            Text("学期未开始")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.primary)
-            if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: date) {
-                if daysUntilStart > CourseScheduleUtil.semesterStartThreshold {
-                    Text(CourseScheduleUtil.getHolidayMessage(for: date))
-                        .multilineTextAlignment(.center)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("还有 \(daysUntilStart) 天开学")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-            }
         }
     }
 
