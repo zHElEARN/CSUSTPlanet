@@ -43,9 +43,7 @@ struct TodayCoursesEntryView: View {
         case .beforeSemester:
             CourseWidgetBeforeSemesterView(date: date, data: data)
         case .afterSemester:
-            Text("学期已结束")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.primary)
+            CourseWidgetAfterSemesterView()
         case .inSemester:
             inSemesterView(date: date, data: data)
         }
