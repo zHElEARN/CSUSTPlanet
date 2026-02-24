@@ -29,7 +29,7 @@ struct CourseScheduleDetailView: View {
                 Section(header: Text("课程安排")) {
                     InfoRow(label: "课程周次", value: formatWeeks(session.weeks))
                     InfoRow(label: "课程节次", value: "第\(session.startSection)节-第\(session.endSection)节")
-                    InfoRow(label: "每周日期", value: "周\(dayOfWeekToString(session.dayOfWeek))")
+                    InfoRow(label: "每周日期", value: session.dayOfWeek.chineseLongString)
                     InfoRow(label: "上课教室", value: session.classroom ?? "无教室")
                 }
             }
@@ -73,17 +73,5 @@ struct CourseScheduleDetailView: View {
         }
 
         return result.joined(separator: ", ")
-    }
-
-    private func dayOfWeekToString(_ day: EduHelper.DayOfWeek) -> String {
-        switch day {
-        case .monday: return "一"
-        case .tuesday: return "二"
-        case .wednesday: return "三"
-        case .thursday: return "四"
-        case .friday: return "五"
-        case .saturday: return "六"
-        case .sunday: return "日"
-        }
     }
 }

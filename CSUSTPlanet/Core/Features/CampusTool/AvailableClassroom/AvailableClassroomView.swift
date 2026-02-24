@@ -65,7 +65,7 @@ struct AvailableClassroomView: View {
                         LabeledContent {
                             Picker("星期", selection: $viewModel.selectedDayOfWeek) {
                                 ForEach(EduHelper.DayOfWeek.allCases, id: \.self) { dayOfWeek in
-                                    Text(dayOfWeekToString(dayOfWeek)).tag(dayOfWeek)
+                                    Text(dayOfWeek.chineseLongString).tag(dayOfWeek)
                                 }
                             }
                             .tint(.secondary)
@@ -198,17 +198,5 @@ struct AvailableClassroomView: View {
         .padding(.vertical, 40)
         .background(Color(uiColor: .secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    func dayOfWeekToString(_ dayOfWeek: EduHelper.DayOfWeek) -> String {
-        switch dayOfWeek {
-        case .monday: return "星期一"
-        case .tuesday: return "星期二"
-        case .wednesday: return "星期三"
-        case .thursday: return "星期四"
-        case .friday: return "星期五"
-        case .saturday: return "星期六"
-        case .sunday: return "星期日"
-        }
     }
 }
