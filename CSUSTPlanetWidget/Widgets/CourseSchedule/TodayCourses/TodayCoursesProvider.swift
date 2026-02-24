@@ -8,68 +8,84 @@
 import WidgetKit
 
 struct TodayCoursesProvider: AppIntentTimelineProvider {
+
+    #if DEBUG
+        // 当需要指定时间测试课表时，打断点并修改shouldMock和mockDate可以配置新的日期值
+        static var shouldMock: Bool = false
+        static var mockDate: String = "2025-10-20 11:49"
+    #endif
+
+    private static let refreshTimes: [(hour: Int, minute: Int)] = [
+        (8, 0), (9, 41),
+        (10, 0), (11, 51),
+        (14, 0), (15, 41),
+        (16, 0), (17, 51),
+        (19, 30), (21, 11),
+    ]
+
     func placeholder(in context: Context) -> TodayCoursesEntry {
-        return .mockEntry
+        return .mockEntry()
     }
 
     func snapshot(for configuration: TodayCoursesIntent, in context: Context) async -> TodayCoursesEntry {
-        return .mockEntry
+        if context.isPreview {
+            return .mockEntry()
+        } else if let data = MMKVHelper.shared.courseScheduleCache {
+            return TodayCoursesEntry(date: .now, configuration: configuration, data: data.value)
+        } else {
+            return .mockEntry()
+        }
     }
 
     func timeline(for configuration: TodayCoursesIntent, in context: Context) async -> Timeline<TodayCoursesEntry> {
-        defer {
-            MMKVHelper.shared.close()
-        }
-        MMKVHelper.shared.checkContentChanged()
+        let currentDate = resolveCurrentDate()
+        let calendar = Calendar.current
 
-        // #if DEBUG
-        //     let currentDate = {
-        //         let dateFormatter = DateFormatter()
-        //         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-        //         return dateFormatter.date(from: "2025-10-20 11:49")!
-        //     }()
-        // #else
-        let currentDate: Date = .now
-        // #endif
-
+        // 无缓存数据时：1小时后重试
         guard let data = MMKVHelper.shared.courseScheduleCache else {
-            let entry = TodayCoursesEntry(date: .now, configuration: configuration, data: nil)
-            let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: .now)!
+            let entry = TodayCoursesEntry(date: currentDate, configuration: configuration, data: nil)
+            let nextUpdate = calendar.date(byAdding: .hour, value: 1, to: currentDate) ?? currentDate.addingTimeInterval(3600)
             return Timeline(entries: [entry], policy: .after(nextUpdate))
         }
 
+        // 放假或未开学时：12小时刷新一次
         let semesterStatus = CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.value.semesterStartDate, date: currentDate)
-
-        if semesterStatus == .beforeSemester || semesterStatus == .afterSemester {
+        guard semesterStatus == .inSemester else {
             let entry = TodayCoursesEntry(date: currentDate, configuration: configuration, data: data.value)
-            let refreshDate = Calendar.current.date(byAdding: .hour, value: 12, to: currentDate)!
+            let refreshDate = calendar.date(byAdding: .hour, value: 12, to: currentDate) ?? currentDate.addingTimeInterval(12 * 3600)
             return Timeline(entries: [entry], policy: .after(refreshDate))
         }
 
-        var entries: [TodayCoursesEntry] = []
-        let calendar = Calendar.current
-
-        entries.append(TodayCoursesEntry(date: currentDate, configuration: configuration, data: data.value))
-
-        let startOfDay = calendar.startOfDay(for: currentDate)
-        let refreshTimes: [(hour: Int, minute: Int)] = [
-            (9, 41),
-            (11, 51),
-            (15, 41),
-            (17, 51),
-            (21, 11),
+        // 正常学期中：构建当天的多条时间线
+        var entries: [TodayCoursesEntry] = [
+            TodayCoursesEntry(date: currentDate, configuration: configuration, data: data.value)
         ]
 
-        for time in refreshTimes {
-            if let entryDate = calendar.date(bySettingHour: time.hour, minute: time.minute, second: 0, of: startOfDay) {
-                if entryDate > currentDate {
-                    let entry = TodayCoursesEntry(date: entryDate, configuration: configuration, data: data.value)
-                    entries.append(entry)
-                }
+        let startOfDay = calendar.startOfDay(for: currentDate)
+
+        for time in Self.refreshTimes {
+            if let entryDate = calendar.date(bySettingHour: time.hour, minute: time.minute, second: 0, of: startOfDay),
+                entryDate > currentDate
+            {
+                let entry = TodayCoursesEntry(date: entryDate, configuration: configuration, data: data.value)
+                entries.append(entry)
             }
         }
 
-        let tomorrowStart = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        // 第二天凌晨重新获取时间线
+        let tomorrowStart = calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? currentDate.addingTimeInterval(24 * 3600)
+
         return Timeline(entries: entries, policy: .after(tomorrowStart))
+    }
+
+    private func resolveCurrentDate() -> Date {
+        #if DEBUG
+            if Self.shouldMock {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+                return dateFormatter.date(from: Self.mockDate) ?? .now
+            }
+        #endif
+        return .now
     }
 }

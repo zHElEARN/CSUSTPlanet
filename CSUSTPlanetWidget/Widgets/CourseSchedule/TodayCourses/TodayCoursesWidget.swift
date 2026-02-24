@@ -1,7 +1,7 @@
 //
 //  TodayCoursesWidget.swift
 //  CSUSTPlanetWidgetExtension
-//
+//8
 //  Created by Zhe_Learn on 2025/7/23.
 //
 
@@ -15,7 +15,6 @@ struct TodayCoursesWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: TodayCoursesIntent.self, provider: TodayCoursesProvider()) { entry in
             TodayCoursesEntryView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("今日课程")
         .description("显示今天的课程安排")
@@ -23,14 +22,88 @@ struct TodayCoursesWidget: Widget {
     }
 }
 
-#Preview(as: .systemSmall, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.mockEntry
+// MARK: - Preview
+
+#Preview("Small - 空", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.init(date: .now, configuration: TodayCoursesIntent(), data: nil)
 }
 
-#Preview(as: .systemMedium, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.mockEntry
+#Preview("Medium - 空", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.init(date: .now, configuration: TodayCoursesIntent(), data: nil)
 }
 
-#Preview(as: .systemLarge, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.mockEntry
+#Preview("Large - 空", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.init(date: .now, configuration: TodayCoursesIntent(), data: nil)
+}
+
+#Preview("Small - 学期未开始（一周以外）", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-08-30 04:00")
+}
+
+#Preview("Medium - 学期未开始（一周以外）", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-08-30 04:00")
+}
+
+#Preview("Large - 学期未开始（一周以外）", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-08-30 04:00")
+}
+
+#Preview("Small - 学期未开始（一周以内）", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-04 04:00")
+}
+
+#Preview("Medium - 学期未开始（一周以内）", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-04 04:00")
+}
+
+#Preview("Large - 学期未开始（一周以内）", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-04 04:00")
+}
+
+#Preview("Small - 学期已结束", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2026-09-15 04:00")
+}
+
+#Preview("Medium - 学期已结束", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2026-09-15 04:00")
+}
+
+#Preview("Large - 学期已结束", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2026-09-15 04:00")
+}
+
+#Preview("Small - 完整", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry()
+}
+
+#Preview("Medium - 完整", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry()
+}
+
+#Preview("Large - 完整", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry()
+}
+
+#Preview("Small - 一节课", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 20:00")
+}
+
+#Preview("Medium - 一节课", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 20:00")
+}
+
+#Preview("Large - 一节课", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 20:00")
+}
+
+#Preview("Small - 无课程", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+}
+
+#Preview("Medium - 无课程", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+}
+
+#Preview("Large - 无课程", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
 }

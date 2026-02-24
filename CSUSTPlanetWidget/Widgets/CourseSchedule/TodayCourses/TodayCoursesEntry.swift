@@ -46,19 +46,20 @@ struct TodayCoursesEntry: TimelineEntry {
     let configuration: TodayCoursesIntent
     let data: CourseScheduleData?
 
-    static let mockEntry = {
+    static func mockEntry(semester: String = "2025-2026-1", semesterStartDate: String = "2025-09-07", date: String = "2025-09-17 04:00") -> TodayCoursesEntry {
         let semesterDateFormatter = DateFormatter()
         semesterDateFormatter.dateFormat = "yyyy-MM-dd"
+        let semesterStartDate = semesterDateFormatter.date(from: semesterStartDate) ?? .now
 
-        let data = CourseScheduleData(semester: "2025-2026-1", semesterStartDate: semesterDateFormatter.date(from: "2025-09-07")!, courses: courses)
+        let data = CourseScheduleData(semester: semester, semesterStartDate: semesterStartDate, courses: courses)
 
         let timeDateFormatter = DateFormatter()
         timeDateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
 
         return TodayCoursesEntry(
-            date: timeDateFormatter.date(from: "2025-09-17 04:00")!,
+            date: timeDateFormatter.date(from: date) ?? .now,
             configuration: TodayCoursesIntent(),
             data: data
         )
-    }()
+    }
 }

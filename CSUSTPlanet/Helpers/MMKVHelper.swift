@@ -75,6 +75,7 @@ class MMKVHelper {
 // MARK: - Methods
 
 extension MMKVHelper {
+    @available(*, deprecated, message: "Do not call this method")
     func close() {
         mmkv.sync()
         mmkv.close()
@@ -88,6 +89,7 @@ extension MMKVHelper {
         mmkv.removeValue(forKey: key)
     }
 
+    @available(*, deprecated, message: "Do not call this method")
     func checkContentChanged() {
         mmkv.checkContentChanged()
     }
