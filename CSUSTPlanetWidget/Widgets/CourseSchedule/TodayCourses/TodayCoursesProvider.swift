@@ -7,7 +7,7 @@
 
 import WidgetKit
 
-struct TodayCoursesProvider: AppIntentTimelineProvider {
+struct TodayCoursesProvider: TimelineProvider {
 
     #if DEBUG
         // 当需要指定时间测试课表时，打断点并修改shouldMock和mockDate可以配置新的日期值
@@ -27,38 +27,40 @@ struct TodayCoursesProvider: AppIntentTimelineProvider {
         return .mockEntry()
     }
 
-    func snapshot(for configuration: TodayCoursesIntent, in context: Context) async -> TodayCoursesEntry {
+    func getSnapshot(in context: Context, completion: @escaping (TodayCoursesEntry) -> Void) {
         if context.isPreview {
-            return .mockEntry()
+            completion(.mockEntry())
         } else if let data = MMKVHelper.shared.courseScheduleCache {
-            return TodayCoursesEntry(date: .now, configuration: configuration, data: data.value)
+            completion(TodayCoursesEntry(date: .now, data: data.value))
         } else {
-            return .mockEntry()
+            completion(.mockEntry())
         }
     }
 
-    func timeline(for configuration: TodayCoursesIntent, in context: Context) async -> Timeline<TodayCoursesEntry> {
+    func getTimeline(in context: Context, completion: @escaping (Timeline<TodayCoursesEntry>) -> Void) {
         let currentDate = resolveCurrentDate()
         let calendar = Calendar.current
 
         // 无缓存数据时：1小时后重试
         guard let data = MMKVHelper.shared.courseScheduleCache else {
-            let entry = TodayCoursesEntry(date: currentDate, configuration: configuration, data: nil)
+            let entry = TodayCoursesEntry(date: currentDate, data: nil)
             let nextUpdate = calendar.date(byAdding: .hour, value: 1, to: currentDate) ?? currentDate.addingTimeInterval(3600)
-            return Timeline(entries: [entry], policy: .after(nextUpdate))
+            completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
+            return
         }
 
         // 放假或未开学时：12小时刷新一次
         let semesterStatus = CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.value.semesterStartDate, date: currentDate)
         guard semesterStatus == .inSemester else {
-            let entry = TodayCoursesEntry(date: currentDate, configuration: configuration, data: data.value)
+            let entry = TodayCoursesEntry(date: currentDate, data: data.value)
             let refreshDate = calendar.date(byAdding: .hour, value: 12, to: currentDate) ?? currentDate.addingTimeInterval(12 * 3600)
-            return Timeline(entries: [entry], policy: .after(refreshDate))
+            completion(Timeline(entries: [entry], policy: .after(refreshDate)))
+            return
         }
 
         // 正常学期中：构建当天的多条时间线
         var entries: [TodayCoursesEntry] = [
-            TodayCoursesEntry(date: currentDate, configuration: configuration, data: data.value)
+            TodayCoursesEntry(date: currentDate, data: data.value)
         ]
 
         let startOfDay = calendar.startOfDay(for: currentDate)
@@ -67,7 +69,7 @@ struct TodayCoursesProvider: AppIntentTimelineProvider {
             if let entryDate = calendar.date(bySettingHour: time.hour, minute: time.minute, second: 0, of: startOfDay),
                 entryDate > currentDate
             {
-                let entry = TodayCoursesEntry(date: entryDate, configuration: configuration, data: data.value)
+                let entry = TodayCoursesEntry(date: entryDate, data: data.value)
                 entries.append(entry)
             }
         }
@@ -75,7 +77,8 @@ struct TodayCoursesProvider: AppIntentTimelineProvider {
         // 第二天凌晨重新获取时间线
         let tomorrowStart = calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? currentDate.addingTimeInterval(24 * 3600)
 
-        return Timeline(entries: entries, policy: .after(tomorrowStart))
+        completion(Timeline(entries: entries, policy: .after(tomorrowStart)))
+        return
     }
 
     private func resolveCurrentDate() -> Date {

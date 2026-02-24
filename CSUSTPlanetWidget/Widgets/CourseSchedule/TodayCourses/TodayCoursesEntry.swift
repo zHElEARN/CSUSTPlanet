@@ -43,7 +43,6 @@ private let courses = [
 
 struct TodayCoursesEntry: TimelineEntry {
     let date: Date
-    let configuration: TodayCoursesIntent
     let data: CourseScheduleData?
 
     static func mockEntry(semester: String = "2025-2026-1", semesterStartDate: String = "2025-09-07", date: String = "2025-09-17 04:00") -> TodayCoursesEntry {
@@ -58,7 +57,6 @@ struct TodayCoursesEntry: TimelineEntry {
 
         return TodayCoursesEntry(
             date: timeDateFormatter.date(from: date) ?? .now,
-            configuration: TodayCoursesIntent(),
             data: data
         )
     }

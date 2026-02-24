@@ -13,7 +13,7 @@ struct TodayCoursesWidget: Widget {
     let kind: String = "TodayCoursesWidget"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kind, intent: TodayCoursesIntent.self, provider: TodayCoursesProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: TodayCoursesProvider()) { entry in
             TodayCoursesEntryView(entry: entry)
         }
         .configurationDisplayName("今日课程")
@@ -25,15 +25,15 @@ struct TodayCoursesWidget: Widget {
 // MARK: - Preview
 
 #Preview("Small - 空", as: .systemSmall, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.init(date: .now, configuration: TodayCoursesIntent(), data: nil)
+    TodayCoursesEntry.init(date: .now, data: nil)
 }
 
 #Preview("Medium - 空", as: .systemMedium, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.init(date: .now, configuration: TodayCoursesIntent(), data: nil)
+    TodayCoursesEntry.init(date: .now, data: nil)
 }
 
 #Preview("Large - 空", as: .systemLarge, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.init(date: .now, configuration: TodayCoursesIntent(), data: nil)
+    TodayCoursesEntry.init(date: .now, data: nil)
 }
 
 #Preview("Small - 学期未开始（一周以外）", as: .systemSmall, widget: { TodayCoursesWidget() }) {
