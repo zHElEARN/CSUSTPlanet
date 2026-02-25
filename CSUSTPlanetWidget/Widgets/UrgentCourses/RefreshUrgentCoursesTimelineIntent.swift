@@ -15,7 +15,6 @@ struct RefreshUrgentCoursesTimelineIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        WidgetCenter.shared.reloadTimelines(ofKind: "UrgentCoursesWidget")
         return .result()
     }
 }
