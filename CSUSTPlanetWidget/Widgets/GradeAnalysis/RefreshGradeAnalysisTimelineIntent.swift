@@ -14,7 +14,6 @@ struct RefreshGradeAnalysisTimelineIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
         return .result()
     }
 }
