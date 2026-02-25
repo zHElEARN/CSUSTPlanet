@@ -9,14 +9,12 @@ import WidgetKit
 
 struct UrgentCoursesEntry: TimelineEntry {
     let date: Date
-    let configuration: UrgentCoursesIntent
     let data: UrgentCoursesData?
     let lastUpdated: Date?
 
-    static func mockEntry(configuration: UrgentCoursesIntent? = nil) -> UrgentCoursesEntry {
+    static func mockEntry() -> UrgentCoursesEntry {
         return UrgentCoursesEntry(
             date: .now,
-            configuration: configuration ?? UrgentCoursesIntent(),
             data: UrgentCoursesData(courses: [
                 UrgentCoursesData.Course(name: "马克思主义基本原理课外实践", id: "1"),
                 UrgentCoursesData.Course(name: "程序设计、算法与数据结构（三）", id: "2"),

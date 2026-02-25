@@ -14,7 +14,7 @@ struct UrgentCoursesWidget: Widget {
     let kind: String = "UrgentCoursesWidget"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kind, intent: UrgentCoursesIntent.self, provider: UrgentCoursesProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: UrgentCoursesProvider()) { entry in
             UrgentCoursesEntryView(entry: entry)
         }
         .configurationDisplayName("待提交作业")
@@ -24,5 +24,5 @@ struct UrgentCoursesWidget: Widget {
 }
 
 #Preview(as: .systemSmall, widget: { UrgentCoursesWidget() }) {
-    UrgentCoursesEntry.mockEntry(configuration: .init())
+    UrgentCoursesEntry.mockEntry()
 }
