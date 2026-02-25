@@ -67,12 +67,6 @@ struct UrgentCoursesEntryView: View {
             }
         }
         .widgetURL(URL(string: "csustplanet://widgets/urgentCourses"))
+        .containerBackground(.fill.tertiary, for: .widget)
     }
-}
-
-#Preview(as: .systemSmall) {
-    UrgentCoursesWidget()
-} timeline: {
-    let intent = UrgentCoursesIntent()
-    mockUrgentCoursesEntry(configuration: intent)
 }
