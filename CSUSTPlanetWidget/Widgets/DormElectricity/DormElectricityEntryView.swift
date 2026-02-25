@@ -14,12 +14,6 @@ struct DormElectricityEntryView: View {
 
     var entry: DormElectricityProvider.Entry
 
-    let dateFormatter: DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM/dd HH:mm"
-        return dateFormatter
-    }()
-
     // MARK: - Body
 
     var body: some View {
@@ -79,6 +73,7 @@ struct DormElectricityEntryView: View {
                     Text(dorm.room)
                         .font(.system(size: 14, weight: .bold))
                 }
+                .layoutPriority(1)
                 Spacer()
                 if let last = last {
                     VStack(alignment: .trailing, spacing: 2) {
@@ -88,10 +83,10 @@ struct DormElectricityEntryView: View {
                             + Text("度")
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
-                        Text("更新时间: \(dateFormatter.string(from: last.date))")
-                            .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(.secondary)
+                        lastUpdatedDateView(lastUpdated: last.date)
+                            .multilineTextAlignment(.trailing)
                     }
+                    .frame(alignment: .trailing)
                     .padding(.trailing, 8)
                 }
             }
@@ -101,6 +96,21 @@ struct DormElectricityEntryView: View {
             .foregroundColor(.blue)
             .buttonStyle(.plain)
         }
+    }
+
+    // MARK: - Last Updated Date View
+
+    @ViewBuilder
+    func lastUpdatedDateView(lastUpdated: Date) -> some View {
+        Text("数据更新于：")
+            .font(.system(size: 10, weight: .medium))
+            .foregroundStyle(.secondary)
+            + Text(lastUpdated, style: .relative)
+            .font(.system(size: 10, weight: .medium))
+            .foregroundStyle(.secondary)
+            + Text("前")
+            .font(.system(size: 10, weight: .medium))
+            .foregroundStyle(.secondary)
     }
 
     // MARK: - Content View
@@ -139,9 +149,8 @@ struct DormElectricityEntryView: View {
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
             Spacer()
-            Text("更新时间: \(dateFormatter.string(from: last.date))")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(.secondary)
+            lastUpdatedDateView(lastUpdated: last.date)
+                .multilineTextAlignment(.center)
         }
     }
 
