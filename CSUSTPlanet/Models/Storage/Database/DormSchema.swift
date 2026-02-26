@@ -35,12 +35,6 @@ enum DormSchemaV1: VersionedSchema {
             self.campusID = building.campus.id
             self.campusName = building.campus.rawValue
         }
-        var scheduleEnabled: Bool {
-            return scheduleHour != nil && scheduleMinute != nil
-        }
-        var lastRecord: ElectricityRecord? {
-            return records?.sorted(by: { $0.date > $1.date }).first
-        }
     }
 
     @Model
@@ -86,6 +80,7 @@ enum DormSchemaV2: VersionedSchema {
         var scheduleEnabled: Bool {
             return scheduleHour != nil && scheduleMinute != nil
         }
+        @available(*, deprecated, message: "直接访问此属性会导致严重的性能问题（会将所有历史记录加载到内存并排序）。请使用 FetchDescriptor 配合 fetchLimit = 1 在数据库层面进行查询。")
         var lastRecord: ElectricityRecord? {
             return records?.sorted(by: { $0.date > $1.date }).first
         }
