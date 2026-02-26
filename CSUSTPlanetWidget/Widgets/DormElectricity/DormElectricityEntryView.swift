@@ -102,7 +102,7 @@ struct DormElectricityEntryView: View {
 
     @ViewBuilder
     func lastUpdatedDateView(lastUpdated: Date) -> some View {
-        Text("数据更新于：")
+        Text("更新于：")
             .font(.system(size: 10, weight: .medium))
             .foregroundStyle(.secondary)
             + Text(lastUpdated, style: .relative)
