@@ -19,11 +19,8 @@ struct DormElectricityEntry: TimelineEntry {
     let records: [Record]
 
     let lastFetchDate: Date?
+    let lastFetchElectricity: Double?
 
-    var last: Record? {
-        guard let lastFetchDate = lastFetchDate, let lastRecord = records.last else { return nil }
-        return Record(electricity: lastRecord.electricity, date: lastFetchDate)
-    }
     var bounds: (min: Double, max: Double)? {
         guard let firstValue = records.first?.electricity else { return nil }
         return records.reduce((min: firstValue, max: firstValue)) { result, record in
@@ -39,6 +36,7 @@ struct DormElectricityEntry: TimelineEntry {
             Record(electricity: 20, date: .now.addingTimeInterval(-43200)),
             Record(electricity: 10, date: .now.addingTimeInterval(-21600)),
         ],
-        lastFetchDate: .now
+        lastFetchDate: .now,
+        lastFetchElectricity: 10
     )
 }

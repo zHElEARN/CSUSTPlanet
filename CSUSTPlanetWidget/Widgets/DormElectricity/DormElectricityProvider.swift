@@ -44,7 +44,8 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
             date: .now,
             configuration: configuration,
             records: records,
-            lastFetchDate: dorm.lastFetchDate
+            lastFetchDate: dorm.lastFetchDate,
+            lastFetchElectricity: dorm.lastFetchElectricity
         )
     }
 
@@ -104,7 +105,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
 
     /// 构建空状态 Entry
     private func emptyEntry(for configuration: DormElectricityAppIntent) -> DormElectricityEntry {
-        return DormElectricityEntry(date: .now, configuration: configuration, records: [], lastFetchDate: nil)
+        return DormElectricityEntry(date: .now, configuration: configuration, records: [], lastFetchDate: nil, lastFetchElectricity: nil)
     }
 
     /// 从本地数据库获取 Dorm 对象
@@ -142,7 +143,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
         let lastElectricity = fetchLastElectricityValue(dormID: dorm.id, context: context)
         let now = Date()
 
-        if lastElectricity == newElectricity {
+        if let lastElectricity = lastElectricity, abs(lastElectricity - newElectricity) < 0.001 {
             Logger.dormElectricityWidget.info("电量未变化，仅更新 lastFetchDate")
             dorm.lastFetchDate = now
         } else {
@@ -150,6 +151,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
             let record = ElectricityRecord(electricity: newElectricity, date: now, dorm: dorm)
             context.insert(record)
             dorm.lastFetchDate = now
+            dorm.lastFetchElectricity = newElectricity
         }
 
         do {
@@ -166,7 +168,8 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
             date: .now,
             configuration: configuration,
             records: records,
-            lastFetchDate: dorm.lastFetchDate
+            lastFetchDate: dorm.lastFetchDate,
+            lastFetchElectricity: dorm.lastFetchElectricity
         )
     }
 }

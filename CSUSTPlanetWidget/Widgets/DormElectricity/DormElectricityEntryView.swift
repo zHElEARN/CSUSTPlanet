@@ -20,11 +20,11 @@ struct DormElectricityEntryView: View {
         Group {
             if let dorm = entry.configuration.dorm {
                 VStack(spacing: 0) {
-                    headerView(dorm: dorm, last: entry.last)
-                    if family == .systemSmall || entry.last == nil {
+                    headerView(dorm: dorm, lastFetchDate: entry.lastFetchDate, lastFetchElectricity: entry.lastFetchElectricity)
+                    if family == .systemSmall || (entry.lastFetchDate == nil && entry.lastFetchElectricity == nil) {
                         Divider().padding(.vertical, 4)
                     }
-                    contentView(last: entry.last, bounds: entry.bounds, records: entry.records)
+                    contentView(lastFetchDate: entry.lastFetchDate, lastFetchElectricity: entry.lastFetchElectricity, bounds: entry.bounds, records: entry.records)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
@@ -56,7 +56,7 @@ struct DormElectricityEntryView: View {
 
     // MARK: - Header View
 
-    func headerView(dorm: DormIntentEntity, last: DormElectricityEntry.Record?) -> some View {
+    func headerView(dorm: DormIntentEntity, lastFetchDate: Date?, lastFetchElectricity: Double?) -> some View {
         HStack(alignment: .center, spacing: 0) {
             if family == .systemSmall {
                 VStack(alignment: .leading, spacing: 2) {
@@ -75,15 +75,15 @@ struct DormElectricityEntryView: View {
                 }
                 .layoutPriority(1)
                 Spacer()
-                if let last = last {
+                if let lastFetchDate = lastFetchDate, let lastFetchElectricity = lastFetchElectricity {
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(String(format: "%.2f", last.electricity))
+                        Text(String(format: "%.2f", lastFetchElectricity))
                             .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundColor(ColorUtil.electricityColor(electricity: last.electricity))
+                            .foregroundColor(ColorUtil.electricityColor(electricity: lastFetchElectricity))
                             + Text("度")
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
-                        lastUpdatedDateView(lastUpdated: last.date)
+                        lastUpdatedDateView(lastUpdated: lastFetchDate)
                             .multilineTextAlignment(.trailing)
                     }
                     .frame(alignment: .trailing)
@@ -116,10 +116,10 @@ struct DormElectricityEntryView: View {
     // MARK: - Content View
 
     @ViewBuilder
-    func contentView(last: DormElectricityEntry.Record?, bounds: (min: Double, max: Double)?, records: [DormElectricityEntry.Record]) -> some View {
+    func contentView(lastFetchDate: Date?, lastFetchElectricity: Double?, bounds: (min: Double, max: Double)?, records: [DormElectricityEntry.Record]) -> some View {
         if family == .systemSmall {
-            if let last = last {
-                textView(last: last)
+            if let lastFetchDate = lastFetchDate, let lastFetchElectricity = lastFetchElectricity {
+                textView(lastFetchDate: lastFetchDate, lastFetchElectricity: lastFetchElectricity)
             } else {
                 noDataView
             }
@@ -136,20 +136,20 @@ struct DormElectricityEntryView: View {
     // MARK: - Text View
 
     @ViewBuilder
-    func textView(last: DormElectricityEntry.Record) -> some View {
+    func textView(lastFetchDate: Date, lastFetchElectricity: Double) -> some View {
         VStack(alignment: .center, spacing: 0) {
             Spacer()
             Text("剩余电量")
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
-            Text(String(format: "%.2f", last.electricity))
+            Text(String(format: "%.2f", lastFetchElectricity))
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(ColorUtil.electricityColor(electricity: last.electricity))
+                .foregroundColor(ColorUtil.electricityColor(electricity: lastFetchElectricity))
                 + Text("度")
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
             Spacer()
-            lastUpdatedDateView(lastUpdated: last.date)
+            lastUpdatedDateView(lastUpdated: lastFetchDate)
                 .multilineTextAlignment(.center)
         }
     }

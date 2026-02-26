@@ -30,27 +30,27 @@ struct DormElectricityWidget: Widget {
 // MARK: - Preview
 
 #Preview("Small - 未配置", as: .systemSmall, widget: { DormElectricityWidget() }) {
-    DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil)
+    DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil, lastFetchElectricity: nil)
 }
 
 #Preview("Medium - 未配置", as: .systemMedium, widget: { DormElectricityWidget() }) {
-    DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil)
+    DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil, lastFetchElectricity: nil)
 }
 
 #Preview("Large - 未配置", as: .systemLarge, widget: { DormElectricityWidget() }) {
-    DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil)
+    DormElectricityEntry(date: .now, configuration: DormElectricityAppIntent(), records: [], lastFetchDate: nil, lastFetchElectricity: nil)
 }
 
 #Preview("Small - 半完整", as: .systemSmall, widget: { DormElectricityWidget() }) {
-    DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil)
+    DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil, lastFetchElectricity: nil)
 }
 
 #Preview("Medium - 半完整", as: .systemMedium, widget: { DormElectricityWidget() }) {
-    DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil)
+    DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil, lastFetchElectricity: nil)
 }
 
 #Preview("Large - 半完整", as: .systemLarge, widget: { DormElectricityWidget() }) {
-    DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil)
+    DormElectricityEntry(date: .now, configuration: .mockIntent, records: [], lastFetchDate: nil, lastFetchElectricity: nil)
 }
 
 #Preview("Small - 完整", as: .systemSmall, widget: { DormElectricityWidget() }) {
@@ -70,7 +70,8 @@ struct DormElectricityWidget: Widget {
         date: .now,
         configuration: .mockIntent,
         records: [.init(electricity: 30, date: .now.addingTimeInterval(-86400))],
-        lastFetchDate: .now
+        lastFetchDate: .now,
+        lastFetchElectricity: 30
     )
 }
 
@@ -79,6 +80,7 @@ struct DormElectricityWidget: Widget {
         date: .now,
         configuration: .mockIntent,
         records: [.init(electricity: 30, date: .now.addingTimeInterval(-86400))],
-        lastFetchDate: .now
+        lastFetchDate: .now,
+        lastFetchElectricity: 30
     )
 }

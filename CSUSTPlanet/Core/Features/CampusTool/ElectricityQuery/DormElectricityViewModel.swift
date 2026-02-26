@@ -99,7 +99,7 @@ class DormElectricityViewModel: ObservableObject {
                 let electricity = try await campusCardHelper.getElectricity(building: building, room: dorm.room)
 
                 let now = Date()
-                if let lastRecord = dorm.lastRecord, abs(lastRecord.electricity - electricity) < 0.001 {
+                if let lastFetchElectricity = dorm.lastFetchElectricity, abs(lastFetchElectricity - electricity) < 0.001 {
                     // 电量未变化，仅更新查询时间
                     dorm.lastFetchDate = now
                 } else {
@@ -107,6 +107,7 @@ class DormElectricityViewModel: ObservableObject {
                     let record = ElectricityRecord(electricity: electricity, date: now, dorm: dorm)
                     modelContext.insert(record)
                     dorm.lastFetchDate = now
+                    dorm.lastFetchElectricity = electricity
                 }
 
                 try modelContext.save()

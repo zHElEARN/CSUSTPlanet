@@ -15,8 +15,8 @@ struct DormCardView: View {
     @Bindable var dorm: Dorm
 
     private var electricityColor: Color {
-        guard let record = dorm.lastRecord else { return .primary }
-        return ColorUtil.electricityColor(electricity: record.electricity)
+        guard let electricity = dorm.lastFetchElectricity else { return .primary }
+        return ColorUtil.electricityColor(electricity: electricity)
     }
 
     var body: some View {
@@ -55,9 +55,9 @@ struct DormCardView: View {
                     }
 
                     // 2. Electricity
-                    if let record = dorm.lastRecord {
+                    if let electricity = dorm.lastFetchElectricity {
                         HStack(alignment: .lastTextBaseline, spacing: 4) {
-                            Text(String(format: "%.2f", record.electricity))
+                            Text(String(format: "%.2f", electricity))
                                 .font(.system(.largeTitle, design: .rounded))
                                 .fontWeight(.bold)
                                 .foregroundStyle(electricityColor)
