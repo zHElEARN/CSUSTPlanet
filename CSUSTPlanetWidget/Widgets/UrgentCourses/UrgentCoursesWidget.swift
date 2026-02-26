@@ -23,6 +23,22 @@ struct UrgentCoursesWidget: Widget {
     }
 }
 
-#Preview(as: .systemSmall, widget: { UrgentCoursesWidget() }) {
+#Preview("无数据", as: .systemSmall, widget: { UrgentCoursesWidget() }) {
+    UrgentCoursesEntry(date: .now, data: nil, lastUpdated: nil)
+}
+
+#Preview("默认", as: .systemSmall, widget: { UrgentCoursesWidget() }) {
     UrgentCoursesEntry.mockEntry()
+}
+
+#Preview("有数据（4门）", as: .systemSmall, widget: { UrgentCoursesWidget() }) {
+    UrgentCoursesEntry.mockEntry(courseCount: 4)
+}
+
+#Preview("有数据（2门）", as: .systemSmall, widget: { UrgentCoursesWidget() }) {
+    UrgentCoursesEntry.mockEntry(courseCount: 2)
+}
+
+#Preview("有数据（0门）", as: .systemSmall, widget: { UrgentCoursesWidget() }) {
+    UrgentCoursesEntry.mockEntry(courseCount: 0)
 }
