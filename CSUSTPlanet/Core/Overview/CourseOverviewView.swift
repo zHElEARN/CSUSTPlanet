@@ -146,7 +146,7 @@ struct CourseCard: View {
             showDetail = true
         }
         .sheet(isPresented: $showDetail) {
-            CourseScheduleDetailView(course: course, session: session, isPresented: $showDetail)
+            CourseScheduleDetailView(course: course, session: session, isShowingToolbar: true, isPresented: $showDetail)
         }
     }
 }

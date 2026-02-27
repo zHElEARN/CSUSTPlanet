@@ -11,6 +11,7 @@ import SwiftUI
 struct CourseScheduleDetailView: View {
     let course: EduHelper.Course
     let session: EduHelper.ScheduleSession
+    let isShowingToolbar: Bool
     @Binding var isPresented: Bool
 
     private var otherSessions: [EduHelper.ScheduleSession] {
@@ -33,15 +34,21 @@ struct CourseScheduleDetailView: View {
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle("课程详情")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button {
-                        isPresented = false
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.secondary)
+            .apply { view in
+                if isShowingToolbar {
+                    view.toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button {
+                                isPresented = false
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                     }
+                } else {
+                    view
                 }
             }
         }
