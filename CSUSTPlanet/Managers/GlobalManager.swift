@@ -58,7 +58,7 @@ class GlobalManager: ObservableObject {
         TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
     }
 
-    @Published var selectedTab: TabItem = .overview
+    @Published var selectedTab: TabItem? = .overview
     @Published var appearance: String {
         didSet { MMKVHelper.shared.appearance = appearance }
     }
