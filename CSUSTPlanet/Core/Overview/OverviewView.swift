@@ -45,9 +45,7 @@ struct OverviewView: View {
 
                 Spacer(minLength: 40)
             }
-            .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
-            .frame(maxWidth: .infinity)
-            .padding(.top, sizeClass == .regular ? 20 : 0)
+            .readableContentWidth()
         }
         .navigationTitle("概览")
         .background(Color(.systemGroupedBackground))
