@@ -28,6 +28,10 @@ class CourseScheduleViewModel: ObservableObject {
     @Published var currentWeek: Int = 1
     @Published var selectedSemester: String? = nil
 
+    @Published var selectedCourse: EduHelper.Course?
+    @Published var selectedSession: EduHelper.ScheduleSession?
+    @Published var isShowingDetail: Bool = false
+
     var courseColors: [String: Color] = [:]
 
     // 当日日期

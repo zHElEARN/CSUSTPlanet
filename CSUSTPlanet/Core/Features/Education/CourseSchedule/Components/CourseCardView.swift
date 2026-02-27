@@ -9,11 +9,11 @@ import CSUSTKit
 import SwiftUI
 
 struct CourseCardView: View {
-    @State var isShowingDetail = false
-
     let course: EduHelper.Course
     let session: EduHelper.ScheduleSession
     let color: Color
+
+    let onTap: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -58,10 +58,7 @@ struct CourseCardView: View {
                 .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1)
         )
         .onTapGesture {
-            isShowingDetail = true
-        }
-        .sheet(isPresented: $isShowingDetail) {
-            CourseScheduleDetailView(course: course, session: session, isPresented: $isShowingDetail)
+            onTap()
         }
     }
 }

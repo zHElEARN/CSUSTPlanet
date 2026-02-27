@@ -12,6 +12,8 @@ import SwiftUI
 // MARK: - CourseScheduleView
 
 struct CourseScheduleView: View {
+    @Environment(\.horizontalSizeClass) var sizeClass
+
     @StateObject var viewModel = CourseScheduleViewModel()
 
     let colSpacing: CGFloat = 2  // 列间距
@@ -37,6 +39,33 @@ struct CourseScheduleView: View {
                 .ignoresSafeArea(.container, edges: .bottom)
             } else {
                 emptyStateView
+            }
+        }
+        .onAppear {
+            if sizeClass == .regular {
+                viewModel.isShowingDetail = true
+            }
+        }
+        .apply { view in
+            if sizeClass == .regular {
+                view.inspector(isPresented: $viewModel.isShowingDetail) {
+                    Group {
+                        if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
+                            CourseScheduleDetailView(course: course, session: session, isPresented: $viewModel.isShowingDetail)
+                        } else {
+                            ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
+                        }
+                    }
+                    .inspectorColumnWidth(400)
+                }
+            } else {
+                view.sheet(isPresented: $viewModel.isShowingDetail) {
+                    if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
+                        CourseScheduleDetailView(course: course, session: session, isPresented: $viewModel.isShowingDetail)
+                    } else {
+                        ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
+                    }
+                }
             }
         }
         .navigationTitle("我的课表")
@@ -286,14 +315,18 @@ struct CourseScheduleView: View {
             ZStack(alignment: .topLeading) {
                 if let coursesForWeek = weeklyCourses[week] {
                     ForEach(coursesForWeek) { courseInfo in
-                        CourseCardView(course: courseInfo.course, session: courseInfo.session, color: viewModel.courseColors[courseInfo.course.courseName] ?? .gray)
-                            .frame(width: dayColumnWidth)
-                            .frame(height: calculateHeight(for: courseInfo.session))
-                            .offset(
-                                // 应用初始内边距到 x 偏移量以对齐坐标系
-                                x: horizontalPadding + calculateXOffset(for: courseInfo.session.dayOfWeek, columnWidth: dayColumnWidth),
-                                y: calculateYOffset(for: courseInfo.session)
-                            )
+                        CourseCardView(course: courseInfo.course, session: courseInfo.session, color: viewModel.courseColors[courseInfo.course.courseName] ?? .gray) {
+                            viewModel.selectedCourse = courseInfo.course
+                            viewModel.selectedSession = courseInfo.session
+                            viewModel.isShowingDetail = true
+                        }
+                        .frame(width: dayColumnWidth)
+                        .frame(height: calculateHeight(for: courseInfo.session))
+                        .offset(
+                            // 应用初始内边距到 x 偏移量以对齐坐标系
+                            x: horizontalPadding + calculateXOffset(for: courseInfo.session.dayOfWeek, columnWidth: dayColumnWidth),
+                            y: calculateYOffset(for: courseInfo.session)
+                        )
                     }
                 }
             }
