@@ -12,6 +12,32 @@ enum TabItem: String {
     case overview
     case features
     case profile
+
+    // 教务系统
+    case courseSchedule
+    case gradeQuery
+    case examSchedule
+    case gradeAnalysis
+
+    // 网络课程中心
+    case courses
+    case urgentCourses
+
+    // 校园工具
+    case electricityQuery
+    case availableClassroom
+    case campusMap
+    case schoolCalendar
+    case electricityRecharge
+    case webVPNConverter
+
+    // 大学物理实验
+    case physicsExperimentSchedule
+    case physicsExperimentGrade
+
+    // 其他考试查询
+    case cet
+    case mandarin
 }
 
 @MainActor

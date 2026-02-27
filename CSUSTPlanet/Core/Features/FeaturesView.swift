@@ -33,55 +33,49 @@ struct FeaturesView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: sizeClass == .regular ? 32 : 28) {
-                    if shouldShowAnnualReviewBanner {
-                        AnnualReviewBanner(isPresented: $isAnnualReviewPresented)
-                            .padding(.top, 10)
-                    }
-
-                    educationalSystemSection
-
-                    moocSection
-
-                    campusToolsSection
-
-                    if sizeClass == .regular {
-                        HStack(alignment: .top, spacing: spacing) {
-                            physicsSection
-                            examQuerySection
-                        }
-                        .padding(.horizontal, horizontalPadding)
-                    } else {
-                        VStack(spacing: spacing) {
-                            physicsSection
-                            examQuerySection
-                        }
-                        .padding(.horizontal, horizontalPadding)
-                    }
-
-                    Color.clear.frame(height: 20)
+        ScrollView {
+            VStack(spacing: sizeClass == .regular ? 32 : 28) {
+                if shouldShowAnnualReviewBanner {
+                    AnnualReviewBanner(isPresented: $isAnnualReviewPresented)
+                        .padding(.top, 10)
                 }
-                .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
-                .frame(maxWidth: .infinity)
-                .padding(.top, sizeClass == .regular ? 20 : 0)
+
+                educationalSystemSection
+
+                moocSection
+
+                campusToolsSection
+
+                if sizeClass == .regular {
+                    HStack(alignment: .top, spacing: spacing) {
+                        physicsSection
+                        examQuerySection
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                } else {
+                    VStack(spacing: spacing) {
+                        physicsSection
+                        examQuerySection
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                }
+
+                Color.clear.frame(height: 20)
             }
-            .navigationTitle("全部功能")
-            .background(Color(uiColor: .systemGroupedBackground))
-            .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
-                PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
-                    .environmentObject(physicsExperimentManager)
-            }
-            .fullScreenCover(isPresented: $isAnnualReviewPresented) {
-                AnnualReviewView(isPresented: $isAnnualReviewPresented)
-            }
-            .trackView("Features")
+            .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
+            .frame(maxWidth: .infinity)
+            .padding(.top, sizeClass == .regular ? 20 : 0)
         }
-        .tabItem {
-            Image(uiImage: UIImage(systemName: "square.grid.2x2")!)
-            Text("全部功能")
+        .navigationTitle("全部功能")
+        .background(Color(uiColor: .systemGroupedBackground))
+        .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
+            PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
+                .environmentObject(physicsExperimentManager)
         }
+        .fullScreenCover(isPresented: $isAnnualReviewPresented) {
+            AnnualReviewView(isPresented: $isAnnualReviewPresented)
+        }
+        .trackView("Features")
     }
 
     // MARK: - Extracted Subviews
