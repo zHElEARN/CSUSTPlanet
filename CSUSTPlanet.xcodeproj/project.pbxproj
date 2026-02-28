@@ -78,22 +78,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		005527012E9F491700D5347E /* Exceptions for "CSUSTPlanetWidget" folder in "CSUSTPlanet" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				LiveActivities/CourseStatusWidgetLiveActivity.swift,
-			);
-			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
-		};
 		006CA2AE2E2D01F300340655 /* Exceptions for "CSUSTPlanet" folder in "CSUSTPlanetWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"Extensions/Color+Hex.swift",
 				"Extensions/DayOfWeek+Formatter.swift",
 				"Extensions/Logger+Categories.swift",
 				"Extensions/View+Apply.swift",
 				Helpers/CookieHelper.swift,
 				Helpers/MMKVHelper.swift,
-				Models/ImageActivityItemSource.swift,
 				Models/Storage/CourseScheduleData.swift,
 				Models/Storage/Database/DormMigrationPlan.swift,
 				Models/Storage/Database/DormSchema.swift,
@@ -143,7 +136,6 @@
 		00E89C662E2C88D800B43162 /* CSUSTPlanetWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				005527012E9F491700D5347E /* Exceptions for "CSUSTPlanetWidget" folder in "CSUSTPlanet" target */,
 				00E89C772E2C88D800B43162 /* Exceptions for "CSUSTPlanetWidget" folder in "CSUSTPlanetWidgetExtension" target */,
 			);
 			path = CSUSTPlanetWidget;
