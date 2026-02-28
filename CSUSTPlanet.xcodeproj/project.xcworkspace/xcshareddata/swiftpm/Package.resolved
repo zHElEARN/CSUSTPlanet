@@ -1,13 +1,13 @@
 {
-  "originHash" : "80eb06b25f7c9da51ee56593a5595e5ee5060f72298923a3c5efd65f7d328968",
+  "originHash" : "e3a8554b8b3c6b7e16c8c284067737df7a4cc013fc680ed9a8eaafc9450a09ae",
   "pins" : [
     {
       "identity" : "alamofire",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Alamofire/Alamofire.git",
       "state" : {
-        "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
-        "version" : "5.10.2"
+        "revision" : "3f99050e75bbc6fe71fc323adabb039756680016",
+        "version" : "5.11.1"
       }
     },
     {
@@ -31,28 +31,10 @@
     {
       "identity" : "csustkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/CreaMakers/CSUSTKit.git",
+      "location" : "https://github.com/zHElEARN/CSUSTKit",
       "state" : {
-        "revision" : "d1d65e32e5db397a9f399007a88aab69d4696ba5",
-        "version" : "1.4.2"
-      }
-    },
-    {
-      "identity" : "flex",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FLEXTool/FLEX.git",
-      "state" : {
-        "revision" : "e0acf59d06d498041f65bbea1e5914b6e4b39733",
-        "version" : "5.22.10"
-      }
-    },
-    {
-      "identity" : "inject",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/krzysztofzablocki/Inject.git",
-      "state" : {
-        "revision" : "728c56639ecb3df441d51d5bc6747329afabcfc9",
-        "version" : "1.5.2"
+        "revision" : "97d7e339162b2ffb493e83f8597ddc650fb551a5",
+        "version" : "1.4.4"
       }
     },
     {
@@ -65,21 +47,30 @@
       }
     },
     {
-      "identity" : "lookinserver",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/QMUI/LookinServer/",
-      "state" : {
-        "revision" : "e553d1b689d147817dc54ad5c28fcff71e860101",
-        "version" : "1.2.8"
-      }
-    },
-    {
       "identity" : "lrucache",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nicklockwood/LRUCache.git",
       "state" : {
-        "revision" : "e0e9e039b33db8f2ef39b8e25607e38f46b13584",
-        "version" : "1.1.2"
+        "revision" : "cb5b2bd0da83ad29c0bec762d39f41c8ad0eaf3e",
+        "version" : "1.2.1"
+      }
+    },
+    {
+      "identity" : "matomo-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/matomo-org/matomo-sdk-ios.git",
+      "state" : {
+        "branch" : "v7.8.0",
+        "revision" : "f140afcb7cedebdcbf8b8230fdd822b4b61e3685"
+      }
+    },
+    {
+      "identity" : "mmkv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Tencent/MMKV.git",
+      "state" : {
+        "branch" : "dev",
+        "revision" : "fec30f74c7369fc1630e364b50f2ff80445559a7"
       }
     },
     {
@@ -89,6 +80,15 @@
       "state" : {
         "revision" : "2849f5323265386e200484b0d0f896e73c3411b9",
         "version" : "6.0.1"
+      }
+    },
+    {
+      "identity" : "sentry-cocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/getsentry/sentry-cocoa.git",
+      "state" : {
+        "revision" : "7e77c22816c024d7385d7ab5fbf4b00130853a43",
+        "version" : "9.5.1"
       }
     },
     {
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup.git",
       "state" : {
-        "revision" : "4206bc7b8bd9a4ff8e9511211e1b4bff979ef9c4",
-        "version" : "2.11.1"
+        "revision" : "d86f244ed497d48012782e2f59c985a55e77b3f5",
+        "version" : "2.11.3"
       }
     },
     {
@@ -143,15 +143,6 @@
       "state" : {
         "revision" : "46739300713772a62a3bf31d77f8f23ba9cf61f7",
         "version" : "1.0.2"
-      }
-    },
-    {
-      "identity" : "zoomable",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ryohey/Zoomable.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "525c0e1784825261b84d21c5cd5a159245a40ea6"
       }
     }
   ],

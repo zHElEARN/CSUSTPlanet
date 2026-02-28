@@ -3,7 +3,6 @@
 source 'https://rubygems.org'
 
 # gem "rails"
-gem 'cocoapods', '~> 1.16.2'
 gem 'fastlane'
 gem 'ostruct'
 
