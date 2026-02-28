@@ -9,9 +9,9 @@ import CSUSTKit
 import Foundation
 import Sentry
 
-#if DEBUG
-    import FLEX
-#endif
+// #if DEBUG
+//     import FLEX
+// #endif
 
 @MainActor
 final class AboutViewModel: ObservableObject {
@@ -220,9 +220,9 @@ final class AboutViewModel: ObservableObject {
             KeychainUtil.deleteAll()
         }
 
-        func showFlexExplorer() {
-            FLEXManager.shared.showExplorer()
-        }
+        // func showFlexExplorer() {
+        //     FLEXManager.shared.showExplorer()
+        // }
 
         func captureTestError() {
             SentrySDK.capture(message: "Test Error")

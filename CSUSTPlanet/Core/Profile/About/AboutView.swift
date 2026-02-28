@@ -43,9 +43,9 @@ struct AboutView: View {
                         Label("清除所有Keychain数据", systemImage: "trash").foregroundColor(.red)
                     }
 
-                    Button(action: { viewModel.showFlexExplorer() }) {
-                        Label("Flipboard Explorer", systemImage: "ladybug.fill").foregroundColor(.blue)
-                    }
+                    // Button(action: { viewModel.showFlexExplorer() }) {
+                    //     Label("Flipboard Explorer", systemImage: "ladybug.fill").foregroundColor(.blue)
+                    // }
 
                     Button(action: { viewModel.captureTestError() }) {
                         Label("发送测试错误到Sentry", systemImage: "exclamationmark.triangle.fill").foregroundColor(.orange)
