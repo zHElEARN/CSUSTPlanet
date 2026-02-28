@@ -10,13 +10,7 @@ import Foundation
 import OSLog
 import Sentry
 
-#if canImport(MMKVCore)
-    import MMKVCore
-#endif
-
-#if canImport(MMKVAppExtension)
-    import MMKVAppExtension
-#endif
+import MMKV
 
 struct Cached<T: Codable>: Codable {
     let cachedAt: Date

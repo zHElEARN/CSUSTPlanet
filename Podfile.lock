@@ -1,29 +1,16 @@
 PODS:
   - FLEX (5.22.10)
-  - MMKV (2.2.4):
-    - MMKVCore (~> 2.2.4)
-  - MMKVAppExtension (2.2.4):
-    - MMKVCore (~> 2.2.4)
-  - MMKVCore (2.2.4)
 
 DEPENDENCIES:
   - FLEX
-  - MMKV
-  - MMKVAppExtension
 
 SPEC REPOS:
   trunk:
     - FLEX
-    - MMKV
-    - MMKVAppExtension
-    - MMKVCore
 
 SPEC CHECKSUMS:
   FLEX: f21ee4f498eed3f8a1eded66b21939fd3b7a22ce
-  MMKV: 1a8e7dbce7f9cad02c52e1b1091d07bd843aefaf
-  MMKVAppExtension: ba53780107f4053039436f63638f1276e5ec1474
-  MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
 
-PODFILE CHECKSUM: d8ad26b73b25f363d8a9a1271768636681e8a099
+PODFILE CHECKSUM: be5f44948cbc6f59d5ff0bad3d620e181857fffd
 
 COCOAPODS: 1.16.2
