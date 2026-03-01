@@ -32,7 +32,7 @@ struct CSUSTPlanetApp: App {
         }
 
         #if DEBUG
-            try? Tips.resetDatastore()
+        try? Tips.resetDatastore()
         #endif
         try? Tips.configure([
             .displayFrequency(.immediate),
@@ -40,7 +40,9 @@ struct CSUSTPlanetApp: App {
         ])
 
         BackgroundTaskHelper.shared.registerAllTasks()
+        #if os(iOS)
         ActivityHelper.shared.setup()
+        #endif
         NotificationManager.shared.setup()
     }
 
@@ -60,7 +62,9 @@ struct CSUSTPlanetApp: App {
         switch phase {
         case .active:
             Logger.app.debug("App进入活跃状态: scenePhase .active")
+            #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
+            #endif
             if !Self.isFirstAppear {
                 checkAndRelogin()
                 BackgroundTaskHelper.shared.cancelAllTasks()
@@ -73,7 +77,9 @@ struct CSUSTPlanetApp: App {
             }
         case .inactive:
             Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
+            #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
+            #endif
             BackgroundTaskHelper.shared.scheduleAllTasks()
             TrackHelper.shared.event(category: "Lifecycle", action: "Inactive")
             Self.lastBackgroundDate = .now

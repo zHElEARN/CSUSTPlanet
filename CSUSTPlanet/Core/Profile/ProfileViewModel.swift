@@ -38,7 +38,9 @@ final class ProfileViewModel: ObservableObject {
         get { GlobalManager.shared.isLiveActivityEnabled }
         set {
             GlobalManager.shared.isLiveActivityEnabled = newValue
+            #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
+            #endif
         }
     }
 
