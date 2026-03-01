@@ -99,14 +99,17 @@ struct ContentView: View {
                     Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
                         NavigationStack { OverviewView() }
                     }
-                    Tab("我的", systemImage: "person", value: TabItem.profile) {
-                        NavigationStack { ProfileView() }
-                    }
                     if sizeClass == .compact {
                         Tab("全部功能", systemImage: "square.grid.2x2", value: TabItem.features) {
                             NavigationStack { FeaturesView() }
                         }
+                        Tab("我的", systemImage: "person", value: TabItem.profile) {
+                            NavigationStack { ProfileView() }
+                        }
                     } else {
+                        Tab("我的", systemImage: "person", value: TabItem.profile) {
+                            NavigationStack { ProfileView() }
+                        }
                         ForEach(featureSections) { section in
                             TabSection(section.title) {
                                 ForEach(section.items) { item in
