@@ -116,6 +116,13 @@
 			);
 			target = 00E89C5F2E2C88D800B43162 /* CSUSTPlanetWidgetExtension */;
 		};
+		00FF08E62F53E80900802367 /* Exceptions for "CSUSTPlanetWidget" folder in "CSUSTPlanet" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				LiveActivities/CourseStatusWidgetLiveActivity.swift,
+			);
+			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -136,6 +143,7 @@
 		00E89C662E2C88D800B43162 /* CSUSTPlanetWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				00FF08E62F53E80900802367 /* Exceptions for "CSUSTPlanetWidget" folder in "CSUSTPlanet" target */,
 				00E89C772E2C88D800B43162 /* Exceptions for "CSUSTPlanetWidget" folder in "CSUSTPlanetWidgetExtension" target */,
 			);
 			path = CSUSTPlanetWidget;
