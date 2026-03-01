@@ -10,9 +10,9 @@ import WidgetKit
 struct TodayCoursesProvider: TimelineProvider {
 
     #if DEBUG
-        // 当需要指定时间测试课表时，打断点并修改shouldMock和mockDate可以配置新的日期值
-        static var shouldMock: Bool = false
-        static var mockDate: String = "2025-10-20 11:49"
+    // 当需要指定时间测试课表时，打断点并修改shouldMock和mockDate可以配置新的日期值
+    static var shouldMock: Bool = false
+    static var mockDate: String = "2025-10-20 11:49"
     #endif
 
     private static let refreshTimes: [(hour: Int, minute: Int)] = [
@@ -83,11 +83,11 @@ struct TodayCoursesProvider: TimelineProvider {
 
     private func resolveCurrentDate() -> Date {
         #if DEBUG
-            if Self.shouldMock {
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-                return dateFormatter.date(from: Self.mockDate) ?? .now
-            }
+        if Self.shouldMock {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
+            return dateFormatter.date(from: Self.mockDate) ?? .now
+        }
         #endif
         return .now
     }

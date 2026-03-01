@@ -26,31 +26,31 @@ struct AboutView: View {
             }
 
             #if DEBUG
-                Section("Debug") {
-                    Button(action: { viewModel.generateMockData() }) {
-                        Label("生成模拟数据", systemImage: "plus.circle.fill").foregroundColor(.green)
-                    }
-
-                    Button(action: { viewModel.clearAllSwiftData() }) {
-                        Label("清除所有SwiftData数据", systemImage: "trash").foregroundColor(.red)
-                    }
-
-                    Button(action: { viewModel.clearAllMMKVData() }) {
-                        Label("清除所有MMKV数据", systemImage: "trash").foregroundColor(.red)
-                    }
-
-                    Button(action: { viewModel.clearAllKeychainData() }) {
-                        Label("清除所有Keychain数据", systemImage: "trash").foregroundColor(.red)
-                    }
-
-                    // Button(action: { viewModel.showFlexExplorer() }) {
-                    //     Label("Flipboard Explorer", systemImage: "ladybug.fill").foregroundColor(.blue)
-                    // }
-
-                    Button(action: { viewModel.captureTestError() }) {
-                        Label("发送测试错误到Sentry", systemImage: "exclamationmark.triangle.fill").foregroundColor(.orange)
-                    }
+            Section("Debug") {
+                Button(action: { viewModel.generateMockData() }) {
+                    Label("生成模拟数据", systemImage: "plus.circle.fill").foregroundColor(.green)
                 }
+
+                Button(action: { viewModel.clearAllSwiftData() }) {
+                    Label("清除所有SwiftData数据", systemImage: "trash").foregroundColor(.red)
+                }
+
+                Button(action: { viewModel.clearAllMMKVData() }) {
+                    Label("清除所有MMKV数据", systemImage: "trash").foregroundColor(.red)
+                }
+
+                Button(action: { viewModel.clearAllKeychainData() }) {
+                    Label("清除所有Keychain数据", systemImage: "trash").foregroundColor(.red)
+                }
+
+                // Button(action: { viewModel.showFlexExplorer() }) {
+                //     Label("Flipboard Explorer", systemImage: "ladybug.fill").foregroundColor(.blue)
+                // }
+
+                Button(action: { viewModel.captureTestError() }) {
+                    Label("发送测试错误到Sentry", systemImage: "exclamationmark.triangle.fill").foregroundColor(.orange)
+                }
+            }
             #endif
         }
         .background(Color(.systemBackground))

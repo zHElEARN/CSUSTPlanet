@@ -7,10 +7,9 @@
 
 import CSUSTKit
 import Foundation
+import MMKV
 import OSLog
 import Sentry
-
-import MMKV
 
 struct Cached<T: Codable>: Codable {
     let cachedAt: Date

@@ -14,9 +14,9 @@ import WidgetKit
 struct DormElectricityProvider: AppIntentTimelineProvider {
 
     #if DEBUG
-        // 当学校电量不更新的时候，需要手动触发更新，打断电并修改shouldMock和mockElectricity可以配置新的电量值
-        static var shouldMock: Bool = false
-        static var mockElectricity: Double = 10
+    // 当学校电量不更新的时候，需要手动触发更新，打断电并修改shouldMock和mockElectricity可以配置新的电量值
+    static var shouldMock: Bool = false
+    static var mockElectricity: Double = 10
     #endif
 
     // MARK: - AppIntentTimelineProvider
@@ -80,15 +80,15 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
         // 拉取网络数据并执行更新逻辑
         do {
             #if DEBUG
-                if Self.shouldMock {
-                    updateDatabaseIfNeeded(dorm: dorm, newElectricity: Self.mockElectricity, context: modelContext)
-                } else {
-                    let networkElectricity = try await CampusCardHelper().getElectricity(building: building, room: dorm.room)
-                    updateDatabaseIfNeeded(dorm: dorm, newElectricity: networkElectricity, context: modelContext)
-                }
-            #else
+            if Self.shouldMock {
+                updateDatabaseIfNeeded(dorm: dorm, newElectricity: Self.mockElectricity, context: modelContext)
+            } else {
                 let networkElectricity = try await CampusCardHelper().getElectricity(building: building, room: dorm.room)
                 updateDatabaseIfNeeded(dorm: dorm, newElectricity: networkElectricity, context: modelContext)
+            }
+            #else
+            let networkElectricity = try await CampusCardHelper().getElectricity(building: building, room: dorm.room)
+            updateDatabaseIfNeeded(dorm: dorm, newElectricity: networkElectricity, context: modelContext)
             #endif
         } catch {
             Logger.dormElectricityWidget.error("网络请求电量失败: \(error.localizedDescription)")

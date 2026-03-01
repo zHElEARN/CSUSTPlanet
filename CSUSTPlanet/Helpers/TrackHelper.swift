@@ -17,7 +17,7 @@ final class TrackHelper {
     private lazy var tracker: MatomoTracker = {
         let instance = MatomoTracker(siteId: Constants.matomoSiteID, baseURL: URL(string: Constants.matomoURL)!)
         #if DEBUG
-            instance.logger = DefaultLogger(minLevel: .debug)
+        instance.logger = DefaultLogger(minLevel: .debug)
         #endif
         if let index = Int(Constants.matomoDimensionIDAppFullVersion),
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,

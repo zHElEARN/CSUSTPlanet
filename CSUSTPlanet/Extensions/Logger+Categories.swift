@@ -29,8 +29,8 @@ extension Logger {
     static let gradeAnalysisWidget = Logger(subsystem: widgetSubsystem, category: "GradeAnalysisWidget")
 
     #if WIDGET
-        static let mmkv = Logger(subsystem: widgetSubsystem, category: "MMKV")
+    static let mmkv = Logger(subsystem: widgetSubsystem, category: "MMKV")
     #else
-        static let mmkv = Logger(subsystem: appSubsystem, category: "MMKV")
+    static let mmkv = Logger(subsystem: appSubsystem, category: "MMKV")
     #endif
 }
