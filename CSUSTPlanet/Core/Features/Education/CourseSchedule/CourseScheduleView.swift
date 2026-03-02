@@ -163,7 +163,7 @@ struct CourseScheduleView: View {
                     }
                     .padding(.horizontal, isPad ? 16 : 12)
                     .padding(.vertical, isPad ? 8 : 6)
-                    .background(Color(.secondarySystemBackground))
+                    .background(Color(uiColor: .secondarySystemBackground))
                     .cornerRadius(8)
                 }
 
@@ -176,7 +176,7 @@ struct CourseScheduleView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.systemBackground))
+        .background(Color(uiColor: .systemBackground))
         // .overlay(Divider().opacity(0.6), alignment: .bottom)
     }
 
@@ -288,7 +288,7 @@ struct CourseScheduleView: View {
                     HStack(spacing: colSpacing) {
                         ForEach(1...7, id: \.self) { _ in
                             Rectangle()
-                                .fill(Color(.secondarySystemBackground).opacity(0.3))
+                                .fill(Color(uiColor: .secondarySystemBackground).opacity(0.3))
                                 .frame(height: sectionHeight)
                                 .cornerRadius(isPad ? 8 : 4)
                         }

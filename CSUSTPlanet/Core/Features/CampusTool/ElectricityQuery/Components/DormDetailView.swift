@@ -68,7 +68,7 @@ struct DormDetailView: View {
                             .foregroundStyle(.secondary)
                     }
                     .padding()
-                    .background(Color(.secondarySystemGroupedBackground))
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 if let records = dorm.records, !records.isEmpty {
@@ -88,7 +88,7 @@ struct DormDetailView: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle("宿舍详情")
         .alert("清除记录", isPresented: $showDeleteAlert) {
             Button("取消", role: .cancel) {}
@@ -172,7 +172,7 @@ private struct ElectricityDashboardCard: View {
             }
         }
         .padding(20)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
@@ -200,7 +200,7 @@ private struct QuickActionsGrid: View {
                 title: dorm.isFavorite ? "已收藏" : "收藏",
                 titleColor: .primary,
                 iconColor: dorm.isFavorite ? .yellow : .primary,
-                backgroundColor: AnyShapeStyle(Color(.secondarySystemGroupedBackground))
+                backgroundColor: AnyShapeStyle(Color(uiColor: .secondarySystemGroupedBackground))
             ) {
                 viewModel.toggleFavorite(dorm)
             }
@@ -214,7 +214,7 @@ private struct QuickActionsGrid: View {
                 title: scheduleTitle,
                 titleColor: .primary,
                 iconColor: dorm.scheduleEnabled ? .purple : .primary,
-                backgroundColor: AnyShapeStyle(Color(.secondarySystemGroupedBackground))
+                backgroundColor: AnyShapeStyle(Color(uiColor: .secondarySystemGroupedBackground))
             ) {
                 if dorm.scheduleEnabled {
                     viewModel.isCancelScheduleAlertPresented = true
@@ -319,7 +319,7 @@ private struct ElectricityTrendCard: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .onChange(of: selectedRange, initial: true) { updateDisplayData() }
         .onChange(of: records) { updateDisplayData() }
@@ -346,7 +346,7 @@ private struct DormInfoCard: View {
             Divider().padding(.leading, 44)
             infoRow(icon: "map.fill", color: .orange, title: "校区", value: dorm.campusName)
         }
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 

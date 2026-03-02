@@ -192,7 +192,7 @@ struct ExamScheduleView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {

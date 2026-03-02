@@ -15,7 +15,7 @@ struct AvailableClassroomView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            Color(uiColor: .systemGroupedBackground)
                 .ignoresSafeArea()
 
             ScrollView {

@@ -53,7 +53,7 @@ struct AboutView: View {
             }
             #endif
         }
-        .background(Color(.systemBackground))
+        .background(Color(uiColor: .systemBackground))
         .navigationTitle("关于")
         .trackView("About")
     }

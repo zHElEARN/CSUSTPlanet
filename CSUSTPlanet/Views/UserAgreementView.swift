@@ -40,7 +40,7 @@ struct UserAgreementView: View {
                     .tint(.red)
                 }
             }
-            .background(Color(.systemBackground))
+            .background(Color(uiColor: .systemBackground))
             .navigationTitle("用户协议")
         }
         .trackView("UserAgreement")

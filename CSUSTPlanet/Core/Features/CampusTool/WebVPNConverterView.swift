@@ -98,7 +98,7 @@ struct WebVPNConverterView: View {
                         .font(.subheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
-                        .background(Color(.secondarySystemBackground))
+                        .background(Color(uiColor: .secondarySystemBackground))
                         .cornerRadius(8)
                 } else {
                     HStack {
@@ -128,7 +128,7 @@ struct WebVPNConverterView: View {
                         }
                     }
                     .padding()
-                    .background(Color(.secondarySystemBackground))
+                    .background(Color(uiColor: .secondarySystemBackground))
                     .cornerRadius(8)
                     .transition(.opacity.animation(.easeInOut))
                 }

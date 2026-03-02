@@ -119,11 +119,11 @@ struct SSOLoginView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemGray6))
+            .background(Color(uiColor: .systemGray6))
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
+                    .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.top, 5)
@@ -157,11 +157,11 @@ struct SSOLoginView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemGray6))
+            .background(Color(uiColor: .systemGray6))
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
+                    .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
             )
             .padding(.horizontal)
 
@@ -201,11 +201,11 @@ struct SSOLoginView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemGray6))
+            .background(Color(uiColor: .systemGray6))
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
+                    .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.top, 5)
@@ -238,11 +238,11 @@ struct SSOLoginView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color(.systemGray6))
+                .background(Color(uiColor: .systemGray6))
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(.systemGray4), lineWidth: 1)
+                        .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
                 )
             }
             .padding(.horizontal)
@@ -266,11 +266,11 @@ struct SSOLoginView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color(.systemGray6))
+                .background(Color(uiColor: .systemGray6))
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(.systemGray4), lineWidth: 1)
+                        .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
                 )
             }
             .padding(.horizontal)

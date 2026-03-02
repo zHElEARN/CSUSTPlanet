@@ -53,7 +53,7 @@ struct WebVPNGuideView: View {
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color(UIColor.secondarySystemBackground))
+                        .background(Color(uiColor: .secondarySystemBackground))
                         .cornerRadius(12)
                 }
             }

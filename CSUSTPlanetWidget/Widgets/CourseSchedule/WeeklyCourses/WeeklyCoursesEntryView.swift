@@ -175,7 +175,7 @@ struct WeeklyCoursesEntryView: View {
                     HStack(spacing: colSpacing) {
                         ForEach(1...7, id: \.self) { _ in
                             Rectangle()
-                                .fill(Color(.systemBackground).opacity(0.3))
+                                .fill(Color(uiColor: .systemBackground).opacity(0.3))
                                 .frame(height: sectionHeight)
                                 .cornerRadius(4)
                         }

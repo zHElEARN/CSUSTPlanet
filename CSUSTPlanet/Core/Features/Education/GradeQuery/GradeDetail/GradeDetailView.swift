@@ -128,7 +128,7 @@ struct GradeDetailView: View {
                 content()
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
             .cornerRadius(12)
         }
     }
@@ -145,7 +145,7 @@ struct GradeDetailView: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color(uiColor: .systemGroupedBackground))
         .task { viewModel.task(courseGrade) }
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)

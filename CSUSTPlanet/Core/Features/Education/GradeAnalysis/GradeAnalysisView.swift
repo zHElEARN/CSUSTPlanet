@@ -65,7 +65,7 @@ struct GradeAnalysisView: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemBackground))
+        .background(Color(uiColor: .secondarySystemBackground))
         .cornerRadius(10)
         .padding(.horizontal)
     }
@@ -242,7 +242,7 @@ struct GradeAnalysisView: View {
             analysisContent(gradeAnalysisData, isShareable: true)
                 .padding(.vertical)
                 .frame(width: UIScreen.main.bounds.width)
-                .background(Color(.systemGroupedBackground))
+                .background(Color(uiColor: .systemGroupedBackground))
                 .environment(\.colorScheme, colorScheme)
         } else {
             emptyStateSection

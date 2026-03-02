@@ -321,7 +321,7 @@ private struct ToolRow<Destination: View>: View {
 
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                    .foregroundColor(Color(uiColor: .tertiaryLabel))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
