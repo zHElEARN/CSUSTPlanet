@@ -51,7 +51,7 @@ struct SSOLoginView: View {
                 }
             }
             .navigationTitle("统一认证登录")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {

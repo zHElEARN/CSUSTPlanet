@@ -46,7 +46,6 @@ struct CoursesView: View {
                 view
             }
         }
-        // .toolbarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {

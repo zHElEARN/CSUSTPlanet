@@ -17,7 +17,7 @@ struct SchoolCalendarView: View {
     var body: some View {
         WebView(url: url)
             .navigationTitle("\(semester) 学期校历")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             .trackView("SchoolCalendar")
     }
 }

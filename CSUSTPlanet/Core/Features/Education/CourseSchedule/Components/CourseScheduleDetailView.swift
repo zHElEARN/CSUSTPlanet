@@ -33,7 +33,7 @@ struct CourseScheduleDetailView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle("课程详情")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             .apply { view in
                 if isShowingToolbar {
                     view.toolbar {

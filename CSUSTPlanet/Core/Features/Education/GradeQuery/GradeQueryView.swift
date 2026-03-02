@@ -214,7 +214,7 @@ struct GradeQueryView: View {
                 view
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         .environment(\.editMode, .constant(viewModel.isSelectionMode ? .active : .inactive))
         .trackView("GradeQuery")
     }
