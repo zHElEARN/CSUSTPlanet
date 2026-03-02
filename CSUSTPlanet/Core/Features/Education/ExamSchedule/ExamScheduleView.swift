@@ -49,7 +49,7 @@ struct ExamScheduleView: View {
             .navigationTitle("高级查询")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("取消") {
                         viewModel.isShowingFilter = false
                     }

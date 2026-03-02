@@ -254,7 +254,7 @@ struct GradeQueryView: View {
 
     @ToolbarContentBuilder
     private func selectionToolbar() -> some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
+        ToolbarItem(placement: .topBarLeading) {
             Button("取消") { viewModel.exitSelectionMode() }
         }
 
