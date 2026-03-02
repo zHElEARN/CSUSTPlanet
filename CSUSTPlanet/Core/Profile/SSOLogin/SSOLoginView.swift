@@ -113,8 +113,8 @@ struct SSOLoginView: View {
                 TextField("请输入账号", text: $viewModel.username)
                     .textFieldStyle(.plain)
                     .textContentType(.username)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
                     .frame(height: 20)
             }
             .padding(.horizontal, 16)
@@ -195,8 +195,8 @@ struct SSOLoginView: View {
                 TextField("请输入账号", text: $viewModel.username)
                     .textFieldStyle(.plain)
                     .textContentType(.username)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
                     .frame(height: 20)
             }
             .padding(.horizontal, 16)
@@ -219,8 +219,8 @@ struct SSOLoginView: View {
                         .foregroundColor(.gray)
                     TextField("请输入图片验证码", text: $viewModel.captcha)
                         .textFieldStyle(.plain)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
                         .frame(height: 20)
 
                     if let data = viewModel.captchaImageData, let image = UIImage(data: data) {
@@ -256,8 +256,8 @@ struct SSOLoginView: View {
                         .foregroundColor(.gray)
                     TextField("请输入短信验证码", text: $viewModel.smsCode)
                         .textContentType(.oneTimeCode)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
                         .frame(height: 20)
                     Button(action: viewModel.handleGetDynamicCode) {
                         Text(viewModel.countdown > 0 ? "\(viewModel.countdown)秒后重新获取" : "获取验证码")

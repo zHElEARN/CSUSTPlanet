@@ -41,8 +41,8 @@ struct PhysicsExperimentLoginView: View {
                         TextField("请输入用户名", text: $viewModel.username)
                             .textFieldStyle(.plain)
                             .textContentType(.username)
-                            .autocapitalization(.none)
-                            .disableAutocorrection(true)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled(true)
                             .frame(height: 20)
                     }
                     .padding(.horizontal, 16)
