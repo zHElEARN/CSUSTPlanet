@@ -85,7 +85,9 @@ struct AddDormitoryView: View {
                             TextField(viewModel.selectedCampus == .jinpenling ? "例如: 101" : "例如: A101或B203", text: $viewModel.room)
                                 .textFieldStyle(.plain)
                                 .textContentType(.username)
-                                .textInputAutocapitalization(.never)
+                                #if os(iOS)
+                            .textInputAutocapitalization(.never)
+                                #endif
                                 .autocorrectionDisabled(true)
                                 .frame(height: 20)
                         }

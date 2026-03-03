@@ -73,7 +73,9 @@ struct WebVPNConverterView: View {
                     TextField(inputPlaceholder, text: $originalUrl)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.vertical, 4)
-                        .textInputAutocapitalization(.never)
+                        #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                        #endif
                         .autocorrectionDisabled(true)
 
                     if !originalUrl.isEmpty {

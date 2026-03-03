@@ -113,7 +113,9 @@ struct SSOLoginView: View {
                 TextField("请输入账号", text: $viewModel.username)
                     .textFieldStyle(.plain)
                     .textContentType(.username)
-                    .textInputAutocapitalization(.never)
+                    #if os(iOS)
+                .textInputAutocapitalization(.never)
+                    #endif
                     .autocorrectionDisabled(true)
                     .frame(height: 20)
             }
@@ -195,7 +197,9 @@ struct SSOLoginView: View {
                 TextField("请输入账号", text: $viewModel.username)
                     .textFieldStyle(.plain)
                     .textContentType(.username)
-                    .textInputAutocapitalization(.never)
+                    #if os(iOS)
+                .textInputAutocapitalization(.never)
+                    #endif
                     .autocorrectionDisabled(true)
                     .frame(height: 20)
             }
@@ -219,7 +223,9 @@ struct SSOLoginView: View {
                         .foregroundColor(.gray)
                     TextField("请输入图片验证码", text: $viewModel.captcha)
                         .textFieldStyle(.plain)
-                        .textInputAutocapitalization(.never)
+                        #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                        #endif
                         .autocorrectionDisabled(true)
                         .frame(height: 20)
 
@@ -256,7 +262,9 @@ struct SSOLoginView: View {
                         .foregroundColor(.gray)
                     TextField("请输入短信验证码", text: $viewModel.smsCode)
                         .textContentType(.oneTimeCode)
-                        .textInputAutocapitalization(.never)
+                        #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                        #endif
                         .autocorrectionDisabled(true)
                         .frame(height: 20)
                     Button(action: viewModel.handleGetDynamicCode) {
