@@ -275,16 +275,13 @@ struct GradeAnalysisView: View {
         .navigationTitle("成绩分析")
         .toolbarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button(action: { viewModel.showShareSheet(shareableView) }) {
-                        Label("分享", systemImage: "square.and.arrow.up")
-                    }
-                    Button(action: { viewModel.saveToPhotoAlbum(shareableView) }) {
-                        Label("保存结果到相册", systemImage: "photo")
-                    }
-                } label: {
-                    Label("更多操作", systemImage: "ellipsis.circle")
+            ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: { viewModel.showShareSheet(shareableView) }) {
+                    Label("分享", systemImage: "square.and.arrow.up")
+                }
+                .disabled(viewModel.isLoading || viewModel.data == nil)
+                Button(action: { viewModel.saveToPhotoAlbum(shareableView) }) {
+                    Label("保存结果到相册", systemImage: "photo")
                 }
                 .disabled(viewModel.isLoading || viewModel.data == nil)
             }

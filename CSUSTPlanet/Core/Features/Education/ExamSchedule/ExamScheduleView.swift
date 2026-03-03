@@ -49,7 +49,7 @@ struct ExamScheduleView: View {
             .navigationTitle("高级查询")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
                         viewModel.isShowingFilter = false
                     }
@@ -240,18 +240,14 @@ struct ExamScheduleView: View {
         }
         .task { viewModel.task() }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button(action: { viewModel.isShowingFilter.toggle() }) {
-                        Label("高级查询", systemImage: "slider.horizontal.3")
-                    }
-                    Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
-                        Label("全部添加到日历", systemImage: "calendar.badge.plus")
-                    }
-                    .disabled(viewModel.data == nil)
-                } label: {
-                    Label("更多操作", systemImage: "ellipsis.circle")
+            ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: { viewModel.isShowingFilter.toggle() }) {
+                    Label("高级查询", systemImage: "slider.horizontal.3")
                 }
+                Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                    Label("全部添加到日历", systemImage: "calendar.badge.plus")
+                }
+                .disabled(viewModel.data == nil)
             }
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {

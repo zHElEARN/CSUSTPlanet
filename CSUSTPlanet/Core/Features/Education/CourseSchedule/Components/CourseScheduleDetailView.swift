@@ -41,9 +41,7 @@ struct CourseScheduleDetailView: View {
                             Button {
                                 isPresented = false
                             } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title3)
-                                    .foregroundColor(.secondary)
+                                Text("关闭")
                             }
                         }
                     }

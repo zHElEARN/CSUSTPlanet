@@ -59,7 +59,7 @@ struct PhysicsExperimentGradeView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .navigation) {
                 Button(action: {
                     isLoginPresented = true
                 }) {

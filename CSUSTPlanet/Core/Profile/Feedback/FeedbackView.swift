@@ -80,7 +80,7 @@ struct FeedbackView: View {
                     .navigationTitle("填写意见调研问卷")
                     .toolbarTitleDisplayMode(.inline)
                     .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
+                        ToolbarItem(placement: .cancellationAction) {
                             Button("关闭") {
                                 isShowingSurveySheet = false
                             }

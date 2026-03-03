@@ -223,19 +223,15 @@ struct GradeQueryView: View {
 
     @ToolbarContentBuilder
     private func mainToolbar() -> some ToolbarContent {
-        ToolbarItem(placement: .primaryAction) {
-            Menu {
-                Button(action: viewModel.enterSelectionMode) {
-                    Label("选择", systemImage: "checkmark.circle")
-                }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
-                Button(action: viewModel.exportGradesAsCSV) {
-                    Label("导出为CSV表格", systemImage: "doc.plaintext")
-                }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
-            } label: {
-                Label("更多操作", systemImage: "ellipsis.circle")
+        ToolbarItemGroup(placement: .secondaryAction) {
+            Button(action: viewModel.enterSelectionMode) {
+                Label("选择", systemImage: "checkmark.circle")
             }
+            .disabled(viewModel.isLoading || viewModel.data == nil)
+            Button(action: viewModel.exportGradesAsCSV) {
+                Label("导出为CSV表格", systemImage: "doc.plaintext")
+            }
+            .disabled(viewModel.isLoading || viewModel.data == nil)
         }
         ToolbarItem(placement: .primaryAction) {
             if viewModel.isLoading {
@@ -254,15 +250,12 @@ struct GradeQueryView: View {
 
     @ToolbarContentBuilder
     private func selectionToolbar() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
+        ToolbarItem(placement: .cancellationAction) {
             Button("取消") { viewModel.exitSelectionMode() }
         }
 
-        ToolbarItem(placement: .primaryAction) {
+        ToolbarItemGroup(placement: .primaryAction) {
             Button("全选") { viewModel.selectAll() }
-        }
-
-        ToolbarItem(placement: .primaryAction) {
             Button("全不选") { viewModel.selectNone() }
         }
     }

@@ -46,7 +46,7 @@ struct PhysicsExperimentScheduleView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .navigation) {
                 Button(action: { isLoginPresented = true }) {
                     Text("登录")
                 }

@@ -83,12 +83,11 @@ struct CourseScheduleView: View {
         }
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { viewModel.isShowingSemestersSheet = true }) {
                     Image(systemName: "calendar")
                 }
-            }
-            ToolbarItem(placement: .primaryAction) {
+
                 if viewModel.isLoading {
                     ProgressView()
                 } else {

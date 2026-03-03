@@ -45,25 +45,21 @@ struct CourseDetailView: View {
         }
         .navigationTitle(viewModel.courseInfo.name)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button(action: viewModel.loadAssignments) {
-                        Label("刷新作业列表", systemImage: "arrow.clockwise")
-                    }
-                    .disabled(viewModel.isAssignmentsLoading)
+            ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: viewModel.loadAssignments) {
+                    Label("刷新作业列表", systemImage: "arrow.clockwise")
+                }
+                .disabled(viewModel.isAssignmentsLoading)
 
-                    Button(action: viewModel.loadTests) {
-                        Label("刷新考试列表", systemImage: "arrow.clockwise")
-                    }
-                    .disabled(viewModel.isTestsLoading)
+                Button(action: viewModel.loadTests) {
+                    Label("刷新考试列表", systemImage: "arrow.clockwise")
+                }
+                .disabled(viewModel.isTestsLoading)
 
-                    Button(action: {
-                        viewModel.isShowingRemindersSettings = true
-                    }) {
-                        Label("添加作业列表到提醒事项", systemImage: "list.bullet.rectangle")
-                    }
-                } label: {
-                    Label("操作", systemImage: "ellipsis.circle")
+                Button(action: {
+                    viewModel.isShowingRemindersSettings = true
+                }) {
+                    Label("添加作业列表到提醒事项", systemImage: "list.bullet.rectangle")
                 }
             }
         }

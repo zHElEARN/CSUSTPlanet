@@ -97,7 +97,7 @@ struct CampusMapView: View {
             AlertToast(type: .loading, title: "加载中", subTitle: "正在加载地图数据")
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Menu {
                     Picker("校区", selection: $viewModel.selectedCampus) {
                         Text("全部校区").tag(CampusCardHelper.Campus?.none)
@@ -115,8 +115,6 @@ struct CampusMapView: View {
                     }
                 }
 
-            }
-            ToolbarItem(placement: .topBarTrailing) {
                 Button(action: viewModel.showOnlineMap) {
                     Image(systemName: "globe")
                 }
