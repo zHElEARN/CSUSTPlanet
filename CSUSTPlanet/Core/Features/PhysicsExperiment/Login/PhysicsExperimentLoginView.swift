@@ -47,11 +47,11 @@ struct PhysicsExperimentLoginView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Color(uiColor: .systemGray6))
+                    .background(Color.appSystemGray6)
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
+                            .stroke(Color.appSystemGray4, lineWidth: 1)
                     )
                     .padding(.horizontal)
 
@@ -84,11 +84,11 @@ struct PhysicsExperimentLoginView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Color(uiColor: .systemGray6))
+                    .background(Color.appSystemGray6)
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
+                            .stroke(Color.appSystemGray4, lineWidth: 1)
                     )
                     .padding(.horizontal)
 

@@ -87,7 +87,7 @@ private struct ExamListView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .background(Color.appSecondarySystemGroupedBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 

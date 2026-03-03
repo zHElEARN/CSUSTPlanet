@@ -173,7 +173,7 @@ struct GradeQueryView: View {
                 }
                 .listStyle(.insetGrouped)
             } else {
-                emptyStateSection.background(Color(uiColor: .systemGroupedBackground))
+                emptyStateSection.background(Color.appSystemGroupedBackground)
             }
         }
         .safeAreaInset(edge: .top) {

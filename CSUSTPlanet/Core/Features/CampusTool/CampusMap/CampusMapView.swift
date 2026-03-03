@@ -153,7 +153,7 @@ struct CampusMapView: View {
                         }
                 }
                 .padding(8)
-                .background(Color(uiColor: .tertiarySystemFill))
+                .background(Color.appTertiarySystemFill)
                 .cornerRadius(24)
 
                 if isSearchFocused {
@@ -178,7 +178,7 @@ struct CampusMapView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(viewModel.selectedCategory == category ? Color.accentColor : Color(uiColor: .secondarySystemBackground))
+                                .background(viewModel.selectedCategory == category ? Color.accentColor : Color.appSecondarySystemBackground)
                                 .foregroundColor(viewModel.selectedCategory == category ? .white : .primary)
                                 .cornerRadius(20)
                         }
@@ -235,7 +235,7 @@ struct CampusMapView: View {
                                     }
                                 }
                                 .padding(12)
-                                .background(Color(uiColor: .secondarySystemBackground))
+                                .background(Color.appSecondarySystemBackground)
                                 .cornerRadius(12)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)

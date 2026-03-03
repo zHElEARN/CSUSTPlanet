@@ -15,7 +15,7 @@ struct AvailableClassroomView: View {
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemGroupedBackground)
+            Color.appSystemGroupedBackground
                 .ignoresSafeArea()
 
             ScrollView {
@@ -112,7 +112,7 @@ struct AvailableClassroomView: View {
                         .disabled(viewModel.isLoading)
                     }
                     .padding(16)
-                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .background(Color.appSecondarySystemGroupedBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
 
@@ -148,7 +148,7 @@ struct AvailableClassroomView: View {
                                             .fontWeight(.medium)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 12)
-                                            .background(Color(uiColor: .secondarySystemGroupedBackground))
+                                            .background(Color.appSecondarySystemGroupedBackground)
                                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 12)
@@ -196,7 +196,7 @@ struct AvailableClassroomView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

@@ -22,7 +22,7 @@ struct DormCardView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .fill(Color.appSecondarySystemGroupedBackground)
                 .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 1)
 
             TrackLink(destination: DormDetailView(viewModel: viewModel, dorm: dorm)) {

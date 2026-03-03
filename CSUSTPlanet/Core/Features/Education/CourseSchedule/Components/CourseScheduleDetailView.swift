@@ -31,7 +31,7 @@ struct CourseScheduleDetailView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 10)
             }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .background(Color.appSystemGroupedBackground.ignoresSafeArea())
             .navigationTitle("课程详情")
             .toolbarTitleDisplayMode(.inline)
             .apply { view in
@@ -86,7 +86,7 @@ extension CourseScheduleDetailView {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
         .padding(.horizontal)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
     }
@@ -129,7 +129,7 @@ extension CourseScheduleDetailView {
             }
         }
         .padding()
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
     }
@@ -165,7 +165,7 @@ extension CourseScheduleDetailView {
                     }
                 }
             }
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .background(Color.appSecondarySystemGroupedBackground)
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }

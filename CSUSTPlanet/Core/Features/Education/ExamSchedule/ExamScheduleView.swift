@@ -157,7 +157,7 @@ struct ExamScheduleView: View {
             }
         }
         .padding(16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         // 已结束状态：降低透明度，置灰
@@ -192,7 +192,7 @@ struct ExamScheduleView: View {
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemGroupedBackground)
+            Color.appSystemGroupedBackground
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {

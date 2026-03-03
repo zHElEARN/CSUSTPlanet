@@ -39,7 +39,7 @@ struct AddDormitoryView: View {
                             ProgressView()
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color(uiColor: .systemBackground))
+                                .background(Color.appSystemBackground)
                                 .cornerRadius(10)
                                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                         } else {
@@ -64,7 +64,7 @@ struct AddDormitoryView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .background(Color(uiColor: .systemBackground))
+                            .background(Color.appSystemBackground)
                             .cornerRadius(10)
                             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                         }
@@ -91,11 +91,11 @@ struct AddDormitoryView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .background(Color(uiColor: .systemGray6))
+                        .background(Color.appSystemGray6)
                         .cornerRadius(10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color(uiColor: .systemGray4), lineWidth: 1)
+                                .stroke(Color.appSystemGray4, lineWidth: 1)
                         )
                         .padding(.top, 5)
                     }

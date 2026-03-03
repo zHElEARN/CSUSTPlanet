@@ -60,7 +60,7 @@ struct DormOverviewView: View {
             .padding(16)
             .frame(height: 130)
             .frame(maxWidth: .infinity)
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .background(Color.appSecondarySystemGroupedBackground)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)

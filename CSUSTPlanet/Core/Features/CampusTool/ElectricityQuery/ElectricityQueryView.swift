@@ -31,7 +31,7 @@ struct ElectricityQueryView: View {
                     }
                 }
                 .listStyle(.plain)
-                .background(Color(uiColor: .systemGroupedBackground))
+                .background(Color.appSystemGroupedBackground)
             }
         }
         .navigationTitle("电量查询")
