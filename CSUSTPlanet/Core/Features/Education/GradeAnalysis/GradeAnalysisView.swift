@@ -279,7 +279,7 @@ struct GradeAnalysisView: View {
             #endif
         }
         .navigationTitle("成绩分析")
-        .toolbarTitleDisplayMode(.large)
+        .largeToolbarTitle()
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
                 Button(action: { viewModel.showShareSheet(shareableView) }) {

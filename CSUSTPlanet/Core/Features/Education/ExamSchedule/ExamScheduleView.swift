@@ -282,7 +282,7 @@ struct ExamScheduleView: View {
                 view
             }
         }
-        .toolbarTitleDisplayMode(.large)
+        .largeToolbarTitle()
         .trackView("ExamSchedule")
     }
 }

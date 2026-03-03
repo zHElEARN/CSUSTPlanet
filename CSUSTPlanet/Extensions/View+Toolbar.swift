@@ -17,4 +17,13 @@ extension View {
         self
         #endif
     }
+
+    @ViewBuilder
+    func largeToolbarTitle() -> some View {
+        #if os(iOS)
+        self.toolbarTitleDisplayMode(.large)
+        #else
+        self
+        #endif
+    }
 }
