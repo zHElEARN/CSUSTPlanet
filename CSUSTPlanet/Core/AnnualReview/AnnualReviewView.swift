@@ -143,7 +143,6 @@ struct AnnualReviewView: View {
                         // 独立的背景块，确保不会与页面内容混淆
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.black.opacity(0.4))
-                            .background(BlurView(style: .systemUltraThinMaterialDark))  // 磨砂玻璃效果
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .padding(.trailing, 4)
@@ -237,13 +236,4 @@ struct AnnualReviewView: View {
         )
         TrackHelper.shared.flush()
     }
-}
-
-// 简单的磨砂玻璃辅助视图
-struct BlurView: UIViewRepresentable {
-    var style: UIBlurEffect.Style
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        UIVisualEffectView(effect: UIBlurEffect(style: style))
-    }
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }
