@@ -271,7 +271,13 @@ struct GradeAnalysisView: View {
         .toast(isPresenting: $viewModel.isShowingWarning) {
             AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
         }
-        .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
+        .sheet(isPresented: $viewModel.isShowingShareSheet) {
+            #if os(iOS)
+            ShareSheet(items: [viewModel.shareContent!])
+            #else
+            Text("分享功能暂不支持在当前平台使用")
+            #endif
+        }
         .navigationTitle("成绩分析")
         .toolbarTitleDisplayMode(.large)
         .toolbar {

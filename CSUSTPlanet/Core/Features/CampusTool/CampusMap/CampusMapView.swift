@@ -10,7 +10,10 @@ import CSUSTKit
 import MapKit
 import SwiftUI
 import TipKit
+
+#if os(iOS)
 import UIKit
+#endif
 
 struct CampusMapView: View {
     @StateObject private var viewModel = CampusMapViewModel()
@@ -68,11 +71,13 @@ struct CampusMapView: View {
             .padding()
         }
         .toolbar(.hidden, for: .tabBar)
+        #if os(iOS)
         .background(
             WillDisappearHandler {
                 viewModel.isBuildingsListShown = false
             }
         )
+        #endif
         .onChange(of: viewModel.isBuildingsListShown) { _, isShown in
             if !isShown {
                 debounceTask?.cancel()
@@ -344,6 +349,7 @@ extension CampusMapView {
     }
 }
 
+#if os(iOS)
 struct WillDisappearHandler: UIViewControllerRepresentable {
     let onWillDisappear: () -> Void
 
@@ -369,6 +375,7 @@ struct WillDisappearHandler: UIViewControllerRepresentable {
         }
     }
 }
+#endif
 
 #Preview {
     NavigationStack {

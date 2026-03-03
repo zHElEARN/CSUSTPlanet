@@ -205,7 +205,13 @@ struct GradeQueryView: View {
                 mainToolbar()
             }
         }
-        .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
+        .sheet(isPresented: $viewModel.isShowingShareSheet) {
+            #if os(iOS)
+            ShareSheet(items: [viewModel.shareContent!])
+            #else
+            Text("分享功能暂不支持在当前平台使用")
+            #endif
+        }
         .navigationTitle("成绩查询")
         .apply { view in
             if #available(iOS 26.0, *) {

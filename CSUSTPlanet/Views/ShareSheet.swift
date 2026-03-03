@@ -5,8 +5,8 @@
 //  Created by Zhe_Learn on 2025/8/30.
 //
 
+#if os(iOS)
 import SwiftUI
-import UIKit
 
 struct ShareSheet: UIViewControllerRepresentable {
     var items: [Any]
@@ -17,3 +17,4 @@ struct ShareSheet: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
+#endif

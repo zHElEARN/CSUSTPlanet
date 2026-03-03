@@ -98,6 +98,7 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
     }
 
     func showShareSheet(_ shareableView: some View) {
+        #if os(iOS)
         let renderer = ImageRenderer(content: shareableView)
         renderer.scale = UIScreen.main.scale
         guard let uiImage = renderer.uiImage else {
@@ -106,10 +107,12 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
             return
         }
         shareContent = ImageActivityItemSource(title: "我的成绩分析", image: uiImage)
+        #endif
         isShowingShareSheet = true
     }
 
     func saveToPhotoAlbum(_ shareableView: some View) {
+        #if os(iOS)
         let renderer = ImageRenderer(content: shareableView)
         renderer.scale = UIScreen.main.scale
         if let uiImage = renderer.uiImage {
@@ -118,6 +121,7 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
             errorMessage = "生成图片失败"
             isShowingError = true
         }
+        #endif
     }
 
     @objc
