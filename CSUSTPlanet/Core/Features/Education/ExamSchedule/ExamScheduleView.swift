@@ -26,7 +26,11 @@ struct ExamScheduleView: View {
                             Text(semester).tag(semester as String?)
                         }
                     }
+                    #if os(iOS)
                     .pickerStyle(.wheel)
+                    #else
+                    .pickerStyle(.menu)
+                    #endif
                     HStack {
                         Button(action: viewModel.loadAvailableSemesters) {
                             Text("刷新学期列表")
