@@ -141,7 +141,7 @@ struct AddDormitoryView: View {
                 }
             }
             .navigationTitle("添加宿舍信息")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .alert("错误", isPresented: $viewModel.isShowingError) {
                 Button("确定", role: .cancel) {}
             } message: {

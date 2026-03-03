@@ -86,6 +86,7 @@
 				"Extensions/DayOfWeek+Formatter.swift",
 				"Extensions/Logger+Categories.swift",
 				"Extensions/View+Apply.swift",
+				"Extensions/View+Toolbar.swift",
 				Helpers/CookieHelper.swift,
 				Helpers/MMKVHelper.swift,
 				Models/Storage/CourseScheduleData.swift,

@@ -82,7 +82,7 @@ struct ReminderOffsetSettingsView: View {
                 Spacer()
             }
             .navigationTitle("作业提醒设置")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {

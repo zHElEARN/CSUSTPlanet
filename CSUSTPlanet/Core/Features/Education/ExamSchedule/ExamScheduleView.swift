@@ -47,7 +47,7 @@ struct ExamScheduleView: View {
                 }
             }
             .navigationTitle("高级查询")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {

@@ -46,7 +46,7 @@ struct CourseSemesterView: View {
                 }
             }
             .navigationTitle("学期选择")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .trackView("CourseSemester")
         }
     }

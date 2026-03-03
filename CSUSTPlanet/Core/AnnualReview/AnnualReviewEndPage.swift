@@ -184,7 +184,7 @@ struct AnnualReviewEndPage: View {
             NavigationStack {
                 WebView(url: URL(string: "https://my.feishu.cn/share/base/form/shrcnPV8baxInD6OyUm5ZkteX0b")!)
                     .navigationTitle("填写意见调研问卷")
-                    .toolbarTitleDisplayMode(.inline)
+                    .inlineToolbarTitle()
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("关闭") {

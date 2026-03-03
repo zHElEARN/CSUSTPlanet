@@ -82,7 +82,7 @@ struct DormNotificationSettingsView: View {
                 Spacer()
             }
             .navigationTitle("宿舍电量查询提醒")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {

@@ -175,7 +175,7 @@ struct AvailableClassroomView: View {
             }
         }
         .navigationTitle("空教室查询")
-        .toolbarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
         .searchable(text: $viewModel.searchText, prompt: "搜索查询结果")
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)

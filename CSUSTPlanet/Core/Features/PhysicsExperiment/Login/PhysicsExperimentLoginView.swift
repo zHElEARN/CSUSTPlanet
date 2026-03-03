@@ -112,7 +112,7 @@ struct PhysicsExperimentLoginView: View {
                 }
             }
             .navigationTitle("登录大物实验")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { isPresented = false }) {

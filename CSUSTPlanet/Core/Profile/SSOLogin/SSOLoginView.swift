@@ -51,7 +51,7 @@ struct SSOLoginView: View {
                 }
             }
             .navigationTitle("统一认证登录")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
@@ -85,7 +85,7 @@ struct SSOLoginView: View {
                 NavigationStack {
                     SSOBrowserView(onLoginSuccess: viewModel.onBrowserLoginSuccess)
                         .navigationTitle("网页登录")
-                        .toolbarTitleDisplayMode(.inline)
+                        .inlineToolbarTitle()
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
                                 Button("关闭") {

@@ -86,7 +86,7 @@ struct CampusMapView: View {
                 .presentationDetents([.fraction(0.3), .fraction(0.5), .fraction(0.7)], selection: $viewModel.settingsDetent)
         }
         .navigationTitle("校园地图")
-        .toolbarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
         .sheet(isPresented: $viewModel.isOnlineMapShown) {
             SafariView(url: url).trackView("CampusMapOnline")
         }

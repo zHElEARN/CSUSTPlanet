@@ -81,7 +81,7 @@ struct CourseScheduleView: View {
                 view
             }
         }
-        .toolbarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { viewModel.isShowingSemestersSheet = true }) {
