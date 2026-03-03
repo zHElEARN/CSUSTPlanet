@@ -11,11 +11,16 @@ import Sentry
 import SwiftData
 import SwiftUI
 import TipKit
+
+#if os(iOS)
 import Toasts
+#endif
 
 @main
 struct CSUSTPlanetApp: App {
+    #if os(iOS)
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -39,20 +44,24 @@ struct CSUSTPlanetApp: App {
             .datastoreLocation(.applicationDefault),
         ])
 
-        BackgroundTaskHelper.shared.registerAllTasks()
         #if os(iOS)
+        BackgroundTaskHelper.shared.registerAllTasks()
         ActivityHelper.shared.setup()
-        #endif
         NotificationManager.shared.setup()
+        #endif
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .installToast(position: .top)
+                #if os(iOS)
+            .installToast(position: .top)
+                #endif
                 .environmentObject(GlobalManager.shared)
                 .environmentObject(AuthManager.shared)
-                .environmentObject(NotificationManager.shared)
+                #if os(iOS)
+            .environmentObject(NotificationManager.shared)
+            #endif
         }
         .modelContainer(SharedModelUtil.container)
         .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }
@@ -67,7 +76,9 @@ struct CSUSTPlanetApp: App {
             #endif
             if !Self.isFirstAppear {
                 checkAndRelogin()
+                #if os(iOS)
                 BackgroundTaskHelper.shared.cancelAllTasks()
+                #endif
                 TrackHelper.shared.event(category: "Lifecycle", action: "Active")
             }
             if Self.isFirstAppear {
@@ -79,8 +90,8 @@ struct CSUSTPlanetApp: App {
             Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
             #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
-            #endif
             BackgroundTaskHelper.shared.scheduleAllTasks()
+            #endif
             TrackHelper.shared.event(category: "Lifecycle", action: "Inactive")
             Self.lastBackgroundDate = .now
         case .background:

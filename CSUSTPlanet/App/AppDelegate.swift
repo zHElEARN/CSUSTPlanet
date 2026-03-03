@@ -5,10 +5,10 @@
 //  Created by Zhe_Learn on 2025/7/15.
 //
 
+#if os(iOS)
 import Foundation
 import OSLog
 import UIKit
-
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
@@ -36,3 +36,4 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound, .badge])
     }
 }
+#endif

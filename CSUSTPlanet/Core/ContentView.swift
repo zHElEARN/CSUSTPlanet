@@ -179,6 +179,7 @@ struct ContentView: View {
         }
         .trackRoot("App")
 
+        #if os(iOS)
         .apply { view in
             if #available(iOS 26.0, *) {
                 view.tabBarMinimizeBehavior(.onScrollDown)
@@ -186,6 +187,7 @@ struct ContentView: View {
                 view
             }
         }
+        #endif
 
         // MARK: 全局Toast状态
 
