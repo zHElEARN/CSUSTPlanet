@@ -5,6 +5,8 @@
 //  Created by Zachary Liu on 2026/1/17.
 //
 
+#if os(iOS)
+
 import BackgroundTasks
 import Foundation
 import OSLog
@@ -25,3 +27,4 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
         task.setTaskCompleted(success: true)
     }
 }
+#endif

@@ -5,6 +5,8 @@
 //  Created by Zachary Liu on 2026/1/17.
 //
 
+#if os(iOS)
+
 import BackgroundTasks
 import Foundation
 import OSLog
@@ -74,3 +76,4 @@ final class BackgroundTaskHelper {
         Logger.backgroundTaskHelper.debug("取消全部后台任务")
     }
 }
+#endif
