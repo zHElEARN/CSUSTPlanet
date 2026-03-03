@@ -72,9 +72,11 @@ struct FeaturesView: View {
             PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
                 .environmentObject(physicsExperimentManager)
         }
+        #if os(iOS)
         .fullScreenCover(isPresented: $isAnnualReviewPresented) {
             AnnualReviewView(isPresented: $isAnnualReviewPresented)
         }
+        #endif
         .trackView("Features")
     }
 

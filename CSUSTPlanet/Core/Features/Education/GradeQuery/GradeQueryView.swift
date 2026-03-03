@@ -171,7 +171,11 @@ struct GradeQueryView: View {
                         }
                     }
                 }
+                #if os(iOS)
                 .listStyle(.insetGrouped)
+                #elseif os(macOS)
+                .listStyle(.inset)
+                #endif
             } else {
                 emptyStateSection.background(Color.appSystemGroupedBackground)
             }
@@ -221,7 +225,9 @@ struct GradeQueryView: View {
             }
         }
         .inlineToolbarTitle()
+        #if os(iOS)
         .environment(\.editMode, .constant(viewModel.isSelectionMode ? .active : .inactive))
+        #endif
         .trackView("GradeQuery")
     }
 

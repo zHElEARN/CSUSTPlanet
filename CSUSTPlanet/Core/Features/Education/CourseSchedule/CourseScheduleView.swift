@@ -32,7 +32,14 @@ struct CourseScheduleView: View {
             if let courseScheduleData = viewModel.data {
                 let weeklyCourses = CourseScheduleUtil.getWeeklyCourses(courseScheduleData.value.courses)
 
-                // 课表的每一周翻页
+                #if os(macOS)
+                tableView(
+                    for: viewModel.currentWeek,
+                    semesterStartDate: courseScheduleData.value.semesterStartDate,
+                    weeklyCourses: weeklyCourses
+                )
+                .ignoresSafeArea(.container, edges: .bottom)
+                #else
                 TabView(selection: $viewModel.currentWeek) {
                     ForEach(1...CourseScheduleUtil.weekCount, id: \.self) { week in
                         tableView(for: week, semesterStartDate: courseScheduleData.value.semesterStartDate, weeklyCourses: weeklyCourses)
@@ -41,6 +48,7 @@ struct CourseScheduleView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .ignoresSafeArea(.container, edges: .bottom)
+                #endif
             } else {
                 emptyStateView
             }

@@ -181,9 +181,11 @@ struct AnnualReviewView: View {
                 handlePageChange(pageID: currentID)
             }
         }
+        #if os(iOS)
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.userDidTakeScreenshotNotification)) { _ in
             handleScreenshot()
         }
+        #endif
     }
 
     private func handlePageChange(pageID: Int) {

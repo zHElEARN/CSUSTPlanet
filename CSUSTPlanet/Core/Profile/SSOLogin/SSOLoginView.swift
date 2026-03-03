@@ -46,7 +46,9 @@ struct SSOLoginView: View {
                         accountLoginView.tag(0)
                         verificationCodeLoginView.tag(1)
                     }
+                    #if os(iOS)
                     .tabViewStyle(.page(indexDisplayMode: .never))
+                    #endif
                     .frame(height: 300)
                 }
             }
@@ -83,6 +85,7 @@ struct SSOLoginView: View {
             }
             .sheet(isPresented: $viewModel.isShowingBrowser) {
                 NavigationStack {
+                    #if os(iOS)
                     SSOBrowserView(onLoginSuccess: viewModel.onBrowserLoginSuccess)
                         .navigationTitle("网页登录")
                         .inlineToolbarTitle()
@@ -93,6 +96,9 @@ struct SSOLoginView: View {
                                 }
                             }
                         }
+                    #else
+                    Text("网页登录功能暂不支持macOS平台")
+                    #endif
                 }
                 .trackView("SSOBrowser")
             }
@@ -229,14 +235,24 @@ struct SSOLoginView: View {
                         .autocorrectionDisabled(true)
                         .frame(height: 20)
 
-                    if let data = viewModel.captchaImageData, let image = UIImage(data: data) {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 20)
-                            .onTapGesture {
-                                viewModel.handleRefreshCaptcha()
-                            }
+                    if let data = viewModel.captchaImageData {
+                        #if os(macOS)
+                        if let nsImage = NSImage(data: data) {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 20)
+                                .onTapGesture { viewModel.handleRefreshCaptcha() }
+                        }
+                        #else
+                        if let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 20)
+                                .onTapGesture { viewModel.handleRefreshCaptcha() }
+                        }
+                        #endif
                     } else {
                         ProgressView()
                             .frame(height: 20)

@@ -4,7 +4,7 @@
 //
 //  Created by Zhe_Learn on 2025/10/9.
 //
-
+#if os(iOS)
 import SwiftUI
 import WebKit
 
@@ -107,3 +107,4 @@ struct SSOBrowserView: UIViewRepresentable {
 
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 }
+#endif

@@ -124,6 +124,7 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
         #endif
     }
 
+    #if os(iOS)
     @objc
     func saveToPhotoAlbumCallback(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
         if let error = error {
@@ -133,4 +134,5 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
             isShowingSuccess = true
         }
     }
+    #endif
 }

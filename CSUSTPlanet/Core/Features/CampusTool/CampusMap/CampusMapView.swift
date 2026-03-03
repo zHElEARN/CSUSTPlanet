@@ -70,8 +70,8 @@ struct CampusMapView: View {
             }
             .padding()
         }
-        .toolbar(.hidden, for: .tabBar)
         #if os(iOS)
+        .toolbar(.hidden, for: .tabBar)
         .background(
             WillDisappearHandler {
                 viewModel.isBuildingsListShown = false

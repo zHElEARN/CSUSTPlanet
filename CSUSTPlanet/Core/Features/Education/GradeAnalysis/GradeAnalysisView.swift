@@ -241,7 +241,9 @@ struct GradeAnalysisView: View {
         if let gradeAnalysisData = viewModel.analysisData {
             analysisContent(gradeAnalysisData, isShareable: true)
                 .padding(.vertical)
-                .frame(width: UIScreen.main.bounds.width)
+                #if os(iOS)
+            .frame(width: UIScreen.main.bounds.width)
+                #endif
                 .background(Color.appSystemGroupedBackground)
                 .environment(\.colorScheme, colorScheme)
         } else {

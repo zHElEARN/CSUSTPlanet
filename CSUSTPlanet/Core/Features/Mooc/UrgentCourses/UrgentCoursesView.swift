@@ -36,7 +36,11 @@ struct UrgentCoursesView: View {
                         }
                     }
                 }
+                #if os(iOS)
                 .listStyle(.insetGrouped)
+                #elseif os(macOS)
+                .listStyle(.inset)
+                #endif
             } else {
                 ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交作业的课程"))
                     .background(Color.appSystemGroupedBackground)
