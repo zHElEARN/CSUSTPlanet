@@ -12,7 +12,9 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var globalManager: GlobalManager
+    #if os(iOS)
     @EnvironmentObject var notificationManager: NotificationManager
+    #endif
 
     @StateObject private var viewModel = ProfileViewModel()
 
@@ -195,11 +197,13 @@ struct ProfileView: View {
         } message: {
             Text("确定要退出登录吗？")
         }
+        #if os(iOS)
         .alert("错误", isPresented: $notificationManager.isShowingError) {
             Button("确定", role: .cancel) {}
         } message: {
             Text(notificationManager.errorDescription)
         }
+        #endif
         .trackView("Profile")
     }
 }
@@ -210,5 +214,7 @@ struct ProfileView: View {
     }
     .environmentObject(AuthManager.shared)
     .environmentObject(GlobalManager.shared)
+    #if os(iOS)
     .environmentObject(NotificationManager.shared)
+    #endif
 }

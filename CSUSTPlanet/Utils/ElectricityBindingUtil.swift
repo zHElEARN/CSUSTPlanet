@@ -12,11 +12,14 @@ import SwiftData
 
 enum ElectricityBindingUtilError: Error, LocalizedError {
     case syncFailed(reason: String)
+    case notSupported
 
     var errorDescription: String? {
         switch self {
         case .syncFailed(let reason):
             return "定时查询绑定失败: \(reason)"
+        case .notSupported:
+            return "当前平台不支持电量通知"
         }
     }
 }
@@ -29,7 +32,12 @@ enum ElectricityBindingUtil {
     }
 
     static func syncThrows() async throws {
+        #if os(iOS)
         let deviceToken = try await NotificationManager.shared.getToken().hexString
+        #else
+        let deviceToken = ""
+        throw ElectricityBindingUtilError.notSupported
+        #endif
 
         Logger.electricityBindingUtil.debug("获取到设备 token 和学号")
 

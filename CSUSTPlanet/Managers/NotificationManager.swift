@@ -5,6 +5,8 @@
 //  Created by Zhe_Learn on 2025/7/15.
 //
 
+#if os(iOS)
+
 import Foundation
 import OSLog
 import UIKit
@@ -132,3 +134,4 @@ extension Data {
         self.map { String(format: "%02.2hhx", $0) }.joined()
     }
 }
+#endif

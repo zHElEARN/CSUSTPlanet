@@ -30,7 +30,9 @@ final class ProfileViewModel: ObservableObject {
         get { GlobalManager.shared.isNotificationEnabled }
         set {
             GlobalManager.shared.isNotificationEnabled = newValue
+            #if os(iOS)
             NotificationManager.shared.toggle()
+            #endif
         }
     }
 
