@@ -11,7 +11,7 @@
 		002621202F53212500AC8DFA /* MMKVAppExtension in Frameworks */ = {isa = PBXBuildFile; productRef = 0026211F2F53212500AC8DFA /* MMKVAppExtension */; };
 		002621212F53212500AC8DFA /* MMKVAppExtension in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 0026211F2F53212500AC8DFA /* MMKVAppExtension */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
-		00CD22612E6757E6008AB82B /* Toasts in Frameworks */ = {isa = PBXBuildFile; productRef = 00CD22602E6757E6008AB82B /* Toasts */; };
+		00CD22612E6757E6008AB82B /* Toasts in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = 00CD22602E6757E6008AB82B /* Toasts */; };
 		00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 00E573582F1F4E3A00440D8D /* CSUSTKit */; };
 		00E5735B2F1F4E4C00440D8D /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 00E5735A2F1F4E4C00440D8D /* CSUSTKit */; };
 		00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 00E574AA2F1F4F0400440D8D /* MatomoTracker */; };

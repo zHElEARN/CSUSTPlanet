@@ -6,11 +6,16 @@
 //
 
 import SwiftUI
+
+#if os(iOS)
 import Toasts
+#endif
 
 struct AnnualReviewEndPage: View {
     // MARK: - Environment
+    #if os(iOS)
     @Environment(\.presentToast) var presentToast
+    #endif
 
     // MARK: - State Properties
     @State private var hasAnimated = false
@@ -108,12 +113,14 @@ struct AnnualReviewEndPage: View {
                                     .foregroundStyle(index <= rating ? accentColor : textSecondary.opacity(0.4))
                                     .onTapGesture {
                                         guard ratingCount < 3 else {
+                                            #if os(iOS)
                                             presentToast(
                                                 ToastValue(
                                                     icon: Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.orange),
                                                     message: "已达到评分次数上限（最多3次）"
                                                 )
                                             )
+                                            #endif
                                             return
                                         }
 
@@ -241,11 +248,13 @@ struct AnnualReviewEndPage: View {
 
         // 显示 toast 提示
         let message = ratingCount == 3 ? "感谢你的 \(value) 星评分！（已达评分次数上限）" : "感谢你的 \(value) 星评分！"
+        #if os(iOS)
         presentToast(
             ToastValue(
                 icon: Image(systemName: "star.fill").foregroundStyle(accentColor),
                 message: message
             )
         )
+        #endif
     }
 }

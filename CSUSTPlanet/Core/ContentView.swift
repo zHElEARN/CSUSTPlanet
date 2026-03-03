@@ -6,7 +6,10 @@
 //
 
 import SwiftUI
+
+#if os(iOS)
 import Toasts
+#endif
 
 struct FeatureItem: Identifiable {
     let id: TabItem
@@ -78,7 +81,9 @@ private let featureSections: [FeatureSection] = [
 struct ContentView: View {
     @EnvironmentObject var globalManager: GlobalManager
     @EnvironmentObject var authManager: AuthManager
+    #if os(iOS)
     @Environment(\.presentToast) var presentToast
+    #endif
     @Environment(\.horizontalSizeClass) var sizeClass
 
     var preferredColorScheme: ColorScheme? {
@@ -184,6 +189,7 @@ struct ContentView: View {
 
         // MARK: 全局Toast状态
 
+        #if os(iOS)
         .onChange(of: authManager.isShowingSSOInfo) { _, newValue in
             guard newValue else { return }
             presentToast(ToastValue(icon: Image(systemName: "info.circle.fill").foregroundStyle(.blue), message: authManager.ssoInfo))
@@ -214,6 +220,7 @@ struct ContentView: View {
             presentToast(ToastValue(icon: Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red), message: "网络课程中心登录错误"))
             authManager.isShowingMoocError = false
         }
+        #endif
 
         // MARK: - 主题设置 & 用户协议弹窗
 
