@@ -79,7 +79,7 @@ private let featureSections: [FeatureSection] = [
 ]
 
 struct ContentView: View {
-    @EnvironmentObject var globalManager: GlobalManager
+    @Environment(GlobalManager.self) var globalManager
     @EnvironmentObject var authManager: AuthManager
     #if os(iOS)
     @Environment(\.presentToast) var presentToast
@@ -98,9 +98,11 @@ struct ContentView: View {
     }
 
     var body: some View {
+        @Bindable var bindableGlobalManager = globalManager
+
         Group {
             if #available(iOS 18.0, macOS 15.0, *) {
-                TabView(selection: $globalManager.selectedTab) {
+                TabView(selection: $bindableGlobalManager.selectedTab) {
                     Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
                         NavigationStack { OverviewView() }
                     }
@@ -129,7 +131,7 @@ struct ContentView: View {
                 .tabViewStyle(.sidebarAdaptable)
             } else {
                 if sizeClass == .compact {
-                    TabView(selection: $globalManager.selectedTab) {
+                    TabView(selection: $bindableGlobalManager.selectedTab) {
                         NavigationStack { OverviewView() }
                             .tabItem { Label("概览", systemImage: "rectangle.stack") }
                             .tag(TabItem.overview)
@@ -142,7 +144,7 @@ struct ContentView: View {
                     }
                 } else {
                     NavigationSplitView {
-                        List(selection: $globalManager.selectedTab) {
+                        List(selection: $bindableGlobalManager.selectedTab) {
                             Section {
                                 ColoredLabel(title: "概览", iconName: "rectangle.stack", color: .blue).tag(TabItem.overview)
                                 ColoredLabel(title: "我的", iconName: "person", color: .blue).tag(TabItem.profile)
@@ -245,10 +247,4 @@ struct ContentView: View {
             }
         }
     }
-}
-
-#Preview {
-    ContentView()
-        .environmentObject(GlobalManager.shared)
-        .environmentObject(AuthManager.shared)
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FeaturesView: View {
     @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var globalManager: GlobalManager
+    @Environment(GlobalManager.self) var globalManager
 
     @Environment(\.horizontalSizeClass) var sizeClass
 
@@ -485,14 +485,5 @@ private struct AnnualReviewBanner: View {
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, 20)
         .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 10, x: 0, y: 5)
-    }
-}
-
-// MARK: - Preview
-#Preview {
-    NavigationView {
-        FeaturesView()
-            .environmentObject(AuthManager.shared)
-            .environmentObject(GlobalManager.shared)
     }
 }

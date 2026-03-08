@@ -9,7 +9,7 @@ import MarkdownUI
 import SwiftUI
 
 struct UserAgreementView: View {
-    @EnvironmentObject var globalManager: GlobalManager
+    @Environment(GlobalManager.self) var globalManager
 
     var body: some View {
         NavigationStack {
@@ -44,12 +44,5 @@ struct UserAgreementView: View {
             .navigationTitle("用户协议")
         }
         .trackView("UserAgreement")
-    }
-}
-
-#Preview {
-    NavigationStack {
-        UserAgreementView()
-            .environmentObject(GlobalManager.shared)
     }
 }

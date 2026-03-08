@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WebVPNGuideView: View {
     @Binding var isPresented: Bool
-    @EnvironmentObject var globalManager: GlobalManager
+    @Environment(GlobalManager.self) var globalManager
 
     var body: some View {
         VStack(spacing: 16) {
@@ -63,9 +63,4 @@ struct WebVPNGuideView: View {
         .presentationDetents([.medium])
         .trackView("WebVPNGuide")
     }
-}
-
-#Preview {
-    WebVPNGuideView(isPresented: .constant(true))
-        .environmentObject(GlobalManager.shared)
 }

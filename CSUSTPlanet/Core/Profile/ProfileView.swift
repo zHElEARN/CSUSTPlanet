@@ -11,7 +11,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var globalManager: GlobalManager
+    @Environment(GlobalManager.self) var globalManager
     #if os(iOS)
     @EnvironmentObject var notificationManager: NotificationManager
     #endif
@@ -19,6 +19,8 @@ struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
 
     var body: some View {
+        @Bindable var bindableGlobalManager = globalManager
+
         Form {
             Section(header: Text("账号管理")) {
                 if let ssoProfile = authManager.ssoProfile {
@@ -137,7 +139,7 @@ struct ProfileView: View {
 
                     Spacer()
 
-                    Picker("", selection: $globalManager.appearance) {
+                    Picker("", selection: $bindableGlobalManager.appearance) {
                         Text("浅色").tag("light")
                         Text("深色").tag("dark")
                         Text("系统").tag("system")
@@ -155,7 +157,7 @@ struct ProfileView: View {
                     ColoredLabel(title: "开启通知", description: "用于宿舍电量定时查询提醒通知")
                 }
 
-                Toggle(isOn: $globalManager.isBackgroundTaskEnabled) {
+                Toggle(isOn: $bindableGlobalManager.isBackgroundTaskEnabled) {
                     ColoredLabel(title: "开启后台任务", description: "开启后应用可以在后台定期刷新课程，并在成绩更新时发送通知（后台任务受系统调度）")
                 }
 
@@ -206,15 +208,4 @@ struct ProfileView: View {
         #endif
         .trackView("Profile")
     }
-}
-
-#Preview {
-    NavigationStack {
-        ProfileView()
-    }
-    .environmentObject(AuthManager.shared)
-    .environmentObject(GlobalManager.shared)
-    #if os(iOS)
-    .environmentObject(NotificationManager.shared)
-    #endif
 }

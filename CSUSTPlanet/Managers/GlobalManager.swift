@@ -13,6 +13,8 @@ enum TabItem: String {
     case features
     case profile
 
+    // 以下部分仅在horizontalSizeClass为.regular的情况下会被使用
+
     // 教务系统
     case courseSchedule
     case gradeQuery
@@ -40,9 +42,10 @@ enum TabItem: String {
     case mandarin
 }
 
+@Observable
 @MainActor
-class GlobalManager: ObservableObject {
-    public static let shared = GlobalManager()
+final class GlobalManager {
+    static let shared = GlobalManager()
 
     private init() {
         appearance = MMKVHelper.shared.appearance
@@ -58,11 +61,11 @@ class GlobalManager: ObservableObject {
         TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
     }
 
-    @Published var selectedTab: TabItem? = .overview
-    @Published var appearance: String {
+    var selectedTab: TabItem? = .overview
+    var appearance: String {
         didSet { MMKVHelper.shared.appearance = appearance }
     }
-    @Published var isUserAgreementAccepted: Bool {
+    var isUserAgreementAccepted: Bool {
         didSet {
             MMKVHelper.shared.isUserAgreementAccepted = isUserAgreementAccepted
             TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
@@ -71,30 +74,30 @@ class GlobalManager: ObservableObject {
     var isUserAgreementShowing: Binding<Bool> {
         Binding(get: { !self.isUserAgreementAccepted }, set: { self.isUserAgreementAccepted = !$0 })
     }
-    @Published var isLiveActivityEnabled: Bool {
+    var isLiveActivityEnabled: Bool {
         didSet {
             MMKVHelper.shared.isLiveActivityEnabled = isLiveActivityEnabled
             TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
         }
     }
-    @Published var isWebVPNModeEnabled: Bool {
+    var isWebVPNModeEnabled: Bool {
         didSet {
             MMKVHelper.shared.isWebVPNModeEnabled = isWebVPNModeEnabled
             TrackHelper.shared.event(category: "WebVPN", action: "Status", name: isWebVPNModeEnabled ? "Enabled" : "Disabled")
         }
     }
-    @Published var isNotificationEnabled: Bool {
+    var isNotificationEnabled: Bool {
         didSet { MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled }
     }
-    @Published var isBackgroundTaskEnabled: Bool {
+    var isBackgroundTaskEnabled: Bool {
         didSet {
             MMKVHelper.shared.isBackgroundTaskEnabled = isBackgroundTaskEnabled
             TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
         }
     }
 
-    @Published var isFromElectricityWidget: Bool = false
-    @Published var isFromGradeAnalysisWidget: Bool = false
-    @Published var isFromCourseScheduleWidget: Bool = false
-    @Published var isFromUrgentCoursesWidget: Bool = false
+    var isFromElectricityWidget: Bool = false
+    var isFromGradeAnalysisWidget: Bool = false
+    var isFromCourseScheduleWidget: Bool = false
+    var isFromUrgentCoursesWidget: Bool = false
 }

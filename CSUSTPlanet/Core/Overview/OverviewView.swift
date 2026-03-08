@@ -11,9 +11,11 @@ import SwiftUI
 struct OverviewView: View {
     @StateObject var viewModel = OverviewViewModel()
     @Environment(\.horizontalSizeClass) var sizeClass
-    @EnvironmentObject var globalManager: GlobalManager
+    @Environment(GlobalManager.self) var globalManager
 
     var body: some View {
+        @Bindable var bindableGlobalManager = globalManager
+
         ScrollView {
             VStack(spacing: 24) {
                 // 头部欢迎语
@@ -52,26 +54,22 @@ struct OverviewView: View {
         .onAppear {
             viewModel.loadData()
         }
-        .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
+        .navigationDestination(isPresented: $bindableGlobalManager.isFromElectricityWidget) {
             ElectricityQueryView()
                 .trackRoot("Widget")
         }
-        .navigationDestination(isPresented: $globalManager.isFromCourseScheduleWidget) {
+        .navigationDestination(isPresented: $bindableGlobalManager.isFromCourseScheduleWidget) {
             CourseScheduleView()
                 .trackRoot("Widget")
         }
-        .navigationDestination(isPresented: $globalManager.isFromGradeAnalysisWidget) {
+        .navigationDestination(isPresented: $bindableGlobalManager.isFromGradeAnalysisWidget) {
             GradeAnalysisView()
                 .trackRoot("Widget")
         }
-        .navigationDestination(isPresented: $globalManager.isFromUrgentCoursesWidget) {
+        .navigationDestination(isPresented: $bindableGlobalManager.isFromUrgentCoursesWidget) {
             UrgentCoursesView()
                 .trackRoot("Widget")
         }
         .trackView("Overview")
     }
-}
-
-#Preview {
-    OverviewView()
 }
