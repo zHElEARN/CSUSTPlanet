@@ -10,7 +10,7 @@ import CSUSTKit
 import SwiftUI
 
 struct GradeQueryView: View {
-    @StateObject var viewModel = GradeQueryViewModel()
+    @State var viewModel = GradeQueryViewModel()
 
     // MARK: - Stat Item
 

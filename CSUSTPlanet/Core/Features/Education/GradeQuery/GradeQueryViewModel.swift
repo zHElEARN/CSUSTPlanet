@@ -12,37 +12,38 @@ import SwiftUI
 import WidgetKit
 
 @MainActor
-class GradeQueryViewModel: ObservableObject {
+@Observable
+class GradeQueryViewModel {
     struct SelectionItem: Hashable {
         let course: String
     }
 
     // MARK: States
 
-    @Published var data: Cached<[EduHelper.CourseGrade]>? = nil {
+    var data: Cached<[EduHelper.CourseGrade]>? = nil {
         didSet { updateAnalysis() }
     }
-    @Published var analysis: GradeAnalysisData? = nil
-    @Published var searchText: String = ""
-    @Published var errorMessage: String = ""
-    @Published var warningMessage: String = ""
+    var analysis: GradeAnalysisData? = nil
+    var searchText: String = ""
+    var errorMessage: String = ""
+    var warningMessage: String = ""
 
-    @Published var isLoading: Bool = false
-    @Published var isShowingShareSheet: Bool = false
-    @Published var isShowingError: Bool = false
-    @Published var isShowingWarning: Bool = false
+    var isLoading: Bool = false
+    var isShowingShareSheet: Bool = false
+    var isShowingError: Bool = false
+    var isShowingWarning: Bool = false
 
-    @Published var isSelectionMode: Bool = false {
+    var isSelectionMode: Bool = false {
         didSet { updateAnalysis() }
     }
 
-    @Published var selectedItems = Set<SelectionItem>() {
+    var selectedItems = Set<SelectionItem>() {
         didSet { if isSelectionMode { updateAnalysis() } }
     }
 
-    @Published var expandedSemesters: Set<String> = []
+    var expandedSemesters: Set<String> = []
 
-    @Published var semesterGPAs: [String: Double] = [:]
+    var semesterGPAs: [String: Double] = [:]
 
     var shareContent: Any? = nil
     var isLoaded: Bool = false
