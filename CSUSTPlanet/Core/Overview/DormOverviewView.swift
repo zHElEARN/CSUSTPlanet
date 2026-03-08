@@ -35,6 +35,7 @@ struct DormOverviewView: View {
                         Text(String(format: "%.2f", lastFetchElectricity))
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .foregroundStyle(ColorUtil.electricityColor(electricity: lastFetchElectricity))
+                            .minimumScaleFactor(0.7)
 
                         Text("kWh")
                             .font(.caption)
