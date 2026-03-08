@@ -19,7 +19,7 @@ import Toasts
 @main
 struct CSUSTPlanetApp: App {
     #if os(iOS)
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @UIApplicationDelegateAdaptor(UIAppDelegate.self) var appDelegate
     #endif
 
     @Environment(\.scenePhase) private var scenePhase
@@ -28,6 +28,8 @@ struct CSUSTPlanetApp: App {
     private static var lastBackgroundDate: Date?
 
     init() {
+        TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
+
         SentrySDK.start { options in
             options.dsn = Constants.sentryDSN
             // #if DEBUG
@@ -39,6 +41,7 @@ struct CSUSTPlanetApp: App {
         #if DEBUG
         try? Tips.resetDatastore()
         #endif
+
         try? Tips.configure([
             .displayFrequency(.immediate),
             .datastoreLocation(.applicationDefault),
@@ -49,6 +52,8 @@ struct CSUSTPlanetApp: App {
         ActivityHelper.shared.setup()
         NotificationManager.shared.setup()
         #endif
+
+        runDataCleanupTaskIfNeed()
     }
 
     var body: some Scene {
@@ -70,38 +75,41 @@ struct CSUSTPlanetApp: App {
     private func handleScenePhaseChange(to phase: ScenePhase) {
         switch phase {
         case .active:
-            Logger.app.debug("App进入活跃状态: scenePhase .active")
-            #if os(iOS)
-            ActivityHelper.shared.autoUpdateActivity()
-            #endif
-            if !Self.isFirstAppear {
-                checkAndRelogin()
-                #if os(iOS)
-                BackgroundTaskHelper.shared.cancelAllTasks()
-                #endif
-                TrackHelper.shared.event(category: "Lifecycle", action: "Active")
-            }
+            // 首次启动时不处理
             if Self.isFirstAppear {
                 Self.isFirstAppear = false
-                TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
-                runDataCleanupTaskIfNeed()
+                break
             }
-        case .inactive:
-            Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
+
+            Logger.app.debug("App进入活跃状态: scenePhase .active")
+            TrackHelper.shared.event(category: "Lifecycle", action: "Active")
+
+            checkAndRelogin()
             #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
-            BackgroundTaskHelper.shared.scheduleAllTasks()
+            BackgroundTaskHelper.shared.cancelAllTasks()
             #endif
+        case .inactive:
+            Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
             TrackHelper.shared.event(category: "Lifecycle", action: "Inactive")
+
             Self.lastBackgroundDate = .now
+            #if os(iOS)
+            ActivityHelper.shared.autoUpdateActivity()
+            #endif
         case .background:
             Logger.app.debug("App进入后台状态: scenePhase .background")
             TrackHelper.shared.event(category: "Lifecycle", action: "Background")
+
+            #if os(iOS)
+            BackgroundTaskHelper.shared.scheduleAllTasks()
+            #endif
         default:
             break
         }
     }
 
+    /// 当App长时间不活跃会到前台后，检查当前学校系统登录状态
     private func checkAndRelogin() {
         let threshold: TimeInterval = 20 * 60
         guard let backgroundDate = Self.lastBackgroundDate else { return }
@@ -114,6 +122,7 @@ struct CSUSTPlanetApp: App {
         }
     }
 
+    /// 清理宿舍电量中是否有连续重复的电量记录，于版本1.5添加，到版本1.6后可以移除
     private func runDataCleanupTaskIfNeed() {
         guard !MMKVHelper.shared.hasCleanedUpDuplicateElectricityRecords else { return }
         Task {

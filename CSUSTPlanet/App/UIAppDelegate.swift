@@ -1,5 +1,5 @@
 //
-//  AppDelegate.swift
+//  UIAppDelegate.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/7/15.
@@ -9,7 +9,8 @@
 import Foundation
 import OSLog
 import UIKit
-class AppDelegate: NSObject, UIApplicationDelegate {
+
+class UIAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
 
@@ -19,7 +20,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 // MARK: - Remote Notification
 
-extension AppDelegate {
+extension UIAppDelegate {
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NotificationManager.shared.handleNotificationRegistration(token: deviceToken, error: nil)
     }
@@ -31,7 +32,7 @@ extension AppDelegate {
 
 // MARK: - UNUserNotificationCenterDelegate
 
-extension AppDelegate: UNUserNotificationCenterDelegate {
+extension UIAppDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .badge])
     }
