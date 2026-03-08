@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FeaturesView: View {
-    @EnvironmentObject var authManager: AuthManager
+    @Environment(AuthManager.self) var authManager
     @Environment(GlobalManager.self) var globalManager
 
     @Environment(\.horizontalSizeClass) var sizeClass

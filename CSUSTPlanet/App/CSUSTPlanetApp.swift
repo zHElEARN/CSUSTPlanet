@@ -59,14 +59,12 @@ struct CSUSTPlanetApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                #if os(iOS)
-            .installToast(position: .top)
-                #endif
                 .environment(GlobalManager.shared)
-                .environmentObject(AuthManager.shared)
+                .environment(AuthManager.shared)
                 #if os(iOS)
             .environmentObject(NotificationManager.shared)
-            #endif
+            .installToast(position: .top)
+                #endif
         }
         .modelContainer(SharedModelUtil.container)
         .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }

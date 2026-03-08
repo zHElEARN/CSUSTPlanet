@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SSOLoginView: View {
     @StateObject private var viewModel: SSOLoginViewModel
-    @EnvironmentObject var authManager: AuthManager
+    @Environment(AuthManager.self) var authManager
 
     init(isShowingLoginSheet: Binding<Bool>) {
         _viewModel = StateObject(wrappedValue: SSOLoginViewModel(isShowingLoginSheet: isShowingLoginSheet))

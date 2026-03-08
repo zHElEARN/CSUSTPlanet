@@ -80,7 +80,7 @@ private let featureSections: [FeatureSection] = [
 
 struct ContentView: View {
     @Environment(GlobalManager.self) var globalManager
-    @EnvironmentObject var authManager: AuthManager
+    @Environment(AuthManager.self) var authManager
     #if os(iOS)
     @Environment(\.presentToast) var presentToast
     #endif
