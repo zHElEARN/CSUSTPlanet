@@ -69,7 +69,6 @@ platform :ios do
   lane :beta do
     ENV['DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS'] = '--use-old-altool'
     api_key = load_api_key
-    cocoapods(repo_update: true)
     config_path = '../Configs/Shared.xcconfig'
     UI.user_error!("找不到 xcconfig 文件，路径: #{config_path}") unless File.exist?(config_path)
     config_content = File.read(config_path)
@@ -93,7 +92,7 @@ platform :ios do
     # 执行构建
     build_app(
       scheme: 'CSUSTPlanet',
-      workspace: 'CSUSTPlanet.xcworkspace',
+      project: 'CSUSTPlanet.xcodeproj',
       export_method: 'app-store',
       include_bitcode: false,
       clean: true,
