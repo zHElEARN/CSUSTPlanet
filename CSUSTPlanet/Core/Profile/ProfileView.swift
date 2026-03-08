@@ -13,7 +13,7 @@ struct ProfileView: View {
     @Environment(AuthManager.self) var authManager
     @Environment(GlobalManager.self) var globalManager
     #if os(iOS)
-    @EnvironmentObject var notificationManager: NotificationManager
+    @Environment(NotificationManager.self) var notificationManager
     #endif
 
     @StateObject private var viewModel = ProfileViewModel()
@@ -200,7 +200,7 @@ struct ProfileView: View {
             Text("确定要退出登录吗？")
         }
         #if os(iOS)
-        .alert("错误", isPresented: $notificationManager.isShowingError) {
+        .alert("错误", isPresented: Bindable(notificationManager).isShowingError) {
             Button("确定", role: .cancel) {}
         } message: {
             Text(notificationManager.errorDescription)

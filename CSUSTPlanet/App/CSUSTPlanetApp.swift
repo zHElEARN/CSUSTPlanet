@@ -62,7 +62,7 @@ struct CSUSTPlanetApp: App {
                 .environment(GlobalManager.shared)
                 .environment(AuthManager.shared)
                 #if os(iOS)
-            .environmentObject(NotificationManager.shared)
+            .environment(NotificationManager.shared)
             .installToast(position: .top)
                 #endif
         }

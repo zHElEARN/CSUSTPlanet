@@ -30,14 +30,15 @@ enum NotificationManagerError: Error, LocalizedError {
 }
 
 @MainActor
-class NotificationManager: ObservableObject {
+@Observable
+class NotificationManager {
     static let shared = NotificationManager()
 
     var token: Data?
     private var tokenContinuation: CheckedContinuation<Data, Error>? = nil
 
-    @Published var isShowingError: Bool = false
-    @Published var errorDescription: String = ""
+    var isShowingError: Bool = false
+    var errorDescription: String = ""
 
     private init() {}
 
