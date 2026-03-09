@@ -14,7 +14,7 @@ import SwiftUI
 struct CourseScheduleView: View {
     @Environment(\.horizontalSizeClass) var sizeClass
 
-    @StateObject var viewModel = CourseScheduleViewModel()
+    @State var viewModel = CourseScheduleViewModel()
 
     private var isPad: Bool {
         sizeClass == .regular
@@ -91,11 +91,16 @@ struct CourseScheduleView: View {
         }
         .inlineToolbarTitle()
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .secondaryAction) {
                 Button(action: { viewModel.isShowingSemestersSheet = true }) {
-                    Image(systemName: "calendar")
+                    Label("学期选择", systemImage: "calendar")
                 }
 
+                Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                    Label("添加课表到系统日历", systemImage: "calendar.badge.plus")
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
                 } else {
@@ -112,9 +117,23 @@ struct CourseScheduleView: View {
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
         }
+        .toast(isPresenting: $viewModel.isShowingAddToCalendarSuccess) {
+            AlertToast(type: .complete(.green), title: "添加成功", subTitle: "已成功将课表添加到日历")
+        }
+        .toast(isPresenting: $viewModel.isAddToCalendarExporting) {
+            AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
+        }
+        .alert("添加日历", isPresented: $viewModel.isShowingAddToCalendarAlert) {
+            Button(action: viewModel.addToCalendar) {
+                Text("确认添加")
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("是否将所有课程添加到系统日历？")
+        }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {
             CourseSemesterView()
-                .environmentObject(viewModel)
+                .environment(viewModel)
         }
         .trackView("CourseSchedule")
     }
