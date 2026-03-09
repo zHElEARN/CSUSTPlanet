@@ -9,12 +9,14 @@ import CSUSTKit
 import Foundation
 import Sentry
 import SwiftData
+import WidgetKit
 
 @MainActor
-final class AboutViewModel: ObservableObject {
+@Observable
+final class AboutViewModel {
     // MARK: - Published Properties
 
-    @Published var aboutMarkdown: String?
+    var aboutMarkdown: String?
 
     // MARK: - Computed Properties
 
@@ -53,7 +55,7 @@ final class AboutViewModel: ObservableObject {
         let mockAssignments = UrgentCoursesData(courses: [
             UrgentCoursesData.Course(name: "马克思主义基本原理课外实践", id: "1"),
             UrgentCoursesData.Course(name: "大学物理B（下）", id: "2"),
-            UrgentCoursesData.Course(name: "大数据存储与管理实验A", id: "2"),
+            UrgentCoursesData.Course(name: "大数据存储与管理实验A", id: "3"),
         ])
         MMKVHelper.shared.urgentCoursesCache = Cached(cachedAt: today, value: mockAssignments)
 
@@ -134,7 +136,7 @@ final class AboutViewModel: ObservableObject {
                 }
             }
 
-            var currentElectricity = Double.random(in: 80...100)
+            var currentElectricity = Double.random(in: 350...370)
 
             for i in (0..<10).reversed() {
                 let recordDate = calendar.date(byAdding: .day, value: -i, to: today)!

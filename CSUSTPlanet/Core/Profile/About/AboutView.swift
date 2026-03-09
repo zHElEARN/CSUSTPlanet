@@ -9,7 +9,7 @@ import MarkdownUI
 import SwiftUI
 
 struct AboutView: View {
-    @StateObject private var viewModel = AboutViewModel()
+    @State private var viewModel = AboutViewModel()
 
     var body: some View {
         Form {
