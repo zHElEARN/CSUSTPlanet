@@ -1,5 +1,5 @@
 {
-  "originHash" : "f4df1c6b8050032e28a9e91fc87acb4f965ebce67e7528ab4e3a236ce84c6024",
+  "originHash" : "cf1afee1c4ac0bc791116bd157a5d1ce8cf05973bff0bdd2749d6f702e559627",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/zHElEARN/AlertToast",
       "state" : {
         "branch" : "master",
-        "revision" : "1a61e476f593b87712995fc29012c8b9e976d8f8"
+        "revision" : "6fac45ae622c7249d111815c994c869f3163dadb"
       }
     },
     {
