@@ -14,7 +14,7 @@ import SwiftUI
 struct CourseScheduleView: View {
     @Environment(\.horizontalSizeClass) var sizeClass
 
-    @StateObject var viewModel = CourseScheduleViewModel()
+    @State var viewModel = CourseScheduleViewModel()
 
     private var isPad: Bool {
         sizeClass == .regular
@@ -134,7 +134,7 @@ struct CourseScheduleView: View {
         }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {
             CourseSemesterView()
-                .environmentObject(viewModel)
+                .environment(viewModel)
         }
         .trackView("CourseSchedule")
     }

@@ -12,31 +12,32 @@ import SwiftUI
 import WidgetKit
 
 @MainActor
-class CourseScheduleViewModel: ObservableObject {
-    @Published var data: Cached<CourseScheduleData>? = nil
-    @Published var errorMessage: String = ""
-    @Published var warningMessage: String = ""
-    @Published var availableSemesters: [String] = []
+@Observable
+class CourseScheduleViewModel {
+    var data: Cached<CourseScheduleData>? = nil
+    var errorMessage: String = ""
+    var warningMessage: String = ""
+    var availableSemesters: [String] = []
 
-    @Published var isLoading: Bool = false
-    @Published var isShowingWarning: Bool = false
-    @Published var isShowingError: Bool = false
-    @Published var isSemestersLoading: Bool = false
-    @Published var isShowingSemestersSheet: Bool = false
+    var isLoading: Bool = false
+    var isShowingWarning: Bool = false
+    var isShowingError: Bool = false
+    var isSemestersLoading: Bool = false
+    var isShowingSemestersSheet: Bool = false
 
     // 导出日历相关状态
-    @Published var isShowingAddToCalendarAlert: Bool = false
-    @Published var isExporting: Bool = false
-    @Published var isShowingSuccess: Bool = false
-    @Published var successMessage: String = ""
+    var isShowingAddToCalendarAlert: Bool = false
+    var isExporting: Bool = false
+    var isShowingSuccess: Bool = false
+    var successMessage: String = ""
 
     // TabView显示的第几周
-    @Published var currentWeek: Int = 1
-    @Published var selectedSemester: String? = nil
+    var currentWeek: Int = 1
+    var selectedSemester: String? = nil
 
-    @Published var selectedCourse: EduHelper.Course?
-    @Published var selectedSession: EduHelper.ScheduleSession?
-    @Published var isShowingDetail: Bool = false
+    var selectedCourse: EduHelper.Course?
+    var selectedSession: EduHelper.ScheduleSession?
+    var isShowingDetail: Bool = false
 
     var courseColors: [String: Color] = [:]
 
@@ -53,7 +54,7 @@ class CourseScheduleViewModel: ObservableObject {
     // #endif
 
     // 当前日期在第几周
-    @Published var realCurrentWeek: Int? = nil
+    var realCurrentWeek: Int? = nil
 
     var isLoaded = false
 
