@@ -296,8 +296,6 @@ struct GradeAnalysisView: View {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: viewModel.loadGradeAnalysis) {
                         Label("刷新成绩分析", systemImage: "arrow.clockwise")

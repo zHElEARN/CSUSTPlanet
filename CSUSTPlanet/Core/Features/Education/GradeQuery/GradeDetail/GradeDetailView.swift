@@ -157,8 +157,6 @@ struct GradeDetailView: View {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: { viewModel.loadDetail(courseGrade) }) {
                         Label("刷新成绩分布", systemImage: "arrow.clockwise")
