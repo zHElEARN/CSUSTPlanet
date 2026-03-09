@@ -12,7 +12,7 @@ struct DormHistoryView: View {
     var dorm: Dorm
 
     var body: some View {
-        List {
+        Form {
             if viewModel.sortedRecords.isEmpty {
                 ContentUnavailableView("无历史记录", systemImage: "bolt.slash", description: Text("点击首页的刷新按钮获取最新电量"))
             } else {
@@ -42,6 +42,7 @@ struct DormHistoryView: View {
                 }
             }
         }
+        .formStyle(.grouped)
         .navigationTitle("历史记录")
         .apply { view in
             if #available(iOS 26.0, *) {

@@ -180,6 +180,7 @@ struct ProfileView: View {
                 }
             }
         }
+        .formStyle(.grouped)
         .navigationTitle("我的")
         .sheet(isPresented: $viewModel.isLoginSheetPresented) {
             SSOLoginView(isShowingLoginSheet: $viewModel.isLoginSheetPresented)

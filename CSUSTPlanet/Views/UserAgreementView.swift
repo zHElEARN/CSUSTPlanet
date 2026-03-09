@@ -40,6 +40,7 @@ struct UserAgreementView: View {
                     .tint(.red)
                 }
             }
+            .formStyle(.grouped)
             .background(Color.appSystemBackground)
             .navigationTitle("用户协议")
         }
