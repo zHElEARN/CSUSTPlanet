@@ -26,27 +26,27 @@ struct ProfileView: View {
                 if let ssoProfile = authManager.ssoProfile {
                     TrackLink(destination: ProfileDetailView(authManager: authManager)) {
                         HStack {
-                            let avatarUrl = URL(string: ssoProfile.avatar)
-                            let resource = avatarUrl.map { url in
-                                KF.ImageResource(
-                                    downloadURL: url,
-                                    cacheKey: url.absoluteString.components(separatedBy: "?").first ?? ssoProfile.avatar
+                            if let avatarUrl = URL(string: ssoProfile.avatar) {
+                                let resource = KF.ImageResource(
+                                    downloadURL: avatarUrl,
+                                    cacheKey: avatarUrl.absoluteString.components(separatedBy: "?").first ?? ssoProfile.avatar
                                 )
-                            }
-                            KFImage(source: resource != nil ? .network(resource!) : nil)
-                                .placeholder {
-                                    ProgressView()
-                                        .frame(width: 40, height: 40)
+                                KFImage(source: .network(resource))
+                                    .placeholder {
+                                        ProgressView().frame(width: 40, height: 40)
+                                    }
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                                VStack(alignment: .leading) {
+                                    Text("\(ssoProfile.userName) \(ssoProfile.userAccount)")
+                                        .font(.headline)
+                                    Text(ssoProfile.deptName)
+                                        .font(.caption)
                                 }
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                            VStack(alignment: .leading) {
-                                Text("\(ssoProfile.userName) \(ssoProfile.userAccount)")
-                                    .font(.headline)
-                                Text(ssoProfile.deptName)
-                                    .font(.caption)
+                            } else {
+                                ProgressView().frame(width: 40, height: 40)
                             }
                         }
                     }
