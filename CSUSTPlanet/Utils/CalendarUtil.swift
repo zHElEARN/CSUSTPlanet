@@ -82,10 +82,14 @@ extension CalendarUtil {
         startDate: Date,
         endDate: Date,
         notes: String? = nil,
-        location: String? = nil
+        location: String? = nil,
+        commit: Bool = true,
+        skipDuplicateCheck: Bool = false
     ) async throws {
         guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
-        guard try await !eventExists(calendar: calendar, title: title, startDate: startDate, endDate: endDate) else { return }
+        if !skipDuplicateCheck {
+            guard try await !eventExists(calendar: calendar, title: title, startDate: startDate, endDate: endDate) else { return }
+        }
 
         let event = EKEvent(eventStore: eventStore)
         event.title = title
@@ -95,7 +99,7 @@ extension CalendarUtil {
         event.location = location
         event.calendar = calendar
 
-        try eventStore.save(event, span: .thisEvent)
+        try eventStore.save(event, span: .thisEvent, commit: commit)
     }
 
     static private func eventExists(calendar: EKCalendar, title: String, startDate: Date, endDate: Date) async throws -> Bool {
@@ -104,13 +108,9 @@ extension CalendarUtil {
         return events.contains { $0.title == title && $0.startDate == startDate && $0.endDate == endDate }
     }
 
-    /// 清空指定日历中的所有事件
-    static func clearCalendar(calendar: EKCalendar) async throws {
+    /// 清空指定日历中的事件
+    static func clearCalendar(calendar: EKCalendar, from startDate: Date, to endDate: Date) async throws {
         guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
-
-        // 搜索前后两年的事件以确保清空
-        let startDate = Calendar.current.date(byAdding: .year, value: -2, to: Date())!
-        let endDate = Calendar.current.date(byAdding: .year, value: 2, to: Date())!
 
         let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
         let events = eventStore.events(matching: predicate)
@@ -121,73 +121,7 @@ extension CalendarUtil {
         try eventStore.commit()
     }
 
-    /// 导出课程到日历
-    static func addCoursesToCalendar(
-        courses: [EduHelper.Course],
-        semesterStartDate: Date,
-        calendarTitle: String = "长理星球 - 课表"
-    ) async throws {
-        let calendar = try await getOrCreateEventCalendar(named: calendarTitle)
-
-        // 可选：先清空原有课表，防止重复或旧数据干扰
-        try await clearCalendar(calendar: calendar)
-
-        let sysCalendar = Calendar.current
-
-        for course in courses {
-            for session in course.sessions {
-                for week in session.weeks {
-                    // 获取该周的所有日期（周日到周六）
-                    let datesOfWeek = CourseScheduleUtil.getDatesForWeek(semesterStartDate: semesterStartDate, week: week)
-
-                    // 匹配星期几
-                    let targetDateIndex = session.dayOfWeek.rawValue  // Sunday=0, Monday=1...
-                    guard targetDateIndex < datesOfWeek.count else { continue }
-                    let targetDate = datesOfWeek[targetDateIndex]
-
-                    // 获取时间的时分
-                    let startSectionIndex = session.startSection - 1
-                    let endSectionIndex = session.endSection - 1
-
-                    guard startSectionIndex >= 0, startSectionIndex < CourseScheduleUtil.sectionTimeString.count,
-                        endSectionIndex >= 0, endSectionIndex < CourseScheduleUtil.sectionTimeString.count
-                    else {
-                        continue
-                    }
-
-                    let startTimeString = CourseScheduleUtil.sectionTimeString[startSectionIndex].0
-                    let endTimeString = CourseScheduleUtil.sectionTimeString[endSectionIndex].1
-
-                    let startComponents = startTimeString.split(separator: ":").compactMap { Int($0) }
-                    let endComponents = endTimeString.split(separator: ":").compactMap { Int($0) }
-
-                    guard startComponents.count == 2, endComponents.count == 2,
-                        let eventStartDate = sysCalendar.date(bySettingHour: startComponents[0], minute: startComponents[1], second: 0, of: targetDate),
-                        let eventEndDate = sysCalendar.date(bySettingHour: endComponents[0], minute: endComponents[1], second: 0, of: targetDate)
-                    else {
-                        continue
-                    }
-
-                    let event = EKEvent(eventStore: eventStore)
-                    event.title = course.courseName
-                    event.startDate = eventStartDate
-                    event.endDate = eventEndDate
-
-                    var notes = "教师: \(course.teacher ?? "未知")"
-                    if let groupName = course.groupName {
-                        notes += "\n群组: \(groupName)"
-                    }
-                    notes += "\n周次: 第\(week)周"
-
-                    event.notes = notes
-                    event.location = session.classroom
-                    event.calendar = calendar
-
-                    try eventStore.save(event, span: .thisEvent, commit: false)
-                }
-            }
-        }
-
+    static func commitChanges() throws {
         try eventStore.commit()
     }
 }
