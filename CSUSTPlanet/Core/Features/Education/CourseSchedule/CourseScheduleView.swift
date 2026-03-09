@@ -96,12 +96,8 @@ struct CourseScheduleView: View {
                     Label("学期选择", systemImage: "calendar")
                 }
 
-                if viewModel.isExporting {
-                    ProgressView()
-                } else {
-                    Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
-                        Label("全部添加到日历", systemImage: "calendar.badge.plus")
-                    }
+                Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                    Label("添加课表到系统日历", systemImage: "calendar.badge.plus")
                 }
             }
             ToolbarItem(placement: .primaryAction) {
@@ -121,8 +117,11 @@ struct CourseScheduleView: View {
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
         }
-        .toast(isPresenting: $viewModel.isShowingSuccess) {
-            AlertToast(displayMode: .banner(.slide), type: .complete(.green), title: "导出成功", subTitle: viewModel.successMessage)
+        .toast(isPresenting: $viewModel.isShowingAddToCalendarSuccess) {
+            AlertToast(type: .complete(.green), title: "添加成功", subTitle: "已成功将课表添加到日历")
+        }
+        .toast(isPresenting: $viewModel.isAddToCalendarExporting) {
+            AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
         }
         .alert("添加日历", isPresented: $viewModel.isShowingAddToCalendarAlert) {
             Button(action: viewModel.addToCalendar) {

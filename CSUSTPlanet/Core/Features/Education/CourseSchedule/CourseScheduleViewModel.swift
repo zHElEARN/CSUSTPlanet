@@ -27,9 +27,8 @@ class CourseScheduleViewModel {
 
     // 导出日历相关状态
     var isShowingAddToCalendarAlert: Bool = false
-    var isExporting: Bool = false
-    var isShowingSuccess: Bool = false
-    var successMessage: String = ""
+    var isAddToCalendarExporting: Bool = false
+    var isShowingAddToCalendarSuccess: Bool = false
 
     // TabView显示的第几周
     var currentWeek: Int = 1
@@ -161,10 +160,10 @@ class CourseScheduleViewModel {
             return
         }
 
-        isExporting = true
+        isAddToCalendarExporting = true
         Task {
             defer {
-                isExporting = false
+                isAddToCalendarExporting = false
             }
             do {
                 let currentCalendar = Calendar.current
@@ -223,8 +222,7 @@ class CourseScheduleViewModel {
                 // 最后统一提交改变
                 try CalendarUtil.commitChanges()
 
-                isShowingSuccess = true
-                successMessage = "已添加到日历"
+                isShowingAddToCalendarSuccess = true
             } catch {
                 self.errorMessage = "导出失败: \(error.localizedDescription)"
                 self.isShowingError = true
