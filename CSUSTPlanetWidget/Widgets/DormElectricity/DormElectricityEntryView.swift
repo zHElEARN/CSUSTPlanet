@@ -160,7 +160,7 @@ struct DormElectricityEntryView: View {
     func chartView(bounds: (min: Double, max: Double), records: [DormElectricityEntry.Record]) -> some View {
         Chart(records) { record in
             LineMark(x: .value("日期", record.date), y: .value("电量", record.electricity))
-                .interpolationMethod(.catmullRom)
+                .interpolationMethod(.linear)
                 .symbol {
                     if records.count <= 1 {
                         Circle()

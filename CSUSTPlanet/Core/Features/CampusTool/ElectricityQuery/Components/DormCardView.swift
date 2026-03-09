@@ -219,7 +219,7 @@ struct DormChartPreview: View {
                         x: .value("日期", record.date),
                         y: .value("电量", record.electricity)
                     )
-                    .interpolationMethod(.catmullRom)
+                    .interpolationMethod(.linear)
                     .symbol {
                         if records.count <= 1 {
                             Circle()

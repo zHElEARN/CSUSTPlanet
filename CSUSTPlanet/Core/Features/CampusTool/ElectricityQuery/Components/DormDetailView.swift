@@ -297,7 +297,7 @@ private struct ElectricityTrendCard: View {
                         y: .value("电量", record.electricity)
                     )
                     .foregroundStyle(.blue)
-                    .interpolationMethod(.catmullRom)
+                    .interpolationMethod(.linear)
                     .symbol {
                         if displayData.count < 15 {
                             Circle()
