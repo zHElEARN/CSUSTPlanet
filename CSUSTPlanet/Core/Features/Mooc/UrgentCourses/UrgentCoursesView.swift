@@ -61,8 +61,6 @@ struct UrgentCoursesView: View {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: viewModel.loadUrgentCourses) {
                         Label("刷新", systemImage: "arrow.clockwise")

@@ -5,11 +5,8 @@
 //  Created by Zhe_Learn on 2025/7/7.
 //
 
+import AlertToast
 import SwiftUI
-
-#if os(iOS)
-import Toasts
-#endif
 
 struct FeatureItem: Identifiable {
     let id: TabItem
@@ -81,9 +78,6 @@ private let featureSections: [FeatureSection] = [
 struct ContentView: View {
     @Environment(GlobalManager.self) var globalManager
     @Environment(AuthManager.self) var authManager
-    #if os(iOS)
-    @Environment(\.presentToast) var presentToast
-    #endif
     @Environment(\.horizontalSizeClass) var sizeClass
 
     var preferredColorScheme: ColorScheme? {
@@ -99,6 +93,7 @@ struct ContentView: View {
 
     var body: some View {
         @Bindable var bindableGlobalManager = globalManager
+        @Bindable var bindableAuthManager = authManager
 
         Group {
             if #available(iOS 18.0, macOS 15.0, *) {
@@ -193,38 +188,24 @@ struct ContentView: View {
 
         // MARK: 全局Toast状态
 
-        #if os(iOS)
-        .onChange(of: authManager.isShowingSSOInfo) { _, newValue in
-            guard newValue else { return }
-            presentToast(ToastValue(icon: Image(systemName: "info.circle.fill").foregroundStyle(.blue), message: authManager.ssoInfo))
-            authManager.isShowingSSOInfo = false
+        .toast(isPresenting: $bindableAuthManager.isShowingSSOInfo) {
+            AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.ssoInfo)
         }
-        .onChange(of: authManager.isShowingSSOError) { _, newValue in
-            guard newValue else { return }
-            presentToast(ToastValue(icon: Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red), message: "统一身份认证登录错误"))
-            authManager.isShowingSSOError = false
+        .toast(isPresenting: $bindableAuthManager.isShowingSSOError) {
+            AlertToast(displayMode: .hud, type: .error(.red), title: "统一身份认证登录错误")
         }
-        .onChange(of: authManager.isShowingEducationInfo) { _, newValue in
-            guard newValue else { return }
-            presentToast(ToastValue(icon: Image(systemName: "info.circle.fill").foregroundStyle(.blue), message: authManager.educationInfo))
-            authManager.isShowingEducationInfo = false
+        .toast(isPresenting: $bindableAuthManager.isShowingEducationInfo) {
+            AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.educationInfo)
         }
-        .onChange(of: authManager.isShowingEducationError) { _, newValue in
-            guard newValue else { return }
-            presentToast(ToastValue(icon: Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red), message: "教务登录错误"))
-            authManager.isShowingEducationError = false
+        .toast(isPresenting: $bindableAuthManager.isShowingEducationError) {
+            AlertToast(displayMode: .hud, type: .error(.red), title: "教务登录错误")
         }
-        .onChange(of: authManager.isShowingMoocInfo) { _, newValue in
-            guard newValue else { return }
-            presentToast(ToastValue(icon: Image(systemName: "info.circle.fill").foregroundStyle(.blue), message: authManager.moocInfo))
-            authManager.isShowingMoocInfo = false
+        .toast(isPresenting: $bindableAuthManager.isShowingMoocInfo) {
+            AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.moocInfo)
         }
-        .onChange(of: authManager.isShowingMoocError) { _, newValue in
-            guard newValue else { return }
-            presentToast(ToastValue(icon: Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red), message: "网络课程中心登录错误"))
-            authManager.isShowingMoocError = false
+        .toast(isPresenting: $bindableAuthManager.isShowingMoocError) {
+            AlertToast(displayMode: .hud, type: .error(.red), title: "网络课程中心登录错误")
         }
-        #endif
 
         // MARK: - 主题设置 & 用户协议弹窗
 

@@ -12,10 +12,6 @@ import SwiftData
 import SwiftUI
 import TipKit
 
-#if os(iOS)
-import Toasts
-#endif
-
 @main
 struct CSUSTPlanetApp: App {
     #if os(iOS)
@@ -63,7 +59,6 @@ struct CSUSTPlanetApp: App {
                 .environment(AuthManager.shared)
                 #if os(iOS)
             .environment(NotificationManager.shared)
-            .installToast(position: .top)
                 #elseif os(macOS)
             .frame(
                 minWidth: 400, idealWidth: 800, maxWidth: 1200,

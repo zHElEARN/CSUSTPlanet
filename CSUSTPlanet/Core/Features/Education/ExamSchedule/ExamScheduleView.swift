@@ -256,8 +256,6 @@ struct ExamScheduleView: View {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: { viewModel.loadExams() }) {
                         Label("查询", systemImage: "arrow.clockwise")

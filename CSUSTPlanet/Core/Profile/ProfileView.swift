@@ -33,7 +33,7 @@ struct ProfileView: View {
                                 )
                                 KFImage(source: .network(resource))
                                     .placeholder {
-                                        ProgressView().frame(width: 40, height: 40)
+                                        ProgressView()
                                     }
                                     .resizable()
                                     .scaledToFill()
@@ -46,7 +46,7 @@ struct ProfileView: View {
                                         .font(.caption)
                                 }
                             } else {
-                                ProgressView().frame(width: 40, height: 40)
+                                ProgressView()
                             }
                         }
                     }
