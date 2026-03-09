@@ -1,5 +1,5 @@
 {
-  "originHash" : "2c5a78445ef20df8c0fdf7f4c0bdc72fcc364d4780f63939d1b8e2739f0a6376",
+  "originHash" : "f4df1c6b8050032e28a9e91fc87acb4f965ebce67e7528ab4e3a236ce84c6024",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -13,10 +13,10 @@
     {
       "identity" : "alerttoast",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/elai950/AlertToast.git",
+      "location" : "https://github.com/zHElEARN/AlertToast",
       "state" : {
-        "revision" : "b39252eacd159904afd7d718bba0afabb87f2f2f",
-        "version" : "1.3.9"
+        "branch" : "master",
+        "revision" : "1a61e476f593b87712995fc29012c8b9e976d8f8"
       }
     },
     {
