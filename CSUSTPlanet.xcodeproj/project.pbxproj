@@ -11,7 +11,6 @@
 		000721EA2F5EF3FA00C1423E /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 000721E92F5EF3FA00C1423E /* AlertToast */; };
 		000721ED2F5EF94500C1423E /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 000721EC2F5EF94500C1423E /* AlertToast */; };
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
-		00CD22612E6757E6008AB82B /* Toasts in Frameworks */ = {isa = PBXBuildFile; productRef = 00CD22602E6757E6008AB82B /* Toasts */; };
 		00D4CDC72F5D183D0028E21B /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 00D4CDC62F5D183D0028E21B /* MMKV */; };
 		00D4CDC92F5D183D0028E21B /* MMKVAppExtension in Frameworks */ = {isa = PBXBuildFile; productRef = 00D4CDC82F5D183D0028E21B /* MMKVAppExtension */; };
 		00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 00E573582F1F4E3A00440D8D /* CSUSTKit */; };
@@ -168,7 +167,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */,
-				00CD22612E6757E6008AB82B /* Toasts in Frameworks */,
 				00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */,
 				000721ED2F5EF94500C1423E /* AlertToast in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
@@ -248,7 +246,6 @@
 			name = CSUSTPlanet;
 			packageProductDependencies = (
 				0041FC6C2E2AA269007F383F /* MarkdownUI */,
-				00CD22602E6757E6008AB82B /* Toasts */,
 				00E573582F1F4E3A00440D8D /* CSUSTKit */,
 				00E574AA2F1F4F0400440D8D /* MatomoTracker */,
 				00E575FA2F1F4F6B00440D8D /* Kingfisher */,
@@ -311,7 +308,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				0041FC6B2E2AA269007F383F /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
-				00CD225F2E675732008AB82B /* XCRemoteSwiftPackageReference "swiftui-toasts" */,
 				00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */,
 				00E574A92F1F4F0400440D8D /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */,
 				00E575F92F1F4F6B00440D8D /* XCRemoteSwiftPackageReference "Kingfisher" */,
@@ -722,14 +718,6 @@
 				minimumVersion = 2.4.1;
 			};
 		};
-		00CD225F2E675732008AB82B /* XCRemoteSwiftPackageReference "swiftui-toasts" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sunghyun-k/swiftui-toasts.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.2;
-			};
-		};
 		00D4CDC52F5D183D0028E21B /* XCRemoteSwiftPackageReference "MMKV" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/zHElEARN/MMKV/";
@@ -791,11 +779,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0041FC6B2E2AA269007F383F /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
 			productName = MarkdownUI;
-		};
-		00CD22602E6757E6008AB82B /* Toasts */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 00CD225F2E675732008AB82B /* XCRemoteSwiftPackageReference "swiftui-toasts" */;
-			productName = Toasts;
 		};
 		00D4CDC62F5D183D0028E21B /* MMKV */ = {
 			isa = XCSwiftPackageProductDependency;
