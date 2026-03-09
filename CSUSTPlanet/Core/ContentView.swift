@@ -78,9 +78,6 @@ private let featureSections: [FeatureSection] = [
 struct ContentView: View {
     @Environment(GlobalManager.self) var globalManager
     @Environment(AuthManager.self) var authManager
-    #if os(iOS)
-    @Environment(\.presentToast) var presentToast
-    #endif
     @Environment(\.horizontalSizeClass) var sizeClass
 
     var preferredColorScheme: ColorScheme? {

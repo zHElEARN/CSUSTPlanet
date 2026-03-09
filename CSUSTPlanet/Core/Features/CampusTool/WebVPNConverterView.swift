@@ -5,12 +5,9 @@
 //  Created by Zhe_Learn on 2025/10/14.
 //
 
+import AlertToast
 import CSUSTKit
 import SwiftUI
-
-#if os(iOS)
-import Toasts
-#endif
 
 enum ConversionMode: String, CaseIterable, Identifiable {
     case convert = "转换"
@@ -27,9 +24,7 @@ struct WebVPNConverterView: View {
     @State private var isShowingError: Bool = false
     @State private var isShowingSafari: Bool = false
 
-    #if os(iOS)
-    @Environment(\.presentToast) var presentToast
-    #endif
+    @State private var isShowingCopyToast: Bool = false
 
     // MARK: - Computed Properties for UI
 
@@ -204,6 +199,9 @@ struct WebVPNConverterView: View {
             }
         }
         .trackView("WebVPNConverter")
+        .toast(isPresenting: $isShowingCopyToast) {
+            AlertToast(type: .complete(.green), title: "已复制到剪贴板")
+        }
     }
 
     // MARK: - Private Methods
@@ -232,15 +230,11 @@ struct WebVPNConverterView: View {
     private func copyToClipboard() {
         #if os(iOS)
         UIPasteboard.general.string = resultUrl
-        let toastValue = ToastValue(
-            icon: Image(systemName: "checkmark.circle.fill"),
-            message: "已复制到剪贴板"
-        )
-        presentToast(toastValue)
         #elseif os(macOS)
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(resultUrl, forType: .string)
         #endif
+        isShowingCopyToast = true
     }
 }
 
