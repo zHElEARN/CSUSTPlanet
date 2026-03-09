@@ -123,13 +123,15 @@ struct CourseScheduleView: View {
         .toast(isPresenting: $viewModel.isAddToCalendarExporting) {
             AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
         }
-        .alert("添加日历", isPresented: $viewModel.isShowingAddToCalendarAlert) {
-            Button(action: viewModel.addToCalendar) {
-                Text("确认添加")
+        .sheet(isPresented: $viewModel.isShowingAddToCalendarAlert) {
+            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, isFirstEnabled, secondOffset, isSecondEnabled in
+                viewModel.addToCalendar(
+                    firstReminderOffset: firstOffset,
+                    isFirstEnabled: isFirstEnabled,
+                    secondReminderOffset: secondOffset,
+                    isSecondEnabled: isSecondEnabled
+                )
             }
-            Button("取消", role: .cancel) {}
-        } message: {
-            Text("是否将所有课程添加到系统日历？")
         }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {
             CourseSemesterView()

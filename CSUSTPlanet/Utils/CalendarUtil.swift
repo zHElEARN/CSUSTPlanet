@@ -83,6 +83,7 @@ extension CalendarUtil {
         endDate: Date,
         notes: String? = nil,
         location: String? = nil,
+        alarms: [EKAlarm]? = nil,
         commit: Bool = true,
         skipDuplicateCheck: Bool = false
     ) async throws {
@@ -99,6 +100,10 @@ extension CalendarUtil {
         event.location = location
         event.calendar = calendar
 
+        if let alarms = alarms {
+            alarms.forEach { event.addAlarm($0) }
+        }
+
         try eventStore.save(event, span: .thisEvent, commit: commit)
     }
 
@@ -112,12 +117,23 @@ extension CalendarUtil {
     static func clearCalendar(calendar: EKCalendar, from startDate: Date, to endDate: Date) async throws {
         guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
 
-        let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
-        let events = eventStore.events(matching: predicate)
+        let calendarKit = Calendar.current
+        var currentStart = startDate
 
-        for event in events {
-            try eventStore.remove(event, span: .thisEvent, commit: false)
+        while currentStart < endDate {
+            guard let nextStart = calendarKit.date(byAdding: .year, value: 1, to: currentStart) else { break }
+            let currentEnd = min(nextStart, endDate)
+
+            let predicate = eventStore.predicateForEvents(withStart: currentStart, end: currentEnd, calendars: [calendar])
+            let events = eventStore.events(matching: predicate)
+
+            for event in events {
+                try eventStore.remove(event, span: .thisEvent, commit: false)
+            }
+
+            currentStart = currentEnd
         }
+
         try eventStore.commit()
     }
 
