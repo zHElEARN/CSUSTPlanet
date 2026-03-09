@@ -24,6 +24,12 @@ class CourseScheduleViewModel: ObservableObject {
     @Published var isSemestersLoading: Bool = false
     @Published var isShowingSemestersSheet: Bool = false
 
+    // 导出日历相关状态
+    @Published var isShowingAddToCalendarAlert: Bool = false
+    @Published var isExporting: Bool = false
+    @Published var isShowingSuccess: Bool = false
+    @Published var successMessage: String = ""
+
     // TabView显示的第几周
     @Published var currentWeek: Int = 1
     @Published var selectedSemester: String? = nil
@@ -143,6 +149,31 @@ class CourseScheduleViewModel: ObservableObject {
         } else {
             withAnimation {
                 self.currentWeek = 1
+            }
+        }
+    }
+
+    func addToCalendar() {
+        guard let data = self.data?.value else {
+            self.errorMessage = "课表数据未加载，无法导出"
+            self.isShowingError = true
+            return
+        }
+
+        isExporting = true
+        Task {
+            defer {
+                isExporting = false
+            }
+            do {
+                try await CalendarUtil.addCoursesToCalendar(courses: data.courses, semesterStartDate: data.semesterStartDate)
+
+                // 成功后提醒用户
+                isShowingSuccess = true
+                successMessage = "已添加到日历"
+            } catch {
+                self.errorMessage = "导出失败: \(error.localizedDescription)"
+                self.isShowingError = true
             }
         }
     }

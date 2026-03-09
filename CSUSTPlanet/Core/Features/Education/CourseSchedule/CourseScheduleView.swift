@@ -91,11 +91,20 @@ struct CourseScheduleView: View {
         }
         .inlineToolbarTitle()
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .secondaryAction) {
                 Button(action: { viewModel.isShowingSemestersSheet = true }) {
-                    Image(systemName: "calendar")
+                    Label("学期选择", systemImage: "calendar")
                 }
 
+                if viewModel.isExporting {
+                    ProgressView()
+                } else {
+                    Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                        Label("全部添加到日历", systemImage: "calendar.badge.plus")
+                    }
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
                 } else {
@@ -111,6 +120,17 @@ struct CourseScheduleView: View {
         }
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
+        }
+        .toast(isPresenting: $viewModel.isShowingSuccess) {
+            AlertToast(displayMode: .banner(.slide), type: .complete(.green), title: "导出成功", subTitle: viewModel.successMessage)
+        }
+        .alert("添加日历", isPresented: $viewModel.isShowingAddToCalendarAlert) {
+            Button(action: viewModel.addToCalendar) {
+                Text("确认添加")
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("是否将所有课程添加到系统日历？")
         }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {
             CourseSemesterView()
