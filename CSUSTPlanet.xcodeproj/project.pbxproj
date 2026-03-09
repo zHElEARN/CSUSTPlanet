@@ -109,6 +109,14 @@
 			);
 			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
 		};
+		0091E6622F5E7AAE00B5BD41 /* Exceptions for "Configs" folder in "CSUSTPlanet" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Shared.xcconfig,
+				User.xcconfig,
+			);
+			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
+		};
 		00E89C772E2C88D800B43162 /* Exceptions for "CSUSTPlanetWidget" folder in "CSUSTPlanetWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -137,6 +145,9 @@
 		};
 		00BBB2AF2EEEE5C10047AEEF /* Configs */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0091E6622F5E7AAE00B5BD41 /* Exceptions for "Configs" folder in "CSUSTPlanet" target */,
+			);
 			path = Configs;
 			sourceTree = "<group>";
 		};
@@ -277,7 +288,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					007CF85A2E1BD68900E319F2 = {
 						CreatedOnToolsVersion = 16.4;
@@ -421,6 +432,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -480,6 +492,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
