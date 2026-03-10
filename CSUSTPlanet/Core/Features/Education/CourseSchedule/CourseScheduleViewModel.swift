@@ -154,7 +154,7 @@ class CourseScheduleViewModel {
         }
     }
 
-    func addToCalendar(firstReminderOffset: TimeInterval?, secondReminderOffset: TimeInterval?) {
+    func addToCalendar(firstReminderOffset: TimeInterval?, secondReminderOffset: TimeInterval?, scopeLimit: Int? = nil) {
         guard let data = self.data?.value else {
             self.errorMessage = "课表数据未加载，无法导出"
             self.isShowingError = true
@@ -180,6 +180,14 @@ class CourseScheduleViewModel {
                             guard let dates = CourseScheduleUtil.getCourseEventDates(session: session, week: week, semesterStartDate: data.semesterStartDate) else { continue }
                             let eventStartDate = dates.startDate
                             let eventEndDate = dates.endDate
+
+                            if let expectedWeeks = scopeLimit {
+                                let startOfToday = currentCalendar.startOfDay(for: Date())
+                                let timeLimit = currentCalendar.date(byAdding: .day, value: expectedWeeks * 7, to: startOfToday)!
+                                guard eventStartDate >= startOfToday && eventStartDate < timeLimit else {
+                                    continue
+                                }
+                            }
 
                             // 与课程相关的备注信息
                             var notes = "教师: \(course.teacher ?? "未知")"

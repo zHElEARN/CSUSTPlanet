@@ -124,8 +124,8 @@ struct CourseScheduleView: View {
             AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
         }
         .sheet(isPresented: $viewModel.isShowingAddToCalendarAlert) {
-            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, secondOffset in
-                viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset)
+            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, secondOffset, scopeLimit in
+                viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset, scopeLimit: scopeLimit)
             }
         }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {

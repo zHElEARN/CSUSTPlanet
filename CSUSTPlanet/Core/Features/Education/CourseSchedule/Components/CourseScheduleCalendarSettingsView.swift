@@ -37,6 +37,26 @@ enum CalendarReminderOffset: TimeInterval, CaseIterable, Identifiable {
     }
 }
 
+enum CalendarExportScope: Int, CaseIterable, Identifiable {
+    case next1Week = 1
+    case next2Weeks = 2
+    case next3Weeks = 3
+    case next4Weeks = 4
+    case next5Weeks = 5
+
+    var id: Int { rawValue }
+
+    var title: String {
+        switch self {
+        case .next1Week: return "未来 1 周"
+        case .next2Weeks: return "未来 2 周"
+        case .next3Weeks: return "未来 3 周"
+        case .next4Weeks: return "未来 4 周"
+        case .next5Weeks: return "未来 5 周"
+        }
+    }
+}
+
 struct CourseScheduleCalendarSettingsView: View {
     @Binding var isPresented: Bool
 
@@ -46,7 +66,10 @@ struct CourseScheduleCalendarSettingsView: View {
     @State private var secondReminderOffset: CalendarReminderOffset = .atTime
     @State private var isSecondReminderEnabled: Bool = false
 
-    var onConfirm: (_ firstReminderOffset: TimeInterval?, _ secondReminderOffset: TimeInterval?) -> Void
+    @State private var exportScope: CalendarExportScope = .next1Week
+    @State private var isExportScopeLimited: Bool = false
+
+    var onConfirm: (_ firstReminderOffset: TimeInterval?, _ secondReminderOffset: TimeInterval?, _ exportScope: Int?) -> Void
 
     var body: some View {
         NavigationStack {
@@ -86,6 +109,29 @@ struct CourseScheduleCalendarSettingsView: View {
                 } footer: {
                     Text("你也可以设置两个不同的提醒时间，一个用于预留充足的准备时间，另一个用于临近上课时的最终提醒。")
                 }
+
+                Section {
+                    Toggle(
+                        "限制导出范围",
+                        isOn: Binding(
+                            get: { isExportScopeLimited },
+                            set: { value in withAnimation { isExportScopeLimited = value } }
+                        )
+                    )
+
+                    if isExportScopeLimited {
+                        Picker("导出范围", selection: $exportScope) {
+                            ForEach(CalendarExportScope.allCases) { scope in
+                                Text(scope.title).tag(scope)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                } header: {
+                    Text("导出范围")
+                } footer: {
+                    Text("默认导出本学期所有课程。开启后可限制仅导出未来几周的课程。")
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("添加课表到系统日历")
@@ -101,7 +147,8 @@ struct CourseScheduleCalendarSettingsView: View {
                         isPresented = false
                         onConfirm(
                             isFirstReminderEnabled ? firstReminderOffset.rawValue : nil,
-                            isSecondReminderEnabled ? secondReminderOffset.rawValue : nil
+                            isSecondReminderEnabled ? secondReminderOffset.rawValue : nil,
+                            isExportScopeLimited ? exportScope.rawValue : nil
                         )
                     }
                 }
@@ -121,5 +168,5 @@ struct CourseScheduleCalendarSettingsView: View {
 }
 
 #Preview {
-    CourseScheduleCalendarSettingsView(isPresented: .constant(true)) { _, _ in }
+    CourseScheduleCalendarSettingsView(isPresented: .constant(true)) { _, _, _ in }
 }
