@@ -15,7 +15,7 @@ extension SharedModelUtil {
     @MainActor
     static func migrateDatabase() async {
         // 数据库挂了则不用迁移了
-        guard !isContainerLoadFailed else { return }
+        guard containerLoadState == .normal else { return }
 
         let currentVersion = MMKVHelper.shared.databaseVersion
 

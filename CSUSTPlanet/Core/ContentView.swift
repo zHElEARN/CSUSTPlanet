@@ -207,6 +207,19 @@ struct ContentView: View {
             AlertToast(displayMode: .hud, type: .error(.red), title: "网络课程中心登录错误")
         }
 
+        // MARK: - 数据库Fatal提示
+
+        .alert("本地数据异常", isPresented: $bindableGlobalManager.showWipeRecoveryAlert) {
+            Button("我知道了", role: .cancel) {}
+        } message: {
+            Text("检测到本地缓存数据出现异常，为了保证应用正常运行，我们已重置了本地环境。如果您之前开启了 iCloud 同步，您的数据稍后将从云端自动恢复。")
+        }
+        .alert("存储空间不可用", isPresented: $bindableGlobalManager.showFatalErrorAlert) {
+            Button("我知道了", role: .cancel) {}
+        } message: {
+            Text("应用无法访问设备的本地存储空间，当前正以“临时模式”运行。您可以继续浏览信息，但任何关于宿舍电量新的更改或记录在退出应用后都将丢失。建议您检查设备的剩余存储空间，或尝试重启设备。")
+        }
+
         // MARK: - 主题设置 & 用户协议弹窗
 
         .preferredColorScheme(preferredColorScheme)
