@@ -138,6 +138,48 @@ enum CourseScheduleUtil {
         return dates
     }
 
+    /// 根据给定的学期开始时间、周次和课程小节信息，计算课程具体的开始和结束日期时间
+    /// - Parameters:
+    ///   - session: 课程小节信息
+    ///   - week: 第几周
+    ///   - semesterStartDate: 学期开始日期
+    /// - Returns: 课程的开始日期时间和结束日期时间，如果时间数据异常则返回 nil
+    static func getCourseEventDates(
+        session: EduHelper.ScheduleSession,
+        week: Int,
+        semesterStartDate: Date
+    ) -> (startDate: Date, endDate: Date)? {
+        let datesOfWeek = getDatesForWeek(semesterStartDate: semesterStartDate, week: week)
+        let targetDateIndex = session.dayOfWeek.rawValue
+        guard targetDateIndex < datesOfWeek.count else { return nil }
+
+        // 通过这一周的每一天的时间和这一节课在周几，定位到当前课程课时的具体日期
+        let targetDate = datesOfWeek[targetDateIndex]
+
+        // 找到这节课在这一天的具体时间
+        let startSectionIndex = session.startSection - 1
+        let endSectionIndex = session.endSection - 1
+        guard startSectionIndex >= 0, startSectionIndex < sectionTimeString.count,
+            endSectionIndex >= 0, endSectionIndex < sectionTimeString.count
+        else {
+            return nil
+        }
+
+        let startTimeString = sectionTimeString[startSectionIndex].0
+        let endTimeString = sectionTimeString[endSectionIndex].1
+        let startComponents = startTimeString.split(separator: ":").compactMap { Int($0) }
+        let endComponents = endTimeString.split(separator: ":").compactMap { Int($0) }
+
+        guard startComponents.count == 2, endComponents.count == 2,
+            let eventStartDate = calendar.date(bySettingHour: startComponents[0], minute: startComponents[1], second: 0, of: targetDate),
+            let eventEndDate = calendar.date(bySettingHour: endComponents[0], minute: endComponents[1], second: 0, of: targetDate)
+        else {
+            return nil
+        }
+
+        return (startDate: eventStartDate, endDate: eventEndDate)
+    }
+
     /// 判断指定日期是否为今天
     /// - Parameter date: 指定日期
     /// - Returns: 是否为今天

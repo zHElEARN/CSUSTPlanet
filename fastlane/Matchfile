@@ -1,9 +1,11 @@
-storage_mode("git")
-git_url(ENV["MATCH_GIT_URL"])
+# frozen_string_literal: true
 
-type("development")
+storage_mode('git')
+git_url(ENV['MATCH_GIT_URL'])
 
-app_identifier([ENV["APP_IDENTIFIER"], ENV["WIDGET_IDENTIFIER"]])
-username(ENV["APPLE_ID"])
+type('development')
+
+app_identifier([ENV['APP_IDENTIFIER'], ENV['WIDGET_IDENTIFIER']])
+username(ENV['APPLE_ID'])
 
 include_mac_in_profiles(true)

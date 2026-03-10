@@ -46,13 +46,10 @@ struct CoursesView: View {
                 view
             }
         }
-        // .toolbarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: viewModel.loadCourses) {
                         Label("刷新", systemImage: "arrow.clockwise")

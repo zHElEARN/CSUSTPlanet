@@ -5,14 +5,14 @@
 //  Created by Zachary Liu on 2026/2/12.
 //
 
+import AlertToast
 import SwiftUI
-import Toasts
 
 struct AnnualReviewEndPage: View {
-    // MARK: - Environment
-    @Environment(\.presentToast) var presentToast
-
     // MARK: - State Properties
+    @State private var isShowingLimitToast = false
+    @State private var isShowingRatingToast = false
+    @State private var ratingToastMessage = ""
     @State private var hasAnimated = false
     @State private var showContent = false
     @State private var showCursor = false
@@ -108,12 +108,7 @@ struct AnnualReviewEndPage: View {
                                     .foregroundStyle(index <= rating ? accentColor : textSecondary.opacity(0.4))
                                     .onTapGesture {
                                         guard ratingCount < 3 else {
-                                            presentToast(
-                                                ToastValue(
-                                                    icon: Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.orange),
-                                                    message: "已达到评分次数上限（最多3次）"
-                                                )
-                                            )
+                                            isShowingLimitToast = true
                                             return
                                         }
 
@@ -184,9 +179,9 @@ struct AnnualReviewEndPage: View {
             NavigationStack {
                 WebView(url: URL(string: "https://my.feishu.cn/share/base/form/shrcnPV8baxInD6OyUm5ZkteX0b")!)
                     .navigationTitle("填写意见调研问卷")
-                    .toolbarTitleDisplayMode(.inline)
+                    .inlineToolbarTitle()
                     .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
+                        ToolbarItem(placement: .cancellationAction) {
                             Button("关闭") {
                                 showSheet = false
                             }
@@ -197,6 +192,12 @@ struct AnnualReviewEndPage: View {
         }
         .onAppear {
             performAnimation()
+        }
+        .toast(isPresenting: $isShowingLimitToast) {
+            AlertToast(displayMode: .hud, type: .systemImage("exclamationmark.circle.fill", .orange), title: "已达到评分次数上限（最多3次）")
+        }
+        .toast(isPresenting: $isShowingRatingToast) {
+            AlertToast(displayMode: .hud, type: .systemImage("star.fill", accentColor), title: ratingToastMessage)
         }
     }
 
@@ -240,12 +241,7 @@ struct AnnualReviewEndPage: View {
         TrackHelper.shared.flush()
 
         // 显示 toast 提示
-        let message = ratingCount == 3 ? "感谢你的 \(value) 星评分！（已达评分次数上限）" : "感谢你的 \(value) 星评分！"
-        presentToast(
-            ToastValue(
-                icon: Image(systemName: "star.fill").foregroundStyle(accentColor),
-                message: message
-            )
-        )
+        ratingToastMessage = ratingCount == 3 ? "感谢你的 \(value) 星评分！（已达评分次数上限）" : "感谢你的 \(value) 星评分！"
+        isShowingRatingToast = true
     }
 }

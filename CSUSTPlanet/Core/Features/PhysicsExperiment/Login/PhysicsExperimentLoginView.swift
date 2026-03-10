@@ -41,17 +41,19 @@ struct PhysicsExperimentLoginView: View {
                         TextField("请输入用户名", text: $viewModel.username)
                             .textFieldStyle(.plain)
                             .textContentType(.username)
-                            .autocapitalization(.none)
-                            .disableAutocorrection(true)
+                            #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                            #endif
+                            .autocorrectionDisabled(true)
                             .frame(height: 20)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Color(.systemGray6))
+                    .background(Color.appSystemGray6)
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(.systemGray4), lineWidth: 1)
+                            .stroke(Color.appSystemGray4, lineWidth: 1)
                     )
                     .padding(.horizontal)
 
@@ -84,11 +86,11 @@ struct PhysicsExperimentLoginView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Color(.systemGray6))
+                    .background(Color.appSystemGray6)
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(.systemGray4), lineWidth: 1)
+                            .stroke(Color.appSystemGray4, lineWidth: 1)
                     )
                     .padding(.horizontal)
 
@@ -112,7 +114,7 @@ struct PhysicsExperimentLoginView: View {
                 }
             }
             .navigationTitle("登录大物实验")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(action: { isPresented = false }) {

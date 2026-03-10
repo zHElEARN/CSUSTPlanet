@@ -6,6 +6,7 @@
 //
 
 import AppIntents
+import CSUSTKit
 import SwiftData
 import WidgetKit
 
@@ -14,5 +15,11 @@ struct DormElectricityAppIntent: AppIntent, WidgetConfigurationIntent {
     static var description = IntentDescription("选择一个宿舍查看其用电情况")
 
     @Parameter(title: "宿舍")
-    var dormitory: DormEntity?
+    var dorm: DormIntentEntity?
+
+    static let mockIntent = {
+        let intent = DormElectricityAppIntent()
+        intent.dorm = DormIntentEntity(id: UUID(), room: "A233", buildingName: "至诚轩5栋A区", campusName: "云塘校区")
+        return intent
+    }()
 }

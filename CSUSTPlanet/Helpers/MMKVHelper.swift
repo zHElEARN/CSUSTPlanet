@@ -7,13 +7,13 @@
 
 import CSUSTKit
 import Foundation
+import OSLog
+import Sentry
 
-#if canImport(MMKVCore)
-    import MMKVCore
-#endif
-
-#if canImport(MMKVAppExtension)
-    import MMKVAppExtension
+#if canImport(MMKV)
+import MMKV
+#elseif canImport(MMKVAppExtension)
+import MMKVAppExtension
 #endif
 
 struct Cached<T: Codable>: Codable {
@@ -28,12 +28,12 @@ class MMKVHelper {
 
     private init() {}
 
-    private var mmkv: MMKV = {
-        guard let mmkvDirectoryURL = Constants.mmkvDirectoryURL else {
-            fatalError("Failed to get MMKV directory URL")
-        }
+    private let logHandler = LogHandler()
 
-        MMKV.initialize(rootDir: mmkvDirectoryURL.path)
+    private lazy var mmkv: MMKV = {
+        let mmkvDirectoryURL = Constants.mmkvDirectoryURL
+
+        MMKV.initialize(rootDir: mmkvDirectoryURL.path, logLevel: .info, handler: self.logHandler)
         guard
             let instance = MMKV(
                 mmapID: Constants.mmkvID,
@@ -43,6 +43,7 @@ class MMKVHelper {
                 expectedCapacity: 0
             )
         else {
+            SentrySDK.capture(message: "无法初始化MMKV实例ID: \(Constants.mmkvID)")
             fatalError("Failed to initialize MMKV with ID: \(Constants.mmkvID)")
         }
 
@@ -70,16 +71,67 @@ class MMKVHelper {
         )
         return decoder
     }()
+
+    // MARK: - GlobalVars properties
+
+    @MMKVStorage(key: "GlobalVars.appearance", defaultValue: "system")
+    var appearance: String
+
+    @MMKVStorage(key: "GlobalVars.isUserAgreementAccepted", defaultValue: false)
+    var isUserAgreementAccepted: Bool
+
+    @MMKVStorage(key: "GlobalVars.hasLaunchedBefore", defaultValue: false)
+    var hasLaunchedBefore: Bool
+
+    @MMKVStorage(key: "GlobalVars.isLiveActivityEnabled", defaultValue: true)
+    var isLiveActivityEnabled: Bool
+
+    @MMKVStorage(key: "GlobalVars.isWebVPNModeEnabled", defaultValue: false)
+    var isWebVPNModeEnabled: Bool
+
+    @MMKVStorage(key: "GlobalVars.isNotificationEnabled", defaultValue: true)
+    var isNotificationEnabled: Bool
+
+    @MMKVStorage(key: "GlobalVars.isBackgroundTaskEnabled", defaultValue: false)
+    var isBackgroundTaskEnabled: Bool
+
+    @MMKVOptionalStorage(key: "GlobalVars.userId")
+    var userId: String?
+
+    @MMKVStorage(key: "GlobalVars.hasCleanedUpDuplicateElectricityRecords", defaultValue: false)
+    var hasCleanedUpDuplicateElectricityRecords: Bool
+
+    // MARK: - Cached Properties
+
+    @MMKVOptionalStorage(key: "Cached.courseGradesCache")
+    var courseGradesCache: Cached<[EduHelper.CourseGrade]>?
+
+    @MMKVOptionalStorage(key: "Cached.urgentCoursesCache")
+    var urgentCoursesCache: Cached<UrgentCoursesData>?
+
+    @MMKVOptionalStorage(key: "Cached.examSchedulesCache")
+    var examSchedulesCache: Cached<[EduHelper.Exam]>?
+
+    @MMKVOptionalStorage(key: "Cached.courseScheduleCache")
+    var courseScheduleCache: Cached<CourseScheduleData>?
+
+    @MMKVOptionalStorage(key: "Cached.physicsExperimentScheduleCache")
+    var physicsExperimentScheduleCache: Cached<[PhysicsExperimentHelper.Course]>?
+
+    // MARK: - CampusMap Properties
+
+    @MMKVOptionalStorage(key: "CampusMap.selectedCampus")
+    var selectedCampus: CampusCardHelper.Campus?
+
+    // MARK: - SwiftData Properties
+
+    @MMKVStorage(key: "SwiftData.databaseVersion", defaultValue: 0)
+    var databaseVersion: Int
 }
 
 // MARK: - Methods
 
 extension MMKVHelper {
-    func close() {
-        mmkv.sync()
-        mmkv.close()
-    }
-
     func clearAll() {
         mmkv.clearAll()
     }
@@ -87,40 +139,36 @@ extension MMKVHelper {
     func removeValue(forKey key: String) {
         mmkv.removeValue(forKey: key)
     }
-
-    func checkContentChanged() {
-        mmkv.checkContentChanged()
-    }
 }
 
 // MARK: - Setters
 
 extension MMKVHelper {
-    private func set(forKey key: String, _ value: String) {
+    fileprivate func set(forKey key: String, _ value: String) {
         mmkv.set(value, forKey: key)
     }
 
-    private func set(forKey key: String, _ value: Int) {
+    fileprivate func set(forKey key: String, _ value: Int) {
         mmkv.set(Int64(value), forKey: key)
     }
 
-    private func set(forKey key: String, _ value: Bool) {
+    fileprivate func set(forKey key: String, _ value: Bool) {
         mmkv.set(value, forKey: key)
     }
 
-    private func set(forKey key: String, _ value: Float) {
+    fileprivate func set(forKey key: String, _ value: Float) {
         mmkv.set(value, forKey: key)
     }
 
-    private func set(forKey key: String, _ value: Double) {
+    fileprivate func set(forKey key: String, _ value: Double) {
         mmkv.set(value, forKey: key)
     }
 
-    private func set(forKey key: String, _ value: Data) {
+    fileprivate func set(forKey key: String, _ value: Data) {
         mmkv.set(value, forKey: key)
     }
 
-    private func set<Type: Encodable>(forKey key: String, _ value: Type) {
+    fileprivate func set<Type: Encodable>(forKey key: String, _ value: Type) {
         if let data = try? jsonEncoder.encode(value) {
             mmkv.set(data, forKey: key)
         }
@@ -130,43 +178,43 @@ extension MMKVHelper {
 // MARK: - Getters
 
 extension MMKVHelper {
-    private func string(forKey key: String) -> String? {
+    fileprivate func string(forKey key: String) -> String? {
         mmkv.string(forKey: key)
     }
 
-    private func int(forKey key: String) -> Int? {
+    fileprivate func int(forKey key: String) -> Int? {
         if mmkv.contains(key: key) {
             return Int(mmkv.int64(forKey: key))
         }
         return nil
     }
 
-    private func bool(forKey key: String) -> Bool? {
+    fileprivate func bool(forKey key: String) -> Bool? {
         if mmkv.contains(key: key) {
             return mmkv.bool(forKey: key)
         }
         return nil
     }
 
-    private func float(forKey key: String) -> Float? {
+    fileprivate func float(forKey key: String) -> Float? {
         if mmkv.contains(key: key) {
             return mmkv.float(forKey: key)
         }
         return nil
     }
 
-    private func double(forKey key: String) -> Double? {
+    fileprivate func double(forKey key: String) -> Double? {
         if mmkv.contains(key: key) {
             return mmkv.double(forKey: key)
         }
         return nil
     }
 
-    private func data(forKey key: String) -> Data? {
+    fileprivate func data(forKey key: String) -> Data? {
         return mmkv.data(forKey: key)
     }
 
-    private func object<Type: Decodable>(forKey key: String, as type: Type.Type) -> Type? {
+    fileprivate func object<Type: Decodable>(forKey key: String, as type: Type.Type) -> Type? {
         guard let data = mmkv.data(forKey: key) else {
             return nil
         }
@@ -174,99 +222,103 @@ extension MMKVHelper {
     }
 }
 
-// MARK: - GlobalVars
-
 extension MMKVHelper {
-    var appearance: String {
-        get { string(forKey: "GlobalVars.appearance") ?? "system" }
-        set { set(forKey: "GlobalVars.appearance", newValue) }
-    }
+    private class LogHandler: NSObject, MMKVHandler {
+        func mmkvLog(with level: MMKVLogLevel, file: UnsafePointer<CChar>!, line: Int32, func funcname: UnsafePointer<CChar>!, message: String!) {
+            let fileName = file != nil ? String(cString: file).components(separatedBy: "/").last ?? "Unknown" : "Unknown"
+            let functionStr = funcname != nil ? String(cString: funcname) : "Unknown"
+            let logMsg = "<\(fileName):\(line)::\(functionStr)> \(message ?? "")"
 
-    var isUserAgreementAccepted: Bool {
-        get { bool(forKey: "GlobalVars.isUserAgreementAccepted") ?? false }
-        set { set(forKey: "GlobalVars.isUserAgreementAccepted", newValue) }
-    }
+            let logger = Logger.mmkv
 
-    var hasLaunchedBefore: Bool {
-        get { bool(forKey: "GlobalVars.hasLaunchedBefore") ?? false }
-        set { set(forKey: "GlobalVars.hasLaunchedBefore", newValue) }
-    }
+            switch level {
+            case .debug:
+                logger.debug("\(logMsg, privacy: .public)")
+            case .info:
+                logger.info("\(logMsg, privacy: .public)")
+            case .warning:
+                logger.warning("\(logMsg, privacy: .public)")
+            case .error:
+                logger.error("\(logMsg, privacy: .public)")
+            case .none:
+                break
+            @unknown default:
+                logger.log("\(logMsg, privacy: .public)")
+            }
+        }
 
-    var isLiveActivityEnabled: Bool {
-        get { bool(forKey: "GlobalVars.isLiveActivityEnabled") ?? true }
-        set { set(forKey: "GlobalVars.isLiveActivityEnabled", newValue) }
-    }
+        func onMMKVCRCCheckFail(_ mmapID: String!) -> MMKVRecoverStrategic {
+            Logger.mmkv.fault("MMKV CRC Check Failed for ID: \(mmapID ?? "Unknown", privacy: .public). Attempting recovery.")
+            SentrySDK.capture(message: "MMKV CRC Check Failed for ID: \(mmapID ?? "Unknown")")
+            return .onErrorRecover
+        }
 
-    var isWebVPNModeEnabled: Bool {
-        get { bool(forKey: "GlobalVars.isWebVPNModeEnabled") ?? false }
-        set { set(forKey: "GlobalVars.isWebVPNModeEnabled", newValue) }
+        func onMMKVFileLengthError(_ mmapID: String!) -> MMKVRecoverStrategic {
+            Logger.mmkv.fault("MMKV File Length Error for ID: \(mmapID ?? "Unknown", privacy: .public). Attempting recovery.")
+            SentrySDK.capture(message: "MMKV File Length Error for ID: \(mmapID ?? "Unknown")")
+            return .onErrorRecover
+        }
     }
+}
 
-    var isNotificationEnabled: Bool {
-        get { bool(forKey: "GlobalVars.isNotificationEnabled") ?? true }
-        set { set(forKey: "GlobalVars.isNotificationEnabled", newValue) }
+// MARK: - Property Wrapper
+
+protocol MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Self?
+    func write(to helper: MMKVHelper, key: String)
+}
+
+@propertyWrapper
+struct MMKVStorage<T: MMKVValueType> {
+    let key: String
+    let defaultValue: T
+
+    var wrappedValue: T {
+        get { T.read(from: MMKVHelper.shared, key: key) ?? defaultValue }
+        set { newValue.write(to: MMKVHelper.shared, key: key) }
     }
+}
 
-    var isBackgroundTaskEnabled: Bool {
-        get { bool(forKey: "GlobalVars.isBackgroundTaskEnabled") ?? false }
-        set { set(forKey: "GlobalVars.isBackgroundTaskEnabled", newValue) }
-    }
+@propertyWrapper
+struct MMKVOptionalStorage<T: MMKVValueType> {
+    let key: String
 
-    var userId: String? {
-        get { string(forKey: "GlobalVars.userId") }
+    var wrappedValue: T? {
+        get { T.read(from: MMKVHelper.shared, key: key) }
         set {
             if let value = newValue {
-                set(forKey: "GlobalVars.userId", value)
+                value.write(to: MMKVHelper.shared, key: key)
             } else {
-                removeValue(forKey: "GlobalVars.userId")
+                MMKVHelper.shared.removeValue(forKey: key)
             }
         }
     }
 }
 
-// MARK: - Cached
-
-extension MMKVHelper {
-    var courseGradesCache: Cached<[EduHelper.CourseGrade]>? {
-        get { object(forKey: "Cached.courseGradesCache", as: Cached<[EduHelper.CourseGrade]>.self) }
-        set { set(forKey: "Cached.courseGradesCache", newValue) }
-    }
-
-    var urgentCoursesCache: Cached<UrgentCoursesData>? {
-        get { object(forKey: "Cached.urgentCoursesCache", as: Cached<UrgentCoursesData>.self) }
-        set { set(forKey: "Cached.urgentCoursesCache", newValue) }
-    }
-
-    var examSchedulesCache: Cached<[EduHelper.Exam]>? {
-        get { object(forKey: "Cached.examSchedulesCache", as: Cached<[EduHelper.Exam]>.self) }
-        set { set(forKey: "Cached.examSchedulesCache", newValue) }
-    }
-
-    var courseScheduleCache: Cached<CourseScheduleData>? {
-        get { object(forKey: "Cached.courseScheduleCache", as: Cached<CourseScheduleData>.self) }
-        set { set(forKey: "Cached.courseScheduleCache", newValue) }
-    }
-
-    var physicsExperimentScheduleCache: Cached<[PhysicsExperimentHelper.Course]>? {
-        get { object(forKey: "Cached.physicsExperimentScheduleCache", as: Cached<[PhysicsExperimentHelper.Course]>.self) }
-        set { set(forKey: "Cached.physicsExperimentScheduleCache", newValue) }
-    }
+extension String: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> String? { helper.string(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
 }
 
-// MARK: - CampusMap
+extension Bool: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Bool? { helper.bool(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
 
-extension MMKVHelper {
-    var selectedCampus: CampusCardHelper.Campus? {
-        get {
-            guard let rawValue = string(forKey: "CampusMap.selectedCampus") else { return nil }
-            return CampusCardHelper.Campus(rawValue: rawValue)
-        }
-        set {
-            if let value = newValue {
-                set(forKey: "CampusMap.selectedCampus", value.rawValue)
-            } else {
-                removeValue(forKey: "CampusMap.selectedCampus")
-            }
-        }
+extension Int: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Int? { helper.int(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension Cached: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Cached? { helper.object(forKey: key, as: Self.self) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension CampusCardHelper.Campus: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Self? {
+        guard let rawValue = helper.string(forKey: key) else { return nil }
+        return Self(rawValue: rawValue)
     }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self.rawValue) }
 }

@@ -36,10 +36,14 @@ struct UrgentCoursesView: View {
                         }
                     }
                 }
+                #if os(iOS)
                 .listStyle(.insetGrouped)
+                #elseif os(macOS)
+                .listStyle(.inset)
+                #endif
             } else {
                 ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交作业的课程"))
-                    .background(Color(.systemGroupedBackground))
+                    .background(Color.appSystemGroupedBackground)
             }
         }
         .toast(isPresenting: $viewModel.isShowingError) {
@@ -57,8 +61,6 @@ struct UrgentCoursesView: View {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: viewModel.loadUrgentCourses) {
                         Label("刷新", systemImage: "arrow.clockwise")

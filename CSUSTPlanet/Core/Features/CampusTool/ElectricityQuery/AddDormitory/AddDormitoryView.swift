@@ -39,7 +39,7 @@ struct AddDormitoryView: View {
                             ProgressView()
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color(.systemBackground))
+                                .background(Color.appSystemBackground)
                                 .cornerRadius(10)
                                 .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                         } else {
@@ -64,7 +64,7 @@ struct AddDormitoryView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .background(Color(.systemBackground))
+                            .background(Color.appSystemBackground)
                             .cornerRadius(10)
                             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
                         }
@@ -85,17 +85,19 @@ struct AddDormitoryView: View {
                             TextField(viewModel.selectedCampus == .jinpenling ? "例如: 101" : "例如: A101或B203", text: $viewModel.room)
                                 .textFieldStyle(.plain)
                                 .textContentType(.username)
-                                .autocapitalization(.none)
-                                .disableAutocorrection(true)
+                                #if os(iOS)
+                            .textInputAutocapitalization(.never)
+                                #endif
+                                .autocorrectionDisabled(true)
                                 .frame(height: 20)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .background(Color(.systemGray6))
+                        .background(Color.appSystemGray6)
                         .cornerRadius(10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color(.systemGray4), lineWidth: 1)
+                                .stroke(Color.appSystemGray4, lineWidth: 1)
                         )
                         .padding(.top, 5)
                     }
@@ -141,7 +143,7 @@ struct AddDormitoryView: View {
                 }
             }
             .navigationTitle("添加宿舍信息")
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .alert("错误", isPresented: $viewModel.isShowingError) {
                 Button("确定", role: .cancel) {}
             } message: {

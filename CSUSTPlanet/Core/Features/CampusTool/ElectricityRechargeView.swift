@@ -13,7 +13,7 @@ struct ElectricityRechargeView: View {
             url: URL(string: "https://hxyxh5.csust.edu.cn/plat/shouyeUser")!,
             cookies: CookieHelper.shared.session.sessionConfiguration.httpCookieStorage?.cookies
         )
-        .toolbarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
         .navigationTitle("电费充值")
         .trackView("ElectricityRecharge")
     }

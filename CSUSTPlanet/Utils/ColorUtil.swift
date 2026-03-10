@@ -9,6 +9,14 @@ import CSUSTKit
 import Foundation
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+private typealias PlatformColor = NSColor
+#else
+import UIKit
+private typealias PlatformColor = UIColor
+#endif
+
 enum ColorUtil {
     static let gradeRanges = [
         (range: "90-100", min: 90, max: 100, point: 4.0),
@@ -25,17 +33,17 @@ enum ColorUtil {
     ]
 
     static func dynamicColor(grade: Double) -> Color {
-        return Color(dynamicUIColor(grade: grade))
+        return Color(dynamicPlatformColor(grade: grade))
     }
 
-    static func dynamicUIColor(grade: Double) -> UIColor {
+    private static func dynamicPlatformColor(grade: Double) -> PlatformColor {
         let failingThreshold = 60.0
         let midThreshold = 78.0
         let excellentThreshold = 90.0
 
-        let lowColor = UIColor.systemRed
-        let midColor = UIColor.systemYellow
-        let highColor = UIColor.systemGreen
+        let lowColor = PlatformColor.systemRed
+        let midColor = PlatformColor.systemYellow
+        let highColor = PlatformColor.systemGreen
 
         if grade < failingThreshold {
             return lowColor
@@ -51,17 +59,17 @@ enum ColorUtil {
     }
 
     static func dynamicColor(point: Double) -> Color {
-        return Color(dynamicUIColor(point: point))
+        return Color(dynamicPlatformColor(point: point))
     }
 
-    static func dynamicUIColor(point: Double) -> UIColor {
+    private static func dynamicPlatformColor(point: Double) -> PlatformColor {
         let failingThreshold = 1.0
         let midThreshold = 3.0
         let excellentThreshold = 4.0
 
-        let lowColor = UIColor.systemRed
-        let midColor = UIColor.systemYellow
-        let highColor = UIColor.systemGreen
+        let lowColor = PlatformColor.systemRed
+        let midColor = PlatformColor.systemYellow
+        let highColor = PlatformColor.systemGreen
 
         if point < failingThreshold {
             return lowColor
@@ -76,25 +84,33 @@ enum ColorUtil {
         }
     }
 
-    private static func interpolate(from fromColor: UIColor, to toColor: UIColor, with factor: CGFloat) -> UIColor {
+    private static func interpolate(from fromColor: PlatformColor, to toColor: PlatformColor, with factor: CGFloat) -> PlatformColor {
         var fromR: CGFloat = 0
         var fromG: CGFloat = 0
         var fromB: CGFloat = 0
         var fromA: CGFloat = 0
-        fromColor.getRed(&fromR, green: &fromG, blue: &fromB, alpha: &fromA)
 
         var toR: CGFloat = 0
         var toG: CGFloat = 0
         var toB: CGFloat = 0
         var toA: CGFloat = 0
+
+        #if os(macOS)
+        let safeFromColor = fromColor.usingColorSpace(.deviceRGB) ?? fromColor
+        let safeToColor = toColor.usingColorSpace(.deviceRGB) ?? toColor
+        safeFromColor.getRed(&fromR, green: &fromG, blue: &fromB, alpha: &fromA)
+        safeToColor.getRed(&toR, green: &toG, blue: &toB, alpha: &toA)
+        #else
+        fromColor.getRed(&fromR, green: &fromG, blue: &fromB, alpha: &fromA)
         toColor.getRed(&toR, green: &toG, blue: &toB, alpha: &toA)
+        #endif
 
         let newR = fromR + (toR - fromR) * factor
         let newG = fromG + (toG - fromG) * factor
         let newB = fromB + (toB - fromB) * factor
         let newA = fromA + (toA - fromA) * factor
 
-        return UIColor(red: newR, green: newG, blue: newB, alpha: newA)
+        return PlatformColor(red: newR, green: newG, blue: newB, alpha: newA)
     }
 
     static func electricityColor(electricity: Double) -> Color {

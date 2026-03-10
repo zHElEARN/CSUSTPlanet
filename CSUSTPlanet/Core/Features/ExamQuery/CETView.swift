@@ -12,7 +12,7 @@ struct CETView: View {
         WebView(url: URL(string: "https://cjcx.neea.edu.cn/html1/folder/21033/653-1.htm")!)
             .trackView("CET")
             .navigationTitle("四六级查询")
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
     }
 }
 

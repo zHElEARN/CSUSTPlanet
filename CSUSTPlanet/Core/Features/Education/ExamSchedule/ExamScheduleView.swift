@@ -26,7 +26,11 @@ struct ExamScheduleView: View {
                             Text(semester).tag(semester as String?)
                         }
                     }
+                    #if os(iOS)
                     .pickerStyle(.wheel)
+                    #else
+                    .pickerStyle(.menu)
+                    #endif
                     HStack {
                         Button(action: viewModel.loadAvailableSemesters) {
                             Text("刷新学期列表")
@@ -47,9 +51,9 @@ struct ExamScheduleView: View {
                 }
             }
             .navigationTitle("高级查询")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
                         viewModel.isShowingFilter = false
                     }
@@ -157,7 +161,7 @@ struct ExamScheduleView: View {
             }
         }
         .padding(16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         // 已结束状态：降低透明度，置灰
@@ -192,7 +196,7 @@ struct ExamScheduleView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            Color.appSystemGroupedBackground
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -240,24 +244,18 @@ struct ExamScheduleView: View {
         }
         .task { viewModel.task() }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button(action: { viewModel.isShowingFilter.toggle() }) {
-                        Label("高级查询", systemImage: "slider.horizontal.3")
-                    }
-                    Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
-                        Label("全部添加到日历", systemImage: "calendar.badge.plus")
-                    }
-                    .disabled(viewModel.data == nil)
-                } label: {
-                    Label("更多操作", systemImage: "ellipsis.circle")
+            ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: { viewModel.isShowingFilter.toggle() }) {
+                    Label("高级查询", systemImage: "slider.horizontal.3")
                 }
+                Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                    Label("全部添加到日历", systemImage: "calendar.badge.plus")
+                }
+                .disabled(viewModel.data == nil)
             }
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: { viewModel.loadExams() }) {
                         Label("查询", systemImage: "arrow.clockwise")
@@ -282,7 +280,7 @@ struct ExamScheduleView: View {
                 view
             }
         }
-        .toolbarTitleDisplayMode(.large)
+        .largeToolbarTitle()
         .trackView("ExamSchedule")
     }
 }

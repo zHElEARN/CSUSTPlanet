@@ -65,7 +65,7 @@ struct GradeAnalysisView: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemBackground))
+        .background(Color.appSecondarySystemBackground)
         .cornerRadius(10)
         .padding(.horizontal)
     }
@@ -241,8 +241,10 @@ struct GradeAnalysisView: View {
         if let gradeAnalysisData = viewModel.analysisData {
             analysisContent(gradeAnalysisData, isShareable: true)
                 .padding(.vertical)
-                .frame(width: UIScreen.main.bounds.width)
-                .background(Color(.systemGroupedBackground))
+                #if os(iOS)
+            .frame(width: UIScreen.main.bounds.width)
+                #endif
+                .background(Color.appSystemGroupedBackground)
                 .environment(\.colorScheme, colorScheme)
         } else {
             emptyStateSection
@@ -271,28 +273,29 @@ struct GradeAnalysisView: View {
         .toast(isPresenting: $viewModel.isShowingWarning) {
             AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
         }
-        .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
+        .sheet(isPresented: $viewModel.isShowingShareSheet) {
+            #if os(iOS)
+            ShareSheet(items: [viewModel.shareContent!])
+            #else
+            Text("分享功能暂不支持在当前平台使用")
+            #endif
+        }
         .navigationTitle("成绩分析")
-        .toolbarTitleDisplayMode(.large)
+        .largeToolbarTitle()
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button(action: { viewModel.showShareSheet(shareableView) }) {
-                        Label("分享", systemImage: "square.and.arrow.up")
-                    }
-                    Button(action: { viewModel.saveToPhotoAlbum(shareableView) }) {
-                        Label("保存结果到相册", systemImage: "photo")
-                    }
-                } label: {
-                    Label("更多操作", systemImage: "ellipsis.circle")
+            ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: { viewModel.showShareSheet(shareableView) }) {
+                    Label("分享", systemImage: "square.and.arrow.up")
+                }
+                .disabled(viewModel.isLoading || viewModel.data == nil)
+                Button(action: { viewModel.saveToPhotoAlbum(shareableView) }) {
+                    Label("保存结果到相册", systemImage: "photo")
                 }
                 .disabled(viewModel.isLoading || viewModel.data == nil)
             }
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: viewModel.loadGradeAnalysis) {
                         Label("刷新成绩分析", systemImage: "arrow.clockwise")

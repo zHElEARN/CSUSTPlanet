@@ -6,6 +6,8 @@
 //
 
 import LinkPresentation
+
+#if os(iOS)
 import UIKit
 
 class ImageActivityItemSource: NSObject, UIActivityItemSource {
@@ -33,3 +35,5 @@ class ImageActivityItemSource: NSObject, UIActivityItemSource {
         return metadata
     }
 }
+
+#endif

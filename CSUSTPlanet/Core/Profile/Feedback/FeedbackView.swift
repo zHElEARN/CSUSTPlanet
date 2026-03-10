@@ -78,9 +78,9 @@ struct FeedbackView: View {
             NavigationStack {
                 WebView(url: surveyURL)
                     .navigationTitle("填写意见调研问卷")
-                    .toolbarTitleDisplayMode(.inline)
+                    .inlineToolbarTitle()
                     .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
+                        ToolbarItem(placement: .cancellationAction) {
                             Button("关闭") {
                                 isShowingSurveySheet = false
                             }

@@ -5,6 +5,8 @@
 //  Created by Zachary Liu on 2026/1/17.
 //
 
+#if os(iOS)
+
 import BackgroundTasks
 import Foundation
 import OSLog
@@ -42,7 +44,7 @@ final class BackgroundTaskHelper {
 
     func schedule(provider: BackgroundTaskProvider) {
         guard MMKVHelper.shared.isBackgroundTaskEnabled else {
-            Logger.backgroundTaskHelper.debug("未开启后台智能更新，跳过调度: \(provider.identifier)")
+            Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过调度: \(provider.identifier)")
             return
         }
         let request = BGAppRefreshTaskRequest(identifier: provider.identifier)
@@ -57,7 +59,7 @@ final class BackgroundTaskHelper {
 
     func scheduleAllTasks() {
         guard MMKVHelper.shared.isBackgroundTaskEnabled else {
-            Logger.backgroundTaskHelper.debug("未开启后台智能更新，跳过调度全部任务")
+            Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过调度全部任务")
             return
         }
         tasks.forEach { schedule(provider: $0) }
@@ -74,3 +76,4 @@ final class BackgroundTaskHelper {
         Logger.backgroundTaskHelper.debug("取消全部后台任务")
     }
 }
+#endif

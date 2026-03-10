@@ -43,6 +43,13 @@ struct DormHistoryView: View {
             }
         }
         .navigationTitle("历史记录")
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle("共\(viewModel.sortedRecords.count)条记录")
+            } else {
+                view
+            }
+        }
         .onAppear { viewModel.updateSortedRecords(for: dorm) }
         .onChange(of: dorm.records) { viewModel.updateSortedRecords(for: dorm) }
         .trackView("DormHistory")

@@ -9,338 +9,152 @@ import CSUSTKit
 import SwiftUI
 import WidgetKit
 
-let courses = [
-    EduHelper.Course(
-        courseName: "软件工程概论", groupName: nil, teacher: "胡立辉高级实验师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: Optional("金6-102")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 3, 5, 7, 9, 11, 13], startSection: 7, endSection: 8,
-                dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金12-205")
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "体育(三)", groupName: Optional("(24计算机跆拳道男11)"), teacher: "余新畅无",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], startSection: 3,
-                endSection: 4, dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金西田径场1")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "美术鉴赏(艺术及其他)", groupName: nil, teacher: "赵晖(14)讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 9,
-                endSection: 10, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金12-215")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "无人机设计与空天科技导论（自然科学）", groupName: nil, teacher: "张云菲副教授,陈良宇讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8], startSection: 9, endSection: 10,
-                dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: nil
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8], startSection: 9, endSection: 10,
-                dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: nil
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "大学物理B（下）", groupName: nil, teacher: "张华林讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 5,
-                endSection: 6, dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金12-106")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "离散结构", groupName: nil, teacher: "肖红光副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], startSection: 1,
-                endSection: 2, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金12-106")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], startSection: 7,
-                endSection: 8, dayOfWeek: EduHelper.DayOfWeek.friday, classroom: Optional("金13-105")
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "写作与沟通", groupName: nil, teacher: "陈璐（12）副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金6-304")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "程序设计、算法与数据结构（三）", groupName: nil, teacher: "陈曦(小)副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.friday, classroom: Optional("金12-107")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], startSection: 5, endSection: 6,
-                dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: Optional("金12-107")
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "操作系统", groupName: nil, teacher: "胡晋彬副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 1,
-                endSection: 2, dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: Optional("金12-109")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "马克思主义基本原理", groupName: nil, teacher: "廖苗副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], startSection: 5,
-                endSection: 6, dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: Optional("金12-116")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "大学物理实验B", groupName: nil, teacher: "蔡爱军讲师",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [2], startSection: 7, endSection: 8, dayOfWeek: EduHelper.DayOfWeek.wednesday,
-                classroom: Optional("金12-500")
-            )
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "操作系统实验（开源）", groupName: nil, teacher: "胡晋彬副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15], startSection: 3, endSection: 4,
-                dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: nil
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [6, 8, 10, 12, 14], startSection: 5, endSection: 6,
-                dayOfWeek: EduHelper.DayOfWeek.friday, classroom: nil
-            ),
-        ]
-    ),
-    EduHelper.Course(
-        courseName: "线性代数", groupName: nil, teacher: "李铭副教授",
-        sessions: [
-            EduHelper.ScheduleSession(
-                weeks: [2, 4, 6, 8, 10, 12, 14], startSection: 1, endSection: 2,
-                dayOfWeek: EduHelper.DayOfWeek.monday, classroom: Optional("金6-107")
-            ),
-            EduHelper.ScheduleSession(
-                weeks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], startSection: 7, endSection: 8,
-                dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: Optional("金6-107")
-            ),
-        ]
-    ),
-]
-
-func mockTodayCoursesEntry() -> TodayCoursesEntry {
-    let semesterDateFormatter = DateFormatter()
-    semesterDateFormatter.dateFormat = "yyyy-MM-dd"
-
-    let data = CourseScheduleData(semester: "2025-2026-1", semesterStartDate: semesterDateFormatter.date(from: "2025-09-07")!, courses: courses)
-
-    let timeDateFormatter = DateFormatter()
-    timeDateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-
-    return TodayCoursesEntry(
-        date: timeDateFormatter.date(from: "2025-09-17 04:00")!,
-        configuration: TodayCoursesIntent(),
-        data: data
-    )
-}
-
 struct TodayCoursesEntryView: View {
-    @Environment(\.widgetFamily) var widgetFamily
+    @Environment(\.widgetFamily) var family
 
     var entry: TodayCoursesProvider.Entry
 
+    // MARK: - Body
+
     var body: some View {
-        VStack {
+        Group {
             if let data = entry.data {
-                HStack {
-                    if widgetFamily != .systemSmall {
-                        Text("今日剩余课程")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.primary)
-                        Text(data.semester ?? "默认学期")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    }
-                    Text("周\(CourseScheduleUtil.getDayOfWeek(entry.date).stringValue)")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.red)
+                VStack(spacing: 0) {
+                    CourseWidgetHeaderView(family: family, title: "当前课程", date: entry.date, data: data)
 
-                    Spacer()
+                    Divider().padding(.vertical, 4)
 
-                    switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: entry.date) {
-                    case .beforeSemester:
-                        Text("学期未开始")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    case .afterSemester:
-                        Text("学期已结束")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    case .inSemester:
-                        if let currentWeek = CourseScheduleUtil.getCurrentWeek(semesterStartDate: data.semesterStartDate, now: entry.date) {
-                            Text("第 \(currentWeek) 周")
-                                .font(.system(size: 14))
-                                .foregroundStyle(.primary)
-                        } else {
-                            Text("无法计算当前周")
-                                .font(.system(size: 14))
-                                .foregroundStyle(.red)
-                        }
-                    }
+                    contentView(date: entry.date, data: data)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                coursesView(data: data)
             } else {
-                Text("请先在App中查询课表")
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
+                CourseWidgetEmptyView()
             }
         }
+        .containerBackground(.fill.tertiary, for: .widget)
         .widgetURL(URL(string: "csustplanet://widgets/courseSchedule"))
     }
 
-    func coursesView(data: CourseScheduleData) -> some View {
-        Group {
-            switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: entry.date) {
-            case .beforeSemester:
-                VStack {
-                    if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: entry.date),
-                        daysUntilStart > CourseScheduleUtil.semesterStartThreshold
-                    {
-                        Text(CourseScheduleUtil.getHolidayMessage(for: entry.date))
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(.primary)
-                        Text("学期未开始")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 2)
-                    } else {
-                        Text("学期未开始")
-                        if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: entry.date) {
-                            Text("还有 \(daysUntilStart) 天开学")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.primary)
-                                .padding(.top, 2)
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            case .afterSemester:
-                Text("学期已结束")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            case .inSemester:
-                let courseColors = ColorUtil.getCourseColors(data.courses)
-                let courseDisplayInfos = CourseScheduleUtil.getUnfinishedCourses(semesterStartDate: data.semesterStartDate, now: entry.date, courses: data.courses)
-                    .prefix(widgetFamily == .systemLarge ? 5 : 2)
+    // MARK: - Content View
 
-                if courseDisplayInfos.isEmpty {
-                    Text("今天已经没有课程啦")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-                } else {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(courseDisplayInfos, id: \.course.id) { courseDisplayInfo in
-                            courseCard(courseDisplayInfo: courseDisplayInfo.course, courseColors: courseColors, isCurrent: courseDisplayInfo.isCurrent)
-                        }
+    @ViewBuilder
+    func contentView(date: Date, data: CourseScheduleData) -> some View {
+        switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date) {
+        case .beforeSemester:
+            CourseWidgetBeforeSemesterView(date: date, data: data)
+        case .afterSemester:
+            CourseWidgetAfterSemesterView()
+        case .inSemester:
+            inSemesterView(date: date, data: data)
+        }
+    }
+
+    // MARK: - In Semester View
+
+    @ViewBuilder
+    func inSemesterView(date: Date, data: CourseScheduleData) -> some View {
+        GeometryReader { proxy in
+            let colors = ColorUtil.getCourseColors(data.courses)
+            let count = (family == .systemLarge ? 5 : 2)
+            let courses = CourseScheduleUtil.getUnfinishedCourses(semesterStartDate: data.semesterStartDate, now: date, courses: data.courses)
+                .prefix(count)
+
+            let spacing: CGFloat = 4
+            let height = (proxy.size.height - spacing * CGFloat(count - 1)) / CGFloat(count)
+
+            if courses.isEmpty {
+                Text("今天没有课程啦")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                VStack(spacing: spacing) {
+                    ForEach(courses, id: \.course.id) { course in
+                        courseRowView(courseDisplayInfo: course.course, colors: colors, isCurrent: course.isCurrent)
+                            .frame(maxWidth: .infinity, maxHeight: height)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 }
             }
         }
     }
 
-    private func courseCard(courseDisplayInfo: CourseDisplayInfo, courseColors: [String: Color], isCurrent: Bool) -> some View {
-        HStack {
-            VStack(alignment: .leading) {
-                HStack(spacing: 6) {
-                    Text(courseDisplayInfo.course.courseName)
-                        .font(.system(size: 16, weight: .bold))
-                        .lineLimit(1)
+    // MARK: - Course Row View
 
-                    if isCurrent {
-                        Image(systemName: "circle.fill")
-                            .font(.system(size: 7))
-                            .foregroundColor(.green)
-                    }
-                }
-                HStack {
-                    Text(courseDisplayInfo.session.classroom ?? "无教室")
-                        .fixedSize()
-                    Text(courseDisplayInfo.course.teacher ?? "无教师")
-                }
-                .font(.system(size: widgetFamily == .systemSmall ? 12 : 14))
-                if widgetFamily == .systemSmall {
-                    Text("\(CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.startSection - 1].0) - \(CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.endSection - 1].1)")
-                        .font(.system(size: 12))
-                }
-            }
-            if widgetFamily != .systemSmall {
-                Spacer()
-                VStack(alignment: .trailing) {
-                    Text(CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.startSection - 1].0)
-                        .font(.system(size: 16))
-                    Text(CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.endSection - 1].1)
-                        .font(.system(size: 16))
-                }
-            }
-        }
-        .padding(4)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 50)
-        .background((courseColors[courseDisplayInfo.course.courseName] ?? .gray).opacity(0.1))
-        .cornerRadius(4)
-        .overlay(
+    @ViewBuilder
+    func courseRowView(courseDisplayInfo: CourseDisplayInfo, colors: [String: Color], isCurrent: Bool) -> some View {
+        let color = colors[courseDisplayInfo.course.courseName] ?? .gray
+        let startTime = CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.startSection - 1].0
+        let endTime = CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.endSection - 1].1
+        HStack(spacing: 2) {
             Rectangle()
                 .frame(width: 4)
-                .foregroundStyle(courseColors[courseDisplayInfo.course.courseName] ?? .gray)
+                .foregroundStyle(color)
                 .cornerRadius(2)
-                .padding(.leading, -8),
-            alignment: .leading
-        )
-        .padding(.leading, 8)
-        .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 0) {
+                if family == .systemSmall {
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(spacing: 0) {
+                            Text(courseDisplayInfo.course.courseName)
+                                .font(.system(size: 14, weight: .bold))
+                                .lineLimit(1)
+                            if isCurrent {
+                                Circle()
+                                    .fill(.green)
+                                    .frame(width: 7, height: 7)
+                            }
+                        }
+                        HStack(spacing: 4) {
+                            Text(courseDisplayInfo.session.classroom ?? "无教室")
+                                .font(.system(size: 12))
+                                .fixedSize()
+                                .lineLimit(1)
+                            Text(courseDisplayInfo.course.teacher ?? "无教师")
+                                .font(.system(size: 12))
+                                .lineLimit(1)
+                        }
+                        Text("\(startTime) - \(endTime)")
+                            .font(.system(size: 12))
+                    }
+                    .padding(.horizontal, 2)
+                } else {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack {
+                            Text(courseDisplayInfo.course.courseName)
+                                .font(.system(size: 16, weight: .bold))
+                                .lineLimit(1)
+                            if isCurrent {
+                                Circle()
+                                    .fill(.green)
+                                    .frame(width: 7, height: 7)
+                            }
+                        }
+                        HStack(spacing: 4) {
+                            Text(courseDisplayInfo.session.classroom ?? "无教室")
+                                .font(.system(size: 16))
+                                .fixedSize()
+                                .lineLimit(1)
+                            Text(courseDisplayInfo.course.teacher ?? "无教师")
+                                .font(.system(size: 16))
+                                .lineLimit(1)
+                        }
+                    }
+                    .padding(.leading, 2)
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(startTime)
+                            .font(.system(size: 16))
+                        Text(endTime)
+                            .font(.system(size: 16))
+                    }
+                    .padding(.trailing, 2)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(color.opacity(0.1))
+            .cornerRadius(4)
+        }
     }
-}
-
-#Preview(as: .systemSmall) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
-}
-
-#Preview(as: .systemMedium) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
-}
-
-#Preview(as: .systemLarge) {
-    TodayCoursesWidget()
-} timeline: {
-    mockTodayCoursesEntry()
 }

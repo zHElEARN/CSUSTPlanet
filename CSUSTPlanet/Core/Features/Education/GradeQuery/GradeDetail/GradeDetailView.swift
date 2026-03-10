@@ -128,7 +128,7 @@ struct GradeDetailView: View {
                 content()
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(Color.appSecondarySystemGroupedBackground)
             .cornerRadius(12)
         }
     }
@@ -145,7 +145,7 @@ struct GradeDetailView: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.appSystemGroupedBackground)
         .task { viewModel.task(courseGrade) }
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
@@ -157,8 +157,6 @@ struct GradeDetailView: View {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: { viewModel.loadDetail(courseGrade) }) {
                         Label("刷新成绩分布", systemImage: "arrow.clockwise")

@@ -11,32 +11,33 @@ import Foundation
 import OSLog
 
 @MainActor
-class AuthManager: ObservableObject {
+@Observable
+class AuthManager {
     static let shared = AuthManager()
 
     // MARK: - SSO Properties
 
-    @Published var ssoProfile: SSOHelper.Profile?
-    @Published var isSSOLoggingIn: Bool = false
-    @Published var isSSOLoggingOut: Bool = false
-    @Published var isShowingSSOError: Bool = false
-    @Published var isShowingSSOInfo: Bool = false
-    @Published var ssoInfo: String = ""
+    var ssoProfile: SSOHelper.Profile?
+    var isSSOLoggingIn: Bool = false
+    var isSSOLoggingOut: Bool = false
+    var isShowingSSOError: Bool = false
+    var isShowingSSOInfo: Bool = false
+    var ssoInfo: String = ""
     var isSSOLoggedIn: Bool { return ssoProfile != nil }
 
     // MARK: - Education Properties
 
-    @Published var isEducationLoggingIn: Bool = false
-    @Published var isShowingEducationError: Bool = false
-    @Published var isShowingEducationInfo: Bool = false
-    @Published var educationInfo: String = ""
+    var isEducationLoggingIn: Bool = false
+    var isShowingEducationError: Bool = false
+    var isShowingEducationInfo: Bool = false
+    var educationInfo: String = ""
 
     // MARK: - MOOC Properties
 
-    @Published var isMoocLoggingIn: Bool = false
-    @Published var isShowingMoocError: Bool = false
-    @Published var isShowingMoocInfo: Bool = false
-    @Published var moocInfo: String = ""
+    var isMoocLoggingIn: Bool = false
+    var isShowingMoocError: Bool = false
+    var isShowingMoocInfo: Bool = false
+    var moocInfo: String = ""
 
     // MARK: - Helpers
 

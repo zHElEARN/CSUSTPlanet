@@ -5,6 +5,8 @@
 //  Created by Zhe_Learn on 2025/10/15.
 //
 
+#if os(iOS)
+
 import ActivityKit
 import Foundation
 import OSLog
@@ -132,3 +134,5 @@ class ActivityHelper {
         return (startDate, endDate)
     }
 }
+
+#endif

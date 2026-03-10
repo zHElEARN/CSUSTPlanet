@@ -19,6 +19,8 @@ struct CSUSTPlanetWidgetBundle: WidgetBundle {
         WeeklyCoursesWidget()
         UrgentCoursesWidget()
 
+        #if os(iOS)
         CourseStatusWidgetLiveActivity()
+        #endif
     }
 }

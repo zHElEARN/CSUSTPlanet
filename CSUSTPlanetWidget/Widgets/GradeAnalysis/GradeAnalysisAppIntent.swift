@@ -1,5 +1,5 @@
 //
-//  GradeAnalysisIntent.swift
+//  GradeAnalysisAppIntent.swift
 //  CSUSTPlanetWidgetExtension
 //
 //  Created by Zhe_Learn on 2025/7/22.
@@ -24,10 +24,16 @@ enum ChartType: String, AppEnum {
     }
 }
 
-struct GradeAnalysisIntent: AppIntent, WidgetConfigurationIntent {
+struct GradeAnalysisAppIntent: AppIntent, WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "成绩分析"
     static var description = IntentDescription("分析您的成绩数据，提供详细的成绩统计和趋势分析。")
 
     @Parameter(title: "选择图表类型", default: .gpaDistribution)
     var chartType: ChartType
+
+    static func mockIntent(chartType: ChartType = .gpaDistribution) -> GradeAnalysisAppIntent {
+        let intent = GradeAnalysisAppIntent()
+        intent.chartType = chartType
+        return intent
+    }
 }

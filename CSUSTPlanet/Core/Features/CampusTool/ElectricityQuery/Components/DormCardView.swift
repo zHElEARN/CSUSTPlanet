@@ -15,14 +15,14 @@ struct DormCardView: View {
     @Bindable var dorm: Dorm
 
     private var electricityColor: Color {
-        guard let record = dorm.lastRecord else { return .primary }
-        return ColorUtil.electricityColor(electricity: record.electricity)
+        guard let electricity = dorm.lastFetchElectricity else { return .primary }
+        return ColorUtil.electricityColor(electricity: electricity)
     }
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .fill(Color.appSecondarySystemGroupedBackground)
                 .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 1)
 
             TrackLink(destination: DormDetailView(viewModel: viewModel, dorm: dorm)) {
@@ -55,9 +55,9 @@ struct DormCardView: View {
                     }
 
                     // 2. Electricity
-                    if let record = dorm.lastRecord {
+                    if let electricity = dorm.lastFetchElectricity {
                         HStack(alignment: .lastTextBaseline, spacing: 4) {
-                            Text(String(format: "%.2f", record.electricity))
+                            Text(String(format: "%.2f", electricity))
                                 .font(.system(.largeTitle, design: .rounded))
                                 .fontWeight(.bold)
                                 .foregroundStyle(electricityColor)
@@ -219,7 +219,7 @@ struct DormChartPreview: View {
                         x: .value("日期", record.date),
                         y: .value("电量", record.electricity)
                     )
-                    .interpolationMethod(.catmullRom)
+                    .interpolationMethod(.linear)
                     .symbol {
                         if records.count <= 1 {
                             Circle()

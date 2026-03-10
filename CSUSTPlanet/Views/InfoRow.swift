@@ -45,13 +45,23 @@ struct InfoRow: View {
         }
         .contextMenu {
             Button(action: {
+                #if os(iOS)
                 UIPasteboard.general.string = value
+                #elseif os(macOS)
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(value, forType: .string)
+                #endif
             }) {
                 Label("复制值", systemImage: "doc.on.doc")
             }
             if let label = label {
                 Button(action: {
+                    #if os(iOS)
                     UIPasteboard.general.string = "\(label): \(value)"
+                    #elseif os(macOS)
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString("\(label): \(value)", forType: .string)
+                    #endif
                 }) {
                     Label("复制全部", systemImage: "doc.on.doc.fill")
                 }

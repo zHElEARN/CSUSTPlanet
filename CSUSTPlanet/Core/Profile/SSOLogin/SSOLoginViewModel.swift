@@ -130,6 +130,7 @@ class SSOLoginViewModel: ObservableObject {
         isShowingLoginSheet = false
     }
 
+    #if os(iOS)
     func onBrowserLoginSuccess(_ username: String, _ password: String, _ mode: SSOBrowserView.LoginMode, _ cookies: [HTTPCookie]) {
         CookieHelper.shared.updateCookies(cookies)
         Task {
@@ -156,4 +157,5 @@ class SSOLoginViewModel: ObservableObject {
             }
         }
     }
+    #endif
 }

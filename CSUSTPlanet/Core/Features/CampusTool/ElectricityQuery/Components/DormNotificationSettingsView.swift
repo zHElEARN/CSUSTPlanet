@@ -31,8 +31,13 @@ struct DormNotificationSettingsView: View {
                             Text("\(hour)时").tag(hour)
                         }
                     }
+                    #if os(iOS)
                     .pickerStyle(.wheel)
                     .frame(width: 120)
+                    #else
+                    .pickerStyle(.menu)
+                    .frame(width: 80)
+                    #endif
                     .clipped()
 
                     Picker("分钟", selection: $selectedMinute) {
@@ -40,8 +45,13 @@ struct DormNotificationSettingsView: View {
                             Text("\(minute)分").tag(minute)
                         }
                     }
+                    #if os(iOS)
                     .pickerStyle(.wheel)
                     .frame(width: 120)
+                    #else
+                    .pickerStyle(.menu)
+                    .frame(width: 80)
+                    #endif
                     .clipped()
                 }
                 .frame(height: 150)
@@ -82,7 +92,7 @@ struct DormNotificationSettingsView: View {
                 Spacer()
             }
             .navigationTitle("宿舍电量查询提醒")
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {

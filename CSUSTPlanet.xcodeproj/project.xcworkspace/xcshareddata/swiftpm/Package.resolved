@@ -1,22 +1,22 @@
 {
-  "originHash" : "80eb06b25f7c9da51ee56593a5595e5ee5060f72298923a3c5efd65f7d328968",
+  "originHash" : "d116518784a2033ce655e1ca848c3f5f157c09f87bb8da0ac25b08f5af2dfcec",
   "pins" : [
     {
       "identity" : "alamofire",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Alamofire/Alamofire.git",
       "state" : {
-        "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
-        "version" : "5.10.2"
+        "revision" : "3f99050e75bbc6fe71fc323adabb039756680016",
+        "version" : "5.11.1"
       }
     },
     {
       "identity" : "alerttoast",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/elai950/AlertToast.git",
+      "location" : "https://github.com/zHElEARN/AlertToast",
       "state" : {
-        "revision" : "b39252eacd159904afd7d718bba0afabb87f2f2f",
-        "version" : "1.3.9"
+        "branch" : "master",
+        "revision" : "6fac45ae622c7249d111815c994c869f3163dadb"
       }
     },
     {
@@ -31,28 +31,10 @@
     {
       "identity" : "csustkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/CreaMakers/CSUSTKit.git",
+      "location" : "https://github.com/zHElEARN/CSUSTKit",
       "state" : {
-        "revision" : "d1d65e32e5db397a9f399007a88aab69d4696ba5",
-        "version" : "1.4.2"
-      }
-    },
-    {
-      "identity" : "flex",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/FLEXTool/FLEX.git",
-      "state" : {
-        "revision" : "e0acf59d06d498041f65bbea1e5914b6e4b39733",
-        "version" : "5.22.10"
-      }
-    },
-    {
-      "identity" : "inject",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/krzysztofzablocki/Inject.git",
-      "state" : {
-        "revision" : "728c56639ecb3df441d51d5bc6747329afabcfc9",
-        "version" : "1.5.2"
+        "revision" : "8211c5fb1b36d75f333f731e8449316f166ab7cc",
+        "version" : "1.4.5"
       }
     },
     {
@@ -65,21 +47,30 @@
       }
     },
     {
-      "identity" : "lookinserver",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/QMUI/LookinServer/",
-      "state" : {
-        "revision" : "e553d1b689d147817dc54ad5c28fcff71e860101",
-        "version" : "1.2.8"
-      }
-    },
-    {
       "identity" : "lrucache",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nicklockwood/LRUCache.git",
       "state" : {
-        "revision" : "e0e9e039b33db8f2ef39b8e25607e38f46b13584",
-        "version" : "1.1.2"
+        "revision" : "cb5b2bd0da83ad29c0bec762d39f41c8ad0eaf3e",
+        "version" : "1.2.1"
+      }
+    },
+    {
+      "identity" : "matomo-sdk-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/matomo-org/matomo-sdk-ios.git",
+      "state" : {
+        "branch" : "v7.8.0",
+        "revision" : "f140afcb7cedebdcbf8b8230fdd822b4b61e3685"
+      }
+    },
+    {
+      "identity" : "mmkv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/zHElEARN/MMKV/",
+      "state" : {
+        "branch" : "dev",
+        "revision" : "4d4b3743e30dfd40282200bf253019c697df25d0"
       }
     },
     {
@@ -89,6 +80,15 @@
       "state" : {
         "revision" : "2849f5323265386e200484b0d0f896e73c3411b9",
         "version" : "6.0.1"
+      }
+    },
+    {
+      "identity" : "sentry-cocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/getsentry/sentry-cocoa.git",
+      "state" : {
+        "revision" : "7e77c22816c024d7385d7ab5fbf4b00130853a43",
+        "version" : "9.5.1"
       }
     },
     {
@@ -123,35 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup.git",
       "state" : {
-        "revision" : "4206bc7b8bd9a4ff8e9511211e1b4bff979ef9c4",
-        "version" : "2.11.1"
-      }
-    },
-    {
-      "identity" : "swiftui-toasts",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/sunghyun-k/swiftui-toasts.git",
-      "state" : {
-        "revision" : "bc1224753c894b3d50fcced57632a2372d924852",
-        "version" : "1.0.2"
-      }
-    },
-    {
-      "identity" : "swiftui-window-overlay",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/sunghyun-k/swiftui-window-overlay.git",
-      "state" : {
-        "revision" : "46739300713772a62a3bf31d77f8f23ba9cf61f7",
-        "version" : "1.0.2"
-      }
-    },
-    {
-      "identity" : "zoomable",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ryohey/Zoomable.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "525c0e1784825261b84d21c5cd5a159245a40ea6"
+        "revision" : "d86f244ed497d48012782e2f59c985a55e77b3f5",
+        "version" : "2.11.3"
       }
     }
   ],

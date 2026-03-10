@@ -74,7 +74,7 @@ struct HomeEmptyStateView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

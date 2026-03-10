@@ -16,13 +16,13 @@ enum AppEnvironment: String {
 enum EnvironmentUtil {
     static let environment: AppEnvironment = {
         #if DEBUG
-            return .debug
+        return .debug
         #else
-            if isTestFlight() {
-                return .testFlight
-            } else {
-                return .appStore
-            }
+        if isTestFlight() {
+            return .testFlight
+        } else {
+            return .appStore
+        }
         #endif
     }()
 

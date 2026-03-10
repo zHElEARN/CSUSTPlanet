@@ -59,7 +59,7 @@ struct PhysicsExperimentGradeView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
+            ToolbarItem(placement: .navigation) {
                 Button(action: {
                     isLoginPresented = true
                 }) {
@@ -69,8 +69,6 @@ struct PhysicsExperimentGradeView: View {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .scaleEffect(0.9, anchor: .center)
                 } else {
                     Button(action: viewModel.loadGrades) {
                         Label("刷新", systemImage: "arrow.clockwise")

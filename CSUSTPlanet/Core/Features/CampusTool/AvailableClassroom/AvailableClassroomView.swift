@@ -15,7 +15,7 @@ struct AvailableClassroomView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            Color.appSystemGroupedBackground
                 .ignoresSafeArea()
 
             ScrollView {
@@ -65,7 +65,7 @@ struct AvailableClassroomView: View {
                         LabeledContent {
                             Picker("星期", selection: $viewModel.selectedDayOfWeek) {
                                 ForEach(EduHelper.DayOfWeek.allCases, id: \.self) { dayOfWeek in
-                                    Text(dayOfWeekToString(dayOfWeek)).tag(dayOfWeek)
+                                    Text(dayOfWeek.chineseLongString).tag(dayOfWeek)
                                 }
                             }
                             .tint(.secondary)
@@ -112,7 +112,7 @@ struct AvailableClassroomView: View {
                         .disabled(viewModel.isLoading)
                     }
                     .padding(16)
-                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .background(Color.appSecondarySystemGroupedBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
 
@@ -148,7 +148,7 @@ struct AvailableClassroomView: View {
                                             .fontWeight(.medium)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 12)
-                                            .background(Color(uiColor: .secondarySystemGroupedBackground))
+                                            .background(Color.appSecondarySystemGroupedBackground)
                                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 12)
@@ -175,7 +175,7 @@ struct AvailableClassroomView: View {
             }
         }
         .navigationTitle("空教室查询")
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
         .searchable(text: $viewModel.searchText, prompt: "搜索查询结果")
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
@@ -196,19 +196,7 @@ struct AvailableClassroomView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    func dayOfWeekToString(_ dayOfWeek: EduHelper.DayOfWeek) -> String {
-        switch dayOfWeek {
-        case .monday: return "星期一"
-        case .tuesday: return "星期二"
-        case .wednesday: return "星期三"
-        case .thursday: return "星期四"
-        case .friday: return "星期五"
-        case .saturday: return "星期六"
-        case .sunday: return "星期日"
-        }
     }
 }

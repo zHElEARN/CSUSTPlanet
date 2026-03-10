@@ -30,11 +30,12 @@ struct DormOverviewView: View {
 
                 Spacer()
 
-                if let dorm = primaryDorm, let record = dorm.lastRecord {
+                if let dorm = primaryDorm, let lastFetchElectricity = dorm.lastFetchElectricity {
                     HStack(alignment: .lastTextBaseline, spacing: 4) {
-                        Text(String(format: "%.1f", record.electricity))
+                        Text(String(format: "%.2f", lastFetchElectricity))
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundStyle(ColorUtil.electricityColor(electricity: record.electricity))
+                            .foregroundStyle(ColorUtil.electricityColor(electricity: lastFetchElectricity))
+                            .minimumScaleFactor(0.7)
 
                         Text("kWh")
                             .font(.caption)
@@ -60,7 +61,7 @@ struct DormOverviewView: View {
             .padding(16)
             .frame(height: 130)
             .frame(maxWidth: .infinity)
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(Color.appSecondarySystemGroupedBackground)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)

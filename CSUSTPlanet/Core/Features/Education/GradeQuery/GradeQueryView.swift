@@ -10,7 +10,7 @@ import CSUSTKit
 import SwiftUI
 
 struct GradeQueryView: View {
-    @StateObject var viewModel = GradeQueryViewModel()
+    @State var viewModel = GradeQueryViewModel()
 
     // MARK: - Stat Item
 
@@ -171,9 +171,13 @@ struct GradeQueryView: View {
                         }
                     }
                 }
+                #if os(iOS)
                 .listStyle(.insetGrouped)
+                #elseif os(macOS)
+                .listStyle(.inset)
+                #endif
             } else {
-                emptyStateSection.background(Color(.systemGroupedBackground))
+                emptyStateSection.background(Color.appSystemGroupedBackground)
             }
         }
         .safeAreaInset(edge: .top) {
@@ -205,7 +209,13 @@ struct GradeQueryView: View {
                 mainToolbar()
             }
         }
-        .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent!]) }
+        .sheet(isPresented: $viewModel.isShowingShareSheet) {
+            #if os(iOS)
+            ShareSheet(items: [viewModel.shareContent!])
+            #else
+            Text("分享功能暂不支持在当前平台使用")
+            #endif
+        }
         .navigationTitle("成绩查询")
         .apply { view in
             if #available(iOS 26.0, *) {
@@ -214,8 +224,10 @@ struct GradeQueryView: View {
                 view
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
+        #if os(iOS)
         .environment(\.editMode, .constant(viewModel.isSelectionMode ? .active : .inactive))
+        #endif
         .trackView("GradeQuery")
     }
 
@@ -223,25 +235,19 @@ struct GradeQueryView: View {
 
     @ToolbarContentBuilder
     private func mainToolbar() -> some ToolbarContent {
-        ToolbarItem(placement: .primaryAction) {
-            Menu {
-                Button(action: viewModel.enterSelectionMode) {
-                    Label("选择", systemImage: "checkmark.circle")
-                }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
-                Button(action: viewModel.exportGradesAsCSV) {
-                    Label("导出为CSV表格", systemImage: "doc.plaintext")
-                }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
-            } label: {
-                Label("更多操作", systemImage: "ellipsis.circle")
+        ToolbarItemGroup(placement: .secondaryAction) {
+            Button(action: viewModel.enterSelectionMode) {
+                Label("选择", systemImage: "checkmark.circle")
             }
+            .disabled(viewModel.isLoading || viewModel.data == nil)
+            Button(action: viewModel.exportGradesAsCSV) {
+                Label("导出为CSV表格", systemImage: "doc.plaintext")
+            }
+            .disabled(viewModel.isLoading || viewModel.data == nil)
         }
         ToolbarItem(placement: .primaryAction) {
             if viewModel.isLoading {
                 ProgressView()
-                    .progressViewStyle(.circular)
-                    .scaleEffect(0.9, anchor: .center)
             } else {
                 Button(action: { viewModel.loadCourseGrades() }) {
                     Label("查询", systemImage: "arrow.clockwise")
@@ -254,15 +260,12 @@ struct GradeQueryView: View {
 
     @ToolbarContentBuilder
     private func selectionToolbar() -> some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
+        ToolbarItem(placement: .cancellationAction) {
             Button("取消") { viewModel.exitSelectionMode() }
         }
 
-        ToolbarItem(placement: .primaryAction) {
+        ToolbarItemGroup(placement: .primaryAction) {
             Button("全选") { viewModel.selectAll() }
-        }
-
-        ToolbarItem(placement: .primaryAction) {
             Button("全不选") { viewModel.selectNone() }
         }
     }

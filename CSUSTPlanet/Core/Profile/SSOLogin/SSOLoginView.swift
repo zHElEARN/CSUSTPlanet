@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SSOLoginView: View {
     @StateObject private var viewModel: SSOLoginViewModel
-    @EnvironmentObject var authManager: AuthManager
+    @Environment(AuthManager.self) var authManager
 
     init(isShowingLoginSheet: Binding<Bool>) {
         _viewModel = StateObject(wrappedValue: SSOLoginViewModel(isShowingLoginSheet: isShowingLoginSheet))
@@ -46,12 +46,14 @@ struct SSOLoginView: View {
                         accountLoginView.tag(0)
                         verificationCodeLoginView.tag(1)
                     }
+                    #if os(iOS)
                     .tabViewStyle(.page(indexDisplayMode: .never))
+                    #endif
                     .frame(height: 300)
                 }
             }
             .navigationTitle("统一认证登录")
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
@@ -83,9 +85,10 @@ struct SSOLoginView: View {
             }
             .sheet(isPresented: $viewModel.isShowingBrowser) {
                 NavigationStack {
+                    #if os(iOS)
                     SSOBrowserView(onLoginSuccess: viewModel.onBrowserLoginSuccess)
                         .navigationTitle("网页登录")
-                        .toolbarTitleDisplayMode(.inline)
+                        .inlineToolbarTitle()
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
                                 Button("关闭") {
@@ -93,6 +96,9 @@ struct SSOLoginView: View {
                                 }
                             }
                         }
+                    #else
+                    Text("网页登录功能暂不支持macOS平台")
+                    #endif
                 }
                 .trackView("SSOBrowser")
             }
@@ -113,17 +119,19 @@ struct SSOLoginView: View {
                 TextField("请输入账号", text: $viewModel.username)
                     .textFieldStyle(.plain)
                     .textContentType(.username)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                    #if os(iOS)
+                .textInputAutocapitalization(.never)
+                    #endif
+                    .autocorrectionDisabled(true)
                     .frame(height: 20)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemGray6))
+            .background(Color.appSystemGray6)
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
+                    .stroke(Color.appSystemGray4, lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.top, 5)
@@ -157,11 +165,11 @@ struct SSOLoginView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemGray6))
+            .background(Color.appSystemGray6)
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
+                    .stroke(Color.appSystemGray4, lineWidth: 1)
             )
             .padding(.horizontal)
 
@@ -195,17 +203,19 @@ struct SSOLoginView: View {
                 TextField("请输入账号", text: $viewModel.username)
                     .textFieldStyle(.plain)
                     .textContentType(.username)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                    #if os(iOS)
+                .textInputAutocapitalization(.never)
+                    #endif
+                    .autocorrectionDisabled(true)
                     .frame(height: 20)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemGray6))
+            .background(Color.appSystemGray6)
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
+                    .stroke(Color.appSystemGray4, lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.top, 5)
@@ -219,18 +229,30 @@ struct SSOLoginView: View {
                         .foregroundColor(.gray)
                     TextField("请输入图片验证码", text: $viewModel.captcha)
                         .textFieldStyle(.plain)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
+                        #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                        #endif
+                        .autocorrectionDisabled(true)
                         .frame(height: 20)
 
-                    if let data = viewModel.captchaImageData, let image = UIImage(data: data) {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 20)
-                            .onTapGesture {
-                                viewModel.handleRefreshCaptcha()
-                            }
+                    if let data = viewModel.captchaImageData {
+                        #if os(macOS)
+                        if let nsImage = NSImage(data: data) {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 20)
+                                .onTapGesture { viewModel.handleRefreshCaptcha() }
+                        }
+                        #else
+                        if let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 20)
+                                .onTapGesture { viewModel.handleRefreshCaptcha() }
+                        }
+                        #endif
                     } else {
                         ProgressView()
                             .frame(height: 20)
@@ -238,11 +260,11 @@ struct SSOLoginView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color(.systemGray6))
+                .background(Color.appSystemGray6)
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(.systemGray4), lineWidth: 1)
+                        .stroke(Color.appSystemGray4, lineWidth: 1)
                 )
             }
             .padding(.horizontal)
@@ -256,8 +278,10 @@ struct SSOLoginView: View {
                         .foregroundColor(.gray)
                     TextField("请输入短信验证码", text: $viewModel.smsCode)
                         .textContentType(.oneTimeCode)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
+                        #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                        #endif
+                        .autocorrectionDisabled(true)
                         .frame(height: 20)
                     Button(action: viewModel.handleGetDynamicCode) {
                         Text(viewModel.countdown > 0 ? "\(viewModel.countdown)秒后重新获取" : "获取验证码")
@@ -266,11 +290,11 @@ struct SSOLoginView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color(.systemGray6))
+                .background(Color.appSystemGray6)
                 .cornerRadius(10)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color(.systemGray4), lineWidth: 1)
+                        .stroke(Color.appSystemGray4, lineWidth: 1)
                 )
             }
             .padding(.horizontal)

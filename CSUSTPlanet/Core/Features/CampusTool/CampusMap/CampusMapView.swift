@@ -10,7 +10,10 @@ import CSUSTKit
 import MapKit
 import SwiftUI
 import TipKit
+
+#if os(iOS)
 import UIKit
+#endif
 
 struct CampusMapView: View {
     @StateObject private var viewModel = CampusMapViewModel()
@@ -67,12 +70,14 @@ struct CampusMapView: View {
             }
             .padding()
         }
+        #if os(iOS)
         .toolbar(.hidden, for: .tabBar)
         .background(
             WillDisappearHandler {
                 viewModel.isBuildingsListShown = false
             }
         )
+        #endif
         .onChange(of: viewModel.isBuildingsListShown) { _, isShown in
             if !isShown {
                 debounceTask?.cancel()
@@ -86,7 +91,7 @@ struct CampusMapView: View {
                 .presentationDetents([.fraction(0.3), .fraction(0.5), .fraction(0.7)], selection: $viewModel.settingsDetent)
         }
         .navigationTitle("校园地图")
-        .navigationBarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
         .sheet(isPresented: $viewModel.isOnlineMapShown) {
             SafariView(url: url).trackView("CampusMapOnline")
         }
@@ -97,7 +102,7 @@ struct CampusMapView: View {
             AlertToast(type: .loading, title: "加载中", subTitle: "正在加载地图数据")
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Menu {
                     Picker("校区", selection: $viewModel.selectedCampus) {
                         Text("全部校区").tag(CampusCardHelper.Campus?.none)
@@ -115,8 +120,6 @@ struct CampusMapView: View {
                     }
                 }
 
-            }
-            ToolbarItem(placement: .topBarTrailing) {
                 Button(action: viewModel.showOnlineMap) {
                     Image(systemName: "globe")
                 }
@@ -155,7 +158,7 @@ struct CampusMapView: View {
                         }
                 }
                 .padding(8)
-                .background(Color(.tertiarySystemFill))
+                .background(Color.appTertiarySystemFill)
                 .cornerRadius(24)
 
                 if isSearchFocused {
@@ -180,7 +183,7 @@ struct CampusMapView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(viewModel.selectedCategory == category ? Color.accentColor : Color(.secondarySystemBackground))
+                                .background(viewModel.selectedCategory == category ? Color.accentColor : Color.appSecondarySystemBackground)
                                 .foregroundColor(viewModel.selectedCategory == category ? .white : .primary)
                                 .cornerRadius(20)
                         }
@@ -237,7 +240,7 @@ struct CampusMapView: View {
                                     }
                                 }
                                 .padding(12)
-                                .background(Color(.secondarySystemBackground))
+                                .background(Color.appSecondarySystemBackground)
                                 .cornerRadius(12)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
@@ -346,6 +349,7 @@ extension CampusMapView {
     }
 }
 
+#if os(iOS)
 struct WillDisappearHandler: UIViewControllerRepresentable {
     let onWillDisappear: () -> Void
 
@@ -371,6 +375,7 @@ struct WillDisappearHandler: UIViewControllerRepresentable {
         }
     }
 }
+#endif
 
 #Preview {
     NavigationStack {

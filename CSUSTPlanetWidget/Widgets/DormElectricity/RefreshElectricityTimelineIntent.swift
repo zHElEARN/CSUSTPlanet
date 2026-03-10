@@ -14,7 +14,7 @@ struct RefreshElectricityTimelineIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        WidgetCenter.shared.reloadTimelines(ofKind: "DormElectricityWidget")
+        // WidgetCenter.shared.reloadTimelines(ofKind: "DormElectricityWidget")
         return .result()
     }
 }

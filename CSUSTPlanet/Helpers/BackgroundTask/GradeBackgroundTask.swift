@@ -5,6 +5,8 @@
 //  Created by Zachary Liu on 2026/1/17.
 //
 
+#if os(iOS)
+
 import BackgroundTasks
 import CSUSTKit
 import Foundation
@@ -110,3 +112,4 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
         }
     }
 }
+#endif

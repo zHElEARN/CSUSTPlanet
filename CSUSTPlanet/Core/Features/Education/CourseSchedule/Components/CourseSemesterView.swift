@@ -8,19 +8,23 @@
 import SwiftUI
 
 struct CourseSemesterView: View {
-    @EnvironmentObject var viewModel: CourseScheduleViewModel
+    @Environment(CourseScheduleViewModel.self) var viewModel
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("学期选择") {
-                    Picker("学期", selection: $viewModel.selectedSemester) {
+                    Picker("学期", selection: Bindable(viewModel).selectedSemester) {
                         Text("默认学期").tag(nil as String?)
                         ForEach(viewModel.availableSemesters, id: \.self) { semester in
                             Text(semester).tag(semester as String?)
                         }
                     }
+                    #if os(iOS)
                     .pickerStyle(.wheel)
+                    #else
+                    .pickerStyle(.menu)
+                    #endif
                 }
                 HStack {
                     Button(action: viewModel.loadAvailableSemesters) {
@@ -46,7 +50,7 @@ struct CourseSemesterView: View {
                 }
             }
             .navigationTitle("学期选择")
-            .navigationBarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .trackView("CourseSemester")
         }
     }

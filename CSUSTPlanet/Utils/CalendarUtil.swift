@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2025/7/11.
 //
 
+import CSUSTKit
 import EventKit
 import Foundation
 
@@ -81,10 +82,15 @@ extension CalendarUtil {
         startDate: Date,
         endDate: Date,
         notes: String? = nil,
-        location: String? = nil
+        location: String? = nil,
+        alarms: [EKAlarm]? = nil,
+        commit: Bool = true,
+        skipDuplicateCheck: Bool = false
     ) async throws {
         guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
-        guard try await !eventExists(calendar: calendar, title: title, startDate: startDate, endDate: endDate) else { return }
+        if !skipDuplicateCheck {
+            guard try await !eventExists(calendar: calendar, title: title, startDate: startDate, endDate: endDate) else { return }
+        }
 
         let event = EKEvent(eventStore: eventStore)
         event.title = title
@@ -94,13 +100,45 @@ extension CalendarUtil {
         event.location = location
         event.calendar = calendar
 
-        try eventStore.save(event, span: .thisEvent)
+        if let alarms = alarms {
+            alarms.forEach { event.addAlarm($0) }
+        }
+
+        try eventStore.save(event, span: .thisEvent, commit: commit)
     }
 
     static private func eventExists(calendar: EKCalendar, title: String, startDate: Date, endDate: Date) async throws -> Bool {
         let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
         let events = eventStore.events(matching: predicate)
         return events.contains { $0.title == title && $0.startDate == startDate && $0.endDate == endDate }
+    }
+
+    /// 清空指定日历中的事件
+    static func clearCalendar(calendar: EKCalendar, from startDate: Date, to endDate: Date) async throws {
+        guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
+
+        let calendarKit = Calendar.current
+        var currentStart = startDate
+
+        while currentStart < endDate {
+            guard let nextStart = calendarKit.date(byAdding: .year, value: 1, to: currentStart) else { break }
+            let currentEnd = min(nextStart, endDate)
+
+            let predicate = eventStore.predicateForEvents(withStart: currentStart, end: currentEnd, calendars: [calendar])
+            let events = eventStore.events(matching: predicate)
+
+            for event in events {
+                try eventStore.remove(event, span: .thisEvent, commit: false)
+            }
+
+            currentStart = currentEnd
+        }
+
+        try eventStore.commit()
+    }
+
+    static func commitChanges() throws {
+        try eventStore.commit()
     }
 }
 

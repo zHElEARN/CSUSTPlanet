@@ -12,13 +12,19 @@ import SwiftUI
 // MARK: - CourseScheduleView
 
 struct CourseScheduleView: View {
-    @StateObject var viewModel = CourseScheduleViewModel()
+    @Environment(\.horizontalSizeClass) var sizeClass
 
-    let colSpacing: CGFloat = 2  // 列间距
-    let rowSpacing: CGFloat = 2  // 行间距
-    let timeColWidth: CGFloat = 30  // 左侧时间列宽度
-    let headerHeight: CGFloat = 50  // 顶部日期行的高度
-    let sectionHeight: CGFloat = 60  // 单个课程格子的高度
+    @State var viewModel = CourseScheduleViewModel()
+
+    private var isPad: Bool {
+        sizeClass == .regular
+    }
+
+    var colSpacing: CGFloat { isPad ? 4 : 2 }
+    var rowSpacing: CGFloat { isPad ? 4 : 2 }
+    var timeColWidth: CGFloat { isPad ? 50 : 30 }
+    var headerHeight: CGFloat { isPad ? 70 : 50 }
+    var sectionHeight: CGFloat { isPad ? 90 : 60 }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,7 +32,14 @@ struct CourseScheduleView: View {
             if let courseScheduleData = viewModel.data {
                 let weeklyCourses = CourseScheduleUtil.getWeeklyCourses(courseScheduleData.value.courses)
 
-                // 课表的每一周翻页
+                #if os(macOS)
+                tableView(
+                    for: viewModel.currentWeek,
+                    semesterStartDate: courseScheduleData.value.semesterStartDate,
+                    weeklyCourses: weeklyCourses
+                )
+                .ignoresSafeArea(.container, edges: .bottom)
+                #else
                 TabView(selection: $viewModel.currentWeek) {
                     ForEach(1...CourseScheduleUtil.weekCount, id: \.self) { week in
                         tableView(for: week, semesterStartDate: courseScheduleData.value.semesterStartDate, weeklyCourses: weeklyCourses)
@@ -35,8 +48,37 @@ struct CourseScheduleView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .ignoresSafeArea(.container, edges: .bottom)
+                #endif
             } else {
                 emptyStateView
+            }
+        }
+        .onAppear {
+            if sizeClass == .regular {
+                viewModel.isShowingDetail = true
+            }
+        }
+        .apply { view in
+            if sizeClass == .regular {
+                view
+                    .inspector(isPresented: $viewModel.isShowingDetail) {
+                        Group {
+                            if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
+                                CourseScheduleDetailView(course: course, session: session, isShowingToolbar: false, isPresented: $viewModel.isShowingDetail)
+                            } else {
+                                ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
+                            }
+                        }
+                    }
+                    .inspectorColumnWidth(min: 350, ideal: 400, max: 450)
+            } else {
+                view.sheet(isPresented: $viewModel.isShowingDetail) {
+                    if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
+                        CourseScheduleDetailView(course: course, session: session, isShowingToolbar: true, isPresented: $viewModel.isShowingDetail)
+                    } else {
+                        ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
+                    }
+                }
             }
         }
         .navigationTitle("我的课表")
@@ -47,11 +89,15 @@ struct CourseScheduleView: View {
                 view
             }
         }
-        .toolbarTitleDisplayMode(.inline)
+        .inlineToolbarTitle()
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .secondaryAction) {
                 Button(action: { viewModel.isShowingSemestersSheet = true }) {
-                    Image(systemName: "calendar")
+                    Label("学期选择", systemImage: "calendar")
+                }
+
+                Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                    Label("添加课表到系统日历", systemImage: "calendar.badge.plus")
                 }
             }
             ToolbarItem(placement: .primaryAction) {
@@ -71,9 +117,20 @@ struct CourseScheduleView: View {
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
         }
+        .toast(isPresenting: $viewModel.isShowingAddToCalendarSuccess) {
+            AlertToast(type: .complete(.green), title: "添加成功", subTitle: "已成功将课表添加到日历")
+        }
+        .toast(isPresenting: $viewModel.isAddToCalendarExporting) {
+            AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
+        }
+        .sheet(isPresented: $viewModel.isShowingAddToCalendarAlert) {
+            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, secondOffset in
+                viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset)
+            }
+        }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {
             CourseSemesterView()
-                .environmentObject(viewModel)
+                .environment(viewModel)
         }
         .trackView("CourseSchedule")
     }
@@ -82,12 +139,12 @@ struct CourseScheduleView: View {
     private var emptyStateView: some View {
         VStack(spacing: 12) {
             Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 50))
+                .font(.system(size: isPad ? 80 : 50))
                 .foregroundColor(.secondary)
             Text("暂无课表数据")
-                .font(.headline)
+                .font(isPad ? .title2 : .headline)
             Text("当前学期未设置或数据加载失败")
-                .font(.subheadline)
+                .font(isPad ? .body : .subheadline)
                 .foregroundColor(.secondary)
         }
         .frame(maxHeight: .infinity)
@@ -100,13 +157,13 @@ struct CourseScheduleView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("今日 \(CourseScheduleUtil.dateFormatter.string(from: viewModel.today))")
-                    .font(.headline)
+                    .font(isPad ? .title3 : .headline)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
 
                 if #unavailable(iOS 26.0) {
                     Text(viewModel.selectedSemester ?? "默认学期")
-                        .font(.caption)
+                        .font(isPad ? .subheadline : .caption)
                         .foregroundColor(.secondary)
                 }
             }
@@ -125,11 +182,11 @@ struct CourseScheduleView: View {
                         Text("第 \(viewModel.currentWeek) 周")
                             .fontWeight(.medium)
                         Image(systemName: "chevron.up.chevron.down")
-                            .font(.caption2)
+                            .font(isPad ? .subheadline : .caption2)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color(.secondarySystemBackground))
+                    .padding(.horizontal, isPad ? 16 : 12)
+                    .padding(.vertical, isPad ? 8 : 6)
+                    .background(Color.appSecondarySystemBackground)
                     .cornerRadius(8)
                 }
 
@@ -142,7 +199,7 @@ struct CourseScheduleView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.systemBackground))
+        .background(Color.appSystemBackground)
         // .overlay(Divider().opacity(0.6), alignment: .bottom)
     }
 
@@ -190,9 +247,9 @@ struct CourseScheduleView: View {
             VStack(alignment: .center, spacing: 0) {
                 if let firstDate = dates.first {
                     Text(CourseScheduleUtil.monthFormatter.string(from: firstDate))
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: isPad ? 18 : 14, weight: .bold))
                     Text("月")
-                        .font(.system(size: 10))
+                        .font(.system(size: isPad ? 14 : 10))
                         .foregroundColor(.secondary)
                 }
             }
@@ -203,7 +260,7 @@ struct CourseScheduleView: View {
                 let isToday = CourseScheduleUtil.isToday(date)
                 VStack(spacing: 2) {
                     Text(day.stringValue)
-                        .font(.system(size: 11))
+                        .font(.system(size: isPad ? 15 : 11))
                         .foregroundColor(isToday ? .accentColor : .secondary)
                         .fontWeight(isToday ? .bold : .medium)
 
@@ -212,10 +269,10 @@ struct CourseScheduleView: View {
                             .fill(isToday ? Color.accentColor : Color.clear)
 
                         Text(CourseScheduleUtil.dayFormatter.string(from: date))
-                            .font(.system(size: 14, weight: isToday ? .bold : .medium))
+                            .font(.system(size: isPad ? 18 : 14, weight: isToday ? .bold : .medium))
                             .foregroundColor(isToday ? .white : .primary)
                     }
-                    .frame(width: 26, height: 26)
+                    .frame(width: isPad ? 36 : 26, height: isPad ? 36 : 26)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -235,14 +292,14 @@ struct CourseScheduleView: View {
                 ForEach(1...10, id: \.self) { section in
                     VStack(spacing: 1) {
                         Text("\(section)")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .font(.system(size: isPad ? 18 : 14, weight: .semibold, design: .rounded))
                             .foregroundColor(.primary)
 
                         VStack(spacing: 0) {
                             Text(CourseScheduleUtil.sectionTimeString[section - 1].0)
                             Text(CourseScheduleUtil.sectionTimeString[section - 1].1)
                         }
-                        .font(.system(size: 9))
+                        .font(.system(size: isPad ? 12 : 9))
                         .foregroundColor(.secondary)
                     }
                     .frame(width: timeColWidth, height: sectionHeight)
@@ -254,9 +311,9 @@ struct CourseScheduleView: View {
                     HStack(spacing: colSpacing) {
                         ForEach(1...7, id: \.self) { _ in
                             Rectangle()
-                                .fill(Color(.secondarySystemBackground).opacity(0.3))
+                                .fill(Color.appSecondarySystemBackground.opacity(0.3))
                                 .frame(height: sectionHeight)
-                                .cornerRadius(4)
+                                .cornerRadius(isPad ? 8 : 4)
                         }
                     }
                 }
@@ -286,14 +343,18 @@ struct CourseScheduleView: View {
             ZStack(alignment: .topLeading) {
                 if let coursesForWeek = weeklyCourses[week] {
                     ForEach(coursesForWeek) { courseInfo in
-                        CourseCardView(course: courseInfo.course, session: courseInfo.session, color: viewModel.courseColors[courseInfo.course.courseName] ?? .gray)
-                            .frame(width: dayColumnWidth)
-                            .frame(height: calculateHeight(for: courseInfo.session))
-                            .offset(
-                                // 应用初始内边距到 x 偏移量以对齐坐标系
-                                x: horizontalPadding + calculateXOffset(for: courseInfo.session.dayOfWeek, columnWidth: dayColumnWidth),
-                                y: calculateYOffset(for: courseInfo.session)
-                            )
+                        CourseCardView(course: courseInfo.course, session: courseInfo.session, color: viewModel.courseColors[courseInfo.course.courseName] ?? .gray) {
+                            viewModel.selectedCourse = courseInfo.course
+                            viewModel.selectedSession = courseInfo.session
+                            viewModel.isShowingDetail = true
+                        }
+                        .frame(width: dayColumnWidth)
+                        .frame(height: calculateHeight(for: courseInfo.session))
+                        .offset(
+                            // 应用初始内边距到 x 偏移量以对齐坐标系
+                            x: horizontalPadding + calculateXOffset(for: courseInfo.session.dayOfWeek, columnWidth: dayColumnWidth),
+                            y: calculateYOffset(for: courseInfo.session)
+                        )
                     }
                 }
             }

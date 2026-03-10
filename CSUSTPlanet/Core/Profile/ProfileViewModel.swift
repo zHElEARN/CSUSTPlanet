@@ -30,7 +30,9 @@ final class ProfileViewModel: ObservableObject {
         get { GlobalManager.shared.isNotificationEnabled }
         set {
             GlobalManager.shared.isNotificationEnabled = newValue
+            #if os(iOS)
             NotificationManager.shared.toggle()
+            #endif
         }
     }
 
@@ -38,7 +40,9 @@ final class ProfileViewModel: ObservableObject {
         get { GlobalManager.shared.isLiveActivityEnabled }
         set {
             GlobalManager.shared.isLiveActivityEnabled = newValue
+            #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
+            #endif
         }
     }
 

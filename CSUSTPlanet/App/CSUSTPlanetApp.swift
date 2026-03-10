@@ -7,14 +7,16 @@
 
 import AppIntents
 import OSLog
+import Sentry
 import SwiftData
 import SwiftUI
 import TipKit
-import Toasts
 
 @main
 struct CSUSTPlanetApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(UIAppDelegate.self) var appDelegate
+    #endif
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -22,26 +24,47 @@ struct CSUSTPlanetApp: App {
     private static var lastBackgroundDate: Date?
 
     init() {
+        // #if DEBUG
+        // corruptDatabaseForTesting()
+        // #endif
+
+        TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
+
+        SentrySDK.start { options in
+            options.dsn = Constants.sentryDSN
+            // #if DEBUG
+            // options.debug = true
+            // #endif
+            options.environment = EnvironmentUtil.environment.rawValue
+        }
+
         #if DEBUG
-            try? Tips.resetDatastore()
+        try? Tips.resetDatastore()
         #endif
+
         try? Tips.configure([
             .displayFrequency(.immediate),
             .datastoreLocation(.applicationDefault),
         ])
 
+        #if os(iOS)
         BackgroundTaskHelper.shared.registerAllTasks()
         ActivityHelper.shared.setup()
         NotificationManager.shared.setup()
+        #endif
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .installToast(position: .top)
-                .environmentObject(GlobalManager.shared)
-                .environmentObject(AuthManager.shared)
-                .environmentObject(NotificationManager.shared)
+                .task {
+                    await SharedModelUtil.migrateDatabase()
+                }
+                .environment(GlobalManager.shared)
+                .environment(AuthManager.shared)
+                #if os(iOS)
+            .environment(NotificationManager.shared)
+                #endif
         }
         .modelContainer(SharedModelUtil.container)
         .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }
@@ -50,31 +73,41 @@ struct CSUSTPlanetApp: App {
     private func handleScenePhaseChange(to phase: ScenePhase) {
         switch phase {
         case .active:
-            Logger.app.debug("App进入活跃状态: scenePhase .active")
-            ActivityHelper.shared.autoUpdateActivity()
-            if !Self.isFirstAppear {
-                checkAndRelogin()
-                BackgroundTaskHelper.shared.cancelAllTasks()
-                TrackHelper.shared.event(category: "Lifecycle", action: "Active")
-            }
+            // 首次启动时不处理
             if Self.isFirstAppear {
                 Self.isFirstAppear = false
-                TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
+                break
             }
+
+            Logger.app.debug("App进入活跃状态: scenePhase .active")
+            TrackHelper.shared.event(category: "Lifecycle", action: "Active")
+
+            checkAndRelogin()
+            #if os(iOS)
+            ActivityHelper.shared.autoUpdateActivity()
+            BackgroundTaskHelper.shared.cancelAllTasks()
+            #endif
         case .inactive:
             Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
-            ActivityHelper.shared.autoUpdateActivity()
-            BackgroundTaskHelper.shared.scheduleAllTasks()
             TrackHelper.shared.event(category: "Lifecycle", action: "Inactive")
+
             Self.lastBackgroundDate = .now
+            #if os(iOS)
+            ActivityHelper.shared.autoUpdateActivity()
+            #endif
         case .background:
             Logger.app.debug("App进入后台状态: scenePhase .background")
             TrackHelper.shared.event(category: "Lifecycle", action: "Background")
+
+            #if os(iOS)
+            BackgroundTaskHelper.shared.scheduleAllTasks()
+            #endif
         default:
             break
         }
     }
 
+    /// 当App长时间不活跃会到前台后，检查当前学校系统登录状态
     private func checkAndRelogin() {
         let threshold: TimeInterval = 20 * 60
         guard let backgroundDate = Self.lastBackgroundDate else { return }
@@ -86,4 +119,28 @@ struct CSUSTPlanetApp: App {
             Logger.app.debug("App后台停留时间 (\(timeInterval)s) 不足 20 分钟，跳过 Relogin")
         }
     }
+
+    #if DEBUG
+    /// [WARN] 测试使用，故意破坏 SwiftData 底层的 SQLite 文件
+    private func corruptDatabaseForTesting() {
+        guard let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Constants.appGroupID) else {
+            Logger.app.debug("无法获取 AppGroup 路径")
+            return
+        }
+
+        let storeURL = groupURL.appendingPathComponent("Library/Application Support/default.store")
+
+        do {
+            if FileManager.default.fileExists(atPath: storeURL.path) {
+                let garbageData = Data("THIS_IS_CORRUPTED_DATA_TO_TEST_NUCLEAR_RECOVERY_MECHANISM".utf8)
+                try garbageData.write(to: storeURL)
+                Logger.app.debug("成功写入脏数据，数据库文件已被破坏")
+            } else {
+                Logger.app.debug("数据库文件还不存在，无需破坏")
+            }
+        } catch {
+            Logger.app.debug("破坏数据库文件失败: \(error)")
+        }
+    }
+    #endif
 }

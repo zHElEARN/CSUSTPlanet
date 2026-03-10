@@ -31,8 +31,13 @@ struct ReminderOffsetSettingsView: View {
                             Text("\(hour)小时").tag(hour)
                         }
                     }
+                    #if os(iOS)
                     .pickerStyle(.wheel)
                     .frame(width: 120)
+                    #else
+                    .pickerStyle(.menu)
+                    .frame(width: 80)
+                    #endif
                     .clipped()
 
                     Picker("分钟", selection: $selectedMinuteOffset) {
@@ -40,8 +45,13 @@ struct ReminderOffsetSettingsView: View {
                             Text("\(minute)分钟").tag(minute)
                         }
                     }
+                    #if os(iOS)
                     .pickerStyle(.wheel)
                     .frame(width: 120)
+                    #else
+                    .pickerStyle(.menu)
+                    .frame(width: 80)
+                    #endif
                     .clipped()
                 }
                 .frame(height: 150)
@@ -82,7 +92,7 @@ struct ReminderOffsetSettingsView: View {
                 Spacer()
             }
             .navigationTitle("作业提醒设置")
-            .toolbarTitleDisplayMode(.inline)
+            .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {

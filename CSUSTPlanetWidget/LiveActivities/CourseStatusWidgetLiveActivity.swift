@@ -5,6 +5,8 @@
 //  Created by Zhe_Learn on 2025/10/15.
 //
 
+#if os(iOS)
+
 import ActivityKit
 import CSUSTKit
 import SwiftUI
@@ -205,3 +207,5 @@ extension CourseStatusWidgetAttributes {
 } contentStates: {
     CourseStatusWidgetAttributes.ContentState(now: .now)
 }
+
+#endif

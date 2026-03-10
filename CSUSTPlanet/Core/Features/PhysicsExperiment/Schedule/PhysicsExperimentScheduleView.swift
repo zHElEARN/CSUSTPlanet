@@ -34,7 +34,7 @@ struct PhysicsExperimentScheduleView: View {
                     }
                 }
                 .listStyle(.plain)
-                .background(Color(uiColor: .systemGroupedBackground))
+                .background(Color.appSystemGroupedBackground)
             }
         }
         .navigationTitle("大物实验安排")
@@ -46,7 +46,7 @@ struct PhysicsExperimentScheduleView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
+            ToolbarItem(placement: .navigation) {
                 Button(action: { isLoginPresented = true }) {
                     Text("登录")
                 }
@@ -173,7 +173,7 @@ private struct ExperimentCardView: View {
             }
         }
         .padding(16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         .opacity(isFinished ? 0.6 : 1.0)

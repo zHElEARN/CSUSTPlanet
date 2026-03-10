@@ -10,7 +10,7 @@ import Foundation
 
 struct GradeAnalysisData {
     var totalCourses: Int
-    var totalHours: Int
+    var totalHours: Double
     var totalCredits: Double
     var overallAverageGrade: Double
     var overallGPA: Double
@@ -21,7 +21,7 @@ struct GradeAnalysisData {
 
     static func fromCourseGrades(_ courseGrades: [EduHelper.CourseGrade]) -> GradeAnalysisData {
         let totalCourses = courseGrades.count
-        let totalHours = courseGrades.reduce(0) { $0 + $1.totalHours }
+        let totalHours = courseGrades.reduce(0.0) { $0 + $1.totalHours }
         let totalCredits = courseGrades.reduce(0) { $0 + $1.credit }
         let overallAverageGrade = totalCourses > 0 ? Double(courseGrades.reduce(0) { $0 + $1.grade }) / Double(totalCourses) : 0.0
         let overallGPA = totalCredits > 0 ? courseGrades.reduce(0) { $0 + $1.gradePoint * $1.credit } / totalCredits : 0.0

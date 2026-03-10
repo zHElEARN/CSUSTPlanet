@@ -146,7 +146,7 @@ struct CourseCard: View {
             showDetail = true
         }
         .sheet(isPresented: $showDetail) {
-            CourseScheduleDetailView(course: course, session: session, isPresented: $showDetail)
+            CourseScheduleDetailView(course: course, session: session, isShowingToolbar: true, isPresented: $showDetail)
         }
     }
 }
@@ -179,7 +179,7 @@ struct EmptyCourseCard: View {
         .padding()
         .frame(height: 100)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color.appSecondarySystemGroupedBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }

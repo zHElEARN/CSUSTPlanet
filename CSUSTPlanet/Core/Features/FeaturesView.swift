@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct FeaturesView: View {
-    @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var globalManager: GlobalManager
+    @Environment(AuthManager.self) var authManager
+    @Environment(GlobalManager.self) var globalManager
 
     @Environment(\.horizontalSizeClass) var sizeClass
 
@@ -23,65 +23,54 @@ struct FeaturesView: View {
         return sizeClass == .regular ? 32 : 20
     }
 
-    private var shouldShowAnnualReviewBanner: Bool {
-        let calendar = Calendar.current
-        let cutoffComponents = DateComponents(year: 2026, month: 3, day: 14)
-        guard let cutoffDate = calendar.date(from: cutoffComponents) else {
-            return true
-        }
-        return Date() < cutoffDate
-    }
+    private var shouldShowAnnualReviewBanner: Bool = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: sizeClass == .regular ? 32 : 28) {
-                    if shouldShowAnnualReviewBanner {
-                        AnnualReviewBanner(isPresented: $isAnnualReviewPresented)
-                            .padding(.top, 10)
-                    }
-
-                    educationalSystemSection
-
-                    moocSection
-
-                    campusToolsSection
-
-                    if sizeClass == .regular {
-                        HStack(alignment: .top, spacing: spacing) {
-                            physicsSection
-                            examQuerySection
-                        }
-                        .padding(.horizontal, horizontalPadding)
-                    } else {
-                        VStack(spacing: spacing) {
-                            physicsSection
-                            examQuerySection
-                        }
-                        .padding(.horizontal, horizontalPadding)
-                    }
-
-                    Color.clear.frame(height: 20)
+        ScrollView {
+            VStack(spacing: sizeClass == .regular ? 32 : 28) {
+                if shouldShowAnnualReviewBanner {
+                    AnnualReviewBanner(isPresented: $isAnnualReviewPresented)
+                        .padding(.top, 10)
                 }
-                .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
-                .frame(maxWidth: .infinity)
-                .padding(.top, sizeClass == .regular ? 20 : 0)
+
+                educationalSystemSection
+
+                moocSection
+
+                campusToolsSection
+
+                if sizeClass == .regular {
+                    HStack(alignment: .top, spacing: spacing) {
+                        physicsSection
+                        examQuerySection
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                } else {
+                    VStack(spacing: spacing) {
+                        physicsSection
+                        examQuerySection
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                }
+
+                Color.clear.frame(height: 20)
             }
-            .navigationTitle("全部功能")
-            .background(Color(uiColor: .systemGroupedBackground))
-            .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
-                PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
-                    .environmentObject(physicsExperimentManager)
-            }
-            .fullScreenCover(isPresented: $isAnnualReviewPresented) {
-                AnnualReviewView(isPresented: $isAnnualReviewPresented)
-            }
-            .trackView("Features")
+            .frame(maxWidth: sizeClass == .regular ? 900 : .infinity)
+            .frame(maxWidth: .infinity)
+            .padding(.top, sizeClass == .regular ? 20 : 0)
         }
-        .tabItem {
-            Image(uiImage: UIImage(systemName: "square.grid.2x2")!)
-            Text("全部功能")
+        .navigationTitle("全部功能")
+        .background(Color.appSystemGroupedBackground)
+        .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
+            PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
+                .environmentObject(physicsExperimentManager)
         }
+        #if os(iOS)
+        .fullScreenCover(isPresented: $isAnnualReviewPresented) {
+            AnnualReviewView(isPresented: $isAnnualReviewPresented)
+        }
+        #endif
+        .trackView("Features")
     }
 
     // MARK: - Extracted Subviews
@@ -200,7 +189,7 @@ struct FeaturesView: View {
                     title: "实验成绩", icon: "doc.text", color: .purple
                 )
             }
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .background(Color.appSecondarySystemGroupedBackground)
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }
@@ -217,7 +206,7 @@ struct FeaturesView: View {
 
                 ToolRow(destination: MandarinView(), title: "普通话查询", icon: "mic.circle.fill", color: .indigo)
             }
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .background(Color.appSecondarySystemGroupedBackground)
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }
@@ -297,7 +286,7 @@ private struct ServiceSquare<Destination: View>: View {
                     .foregroundColor(.primary)
             }
             .frame(width: 85, height: 95)
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .background(Color.appSecondarySystemGroupedBackground)
             .cornerRadius(16)
         }
     }
@@ -327,7 +316,7 @@ private struct ToolRow<Destination: View>: View {
 
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
+                    .foregroundColor(Color.appTertiaryLabel)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
@@ -489,14 +478,5 @@ private struct AnnualReviewBanner: View {
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, 20)
         .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.3 : 0.1), radius: 10, x: 0, y: 5)
-    }
-}
-
-// MARK: - Preview
-#Preview {
-    NavigationView {
-        FeaturesView()
-            .environmentObject(AuthManager.shared)
-            .environmentObject(GlobalManager.shared)
     }
 }
