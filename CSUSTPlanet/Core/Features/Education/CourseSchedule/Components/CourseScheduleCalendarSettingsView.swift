@@ -46,36 +46,49 @@ struct CourseScheduleCalendarSettingsView: View {
     @State private var secondReminderOffset: CalendarReminderOffset = .atTime
     @State private var isSecondReminderEnabled: Bool = false
 
-    var onConfirm:
-        (
-            _ firstReminderOffset: TimeInterval, _ isFirstEnabled: Bool,
-            _ secondReminderOffset: TimeInterval, _ isSecondEnabled: Bool
-        ) -> Void
+    var onConfirm: (_ firstReminderOffset: TimeInterval?, _ secondReminderOffset: TimeInterval?) -> Void
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    Toggle("开启第一提醒", isOn: $isFirstReminderEnabled)
+                    Toggle(
+                        "开启提醒",
+                        isOn: Binding(
+                            get: { isFirstReminderEnabled },
+                            set: { value in withAnimation { isFirstReminderEnabled = value } }
+                        )
+                    )
 
                     if isFirstReminderEnabled {
-                        reminderPicker(title: "第一提醒时间", selection: $firstReminderOffset)
+                        reminderPicker(title: "提醒时间", selection: $firstReminderOffset)
                     }
                 } header: {
-                    Text("第一提醒")
+                    Text("提醒")
+                } footer: {
+                    Text("作为你的主要上课提醒。可以设置为你需要出门通勤或做课前准备的时间。")
                 }
 
                 Section {
-                    Toggle("开启第二提醒", isOn: $isSecondReminderEnabled)
+                    Toggle(
+                        "开启额外提醒",
+                        isOn: Binding(
+                            get: { isSecondReminderEnabled },
+                            set: { value in withAnimation { isSecondReminderEnabled = value } }
+                        )
+                    )
 
                     if isSecondReminderEnabled {
-                        reminderPicker(title: "第二提醒时间", selection: $secondReminderOffset)
+                        reminderPicker(title: "额外提醒时间", selection: $secondReminderOffset)
                     }
                 } header: {
-                    Text("第二提醒")
+                    Text("额外提醒")
+                } footer: {
+                    Text("你也可以设置两个不同的提醒时间，一个用于预留充足的准备时间，另一个用于临近上课时的最终提醒。")
                 }
             }
-            .navigationTitle("添加到系统日历")
+            .formStyle(.grouped)
+            .navigationTitle("添加课表到系统日历")
             .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -84,11 +97,11 @@ struct CourseScheduleCalendarSettingsView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("确认添加") {
+                    Button("添加") {
                         isPresented = false
                         onConfirm(
-                            firstReminderOffset.rawValue, isFirstReminderEnabled,
-                            secondReminderOffset.rawValue, isSecondReminderEnabled
+                            isFirstReminderEnabled ? firstReminderOffset.rawValue : nil,
+                            isSecondReminderEnabled ? secondReminderOffset.rawValue : nil
                         )
                     }
                 }
@@ -98,19 +111,15 @@ struct CourseScheduleCalendarSettingsView: View {
 
     @ViewBuilder
     private func reminderPicker(title: String, selection: Binding<CalendarReminderOffset>) -> some View {
-        HStack {
-            Text(title)
-            Spacer()
-            Picker(title, selection: selection) {
-                ForEach(CalendarReminderOffset.allCases) { offset in
-                    Text(offset.title).tag(offset)
-                }
+        Picker(title, selection: selection) {
+            ForEach(CalendarReminderOffset.allCases) { offset in
+                Text(offset.title).tag(offset)
             }
-            .pickerStyle(.menu)
         }
+        .pickerStyle(.menu)
     }
 }
 
 #Preview {
-    CourseScheduleCalendarSettingsView(isPresented: .constant(true)) { _, _, _, _ in }
+    CourseScheduleCalendarSettingsView(isPresented: .constant(true)) { _, _ in }
 }

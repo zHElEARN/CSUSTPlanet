@@ -124,13 +124,8 @@ struct CourseScheduleView: View {
             AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
         }
         .sheet(isPresented: $viewModel.isShowingAddToCalendarAlert) {
-            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, isFirstEnabled, secondOffset, isSecondEnabled in
-                viewModel.addToCalendar(
-                    firstReminderOffset: firstOffset,
-                    isFirstEnabled: isFirstEnabled,
-                    secondReminderOffset: secondOffset,
-                    isSecondEnabled: isSecondEnabled
-                )
+            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, secondOffset in
+                viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset)
             }
         }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {

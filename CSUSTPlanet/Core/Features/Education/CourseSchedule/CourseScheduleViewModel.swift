@@ -154,10 +154,7 @@ class CourseScheduleViewModel {
         }
     }
 
-    func addToCalendar(
-        firstReminderOffset: TimeInterval, isFirstEnabled: Bool,
-        secondReminderOffset: TimeInterval, isSecondEnabled: Bool
-    ) {
+    func addToCalendar(firstReminderOffset: TimeInterval?, secondReminderOffset: TimeInterval?) {
         guard let data = self.data?.value else {
             self.errorMessage = "课表数据未加载，无法导出"
             self.isShowingError = true
@@ -190,10 +187,10 @@ class CourseScheduleViewModel {
                             notes += "\n周次: 第\(week)周"
 
                             var eventAlarms: [EKAlarm] = []
-                            if isFirstEnabled {
+                            if let firstReminderOffset = firstReminderOffset {
                                 eventAlarms.append(EKAlarm(relativeOffset: -firstReminderOffset))
                             }
-                            if isSecondEnabled {
+                            if let secondReminderOffset = secondReminderOffset {
                                 eventAlarms.append(EKAlarm(relativeOffset: -secondReminderOffset))
                             }
 
