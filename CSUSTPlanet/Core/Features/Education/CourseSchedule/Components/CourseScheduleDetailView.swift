@@ -93,13 +93,9 @@ extension CourseScheduleDetailView {
 
     private var currentSessionCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "calendar.badge.clock")
-                    .foregroundColor(.accentColor)
-                Text("本次安排")
-                    .font(.headline)
-            }
-            .padding(.bottom, 4)
+            Text("本次安排")
+                .font(.headline)
+                .padding(.bottom, 4)
 
             VStack(spacing: 16) {
                 ScheduleInfoRow(
