@@ -48,13 +48,14 @@ struct CSUSTPlanetApp: App {
         ActivityHelper.shared.setup()
         NotificationManager.shared.setup()
         #endif
-
-        runDataCleanupTaskIfNeed()
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    await SharedModelUtil.migrateDatabase()
+                }
                 .environment(GlobalManager.shared)
                 .environment(AuthManager.shared)
                 #if os(iOS)
@@ -112,16 +113,6 @@ struct CSUSTPlanetApp: App {
             AuthManager.shared.ssoRelogin()
         } else {
             Logger.app.debug("App后台停留时间 (\(timeInterval)s) 不足 20 分钟，跳过 Relogin")
-        }
-    }
-
-    /// 清理宿舍电量中是否有连续重复的电量记录，于版本1.5添加，到版本1.6后可以移除
-    private func runDataCleanupTaskIfNeed() {
-        guard !MMKVHelper.shared.hasCleanedUpDuplicateElectricityRecords else { return }
-        Task {
-            let cleaner = ElectricityRecordCleaner(modelContainer: SharedModelUtil.container)
-            await cleaner.cleanUpDuplicateRecords()
-            MMKVHelper.shared.hasCleanedUpDuplicateElectricityRecords = true
         }
     }
 }

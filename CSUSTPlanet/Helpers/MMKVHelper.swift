@@ -122,6 +122,11 @@ class MMKVHelper {
 
     @MMKVOptionalStorage(key: "CampusMap.selectedCampus")
     var selectedCampus: CampusCardHelper.Campus?
+
+    // MARK: - SwiftData Properties
+
+    @MMKVStorage(key: "SwiftData.databaseVersion", defaultValue: 0)
+    var databaseVersion: Int
 }
 
 // MARK: - Methods
@@ -297,6 +302,11 @@ extension String: MMKVValueType {
 
 extension Bool: MMKVValueType {
     static func read(from helper: MMKVHelper, key: String) -> Bool? { helper.bool(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension Int: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Int? { helper.int(forKey: key) }
     func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
 }
 
