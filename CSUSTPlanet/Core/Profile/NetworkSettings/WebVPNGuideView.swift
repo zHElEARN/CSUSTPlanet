@@ -23,7 +23,7 @@ struct WebVPNGuideView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("WebVPN模式是采用学校官方的WebVPN系统(vpn.csust.edu.cn)来访问校园各个系统")
                 Text("当教务系统和网络课程中心只开放了校园内网访问时，可以尝试开启此模式")
-                Text("目前此模式处于试验阶段，可能存在问题")
+                Text("目前此模式处于试验阶段，可能存在问题\n开启后需要重启应用才能生效")
                     .foregroundColor(.red)
                     .font(.headline)
             }
