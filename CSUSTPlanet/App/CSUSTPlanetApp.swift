@@ -24,12 +24,16 @@ struct CSUSTPlanetApp: App {
     private static var lastBackgroundDate: Date?
 
     init() {
+        // #if DEBUG
+        // corruptDatabaseForTesting()
+        // #endif
+
         TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
 
         SentrySDK.start { options in
             options.dsn = Constants.sentryDSN
             // #if DEBUG
-            //     options.debug = true
+            // options.debug = true
             // #endif
             options.environment = EnvironmentUtil.environment.rawValue
         }
@@ -48,8 +52,6 @@ struct CSUSTPlanetApp: App {
         ActivityHelper.shared.setup()
         NotificationManager.shared.setup()
         #endif
-
-        runDataCleanupTaskIfNeed()
     }
 
     var body: some Scene {
@@ -123,13 +125,27 @@ struct CSUSTPlanetApp: App {
         }
     }
 
-    /// 清理宿舍电量中是否有连续重复的电量记录，于版本1.5添加，到版本1.6后可以移除
-    private func runDataCleanupTaskIfNeed() {
-        guard !MMKVHelper.shared.hasCleanedUpDuplicateElectricityRecords else { return }
-        Task {
-            let cleaner = ElectricityRecordCleaner(modelContainer: SharedModelUtil.container)
-            await cleaner.cleanUpDuplicateRecords()
-            MMKVHelper.shared.hasCleanedUpDuplicateElectricityRecords = true
+    #if DEBUG
+    /// [WARN] 测试使用，故意破坏 SwiftData 底层的 SQLite 文件
+    private func corruptDatabaseForTesting() {
+        guard let groupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Constants.appGroupID) else {
+            Logger.app.debug("无法获取 AppGroup 路径")
+            return
+        }
+
+        let storeURL = groupURL.appendingPathComponent("Library/Application Support/default.store")
+
+        do {
+            if FileManager.default.fileExists(atPath: storeURL.path) {
+                let garbageData = Data("THIS_IS_CORRUPTED_DATA_TO_TEST_NUCLEAR_RECOVERY_MECHANISM".utf8)
+                try garbageData.write(to: storeURL)
+                Logger.app.debug("成功写入脏数据，数据库文件已被破坏")
+            } else {
+                Logger.app.debug("数据库文件还不存在，无需破坏")
+            }
+        } catch {
+            Logger.app.debug("破坏数据库文件失败: \(error)")
         }
     }
+    #endif
 }

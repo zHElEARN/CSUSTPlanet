@@ -100,4 +100,7 @@ final class GlobalManager {
     var isFromGradeAnalysisWidget: Bool = false
     var isFromCourseScheduleWidget: Bool = false
     var isFromUrgentCoursesWidget: Bool = false
+
+    var showWipeRecoveryAlert = (SharedModelUtil.containerLoadState == .recoveredAfterWipe)
+    var showFatalErrorAlert = (SharedModelUtil.containerLoadState == .fatalError)
 }

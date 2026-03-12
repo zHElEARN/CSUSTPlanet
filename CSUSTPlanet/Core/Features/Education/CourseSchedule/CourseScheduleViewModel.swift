@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import EventKit
 import Foundation
 import SwiftData
 import SwiftUI
@@ -153,7 +154,7 @@ class CourseScheduleViewModel {
         }
     }
 
-    func addToCalendar() {
+    func addToCalendar(firstReminderOffset: TimeInterval?, secondReminderOffset: TimeInterval?) {
         guard let data = self.data?.value else {
             self.errorMessage = "课表数据未加载，无法导出"
             self.isShowingError = true
@@ -169,42 +170,29 @@ class CourseScheduleViewModel {
                 let currentCalendar = Calendar.current
 
                 let calendar = try await CalendarUtil.getOrCreateEventCalendar(named: "长理星球 - 课表")
-                let clearStartDate = currentCalendar.date(byAdding: .year, value: -4, to: Date())!
-                let clearEndDate = currentCalendar.date(byAdding: .year, value: 4, to: Date())!
+                let clearStartDate = currentCalendar.date(byAdding: .year, value: -1, to: Date())!
+                let clearEndDate = currentCalendar.date(byAdding: .year, value: 1, to: Date())!
                 try await CalendarUtil.clearCalendar(calendar: calendar, from: clearStartDate, to: clearEndDate)
 
                 for course in data.courses {
                     for session in course.sessions {
                         for week in session.weeks {
-                            let datesOfWeek = CourseScheduleUtil.getDatesForWeek(semesterStartDate: data.semesterStartDate, week: week)
-                            let targetDateIndex = session.dayOfWeek.rawValue
-                            guard targetDateIndex < datesOfWeek.count else { continue }
-                            // 通过这一周的每一天的时间和这一节课在周几，定位到当前课程课时的具体日期
-                            let targetDate = datesOfWeek[targetDateIndex]
-
-                            // 找到这节课在这一天的具体时间
-                            let startSectionIndex = session.startSection - 1
-                            let endSectionIndex = session.endSection - 1
-                            guard startSectionIndex >= 0, startSectionIndex < CourseScheduleUtil.sectionTimeString.count,
-                                endSectionIndex >= 0, endSectionIndex < CourseScheduleUtil.sectionTimeString.count
-                            else {
-                                continue
-                            }
-                            let startTimeString = CourseScheduleUtil.sectionTimeString[startSectionIndex].0
-                            let endTimeString = CourseScheduleUtil.sectionTimeString[endSectionIndex].1
-                            let startComponents = startTimeString.split(separator: ":").compactMap { Int($0) }
-                            let endComponents = endTimeString.split(separator: ":").compactMap { Int($0) }
-                            guard startComponents.count == 2, endComponents.count == 2,
-                                let eventStartDate = currentCalendar.date(bySettingHour: startComponents[0], minute: startComponents[1], second: 0, of: targetDate),
-                                let eventEndDate = currentCalendar.date(bySettingHour: endComponents[0], minute: endComponents[1], second: 0, of: targetDate)
-                            else {
-                                continue
-                            }
+                            guard let dates = CourseScheduleUtil.getCourseEventDates(session: session, week: week, semesterStartDate: data.semesterStartDate) else { continue }
+                            let eventStartDate = dates.startDate
+                            let eventEndDate = dates.endDate
 
                             // 与课程相关的备注信息
                             var notes = "教师: \(course.teacher ?? "未知")"
                             if let groupName = course.groupName { notes += "\n组名: \(groupName)" }
                             notes += "\n周次: 第\(week)周"
+
+                            var eventAlarms: [EKAlarm] = []
+                            if let firstReminderOffset = firstReminderOffset {
+                                eventAlarms.append(EKAlarm(relativeOffset: -firstReminderOffset))
+                            }
+                            if let secondReminderOffset = secondReminderOffset {
+                                eventAlarms.append(EKAlarm(relativeOffset: -secondReminderOffset))
+                            }
 
                             try await CalendarUtil.addEvent(
                                 calendar: calendar,
@@ -213,8 +201,10 @@ class CourseScheduleViewModel {
                                 endDate: eventEndDate,
                                 notes: notes,
                                 location: session.classroom,
+                                alarms: eventAlarms.isEmpty ? nil : eventAlarms,
                                 // 这里连续提交会有性能问题，所以这里不提交改变
-                                commit: false
+                                commit: false,
+                                skipDuplicateCheck: true
                             )
                         }
                     }
