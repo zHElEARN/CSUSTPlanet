@@ -80,6 +80,8 @@ struct ContentView: View {
     @Environment(AuthManager.self) var authManager
     @Environment(\.horizontalSizeClass) var sizeClass
 
+    @State var isDatabaseReady = false
+
     var preferredColorScheme: ColorScheme? {
         switch globalManager.appearance {
         case "light":
@@ -96,85 +98,94 @@ struct ContentView: View {
         @Bindable var bindableAuthManager = authManager
 
         Group {
-            if #available(iOS 18.0, macOS 15.0, *) {
-                TabView(selection: $bindableGlobalManager.selectedTab) {
-                    Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
-                        NavigationStack { OverviewView() }
-                    }
-                    if sizeClass == .compact {
-                        Tab("全部功能", systemImage: "square.grid.2x2", value: TabItem.features) {
-                            NavigationStack { FeaturesView() }
-                        }
-                        Tab("我的", systemImage: "person", value: TabItem.profile) {
-                            NavigationStack { ProfileView() }
-                        }
-                    } else {
-                        Tab("我的", systemImage: "person", value: TabItem.profile) {
-                            NavigationStack { ProfileView() }
-                        }
-                        ForEach(featureSections) { section in
-                            TabSection(section.title) {
-                                ForEach(section.items) { item in
-                                    Tab(item.title, systemImage: item.icon, value: item.id) {
-                                        NavigationStack { item.destination() }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .tabViewStyle(.sidebarAdaptable)
-            } else {
-                if sizeClass == .compact {
+            if isDatabaseReady {
+                if #available(iOS 18.0, macOS 15.0, *) {
                     TabView(selection: $bindableGlobalManager.selectedTab) {
-                        NavigationStack { OverviewView() }
-                            .tabItem { Label("概览", systemImage: "rectangle.stack") }
-                            .tag(TabItem.overview)
-                        NavigationStack { FeaturesView() }
-                            .tabItem { Label("全部功能", systemImage: "square.grid.2x2") }
-                            .tag(TabItem.features)
-                        NavigationStack { ProfileView() }
-                            .tabItem { Label("我的", systemImage: "person") }
-                            .tag(TabItem.profile)
-                    }
-                } else {
-                    NavigationSplitView {
-                        List(selection: $bindableGlobalManager.selectedTab) {
-                            Section {
-                                ColoredLabel(title: "概览", iconName: "rectangle.stack", color: .blue).tag(TabItem.overview)
-                                ColoredLabel(title: "我的", iconName: "person", color: .blue).tag(TabItem.profile)
+                        Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
+                            NavigationStack { OverviewView() }
+                        }
+                        if sizeClass == .compact {
+                            Tab("全部功能", systemImage: "square.grid.2x2", value: TabItem.features) {
+                                NavigationStack { FeaturesView() }
+                            }
+                            Tab("我的", systemImage: "person", value: TabItem.profile) {
+                                NavigationStack { ProfileView() }
+                            }
+                        } else {
+                            Tab("我的", systemImage: "person", value: TabItem.profile) {
+                                NavigationStack { ProfileView() }
                             }
                             ForEach(featureSections) { section in
-                                Section(section.title) {
+                                TabSection(section.title) {
                                     ForEach(section.items) { item in
-                                        ColoredLabel(title: item.title, iconName: item.icon, color: item.color).tag(item.id)
+                                        Tab(item.title, systemImage: item.icon, value: item.id) {
+                                            NavigationStack { item.destination() }
+                                        }
                                     }
                                 }
                             }
                         }
-                        .navigationTitle("长理星球")
-                    } detail: {
-                        NavigationStack {
-                            switch globalManager.selectedTab {
-                            case .overview:
-                                OverviewView()
-                            case .profile:
-                                ProfileView()
-                            case nil:
-                                ContentUnavailableView("请选择项目", systemImage: "list.bullet")
-                            default:
-                                if let item = featureSections.flatMap({ $0.items }).first(where: { $0.id == globalManager.selectedTab }) {
-                                    item.destination()
-                                } else {
-                                    ContentUnavailableView("未找到页面", systemImage: "xmark.circle")
+                    }
+                    .tabViewStyle(.sidebarAdaptable)
+                } else {
+                    if sizeClass == .compact {
+                        TabView(selection: $bindableGlobalManager.selectedTab) {
+                            NavigationStack { OverviewView() }
+                                .tabItem { Label("概览", systemImage: "rectangle.stack") }
+                                .tag(TabItem.overview)
+                            NavigationStack { FeaturesView() }
+                                .tabItem { Label("全部功能", systemImage: "square.grid.2x2") }
+                                .tag(TabItem.features)
+                            NavigationStack { ProfileView() }
+                                .tabItem { Label("我的", systemImage: "person") }
+                                .tag(TabItem.profile)
+                        }
+                    } else {
+                        NavigationSplitView {
+                            List(selection: $bindableGlobalManager.selectedTab) {
+                                Section {
+                                    ColoredLabel(title: "概览", iconName: "rectangle.stack", color: .blue).tag(TabItem.overview)
+                                    ColoredLabel(title: "我的", iconName: "person", color: .blue).tag(TabItem.profile)
+                                }
+                                ForEach(featureSections) { section in
+                                    Section(section.title) {
+                                        ForEach(section.items) { item in
+                                            ColoredLabel(title: item.title, iconName: item.icon, color: item.color).tag(item.id)
+                                        }
+                                    }
+                                }
+                            }
+                            .navigationTitle("长理星球")
+                        } detail: {
+                            NavigationStack {
+                                switch globalManager.selectedTab {
+                                case .overview:
+                                    OverviewView()
+                                case .profile:
+                                    ProfileView()
+                                case nil:
+                                    ContentUnavailableView("请选择项目", systemImage: "list.bullet")
+                                default:
+                                    if let item = featureSections.flatMap({ $0.items }).first(where: { $0.id == globalManager.selectedTab }) {
+                                        item.destination()
+                                    } else {
+                                        ContentUnavailableView("未找到页面", systemImage: "xmark.circle")
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            } else {
+                ProgressView()
             }
         }
         .trackRoot("App")
+
+        .task {
+            await SharedModelUtil.migrateDatabase()
+            withAnimation { isDatabaseReady = true }
+        }
 
         #if os(iOS)
         .apply { view in
