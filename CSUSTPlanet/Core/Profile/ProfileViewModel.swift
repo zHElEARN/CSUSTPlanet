@@ -26,26 +26,6 @@ final class ProfileViewModel: ObservableObject {
         set { handleWebVPNToggle(newValue) }
     }
 
-    var isNotificationEnabled: Bool {
-        get { GlobalManager.shared.isNotificationEnabled }
-        set {
-            GlobalManager.shared.isNotificationEnabled = newValue
-            #if os(iOS)
-            NotificationManager.shared.toggle()
-            #endif
-        }
-    }
-
-    var isLiveActivityEnabled: Bool {
-        get { GlobalManager.shared.isLiveActivityEnabled }
-        set {
-            GlobalManager.shared.isLiveActivityEnabled = newValue
-            #if os(iOS)
-            ActivityHelper.shared.autoUpdateActivity()
-            #endif
-        }
-    }
-
     // MARK: - Actions
 
     func showLogoutAlert() {

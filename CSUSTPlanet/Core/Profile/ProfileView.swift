@@ -133,7 +133,7 @@ struct ProfileView: View {
                 }
             }
 
-            Section(header: Text("设置")) {
+            Section {
                 HStack {
                     ColoredLabel(title: "外观主题")
 
@@ -153,31 +153,31 @@ struct ProfileView: View {
                     ColoredLabel(title: "开启WebVPN模式（实验）", description: "通过WebVPN模式访问校园网资源")
                 }
 
-                Toggle(isOn: $viewModel.isNotificationEnabled) {
-                    ColoredLabel(title: "开启通知", description: "用于宿舍电量定时查询提醒通知")
-                }
-
                 Toggle(isOn: $bindableGlobalManager.isBackgroundTaskEnabled) {
                     ColoredLabel(title: "开启后台任务", description: "开启后应用可以在后台定期刷新课程，并在成绩更新时发送通知（后台任务受系统调度）")
                 }
 
-                Toggle(isOn: $viewModel.isLiveActivityEnabled) {
-                    ColoredLabel(title: "启用实时活动/灵动岛", description: "实时活动/灵动岛将会显示：上课前20分钟、上课中和下课后5分钟的课程状态")
+                TrackLink(destination: NotificationSettingsView()) {
+                    Label("通知设置", systemImage: "bell.badge")
                 }
+            } header: {
+                Text("设置")
             }
 
-            Section(header: Text("帮助与支持")) {
+            Section {
                 TrackLink(destination: AboutView()) {
-                    ColoredLabel(title: "关于 长理星球")
+                    Text("关于 长理星球")
                 }
 
                 TrackLink(destination: FeedbackView()) {
-                    ColoredLabel(title: "意见反馈")
+                    Text("意见反馈")
                 }
 
                 TrackLink(destination: UserAgreementView()) {
-                    ColoredLabel(title: "长理星球 用户协议")
+                    Text("长理星球 用户协议")
                 }
+            } header: {
+                Text("帮助与支持")
             }
         }
         .navigationTitle("我的")
