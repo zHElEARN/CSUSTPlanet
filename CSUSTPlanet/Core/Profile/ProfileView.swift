@@ -134,27 +134,18 @@ struct ProfileView: View {
             }
 
             Section {
-                HStack {
-                    ColoredLabel(title: "外观主题")
-
-                    Spacer()
-
-                    Picker("", selection: $bindableGlobalManager.appearance) {
-                        Text("浅色").tag("light")
-                        Text("深色").tag("dark")
-                        Text("系统").tag("system")
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .frame(width: 150)
+                Picker("外观主题", selection: $bindableGlobalManager.appearance) {
+                    Text("浅色模式").tag("light")
+                    Text("深色模式").tag("dark")
+                    Text("跟随系统").tag("system")
                 }
 
                 Toggle(isOn: $viewModel.isWebVPNEnabled) {
                     ColoredLabel(title: "开启WebVPN模式（实验）", description: "通过WebVPN模式访问校园网资源")
                 }
 
-                Toggle(isOn: $bindableGlobalManager.isBackgroundTaskEnabled) {
-                    ColoredLabel(title: "开启后台任务", description: "开启后应用可以在后台定期刷新课程，并在成绩更新时发送通知（后台任务受系统调度）")
+                TrackLink(destination: BackgroundTaskSettingsView()) {
+                    Label("后台任务设置", systemImage: "gearshape.2")
                 }
 
                 TrackLink(destination: NotificationSettingsView()) {

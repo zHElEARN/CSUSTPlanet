@@ -2,7 +2,7 @@
 //  NotificationSettingsView.swift
 //  CSUSTPlanet
 //
-//  Created by Zhe_Learn on 2025/7/8.
+//  Created by Zhe_Learn on 2026/3/11.
 //
 
 import SwiftUI
