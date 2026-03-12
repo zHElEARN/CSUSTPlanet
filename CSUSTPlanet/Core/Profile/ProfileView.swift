@@ -16,11 +16,10 @@ struct ProfileView: View {
     @Environment(NotificationManager.self) var notificationManager
     #endif
 
-    @StateObject private var viewModel = ProfileViewModel()
+    @State var isLoginSheetPresented = false
+    @State var isLogoutAlertPresented = false
 
     var body: some View {
-        @Bindable var bindableGlobalManager = globalManager
-
         Form {
             Section(header: Text("账号管理")) {
                 if let ssoProfile = authManager.ssoProfile {
@@ -102,7 +101,7 @@ struct ProfileView: View {
                         .disabled(!authManager.isSSOLoggedIn)
                     }
 
-                    Button(action: viewModel.showLogoutAlert) {
+                    Button(action: { isLogoutAlertPresented = true }) {
                         HStack {
                             ColoredLabel(title: "退出登录", iconName: "arrow.right.circle", color: .red, textColor: .red)
                             Spacer()
@@ -120,9 +119,7 @@ struct ProfileView: View {
                         Text("正在登录统一身份认证...")
                     }
                 } else {
-                    Button(action: {
-                        viewModel.isLoginSheetPresented = true
-                    }) {
+                    Button(action: { isLoginSheetPresented = true }) {
                         HStack {
                             ColoredLabel(title: "登录统一认证账号", iconName: "person.crop.circle.badge.plus", color: .blue)
                             Spacer()
@@ -134,14 +131,14 @@ struct ProfileView: View {
             }
 
             Section {
-                Picker("外观主题", selection: $bindableGlobalManager.appearance) {
+                Picker("外观主题", selection: Bindable(globalManager).appearance) {
                     Text("浅色模式").tag("light")
                     Text("深色模式").tag("dark")
                     Text("跟随系统").tag("system")
                 }
 
-                Toggle(isOn: $viewModel.isWebVPNEnabled) {
-                    ColoredLabel(title: "开启WebVPN模式（实验）", description: "通过WebVPN模式访问校园网资源")
+                TrackLink(destination: NetworkSettingsView()) {
+                    Label("网络设置", systemImage: "network")
                 }
 
                 TrackLink(destination: BackgroundTaskSettingsView()) {
@@ -172,21 +169,12 @@ struct ProfileView: View {
             }
         }
         .navigationTitle("我的")
-        .sheet(isPresented: $viewModel.isLoginSheetPresented) {
-            SSOLoginView(isShowingLoginSheet: $viewModel.isLoginSheetPresented)
+        .sheet(isPresented: $isLoginSheetPresented) {
+            SSOLoginView(isShowingLoginSheet: $isLoginSheetPresented)
         }
-        .sheet(isPresented: $viewModel.isWebVPNSheetPresented) {
-            WebVPNGuideView(isPresented: $viewModel.isWebVPNSheetPresented)
-        }
-        .alert("关闭 WebVPN 模式", isPresented: $viewModel.isWebVPNDisableAlertPresented) {
+        .alert("退出登录", isPresented: $isLogoutAlertPresented) {
             Button("取消", role: .cancel) {}
-            Button("关闭并重启", role: .destructive, action: viewModel.dismissWebVPNDisableAlert)
-        } message: {
-            Text("关闭 WebVPN 模式需要重启应用才能生效。")
-        }
-        .alert("退出登录", isPresented: $viewModel.isLogoutAlertPresented) {
-            Button("取消", role: .cancel) {}
-            Button("退出", role: .destructive, action: viewModel.confirmLogout)
+            Button("退出", role: .destructive, action: { AuthManager.shared.ssoLogout() })
         } message: {
             Text("确定要退出登录吗？")
         }
