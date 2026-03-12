@@ -57,9 +57,6 @@ struct CSUSTPlanetApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .task {
-                    await SharedModelUtil.migrateDatabase()
-                }
                 .environment(GlobalManager.shared)
                 .environment(AuthManager.shared)
                 #if os(iOS)
