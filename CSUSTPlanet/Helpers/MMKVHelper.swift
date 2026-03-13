@@ -133,8 +133,8 @@ class MMKVHelper {
     @MMKVStorage(key: "BackgroundTask.isEnabled", defaultValue: false)
     var backgroundTaskIsEnabled: Bool
 
-    @MMKVStorage(key: "BackgroundTask.taskIntervals", defaultValue: [:])
-    var backgroundTaskIntervals: [String: Double]
+    @MMKVStorage(key: "BackgroundTask.interval", defaultValue: 6 * 60 * 60)
+    var backgroundTaskInterval: TimeInterval
 }
 
 // MARK: - Methods
@@ -315,6 +315,11 @@ extension Bool: MMKVValueType {
 
 extension Int: MMKVValueType {
     static func read(from helper: MMKVHelper, key: String) -> Int? { helper.int(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension Double: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Double? { helper.double(forKey: key) }
     func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
 }
 

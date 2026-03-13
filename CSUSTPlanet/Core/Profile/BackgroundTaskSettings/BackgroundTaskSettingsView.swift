@@ -16,11 +16,22 @@ struct BackgroundTaskSettingsView: View {
 
         Form {
             Section {
+                let intervalBinding = Binding(
+                    get: { backgroundTaskHelper.interval },
+                    set: { newValue in backgroundTaskHelper.interval = newValue }
+                )
+
                 Toggle(isOn: $bindableGlobalManager.isBackgroundTaskEnabled) {
                     Text("后台任务总开关")
                 }
-            } header: {
-                Text("后台任务")
+
+                if bindableGlobalManager.isBackgroundTaskEnabled {
+                    Picker("更新频率", selection: intervalBinding) {
+                        ForEach(backgroundTaskHelper.availableIntervals, id: \.self) { interval in
+                            Text(formatInterval(interval)).tag(interval)
+                        }
+                    }
+                }
             } footer: {
                 Text("开启后应用可以在后台定期运行相关操作，后台任务受系统调度，更新频率可能不准确，无电量续航影响")
             }
@@ -30,29 +41,12 @@ struct BackgroundTaskSettingsView: View {
 
                 let toggleBinding = Binding(
                     get: { isTaskEnabled },
-                    set: { _ in
-                        withAnimation { backgroundTaskHelper.toggleTask(task) }
-                    }
-                )
-
-                let intervalBinding = Binding(
-                    get: { backgroundTaskHelper.interval(for: task) },
-                    set: { newValue in
-                        backgroundTaskHelper.setInterval(newValue, for: task)
-                    }
+                    set: { _ in backgroundTaskHelper.toggleTask(task) }
                 )
 
                 Section {
                     Toggle(isOn: toggleBinding) {
                         Text("开启")
-                    }
-
-                    if isTaskEnabled {
-                        Picker("更新频率", selection: intervalBinding) {
-                            ForEach(task.availableIntervals, id: \.self) { interval in
-                                Text(formatInterval(interval)).tag(interval)
-                            }
-                        }
                     }
                 } header: {
                     Text(task.title)
