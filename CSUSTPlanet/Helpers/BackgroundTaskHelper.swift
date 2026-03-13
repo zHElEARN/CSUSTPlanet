@@ -60,7 +60,7 @@ final class BackgroundTaskHelper {
         Logger.backgroundTaskHelper.debug("注册全部后台任务成功")
     }
 
-    func schedule(provider: BackgroundTaskProvider) {
+    private func schedule(provider: BackgroundTaskProvider) {
         guard MMKVHelper.shared.backgroundTaskIsEnabled else {
             Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过调度: \(provider.identifier)")
             return
@@ -87,13 +87,14 @@ final class BackgroundTaskHelper {
         Logger.backgroundTaskHelper.debug("调度全部后台任务成功")
     }
 
-    func cancel(provider: BackgroundTaskProvider) {
+    private func cancel(provider: BackgroundTaskProvider) {
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: provider.identifier)
         Logger.backgroundTaskHelper.debug("取消后台任务: \(provider.identifier)")
     }
 
     func cancelAllTasks() {
-        enabledTasks.forEach { cancel(provider: $0) }
+        // enabledTasks.forEach { cancel(provider: $0) }
+        BGTaskScheduler.shared.cancelAllTaskRequests()
         Logger.backgroundTaskHelper.debug("取消全部后台任务")
     }
 
