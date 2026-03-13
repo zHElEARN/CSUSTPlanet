@@ -14,9 +14,18 @@ import OSLog
 import UserNotifications
 
 struct GradeBackgroundTask: BackgroundTaskProvider {
-    var identifier: String { Constants.backgroundGradeID }
+    let identifier: String = Constants.backgroundGradeID
 
-    var interval: TimeInterval { 3 * 60 * 60 }
+    let defaultInterval: TimeInterval = 3 * 60 * 60
+    let availableIntervals: [TimeInterval] = [
+        1 * 60 * 60,
+        3 * 60 * 60,
+        6 * 60 * 60,
+        12 * 60 * 60,
+    ]
+
+    let title: String = "查询成绩"
+    let description: String = "在后台查询当前教务系统的所有成绩，并在成绩有更新时发送通知"
 
     func handle(task: BGAppRefreshTask) {
         let workTask = Task {

@@ -53,7 +53,7 @@ final class GlobalManager {
         isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
         isWebVPNModeEnabled = MMKVHelper.shared.isWebVPNModeEnabled
         isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
-        isBackgroundTaskEnabled = MMKVHelper.shared.isBackgroundTaskEnabled
+        isBackgroundTaskEnabled = MMKVHelper.shared.backgroundTaskIsEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
         TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
@@ -91,7 +91,7 @@ final class GlobalManager {
     }
     var isBackgroundTaskEnabled: Bool {
         didSet {
-            MMKVHelper.shared.isBackgroundTaskEnabled = isBackgroundTaskEnabled
+            MMKVHelper.shared.backgroundTaskIsEnabled = isBackgroundTaskEnabled
             TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
         }
     }

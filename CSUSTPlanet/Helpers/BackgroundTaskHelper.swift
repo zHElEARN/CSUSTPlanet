@@ -15,21 +15,39 @@ import OSLog
 
 protocol BackgroundTaskProvider {
     var identifier: String { get }
-    var interval: TimeInterval { get }
+
+    var defaultInterval: TimeInterval { get }
+    var availableIntervals: [TimeInterval] { get }
+
+    var title: String { get }
+    var description: String { get }
+
     func handle(task: BGAppRefreshTask)
 }
 
 // MARK: - BackgroundTaskHelper
 
+@Observable
+@MainActor
 final class BackgroundTaskHelper {
     static let shared = BackgroundTaskHelper()
 
-    private init() {}
+    var enabledTaskIdentifiers: Set<String>
+    var taskIntervals: [String: TimeInterval]
 
-    private let tasks: [BackgroundTaskProvider] = [
-        GradeBackgroundTask()
-        // ElectricityBackgroundTask(),
+    private init() {
+        enabledTaskIdentifiers = Set(MMKVHelper.shared.backgroundTaskEnabledTaskIdentifiers)
+        taskIntervals = MMKVHelper.shared.backgroundTaskIntervals
+    }
+
+    let tasks: [BackgroundTaskProvider] = [
+        GradeBackgroundTask(),
+        ElectricityBackgroundTask(),
     ]
+
+    var enabledTasks: [BackgroundTaskProvider] {
+        tasks.filter { enabledTaskIdentifiers.contains($0.identifier) }
+    }
 
     func registerAllTasks() {
         for provider in tasks {
@@ -43,12 +61,15 @@ final class BackgroundTaskHelper {
     }
 
     func schedule(provider: BackgroundTaskProvider) {
-        guard MMKVHelper.shared.isBackgroundTaskEnabled else {
+        guard MMKVHelper.shared.backgroundTaskIsEnabled else {
             Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过调度: \(provider.identifier)")
             return
         }
         let request = BGAppRefreshTaskRequest(identifier: provider.identifier)
-        request.earliestBeginDate = Date(timeIntervalSinceNow: provider.interval)
+
+        let currentInterval = self.interval(for: provider)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: currentInterval)
+
         do {
             try BGTaskScheduler.shared.submit(request)
             Logger.backgroundTaskHelper.debug("调度后台任务成功: \(provider.identifier)")
@@ -58,11 +79,11 @@ final class BackgroundTaskHelper {
     }
 
     func scheduleAllTasks() {
-        guard MMKVHelper.shared.isBackgroundTaskEnabled else {
+        guard MMKVHelper.shared.backgroundTaskIsEnabled else {
             Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过调度全部任务")
             return
         }
-        tasks.forEach { schedule(provider: $0) }
+        enabledTasks.forEach { schedule(provider: $0) }
         Logger.backgroundTaskHelper.debug("调度全部后台任务成功")
     }
 
@@ -72,8 +93,26 @@ final class BackgroundTaskHelper {
     }
 
     func cancelAllTasks() {
-        tasks.forEach { cancel(provider: $0) }
+        enabledTasks.forEach { cancel(provider: $0) }
         Logger.backgroundTaskHelper.debug("取消全部后台任务")
+    }
+
+    func toggleTask(_ provider: BackgroundTaskProvider) {
+        if enabledTaskIdentifiers.contains(provider.identifier) {
+            enabledTaskIdentifiers.remove(provider.identifier)
+        } else {
+            enabledTaskIdentifiers.insert(provider.identifier)
+        }
+        MMKVHelper.shared.backgroundTaskEnabledTaskIdentifiers = Array(enabledTaskIdentifiers)
+    }
+
+    func interval(for provider: BackgroundTaskProvider) -> TimeInterval {
+        return taskIntervals[provider.identifier] ?? provider.defaultInterval
+    }
+
+    func setInterval(_ interval: TimeInterval, for provider: BackgroundTaskProvider) {
+        taskIntervals[provider.identifier] = interval
+        MMKVHelper.shared.backgroundTaskIntervals = taskIntervals
     }
 }
 #endif

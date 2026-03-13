@@ -12,9 +12,18 @@ import Foundation
 import OSLog
 
 struct ElectricityBackgroundTask: BackgroundTaskProvider {
-    var identifier: String { Constants.backgroundElectricityID }
+    let identifier: String = Constants.backgroundElectricityID
 
-    var interval: TimeInterval { 6 * 60 * 60 }
+    let defaultInterval: TimeInterval = 6 * 60 * 60
+    let availableIntervals: [TimeInterval] = [
+        1 * 60 * 60,
+        3 * 60 * 60,
+        6 * 60 * 60,
+        12 * 60 * 60,
+    ]
+
+    let title: String = "查询宿舍电量"
+    let description: String = "在后台查询当前收藏宿舍电量，并在电量有更新时发送通知"
 
     func handle(task: BGAppRefreshTask) {
         task.expirationHandler = {
