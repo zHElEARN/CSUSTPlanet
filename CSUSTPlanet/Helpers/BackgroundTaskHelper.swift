@@ -39,9 +39,19 @@ final class BackgroundTaskHelper {
         12 * 60 * 60,
     ]
 
+    var isEnabled: Bool {
+        didSet {
+            MMKVHelper.shared.backgroundTaskIsEnabled = isEnabled
+            TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isEnabled ? "Enabled" : "Disabled")
+        }
+    }
+
     private init() {
         enabledTaskIdentifiers = Set(MMKVHelper.shared.backgroundTaskEnabledTaskIdentifiers)
         interval = MMKVHelper.shared.backgroundTaskInterval
+
+        isEnabled = MMKVHelper.shared.backgroundTaskIsEnabled
+        TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isEnabled ? "Enabled" : "Disabled")
     }
 
     let tasks: [BackgroundTaskProvider] = [

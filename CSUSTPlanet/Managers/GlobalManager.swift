@@ -53,12 +53,10 @@ final class GlobalManager {
         isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
         isWebVPNModeEnabled = MMKVHelper.shared.isWebVPNModeEnabled
         isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
-        isBackgroundTaskEnabled = MMKVHelper.shared.backgroundTaskIsEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
         TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
         TrackHelper.shared.event(category: "WebVPN", action: "Status", name: isWebVPNModeEnabled ? "Enabled" : "Disabled")
-        TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
     }
 
     var selectedTab: TabItem? = .overview
@@ -88,12 +86,6 @@ final class GlobalManager {
     }
     var isNotificationEnabled: Bool {
         didSet { MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled }
-    }
-    var isBackgroundTaskEnabled: Bool {
-        didSet {
-            MMKVHelper.shared.backgroundTaskIsEnabled = isBackgroundTaskEnabled
-            TrackHelper.shared.event(category: "BackgroundTask", action: "Status", name: isBackgroundTaskEnabled ? "Enabled" : "Disabled")
-        }
     }
 
     var isFromElectricityWidget: Bool = false

@@ -8,40 +8,38 @@
 import SwiftUI
 
 struct BackgroundTaskSettingsView: View {
-    @Environment(GlobalManager.self) var globalManager
-    var backgroundTaskHelper = BackgroundTaskHelper.shared
+    @Bindable var helper = BackgroundTaskHelper.shared
 
     var body: some View {
-        @Bindable var bindableGlobalManager = globalManager
 
         Form {
             Section {
-                let intervalBinding = Binding(
-                    get: { backgroundTaskHelper.interval },
-                    set: { newValue in backgroundTaskHelper.interval = newValue }
+                let isEnabledBinding = Binding(
+                    get: { helper.isEnabled },
+                    set: { newValue in withAnimation { helper.isEnabled = newValue } }
                 )
 
-                Toggle(isOn: $bindableGlobalManager.isBackgroundTaskEnabled) {
+                Toggle(isOn: isEnabledBinding) {
                     Text("后台任务总开关")
                 }
 
-                if bindableGlobalManager.isBackgroundTaskEnabled {
-                    Picker("更新频率", selection: intervalBinding) {
-                        ForEach(backgroundTaskHelper.availableIntervals, id: \.self) { interval in
+                if helper.isEnabled {
+                    Picker("更新频率", selection: $helper.interval) {
+                        ForEach(helper.availableIntervals, id: \.self) { interval in
                             Text(formatInterval(interval)).tag(interval)
                         }
                     }
                 }
+            } header: {
+                Text("后台任务")
             } footer: {
-                Text("开启后应用可以在后台定期运行相关操作，后台任务受系统调度，更新频率可能不准确，无电量续航影响")
+                Text("开启后应用可以在后台定期运行相关操作，后台任务受系统调度，更新频率可能不准确，无电量续航影响。需要开启总开关才能以下任务才会生效")
             }
 
-            ForEach(backgroundTaskHelper.tasks, id: \.identifier) { task in
-                let isTaskEnabled = backgroundTaskHelper.enabledTaskIdentifiers.contains(task.identifier)
-
+            ForEach(helper.tasks, id: \.identifier) { task in
                 let toggleBinding = Binding(
-                    get: { isTaskEnabled },
-                    set: { _ in backgroundTaskHelper.toggleTask(task) }
+                    get: { helper.enabledTaskIdentifiers.contains(task.identifier) },
+                    set: { _ in helper.toggleTask(task) }
                 )
 
                 Section {
