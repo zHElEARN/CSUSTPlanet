@@ -35,6 +35,7 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
                 let session = CookieHelper.shared.session
                 let ssoHelper = SSOHelper(mode: mode, session: session)
                 let eduHelper = EduHelper(mode: mode, session: session)
+
                 if await !ssoHelper.isLoggedIn() {
                     Logger.gradeBackgroundTask.debug("统一身份认证未登录，尝试重新登录")
                     guard let username = KeychainUtil.ssoUsername, let password = KeychainUtil.ssoPassword else {
@@ -61,12 +62,20 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
                 // 重试机制：最多尝试 3 次
                 var nowCourseGrades: [EduHelper.CourseGrade] = []
                 for i in 1...3 {
-                    nowCourseGrades = try await eduHelper.courseService.getCourseGrades()
-                    if !nowCourseGrades.isEmpty {
-                        Logger.gradeBackgroundTask.debug("第 \(i) 次尝试获取成绩成功: \(nowCourseGrades.count)门课程")
-                        break
+                    do {
+                        nowCourseGrades = try await eduHelper.courseService.getCourseGrades()
+                        if !nowCourseGrades.isEmpty {
+                            Logger.gradeBackgroundTask.debug("第 \(i) 次尝试获取成绩成功: \(nowCourseGrades.count)门课程")
+                            break
+                        }
+                        Logger.gradeBackgroundTask.warning("第 \(i) 次尝试获取成绩返回为空数组")
+                    } catch {
+                        Logger.gradeBackgroundTask.warning("第 \(i) 次获取成绩发生网络或解析错误: \(error.localizedDescription)")
                     }
-                    Logger.gradeBackgroundTask.warning("第 \(i) 次尝试获取成绩返回为空数组")
+
+                    if i < 3 {
+                        try? await Task.sleep(for: .seconds(2))
+                    }
                 }
 
                 // 最终结果校验与对比
@@ -76,8 +85,8 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
                         Logger.gradeBackgroundTask.debug("未获取到成绩，且本地无缓存，判定为当前暂无成绩")
                         task.setTaskCompleted(success: true)
                     } else {
-                        // 如果原本有成绩但现在返回空，判定为教务系统抽风
-                        Logger.gradeBackgroundTask.error("获取成绩失败: 多次尝试后仍返回空数组")
+                        // 如果原本有成绩但现在返回空，判定为教务系统抽风或网络彻底失败
+                        Logger.gradeBackgroundTask.error("获取成绩失败: 多次尝试后仍返回空数组或请求失败")
                         task.setTaskCompleted(success: false)
                     }
                     return
@@ -94,8 +103,7 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
                     content.sound = .default
                     content.badge = 0
 
-                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-                    let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+                    let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
 
                     do {
                         try await UNUserNotificationCenter.current().add(request)
@@ -109,6 +117,10 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
 
                 task.setTaskCompleted(success: true)
             } catch {
+                if error is CancellationError {
+                    Logger.gradeBackgroundTask.debug("后台任务因超时被系统取消，跳过常规错误处理")
+                    return
+                }
                 Logger.gradeBackgroundTask.error("获取成绩失败: \(error.localizedDescription)")
                 task.setTaskCompleted(success: false)
             }
