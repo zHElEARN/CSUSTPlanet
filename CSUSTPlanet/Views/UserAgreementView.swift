@@ -9,7 +9,7 @@ import MarkdownUI
 import SwiftUI
 
 struct UserAgreementView: View {
-    @Environment(GlobalManager.self) var globalManager
+    @Bindable var globalManager = GlobalManager.shared
 
     var body: some View {
         NavigationStack {

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WebVPNGuideView: View {
     @Binding var isPresented: Bool
-    @Environment(GlobalManager.self) var globalManager
+    @Bindable var globalManager = GlobalManager.shared
 
     var body: some View {
         VStack(spacing: 16) {

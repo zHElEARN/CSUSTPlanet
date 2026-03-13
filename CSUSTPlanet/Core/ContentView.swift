@@ -76,8 +76,9 @@ private let featureSections: [FeatureSection] = [
 ]
 
 struct ContentView: View {
-    @Environment(GlobalManager.self) var globalManager
-    @Environment(AuthManager.self) var authManager
+    @Bindable var globalManager = GlobalManager.shared
+    @Bindable var authManager = AuthManager.shared
+
     @Environment(\.horizontalSizeClass) var sizeClass
 
     @State var isDatabaseReady = false
@@ -94,13 +95,10 @@ struct ContentView: View {
     }
 
     var body: some View {
-        @Bindable var bindableGlobalManager = globalManager
-        @Bindable var bindableAuthManager = authManager
-
         Group {
             if isDatabaseReady {
                 if #available(iOS 18.0, macOS 15.0, *) {
-                    TabView(selection: $bindableGlobalManager.selectedTab) {
+                    TabView(selection: $globalManager.selectedTab) {
                         Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
                             NavigationStack { OverviewView() }
                         }
@@ -129,7 +127,7 @@ struct ContentView: View {
                     .tabViewStyle(.sidebarAdaptable)
                 } else {
                     if sizeClass == .compact {
-                        TabView(selection: $bindableGlobalManager.selectedTab) {
+                        TabView(selection: $globalManager.selectedTab) {
                             NavigationStack { OverviewView() }
                                 .tabItem { Label("概览", systemImage: "rectangle.stack") }
                                 .tag(TabItem.overview)
@@ -142,7 +140,7 @@ struct ContentView: View {
                         }
                     } else {
                         NavigationSplitView {
-                            List(selection: $bindableGlobalManager.selectedTab) {
+                            List(selection: $globalManager.selectedTab) {
                                 Section {
                                     ColoredLabel(title: "概览", iconName: "rectangle.stack", color: .blue).tag(TabItem.overview)
                                     ColoredLabel(title: "我的", iconName: "person", color: .blue).tag(TabItem.profile)
@@ -199,33 +197,33 @@ struct ContentView: View {
 
         // MARK: 全局Toast状态
 
-        .toast(isPresenting: $bindableAuthManager.isShowingSSOInfo) {
+        .toast(isPresenting: $authManager.isShowingSSOInfo) {
             AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.ssoInfo)
         }
-        .toast(isPresenting: $bindableAuthManager.isShowingSSOError) {
+        .toast(isPresenting: $authManager.isShowingSSOError) {
             AlertToast(displayMode: .hud, type: .error(.red), title: "统一身份认证登录错误")
         }
-        .toast(isPresenting: $bindableAuthManager.isShowingEducationInfo) {
+        .toast(isPresenting: $authManager.isShowingEducationInfo) {
             AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.educationInfo)
         }
-        .toast(isPresenting: $bindableAuthManager.isShowingEducationError) {
+        .toast(isPresenting: $authManager.isShowingEducationError) {
             AlertToast(displayMode: .hud, type: .error(.red), title: "教务登录错误")
         }
-        .toast(isPresenting: $bindableAuthManager.isShowingMoocInfo) {
+        .toast(isPresenting: $authManager.isShowingMoocInfo) {
             AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.moocInfo)
         }
-        .toast(isPresenting: $bindableAuthManager.isShowingMoocError) {
+        .toast(isPresenting: $authManager.isShowingMoocError) {
             AlertToast(displayMode: .hud, type: .error(.red), title: "网络课程中心登录错误")
         }
 
         // MARK: - 数据库Fatal提示
 
-        .alert("本地数据异常", isPresented: $bindableGlobalManager.showWipeRecoveryAlert) {
+        .alert("本地数据异常", isPresented: $globalManager.showWipeRecoveryAlert) {
             Button("我知道了", role: .cancel) {}
         } message: {
             Text("检测到本地缓存数据出现异常，为了保证应用正常运行，我们已重置了本地环境。如果您之前开启了 iCloud 同步，您的数据稍后将从云端自动恢复。")
         }
-        .alert("存储空间不可用", isPresented: $bindableGlobalManager.showFatalErrorAlert) {
+        .alert("存储空间不可用", isPresented: $globalManager.showFatalErrorAlert) {
             Button("我知道了", role: .cancel) {}
         } message: {
             Text("应用无法访问设备的本地存储空间，当前正以“临时模式”运行。您可以继续浏览信息，但任何关于宿舍电量新的更改或记录在退出应用后都将丢失。建议您检查设备的剩余存储空间，或尝试重启设备。")

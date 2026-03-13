@@ -57,8 +57,6 @@ struct CSUSTPlanetApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(GlobalManager.shared)
-                .environment(AuthManager.shared)
                 #if os(iOS)
             .environment(NotificationManager.shared)
                 #endif

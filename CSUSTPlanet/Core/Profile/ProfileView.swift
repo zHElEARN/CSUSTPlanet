@@ -10,8 +10,9 @@ import Kingfisher
 import SwiftUI
 
 struct ProfileView: View {
-    @Environment(AuthManager.self) var authManager
-    @Environment(GlobalManager.self) var globalManager
+    @Bindable var authManager = AuthManager.shared
+    @Bindable var globalManager = GlobalManager.shared
+
     #if os(iOS)
     @Environment(NotificationManager.self) var notificationManager
     #endif
