@@ -9,7 +9,7 @@ import AlertToast
 import SwiftUI
 
 struct SchoolCalendarListView: View {
-    @StateObject var viewModel = SchoolCalendarListViewModel()
+    @State var viewModel = SchoolCalendarListViewModel()
 
     var body: some View {
         List(viewModel.schoolCalendars) { calendar in

@@ -7,6 +7,7 @@
 
 import Alamofire
 import Foundation
+import Observation
 
 struct SchoolCalendar: Codable, Identifiable {
     var id: String { semester }
@@ -17,11 +18,12 @@ struct SchoolCalendar: Codable, Identifiable {
 }
 
 @MainActor
-class SchoolCalendarListViewModel: ObservableObject {
-    @Published var schoolCalendars: [SchoolCalendar] = []
-    @Published var isShowingError: Bool = false
-    @Published var errorMessage: String = ""
-    @Published var isLoading: Bool = false
+@Observable
+class SchoolCalendarListViewModel {
+    var schoolCalendars: [SchoolCalendar] = []
+    var isShowingError: Bool = false
+    var errorMessage: String = ""
+    var isLoading: Bool = false
 
     func loadSchoolCalendars() {
         isLoading = true
