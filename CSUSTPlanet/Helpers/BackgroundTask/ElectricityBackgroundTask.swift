@@ -18,7 +18,7 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
     let identifier: String = "electricity"
 
     let title: String = "查询宿舍电量"
-    let description: String = "在后台查询当前收藏宿舍电量，并在电量有更新时发送通知"
+    let description: String = "在后台查询当前收藏宿舍电量，查询后发送当前电量通知"
 
     func perform() async -> Bool {
         Logger.electricityBackgroundTask.debug("开始后台获取电量任务: \(self.identifier)")
@@ -83,26 +83,25 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
                 Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量未变化，仅更新 lastFetchDate")
                 dorm.lastFetchDate = now
             } else {
-                Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量发生变化，更新数据并发送通知")
-
+                Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量发生变化，更新数据库记录")
                 let record = ElectricityRecord(electricity: newElectricity, date: now, dorm: dorm)
                 modelContext.insert(record)
                 dorm.lastFetchDate = now
                 dorm.lastFetchElectricity = newElectricity
+            }
 
-                let content = UNMutableNotificationContent()
-                content.title = "宿舍电量更新"
-                content.body = "\(dorm.buildingName) \(dorm.room) 当前电量: \(String(format: "%.2f", newElectricity)) 度"
-                content.sound = .default
-                content.badge = 0
+            let content = UNMutableNotificationContent()
+            content.title = "宿舍电量查询"
+            content.body = "\(dorm.buildingName) \(dorm.room) 当前电量: \(String(format: "%.2f", newElectricity)) 度"
+            content.sound = .default
+            content.badge = 0
 
-                let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
-                do {
-                    try await UNUserNotificationCenter.current().add(request)
-                    Logger.electricityBackgroundTask.debug("电量更新推送调度成功")
-                } catch {
-                    Logger.electricityBackgroundTask.error("推送调度失败: \(error.localizedDescription)")
-                }
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
+            do {
+                try await UNUserNotificationCenter.current().add(request)
+                Logger.electricityBackgroundTask.debug("当前电量推送调度成功")
+            } catch {
+                Logger.electricityBackgroundTask.error("推送调度失败: \(error.localizedDescription)")
             }
 
             if modelContext.hasChanges {
@@ -120,7 +119,6 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
             Logger.electricityBackgroundTask.error("后台任务执行发生意外错误: \(error.localizedDescription)")
             return false
         }
-
     }
 }
 #endif
