@@ -61,36 +61,45 @@ private struct SpanData: Identifiable {
     let isCustom: Bool
 }
 
+private enum RectEdge {
+    case top, bottom, leading, trailing
+    case topLeft, topRight, bottomLeft, bottomRight
+}
+
 // MARK: - 边框绘制扩展
 private struct EdgeBorder: Shape {
     var width: CGFloat
-    var edges: [Edge]
+    var edges: [RectEdge]
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
         for edge in edges {
-            var x: CGFloat = 0
-            var y: CGFloat = 0
-            var w: CGFloat = rect.width
-            var h: CGFloat = rect.height
             switch edge {
-            case .top: h = width
+            case .top:
+                path.addRect(CGRect(x: 0, y: 0, width: rect.width, height: width))
             case .bottom:
-                y = rect.maxY - width
-                h = width
-            case .leading: w = width
+                path.addRect(CGRect(x: 0, y: rect.maxY - width, width: rect.width, height: width))
+            case .leading:
+                path.addRect(CGRect(x: 0, y: 0, width: width, height: rect.height))
             case .trailing:
-                x = rect.maxX - width
-                w = width
+                path.addRect(CGRect(x: rect.maxX - width, y: 0, width: width, height: rect.height))
+            // 专门用来修补“内拐角”缺口的小方块
+            case .topLeft:
+                path.addRect(CGRect(x: 0, y: 0, width: width, height: width))
+            case .topRight:
+                path.addRect(CGRect(x: rect.maxX - width, y: 0, width: width, height: width))
+            case .bottomLeft:
+                path.addRect(CGRect(x: 0, y: rect.maxY - width, width: width, height: width))
+            case .bottomRight:
+                path.addRect(CGRect(x: rect.maxX - width, y: rect.maxY - width, width: width, height: width))
             }
-            path.addRect(CGRect(x: x, y: y, width: w, height: h))
         }
         return path
     }
 }
 
 extension View {
-    fileprivate func customBorder(width: CGFloat, edges: [Edge], color: Color) -> some View {
+    fileprivate func customBorder(width: CGFloat, edges: [RectEdge], color: Color) -> some View {
         overlay(EdgeBorder(width: width, edges: edges).foregroundColor(color))
     }
 }
@@ -453,20 +462,42 @@ struct SchoolCalendarView: View {
         let dayData = viewModel.weeks[rowIndex].days[colIndex]
         let currentMonthKey = dayData.monthKey
 
-        var thickEdges: [Edge] = []
+        var thickEdges: [RectEdge] = []
         if viewModel.config?.calendar.autoHighlight == true {
+            // 获取上下左右邻居
             let topKey = rowIndex > 0 ? viewModel.weeks[rowIndex - 1].days[colIndex].monthKey : nil
             let bottomKey = rowIndex < viewModel.weeks.count - 1 ? viewModel.weeks[rowIndex + 1].days[colIndex].monthKey : nil
             let leftKey = colIndex > 0 ? viewModel.weeks[rowIndex].days[colIndex - 1].monthKey : nil
             let rightKey = colIndex < 6 ? viewModel.weeks[rowIndex].days[colIndex + 1].monthKey : nil
 
+            // 获取对角线邻居 (用于判定是否处于内角)
+            let topLeftKey = (rowIndex > 0 && colIndex > 0) ? viewModel.weeks[rowIndex - 1].days[colIndex - 1].monthKey : nil
+            let topRightKey = (rowIndex > 0 && colIndex < 6) ? viewModel.weeks[rowIndex - 1].days[colIndex + 1].monthKey : nil
+            let bottomLeftKey = (rowIndex < viewModel.weeks.count - 1 && colIndex > 0) ? viewModel.weeks[rowIndex + 1].days[colIndex - 1].monthKey : nil
+            let bottomRightKey = (rowIndex < viewModel.weeks.count - 1 && colIndex < 6) ? viewModel.weeks[rowIndex + 1].days[colIndex + 1].monthKey : nil
+
+            // 绘制标准外边界
             if topKey != currentMonthKey { thickEdges.append(.top) }
             if bottomKey != currentMonthKey { thickEdges.append(.bottom) }
             if leftKey != currentMonthKey { thickEdges.append(.leading) }
             if rightKey != currentMonthKey { thickEdges.append(.trailing) }
+
+            // 绘制内角修补块（核心逻辑：如果我的横竖都和我是同一个月，但对角线是别的月，说明我身处拐角内侧）
+            if topKey == currentMonthKey && leftKey == currentMonthKey && topLeftKey != nil && topLeftKey != currentMonthKey {
+                thickEdges.append(.topLeft)
+            }
+            if topKey == currentMonthKey && rightKey == currentMonthKey && topRightKey != nil && topRightKey != currentMonthKey {
+                thickEdges.append(.topRight)
+            }
+            if bottomKey == currentMonthKey && leftKey == currentMonthKey && bottomLeftKey != nil && bottomLeftKey != currentMonthKey {
+                thickEdges.append(.bottomLeft)
+            }
+            if bottomKey == currentMonthKey && rightKey == currentMonthKey && bottomRightKey != nil && bottomRightKey != currentMonthKey {
+                thickEdges.append(.bottomRight)
+            }
         }
 
-        let highlightColor = Color.accentColor.opacity(0.7)
+        let highlightColor = Color.accentColor
 
         return Text("\(dayData.day)")
             .font(.footnote)
@@ -476,6 +507,6 @@ struct SchoolCalendarView: View {
             .foregroundColor(dayData.isWeekend ? .red.opacity(0.8) : .primary)
             .frame(width: dayColWidth, height: viewModel.rowHeight)
             .customBorder(width: 0.5, edges: [.bottom, .trailing], color: separatorColor)
-            .customBorder(width: 2.0, edges: thickEdges, color: highlightColor)
+            .customBorder(width: 1.5, edges: thickEdges, color: highlightColor)
     }
 }
