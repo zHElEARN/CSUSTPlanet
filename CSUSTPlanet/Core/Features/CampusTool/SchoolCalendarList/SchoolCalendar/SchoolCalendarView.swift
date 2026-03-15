@@ -7,6 +7,12 @@
 
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 struct SchoolCalendarView: View {
     let schoolCalendar: SchoolCalendar
 
@@ -26,10 +32,53 @@ struct SchoolCalendarView: View {
     let weekColRatio: CGFloat = 0.12
     let monthColRatio: CGFloat = 0.12
 
-    let pageBackground = Color.primary.opacity(0.04)
-    let cardBackground = Color.secondary.opacity(0.1)
-    let headerBackground = Color.secondary.opacity(0.15)
-    let separator = Color.secondary.opacity(0.3)
+    var pageBackground: Color {
+        #if os(iOS)
+        return Color(uiColor: .systemGroupedBackground)
+        #elseif os(macOS)
+        return Color(nsColor: .windowBackgroundColor)
+        #else
+        return Color(white: 0.95)
+        #endif
+    }
+
+    var cardBackground: Color {
+        #if os(iOS)
+        return Color(uiColor: .secondarySystemGroupedBackground)
+        #elseif os(macOS)
+        return Color(nsColor: .controlBackgroundColor)
+        #else
+        return Color.white
+        #endif
+    }
+
+    var headerBackground: Color {
+        #if os(iOS)
+        return Color(uiColor: .tertiarySystemGroupedBackground)
+        #elseif os(macOS)
+        return Color(nsColor: .underPageBackgroundColor)
+        #else
+        return Color.gray.opacity(0.08)
+        #endif
+    }
+
+    var separator: Color {
+        #if os(iOS)
+        return Color(uiColor: .separator)
+        #elseif os(macOS)
+        return Color(nsColor: .separatorColor)
+        #else
+        return Color.gray.opacity(0.2)
+        #endif
+    }
+
+    var weekendText: Color {
+        Color.red.opacity(0.7)
+    }
+
+    var customWeekBackground: Color {
+        Color.accentColor.opacity(0.12)
+    }
 
     var body: some View {
         Group {
@@ -91,7 +140,7 @@ struct SchoolCalendarView: View {
         .background(pageBackground.ignoresSafeArea())
         .navigationTitle("\(schoolCalendar.semesterCode)学年度校历")
         .apply { view in
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, macOS 15.0, *) {
                 view.navigationSubtitle(schoolCalendar.subtitle)
             } else {
                 view
@@ -116,8 +165,11 @@ struct SchoolCalendarView: View {
                             .font(.headline)
                         Spacer()
                     }
+
                     Divider()
-                    Text("学期：\(conf.subtitle.replacingOccurrences(of: "（", with: "").replacingOccurrences(of: "）", with: ""))")
+                        .background(separator)
+
+                    Text("学期：\(conf.subtitle)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     Text("周期：\(String(conf.semesterStart.prefix(10))) 至 \(String(conf.semesterEnd.prefix(10)))")
@@ -153,9 +205,9 @@ struct SchoolCalendarView: View {
                     Text(span.text)
                         .font(.caption)
                         .fontWeight(span.isCustom ? .bold : .regular)
-                        .foregroundColor(span.isCustom ? .accentColor : .primary)
+                        .foregroundColor(span.isCustom ? .accentColor : .secondary)
                         .frame(width: weekWidth, height: viewModel.rowHeight * CGFloat(span.rowCount))
-                        .background(span.isCustom ? Color.accentColor.opacity(0.1) : Color.clear)
+                        .background(span.isCustom ? customWeekBackground : Color.clear)
                         .customBorder(width: borderThin, edges: [.bottom, .trailing], color: separator)
                 }
             }
@@ -167,9 +219,10 @@ struct SchoolCalendarView: View {
                     Text(span.text)
                         .font(.caption)
                         .fontWeight(.medium)
+                        .foregroundColor(.primary.opacity(0.8))
                         .multilineTextAlignment(.center)
                         .frame(width: monthWidth, height: viewModel.rowHeight * CGFloat(span.rowCount))
-                        .background(headerBackground.opacity(0.4))
+                        .background(headerBackground.opacity(0.5))
                         .customBorder(width: borderThin, edges: [.bottom, .trailing], color: separator)
                 }
             }
@@ -262,14 +315,14 @@ struct SchoolCalendarView: View {
             thickEdges.append(.bottomRight)
         }
 
-        let highlightColor = Color.accentColor
+        let highlightColor = Color.accentColor.opacity(0.8)
 
         return Text("\(dayData.day)")
             .font(.footnote)
             .monospacedDigit()
             .lineLimit(1)
             .minimumScaleFactor(0.8)
-            .foregroundColor(dayData.isWeekend ? .red.opacity(0.8) : .primary)
+            .foregroundColor(dayData.isWeekend ? weekendText : .primary)
             .frame(width: dayWidth, height: viewModel.rowHeight)
             .customBorder(width: borderThin, edges: [.bottom, .trailing], color: separator)
             .customBorder(width: borderThick, edges: thickEdges, color: highlightColor)
