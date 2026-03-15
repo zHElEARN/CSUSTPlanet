@@ -142,9 +142,11 @@ struct ProfileView: View {
                     Label("网络设置", systemImage: "network")
                 }
 
+                #if os(iOS)
                 TrackLink(destination: BackgroundTaskSettingsView()) {
                     Label("后台任务设置", systemImage: "gearshape.2")
                 }
+                #endif
 
                 TrackLink(destination: NotificationSettingsView()) {
                     Label("通知设置", systemImage: "bell.badge")

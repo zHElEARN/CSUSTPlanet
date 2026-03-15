@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2026/3/12.
 //
 
+#if os(iOS)
 import SwiftUI
 
 struct BackgroundTaskSettingsView: View {
@@ -71,3 +72,4 @@ struct BackgroundTaskSettingsView: View {
         }
     }
 }
+#endif
