@@ -7,21 +7,23 @@
 
 import Alamofire
 import Foundation
+import Observation
 
 struct SchoolCalendar: Codable, Identifiable {
-    var id: String { semester }
+    var id: String { semesterCode }
 
-    let semester: String
+    let semesterCode: String
     let title: String
     let subtitle: String
 }
 
 @MainActor
-class SchoolCalendarListViewModel: ObservableObject {
-    @Published var schoolCalendars: [SchoolCalendar] = []
-    @Published var isShowingError: Bool = false
-    @Published var errorMessage: String = ""
-    @Published var isLoading: Bool = false
+@Observable
+class SchoolCalendarListViewModel {
+    var schoolCalendars: [SchoolCalendar] = []
+    var isShowingError: Bool = false
+    var errorMessage: String = ""
+    var isLoading: Bool = false
 
     func loadSchoolCalendars() {
         isLoading = true
@@ -31,7 +33,7 @@ class SchoolCalendarListViewModel: ObservableObject {
             }
 
             do {
-                schoolCalendars = try (await AF.request("\(Constants.backendHost)/static/school_calendar/list.json").serializingDecodable([SchoolCalendar].self).value).sorted { $0.semester > $1.semester }
+                schoolCalendars = try (await AF.request("\(Constants.backendHost)/config/semester-calendars").serializingDecodable([SchoolCalendar].self).value).sorted { $0.semesterCode > $1.semesterCode }
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true

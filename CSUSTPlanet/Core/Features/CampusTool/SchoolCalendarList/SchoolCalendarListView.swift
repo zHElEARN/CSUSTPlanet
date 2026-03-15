@@ -9,11 +9,11 @@ import AlertToast
 import SwiftUI
 
 struct SchoolCalendarListView: View {
-    @StateObject var viewModel = SchoolCalendarListViewModel()
+    @State var viewModel = SchoolCalendarListViewModel()
 
     var body: some View {
         List(viewModel.schoolCalendars) { calendar in
-            TrackLink(destination: SchoolCalendarView(semester: calendar.semester)) {
+            TrackLink(destination: SchoolCalendarView(schoolCalendar: calendar)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(calendar.title)
                         .font(.headline)
