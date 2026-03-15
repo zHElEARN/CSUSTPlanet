@@ -11,19 +11,15 @@ import SwiftUI
 // MARK: - 配置文件模型
 
 private struct ConfigData: Codable {
-    let calendar: CalendarConfig
-    let notes: [NoteConfig]?
-    let customWeekRanges: [CustomWeekRange]?
-}
-
-private struct CalendarConfig: Codable {
+    let semesterCode: String
+    let title: String
+    let subtitle: String
     let calendarStart: String
     let calendarEnd: String
     let semesterStart: String
     let semesterEnd: String
-    let autoHighlight: Bool
-    let academicYear: String
-    let semesterInfo: String
+    let notes: [NoteConfig]
+    let customWeekRanges: [CustomWeekRange]
 }
 
 private struct NoteConfig: Codable {
@@ -136,11 +132,12 @@ private class SchoolCalendarViewModel {
         isShowingError = false
 
         do {
-            let decodedConfig = try await AF.request("\(Constants.backendHost)/static/school_calendar/calendars/\(semester).json")
+            let decodedConfig = try await AF.request("\(Constants.backendHost)/config/semester-calendars/\(semester)")
                 .serializingDecodable(ConfigData.self).value
             self.config = decodedConfig
             generateCalendar(from: decodedConfig)
         } catch {
+            debugPrint(error)
             self.isShowingError = true
             self.errorMessage = error.localizedDescription
         }
@@ -149,14 +146,12 @@ private class SchoolCalendarViewModel {
     }
 
     private func generateCalendar(from config: ConfigData) {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy-MM-dd"
-        fmt.timeZone = TimeZone(secondsFromGMT: 8 * 3600)
+        let fmt = ISO8601DateFormatter()
 
-        guard let startDate = fmt.date(from: config.calendar.calendarStart),
-            let endDate = fmt.date(from: config.calendar.calendarEnd),
-            let semesterStart = fmt.date(from: config.calendar.semesterStart),
-            let semesterEnd = fmt.date(from: config.calendar.semesterEnd)
+        guard let startDate = fmt.date(from: config.calendarStart),
+            let endDate = fmt.date(from: config.calendarEnd),
+            let semesterStart = fmt.date(from: config.semesterStart),
+            let semesterEnd = fmt.date(from: config.semesterEnd)
         else { return }
 
         let cal = Calendar.current
@@ -203,7 +198,7 @@ private class SchoolCalendarViewModel {
         var tempWeekSpans: [SpanData] = []
         var r = 1
         while r <= tempWeeks.count {
-            if let custom = config.customWeekRanges?.first(where: { $0.startRow == r }) {
+            if let custom = config.customWeekRanges.first(where: { $0.startRow == r }) {
                 let rowCount = custom.endRow - custom.startRow + 1
                 tempWeekSpans.append(SpanData(text: custom.content, rowCount: rowCount, isCustom: true))
                 r = custom.endRow + 1
@@ -237,18 +232,16 @@ private class SchoolCalendarViewModel {
         var tempNotes = Array(repeating: "", count: tempWeeks.count)
         var sequenceNumber = 1
 
-        if let notesConf = config.notes {
-            for note in notesConf {
-                let rIndex = note.row - 1
-                if rIndex >= 0 && rIndex < tempWeeks.count {
-                    var text = note.content
-                    if note.needNumber == true {
-                        let prefix = sequenceNumber <= 10 ? circleNumbers[sequenceNumber - 1] : "\(sequenceNumber)"
-                        text = "\(prefix) \(text)"
-                        sequenceNumber += 1
-                    }
-                    tempNotes[rIndex] = text
+        for note in config.notes {
+            let rIndex = note.row - 1
+            if rIndex >= 0 && rIndex < tempWeeks.count {
+                var text = note.content
+                if note.needNumber == true {
+                    let prefix = sequenceNumber <= 10 ? circleNumbers[sequenceNumber - 1] : "\(sequenceNumber)"
+                    text = "\(prefix) \(text)"
+                    sequenceNumber += 1
                 }
+                tempNotes[rIndex] = text
             }
         }
         self.notes = tempNotes
@@ -329,7 +322,7 @@ struct SchoolCalendarView: View {
             }
         }
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
-        .navigationTitle(viewModel.config?.calendar.academicYear ?? "校历")
+        .navigationTitle(viewModel.config?.title ?? "校历")
         .task {
             if viewModel.config == nil && !viewModel.isLoading && !viewModel.isShowingError {
                 await viewModel.loadConfig(semester: semester)
@@ -340,7 +333,7 @@ struct SchoolCalendarView: View {
     // MARK: - 学期概览静态卡片
     private var overviewCard: some View {
         Group {
-            if let conf = viewModel.config?.calendar {
+            if let conf = viewModel.config {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "calendar.badge.clock")
@@ -350,10 +343,10 @@ struct SchoolCalendarView: View {
                         Spacer()
                     }
                     Divider()
-                    Text("学期：\(conf.semesterInfo.replacingOccurrences(of: "（", with: "").replacingOccurrences(of: "）", with: ""))")
+                    Text("学期：\(conf.subtitle.replacingOccurrences(of: "（", with: "").replacingOccurrences(of: "）", with: ""))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    Text("周期：\(conf.semesterStart) 至 \(conf.semesterEnd)")
+                    Text("周期：\(String(conf.semesterStart.prefix(10))) 至 \(String(conf.semesterEnd.prefix(10)))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -463,38 +456,36 @@ struct SchoolCalendarView: View {
         let currentMonthKey = dayData.monthKey
 
         var thickEdges: [RectEdge] = []
-        if viewModel.config?.calendar.autoHighlight == true {
-            // 获取上下左右邻居
-            let topKey = rowIndex > 0 ? viewModel.weeks[rowIndex - 1].days[colIndex].monthKey : nil
-            let bottomKey = rowIndex < viewModel.weeks.count - 1 ? viewModel.weeks[rowIndex + 1].days[colIndex].monthKey : nil
-            let leftKey = colIndex > 0 ? viewModel.weeks[rowIndex].days[colIndex - 1].monthKey : nil
-            let rightKey = colIndex < 6 ? viewModel.weeks[rowIndex].days[colIndex + 1].monthKey : nil
+        // 获取上下左右邻居
+        let topKey = rowIndex > 0 ? viewModel.weeks[rowIndex - 1].days[colIndex].monthKey : nil
+        let bottomKey = rowIndex < viewModel.weeks.count - 1 ? viewModel.weeks[rowIndex + 1].days[colIndex].monthKey : nil
+        let leftKey = colIndex > 0 ? viewModel.weeks[rowIndex].days[colIndex - 1].monthKey : nil
+        let rightKey = colIndex < 6 ? viewModel.weeks[rowIndex].days[colIndex + 1].monthKey : nil
 
-            // 获取对角线邻居 (用于判定是否处于内角)
-            let topLeftKey = (rowIndex > 0 && colIndex > 0) ? viewModel.weeks[rowIndex - 1].days[colIndex - 1].monthKey : nil
-            let topRightKey = (rowIndex > 0 && colIndex < 6) ? viewModel.weeks[rowIndex - 1].days[colIndex + 1].monthKey : nil
-            let bottomLeftKey = (rowIndex < viewModel.weeks.count - 1 && colIndex > 0) ? viewModel.weeks[rowIndex + 1].days[colIndex - 1].monthKey : nil
-            let bottomRightKey = (rowIndex < viewModel.weeks.count - 1 && colIndex < 6) ? viewModel.weeks[rowIndex + 1].days[colIndex + 1].monthKey : nil
+        // 获取对角线邻居 (用于判定是否处于内角)
+        let topLeftKey = (rowIndex > 0 && colIndex > 0) ? viewModel.weeks[rowIndex - 1].days[colIndex - 1].monthKey : nil
+        let topRightKey = (rowIndex > 0 && colIndex < 6) ? viewModel.weeks[rowIndex - 1].days[colIndex + 1].monthKey : nil
+        let bottomLeftKey = (rowIndex < viewModel.weeks.count - 1 && colIndex > 0) ? viewModel.weeks[rowIndex + 1].days[colIndex - 1].monthKey : nil
+        let bottomRightKey = (rowIndex < viewModel.weeks.count - 1 && colIndex < 6) ? viewModel.weeks[rowIndex + 1].days[colIndex + 1].monthKey : nil
 
-            // 绘制标准外边界
-            if topKey != currentMonthKey { thickEdges.append(.top) }
-            if bottomKey != currentMonthKey { thickEdges.append(.bottom) }
-            if leftKey != currentMonthKey { thickEdges.append(.leading) }
-            if rightKey != currentMonthKey { thickEdges.append(.trailing) }
+        // 绘制标准外边界
+        if topKey != currentMonthKey { thickEdges.append(.top) }
+        if bottomKey != currentMonthKey { thickEdges.append(.bottom) }
+        if leftKey != currentMonthKey { thickEdges.append(.leading) }
+        if rightKey != currentMonthKey { thickEdges.append(.trailing) }
 
-            // 绘制内角修补块（核心逻辑：如果我的横竖都和我是同一个月，但对角线是别的月，说明我身处拐角内侧）
-            if topKey == currentMonthKey && leftKey == currentMonthKey && topLeftKey != nil && topLeftKey != currentMonthKey {
-                thickEdges.append(.topLeft)
-            }
-            if topKey == currentMonthKey && rightKey == currentMonthKey && topRightKey != nil && topRightKey != currentMonthKey {
-                thickEdges.append(.topRight)
-            }
-            if bottomKey == currentMonthKey && leftKey == currentMonthKey && bottomLeftKey != nil && bottomLeftKey != currentMonthKey {
-                thickEdges.append(.bottomLeft)
-            }
-            if bottomKey == currentMonthKey && rightKey == currentMonthKey && bottomRightKey != nil && bottomRightKey != currentMonthKey {
-                thickEdges.append(.bottomRight)
-            }
+        // 绘制内角修补块（核心逻辑：如果我的横竖都和我是同一个月，但对角线是别的月，说明我身处拐角内侧）
+        if topKey == currentMonthKey && leftKey == currentMonthKey && topLeftKey != nil && topLeftKey != currentMonthKey {
+            thickEdges.append(.topLeft)
+        }
+        if topKey == currentMonthKey && rightKey == currentMonthKey && topRightKey != nil && topRightKey != currentMonthKey {
+            thickEdges.append(.topRight)
+        }
+        if bottomKey == currentMonthKey && leftKey == currentMonthKey && bottomLeftKey != nil && bottomLeftKey != currentMonthKey {
+            thickEdges.append(.bottomLeft)
+        }
+        if bottomKey == currentMonthKey && rightKey == currentMonthKey && bottomRightKey != nil && bottomRightKey != currentMonthKey {
+            thickEdges.append(.bottomRight)
         }
 
         let highlightColor = Color.accentColor
