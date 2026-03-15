@@ -12,19 +12,22 @@ struct SchoolCalendarListView: View {
     @State var viewModel = SchoolCalendarListViewModel()
 
     var body: some View {
-        List(viewModel.schoolCalendars) { calendar in
-            TrackLink(destination: SchoolCalendarView(schoolCalendar: calendar)) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(calendar.title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+        Form {
+            ForEach(viewModel.schoolCalendars) { calendar in
+                TrackLink(destination: SchoolCalendarView(schoolCalendar: calendar)) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(calendar.title)
+                            .font(.headline)
+                            .foregroundColor(.primary)
 
-                    Text(calendar.subtitle)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        Text(calendar.subtitle)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }
+        .formStyle(.grouped)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if viewModel.isLoading {
