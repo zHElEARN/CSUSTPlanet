@@ -13,7 +13,7 @@ struct SchoolCalendarListView: View {
 
     var body: some View {
         List(viewModel.schoolCalendars) { calendar in
-            TrackLink(destination: SchoolCalendarView(semester: calendar.semesterCode)) {
+            TrackLink(destination: SchoolCalendarView(schoolCalendar: calendar)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(calendar.title)
                         .font(.headline)

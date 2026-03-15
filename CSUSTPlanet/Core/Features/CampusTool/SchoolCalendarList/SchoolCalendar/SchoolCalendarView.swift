@@ -5,252 +5,10 @@
 //  Created by Zhe_Learn on 2025/7/11.
 //
 
-import Alamofire
 import SwiftUI
 
-// MARK: - 配置文件模型
-
-private struct ConfigData: Codable {
-    let semesterCode: String
-    let title: String
-    let subtitle: String
-    let calendarStart: String
-    let calendarEnd: String
-    let semesterStart: String
-    let semesterEnd: String
-    let notes: [NoteConfig]
-    let customWeekRanges: [CustomWeekRange]
-}
-
-private struct NoteConfig: Codable {
-    let row: Int
-    let content: String
-    let needNumber: Bool?
-}
-
-private struct CustomWeekRange: Codable {
-    let startRow: Int
-    let endRow: Int
-    let content: String
-}
-
-// MARK: - 视图渲染用到的数据模型
-
-private struct DayData: Identifiable {
-    let id = UUID()
-    let day: Int
-    let isWeekend: Bool
-    let monthKey: String
-}
-
-private struct WeekRow: Identifiable {
-    let id: Int
-    let month: Int
-    var computedWeekNumber: Int?
-    var days: [DayData]
-}
-
-private struct SpanData: Identifiable {
-    let id = UUID()
-    let text: String
-    let rowCount: Int
-    let isCustom: Bool
-}
-
-private enum RectEdge {
-    case top, bottom, leading, trailing
-    case topLeft, topRight, bottomLeft, bottomRight
-}
-
-// MARK: - 边框绘制扩展
-private struct EdgeBorder: Shape {
-    var width: CGFloat
-    var edges: [RectEdge]
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        for edge in edges {
-            switch edge {
-            case .top:
-                path.addRect(CGRect(x: 0, y: 0, width: rect.width, height: width))
-            case .bottom:
-                path.addRect(CGRect(x: 0, y: rect.maxY - width, width: rect.width, height: width))
-            case .leading:
-                path.addRect(CGRect(x: 0, y: 0, width: width, height: rect.height))
-            case .trailing:
-                path.addRect(CGRect(x: rect.maxX - width, y: 0, width: width, height: rect.height))
-            // 专门用来修补“内拐角”缺口的小方块
-            case .topLeft:
-                path.addRect(CGRect(x: 0, y: 0, width: width, height: width))
-            case .topRight:
-                path.addRect(CGRect(x: rect.maxX - width, y: 0, width: width, height: width))
-            case .bottomLeft:
-                path.addRect(CGRect(x: 0, y: rect.maxY - width, width: width, height: width))
-            case .bottomRight:
-                path.addRect(CGRect(x: rect.maxX - width, y: rect.maxY - width, width: width, height: width))
-            }
-        }
-        return path
-    }
-}
-
-extension View {
-    fileprivate func customBorder(width: CGFloat, edges: [RectEdge], color: Color) -> some View {
-        overlay(EdgeBorder(width: width, edges: edges).foregroundColor(color))
-    }
-}
-
-// MARK: - ViewModel
-@Observable
-private class SchoolCalendarViewModel {
-    var config: ConfigData?
-    var weeks: [WeekRow] = []
-    var weekSpans: [SpanData] = []
-    var monthSpans: [SpanData] = []
-    var notes: [String] = []
-
-    var isLoading: Bool = false
-    var isShowingError: Bool = false
-    var errorMessage: String = ""
-
-    // 固定尺寸
-    let headerHeight: CGFloat = 36
-    let rowHeight: CGFloat = 46
-    let dayNames = ["日", "一", "二", "三", "四", "五", "六"]
-
-    private let monthNames = [
-        1: "一月", 2: "二月", 3: "三月", 4: "四月",
-        5: "五月", 6: "六月", 7: "七月", 8: "八月",
-        9: "九月", 10: "十月", 11: "十一月", 12: "十二月",
-    ]
-
-    private let circleNumbers = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"]
-
-    @MainActor
-    func loadConfig(semester: String) async {
-        isLoading = true
-        isShowingError = false
-
-        do {
-            let decodedConfig = try await AF.request("\(Constants.backendHost)/config/semester-calendars/\(semester)")
-                .serializingDecodable(ConfigData.self).value
-            self.config = decodedConfig
-            generateCalendar(from: decodedConfig)
-        } catch {
-            debugPrint(error)
-            self.isShowingError = true
-            self.errorMessage = error.localizedDescription
-        }
-
-        isLoading = false
-    }
-
-    private func generateCalendar(from config: ConfigData) {
-        let fmt = ISO8601DateFormatter()
-
-        guard let startDate = fmt.date(from: config.calendarStart),
-            let endDate = fmt.date(from: config.calendarEnd),
-            let semesterStart = fmt.date(from: config.semesterStart),
-            let semesterEnd = fmt.date(from: config.semesterEnd)
-        else { return }
-
-        let cal = Calendar.current
-
-        let semStartWeekday = cal.component(.weekday, from: semesterStart)
-        let semStartSunday = cal.date(byAdding: .day, value: -(semStartWeekday - 1), to: semesterStart)!
-
-        let semEndWeekday = cal.component(.weekday, from: semesterEnd)
-        let semEndSaturday = cal.date(byAdding: .day, value: 7 - semEndWeekday, to: semesterEnd)!
-
-        var currentTemp = startDate
-        var tempWeeks: [WeekRow] = []
-        var rowIdx = 1
-
-        while currentTemp <= endDate {
-            let currentWeekSunday = currentTemp
-            let currentWeekSaturday = cal.date(byAdding: .day, value: 6, to: currentTemp)!
-
-            var weekInfo = WeekRow(id: rowIdx, month: cal.component(.month, from: currentTemp), computedWeekNumber: nil, days: [])
-
-            if currentWeekSaturday >= semStartSunday && currentWeekSunday <= semEndSaturday {
-                let diff = cal.dateComponents([.day], from: semStartSunday, to: currentWeekSunday).day ?? 0
-                weekInfo.computedWeekNumber = (diff / 7) + 1
-            }
-
-            for i in 0..<7 {
-                let isWeekend = (i == 0 || i == 6)
-                let yyyy = cal.component(.year, from: currentTemp)
-                let mm = String(format: "%02d", cal.component(.month, from: currentTemp))
-
-                weekInfo.days.append(
-                    DayData(
-                        day: cal.component(.day, from: currentTemp),
-                        isWeekend: isWeekend,
-                        monthKey: "\(yyyy)-\(mm)"
-                    ))
-                currentTemp = cal.date(byAdding: .day, value: 1, to: currentTemp)!
-            }
-            tempWeeks.append(weekInfo)
-            rowIdx += 1
-        }
-        self.weeks = tempWeeks
-
-        var tempWeekSpans: [SpanData] = []
-        var r = 1
-        while r <= tempWeeks.count {
-            if let custom = config.customWeekRanges.first(where: { $0.startRow == r }) {
-                let rowCount = custom.endRow - custom.startRow + 1
-                tempWeekSpans.append(SpanData(text: custom.content, rowCount: rowCount, isCustom: true))
-                r = custom.endRow + 1
-            } else {
-                let text = tempWeeks[r - 1].computedWeekNumber != nil ? "\(tempWeeks[r-1].computedWeekNumber!)" : ""
-                tempWeekSpans.append(SpanData(text: text, rowCount: 1, isCustom: false))
-                r += 1
-            }
-        }
-        self.weekSpans = tempWeekSpans
-
-        var tempMonthSpans: [SpanData] = []
-        if !tempWeeks.isEmpty {
-            var currentMonth = tempWeeks[0].month
-            var currentCount = 0
-            for week in tempWeeks {
-                if week.month == currentMonth {
-                    currentCount += 1
-                } else {
-                    tempMonthSpans.append(SpanData(text: monthNames[currentMonth] ?? "", rowCount: currentCount, isCustom: false))
-                    currentMonth = week.month
-                    currentCount = 1
-                }
-            }
-            if currentCount > 0 {
-                tempMonthSpans.append(SpanData(text: monthNames[currentMonth] ?? "", rowCount: currentCount, isCustom: false))
-            }
-        }
-        self.monthSpans = tempMonthSpans
-
-        var tempNotes = Array(repeating: "", count: tempWeeks.count)
-        var sequenceNumber = 1
-
-        for note in config.notes {
-            let rIndex = note.row - 1
-            if rIndex >= 0 && rIndex < tempWeeks.count {
-                var text = note.content
-                if note.needNumber == true {
-                    let prefix = sequenceNumber <= 10 ? circleNumbers[sequenceNumber - 1] : "\(sequenceNumber)"
-                    text = "\(prefix) \(text)"
-                    sequenceNumber += 1
-                }
-                tempNotes[rIndex] = text
-            }
-        }
-        self.notes = tempNotes
-    }
-}
-
-// MARK: - SchoolCalendarView
 struct SchoolCalendarView: View {
-    let semester: String
+    let schoolCalendar: SchoolCalendar
 
     @State private var viewModel = SchoolCalendarViewModel()
     @Environment(\.colorScheme) var colorScheme
@@ -294,11 +52,6 @@ struct SchoolCalendarView: View {
                         // 表格主体
                         tableBody
                             .background(Color(UIColor.secondarySystemGroupedBackground))
-                            .cornerRadius(4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .stroke(Color(UIColor.separator).opacity(0.3), lineWidth: 0.5)
-                            )
                             // 挂载行内悬浮备注层，与表格顶部对齐
                             .overlay(alignment: .top) {
                                 if showInlineNotes {
@@ -322,10 +75,17 @@ struct SchoolCalendarView: View {
             }
         }
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
-        .navigationTitle(viewModel.config?.title ?? "校历")
+        .navigationTitle("\(schoolCalendar.semesterCode)学年度校历")
+        .apply { view in
+            if #available(iOS 26.0, *) {
+                view.navigationSubtitle(schoolCalendar.subtitle)
+            } else {
+                view
+            }
+        }
         .task {
             if viewModel.config == nil && !viewModel.isLoading && !viewModel.isShowingError {
-                await viewModel.loadConfig(semester: semester)
+                await viewModel.loadConfig(semester: schoolCalendar.semesterCode)
             }
         }
     }
@@ -499,5 +259,48 @@ struct SchoolCalendarView: View {
             .frame(width: dayColWidth, height: viewModel.rowHeight)
             .customBorder(width: 0.5, edges: [.bottom, .trailing], color: separatorColor)
             .customBorder(width: 1.5, edges: thickEdges, color: highlightColor)
+    }
+}
+
+private enum RectEdge {
+    case top, bottom, leading, trailing
+    case topLeft, topRight, bottomLeft, bottomRight
+}
+
+// MARK: - 边框绘制扩展
+private struct EdgeBorder: Shape {
+    var width: CGFloat
+    var edges: [RectEdge]
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        for edge in edges {
+            switch edge {
+            case .top:
+                path.addRect(CGRect(x: 0, y: 0, width: rect.width, height: width))
+            case .bottom:
+                path.addRect(CGRect(x: 0, y: rect.maxY - width, width: rect.width, height: width))
+            case .leading:
+                path.addRect(CGRect(x: 0, y: 0, width: width, height: rect.height))
+            case .trailing:
+                path.addRect(CGRect(x: rect.maxX - width, y: 0, width: width, height: rect.height))
+            // 专门用来修补“内拐角”缺口的小方块
+            case .topLeft:
+                path.addRect(CGRect(x: 0, y: 0, width: width, height: width))
+            case .topRight:
+                path.addRect(CGRect(x: rect.maxX - width, y: 0, width: width, height: width))
+            case .bottomLeft:
+                path.addRect(CGRect(x: 0, y: rect.maxY - width, width: width, height: width))
+            case .bottomRight:
+                path.addRect(CGRect(x: rect.maxX - width, y: rect.maxY - width, width: width, height: width))
+            }
+        }
+        return path
+    }
+}
+
+extension View {
+    fileprivate func customBorder(width: CGFloat, edges: [RectEdge], color: Color) -> some View {
+        overlay(EdgeBorder(width: width, edges: edges).foregroundColor(color))
     }
 }
