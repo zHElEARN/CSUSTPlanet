@@ -12,10 +12,8 @@ struct FormRow: View {
     let value: String
 
     var body: some View {
-        HStack {
-            Text(label)
-            Spacer()
-            Text(value).foregroundColor(.secondary)
+        LabeledContent(label) {
+            Text(value)
         }
         .contentShape(.rect)
         .contextMenu {

@@ -30,9 +30,10 @@ struct CourseSemesterView: View {
                     Button(action: viewModel.loadAvailableSemesters) {
                         Text("刷新学期列表")
                     }
+                    .disabled(viewModel.isSemestersLoading)
                     if viewModel.isSemestersLoading {
                         Spacer()
-                        ProgressView()
+                        ProgressView().smallControlSizeOnMac()
                     }
                 }
             }
@@ -49,6 +50,7 @@ struct CourseSemesterView: View {
                     }
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("学期选择")
             .inlineToolbarTitle()
             .trackView("CourseSemester")
