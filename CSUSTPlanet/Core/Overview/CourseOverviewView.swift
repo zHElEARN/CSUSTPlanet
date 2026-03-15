@@ -179,7 +179,11 @@ struct EmptyCourseCard: View {
         .padding()
         .frame(height: 100)
         .frame(maxWidth: .infinity)
-        .background(Color.appSecondarySystemGroupedBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.secondarySystemGroupedBackground))
+        #else
+        .background(Color(PlatformColor.controlBackgroundColor))
+        #endif
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }

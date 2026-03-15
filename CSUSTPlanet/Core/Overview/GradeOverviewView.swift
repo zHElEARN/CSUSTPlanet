@@ -44,7 +44,11 @@ struct GradeOverviewView: View {
             .padding(16)
             .frame(height: 130)
             .frame(maxWidth: .infinity)
-            .background(Color.appSecondarySystemGroupedBackground)
+            #if os(iOS)
+            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            #else
+            .background(Color(PlatformColor.controlBackgroundColor))
+            #endif
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)

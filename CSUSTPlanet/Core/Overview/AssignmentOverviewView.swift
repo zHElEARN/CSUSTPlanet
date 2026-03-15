@@ -65,7 +65,11 @@ private struct AssignmentListView: View {
                             .clipShape(Capsule())
                     }
                     .padding(12)
-                    .background(Color.appSecondarySystemGroupedBackground)
+                    #if os(iOS)
+                    .background(Color(PlatformColor.secondarySystemGroupedBackground))
+                    #else
+                    .background(Color(PlatformColor.controlBackgroundColor))
+                    #endif
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)

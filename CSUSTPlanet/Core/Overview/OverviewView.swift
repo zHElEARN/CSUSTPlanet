@@ -48,7 +48,9 @@ struct OverviewView: View {
             .readableContentWidth()
         }
         .navigationTitle("概览")
-        .background(Color.appSystemGroupedBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
         .onAppear {
             viewModel.loadData()
         }

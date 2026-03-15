@@ -74,7 +74,11 @@ struct HomeEmptyStateView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
-        .background(Color.appSecondarySystemGroupedBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.secondarySystemGroupedBackground))
+        #else
+        .background(Color(PlatformColor.controlBackgroundColor))
+        #endif
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

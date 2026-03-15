@@ -87,7 +87,11 @@ private struct ExamListView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.appSecondarySystemGroupedBackground)
+                #if os(iOS)
+                .background(Color(PlatformColor.secondarySystemGroupedBackground))
+                #else
+                .background(Color(PlatformColor.controlBackgroundColor))
+                #endif
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
