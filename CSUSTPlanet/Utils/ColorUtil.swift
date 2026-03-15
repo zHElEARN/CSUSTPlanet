@@ -9,14 +9,6 @@ import CSUSTKit
 import Foundation
 import SwiftUI
 
-#if os(macOS)
-import AppKit
-private typealias PlatformColor = NSColor
-#else
-import UIKit
-private typealias PlatformColor = UIColor
-#endif
-
 enum ColorUtil {
     static let gradeRanges = [
         (range: "90-100", min: 90, max: 100, point: 4.0),

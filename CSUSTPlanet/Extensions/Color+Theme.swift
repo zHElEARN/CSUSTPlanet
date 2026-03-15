@@ -13,6 +13,7 @@ import UIKit
 import AppKit
 #endif
 
+@available(*, deprecated, message: "建议根据macOS和iOS区别选择合适的颜色")
 extension Color {
     /// 替代 Color(uiColor: .systemGroupedBackground)
     static var appSystemGroupedBackground: Color {
