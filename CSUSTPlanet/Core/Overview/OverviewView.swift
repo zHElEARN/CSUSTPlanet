@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct OverviewView: View {
-    @StateObject var viewModel = OverviewViewModel()
+    @State var viewModel = OverviewViewModel()
     @Environment(\.horizontalSizeClass) var sizeClass
     @Bindable var globalManager = GlobalManager.shared
 

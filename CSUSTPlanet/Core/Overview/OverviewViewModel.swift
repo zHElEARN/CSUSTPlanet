@@ -10,12 +10,13 @@ import Foundation
 import SwiftData
 
 @MainActor
-class OverviewViewModel: ObservableObject {
-    @Published var gradeAnalysisData: Cached<[EduHelper.CourseGrade]>?
-    @Published var examScheduleData: Cached<[EduHelper.Exam]>?
-    @Published var courseScheduleData: Cached<CourseScheduleData>?
-    @Published var urgentCoursesData: Cached<UrgentCoursesData>?
-    @Published var electricityDorms: [Dorm] = []
+@Observable
+class OverviewViewModel {
+    var gradeAnalysisData: Cached<[EduHelper.CourseGrade]>?
+    var examScheduleData: Cached<[EduHelper.Exam]>?
+    var courseScheduleData: Cached<CourseScheduleData>?
+    var urgentCoursesData: Cached<UrgentCoursesData>?
+    var electricityDorms: [Dorm] = []
 
     func loadData() {
         let context = SharedModelUtil.mainContext

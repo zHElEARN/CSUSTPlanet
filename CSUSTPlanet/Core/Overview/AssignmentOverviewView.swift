@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct AssignmentOverviewView: View {
-    @ObservedObject var viewModel: OverviewViewModel
+    @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
         VStack(spacing: 12) {
@@ -35,7 +35,7 @@ struct AssignmentOverviewView: View {
 }
 
 private struct AssignmentListView: View {
-    @ObservedObject var viewModel: OverviewViewModel
+    @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
         VStack(spacing: 12) {
