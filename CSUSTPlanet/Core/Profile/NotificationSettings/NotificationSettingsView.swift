@@ -60,8 +60,10 @@ struct NotificationSettingsView: View {
     }
 
     private func openAppNotificationSettings() {
+        #if os(iOS)
         if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
+        #endif
     }
 }
