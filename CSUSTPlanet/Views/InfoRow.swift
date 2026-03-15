@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(*, deprecated, message: "请迁移使用 FormRow")
 struct InfoRow: View {
     init(icon: (String, Color)? = nil, label: String, value: String) {
         self.icon = icon

@@ -22,9 +22,9 @@ struct ProfileView: View {
 
     var body: some View {
         Form {
-            Section(header: Text("账号管理")) {
+            Section {
                 if let ssoProfile = authManager.ssoProfile {
-                    TrackLink(destination: ProfileDetailView(authManager: authManager)) {
+                    TrackLink(destination: ProfileDetailView()) {
                         HStack {
                             if let avatarUrl = URL(string: ssoProfile.avatar) {
                                 let resource = KF.ImageResource(
@@ -33,7 +33,7 @@ struct ProfileView: View {
                                 )
                                 KFImage(source: .network(resource))
                                     .placeholder {
-                                        ProgressView()
+                                        ProgressView().controlSize(.small)
                                     }
                                     .resizable()
                                     .scaledToFill()
@@ -46,93 +46,67 @@ struct ProfileView: View {
                                         .font(.caption)
                                 }
                             } else {
-                                ProgressView()
+                                ProgressView().controlSize(.small)
                             }
                         }
                     }
 
                     if authManager.isSSOLoggingIn {
                         HStack {
-                            ProgressView().padding(.horizontal, 6)
+                            ProgressView().controlSize(.small)
                             Text("正在登录统一身份认证...")
                         }
                     } else {
                         Button(action: authManager.ssoRelogin) {
-                            HStack {
-                                ColoredLabel(title: "刷新统一身份认证登录", iconName: "person.fill", color: .blue)
-                                Spacer()
-                            }
-                            .contentShape(Rectangle())
+                            Label("刷新统一身份认证登录", systemImage: "person.fill")
                         }
-                        .buttonStyle(.plain)
                         .disabled(!authManager.isSSOLoggedIn)
                     }
 
                     if authManager.isEducationLoggingIn {
                         HStack {
-                            ProgressView().padding(.horizontal, 6)
+                            ProgressView().controlSize(.small)
                             Text("正在登录教务系统...")
                         }
                     } else {
                         Button(action: authManager.educationLogin) {
-                            HStack {
-                                ColoredLabel(title: "刷新教务系统登录", iconName: "graduationcap", color: .orange)
-                                Spacer()
-                            }
-                            .contentShape(Rectangle())
+                            Label("刷新教务系统登录", systemImage: "graduationcap")
                         }
-                        .buttonStyle(.plain)
                         .disabled(!authManager.isSSOLoggedIn)
                     }
 
                     if authManager.isMoocLoggingIn {
                         HStack {
-                            ProgressView().padding(.horizontal, 6)
+                            ProgressView().controlSize(.small)
                             Text("正在登录网络课程中心...")
                         }
                     } else {
                         Button(action: authManager.moocLogin) {
-                            HStack {
-                                ColoredLabel(title: "刷新网络课程中心登录", iconName: "book.closed", color: .mint)
-                                Spacer()
-                            }
-                            .contentShape(Rectangle())
+                            Label("刷新网络课程中心登录", systemImage: "book.closed")
                         }
-                        .buttonStyle(.plain)
                         .disabled(!authManager.isSSOLoggedIn)
                     }
 
                     Button(action: { isLogoutAlertPresented = true }) {
-                        HStack {
-                            ColoredLabel(title: "退出登录", iconName: "arrow.right.circle", color: .red, textColor: .red)
-                            Spacer()
-                            if authManager.isSSOLoggingOut {
-                                ProgressView()
-                            }
-                        }
-                        .contentShape(Rectangle())
+                        Label("退出登录", systemImage: "arrow.right.circle").foregroundColor(.red)
                     }
                     .disabled(authManager.isSSOLoggingOut)
-                    .buttonStyle(PlainButtonStyle())
                 } else if authManager.isSSOLoggingIn {
                     HStack {
-                        ProgressView()
+                        ProgressView().controlSize(.small)
                         Text("正在登录统一身份认证...")
                     }
                 } else {
                     Button(action: { isLoginSheetPresented = true }) {
-                        HStack {
-                            ColoredLabel(title: "登录统一认证账号", iconName: "person.crop.circle.badge.plus", color: .blue)
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
+                        Label("登录统一认证账号", systemImage: "person.crop.circle.badge.plus")
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
+            } header: {
+                Text("账号管理")
             }
 
             Section {
-                Picker("外观主题", selection: Bindable(globalManager).appearance) {
+                Picker("外观主题", selection: $globalManager.appearance) {
                     Text("浅色模式").tag("light")
                     Text("深色模式").tag("dark")
                     Text("跟随系统").tag("system")

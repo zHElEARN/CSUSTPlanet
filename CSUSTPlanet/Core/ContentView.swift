@@ -12,14 +12,12 @@ struct FeatureItem: Identifiable {
     let id: TabItem
     let title: String
     let icon: String
-    let color: Color
     let destination: () -> AnyView
 
-    init<Content: View>(id: TabItem, title: String, icon: String, color: Color, @ViewBuilder destination: @escaping () -> Content) {
+    init<Content: View>(id: TabItem, title: String, icon: String, @ViewBuilder destination: @escaping () -> Content) {
         self.id = id
         self.title = title
         self.icon = icon
-        self.color = color
         self.destination = { AnyView(destination()) }
     }
 }
@@ -35,42 +33,42 @@ private let featureSections: [FeatureSection] = [
     FeatureSection(
         title: "教务系统",
         items: [
-            FeatureItem(id: .courseSchedule, title: "我的课表", icon: "calendar", color: .purple, destination: { CourseScheduleView() }),
-            FeatureItem(id: .gradeQuery, title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue, destination: { GradeQueryView() }),
-            FeatureItem(id: .examSchedule, title: "考试安排", icon: "pencil.and.outline", color: .orange, destination: { ExamScheduleView() }),
-            FeatureItem(id: .gradeAnalysis, title: "成绩分析", icon: "chart.bar.xaxis", color: .green, destination: { GradeAnalysisView() }),
+            FeatureItem(id: .courseSchedule, title: "我的课表", icon: "calendar", destination: { CourseScheduleView() }),
+            FeatureItem(id: .gradeQuery, title: "成绩查询", icon: "doc.text.magnifyingglass", destination: { GradeQueryView() }),
+            FeatureItem(id: .examSchedule, title: "考试安排", icon: "pencil.and.outline", destination: { ExamScheduleView() }),
+            FeatureItem(id: .gradeAnalysis, title: "成绩分析", icon: "chart.bar.xaxis", destination: { GradeAnalysisView() }),
         ]
     ),
     FeatureSection(
         title: "网络课程中心",
         items: [
-            FeatureItem(id: .courses, title: "所有课程", icon: "books.vertical.fill", color: .indigo, destination: { CoursesView() }),
-            FeatureItem(id: .urgentCourses, title: "待提交作业", icon: "list.bullet.clipboard", color: .red, destination: { UrgentCoursesView() }),
+            FeatureItem(id: .courses, title: "所有课程", icon: "books.vertical.fill", destination: { CoursesView() }),
+            FeatureItem(id: .urgentCourses, title: "待提交作业", icon: "list.bullet.clipboard", destination: { UrgentCoursesView() }),
         ]
     ),
     FeatureSection(
         title: "校园工具",
         items: [
-            FeatureItem(id: .electricityQuery, title: "电量查询", icon: "bolt.fill", color: .yellow, destination: { ElectricityQueryView() }),
-            FeatureItem(id: .availableClassroom, title: "空教室查询", icon: "building.2.fill", color: .blue, destination: { AvailableClassroomView() }),
-            FeatureItem(id: .campusMap, title: "校园地图", icon: "map.fill", color: .mint, destination: { CampusMapView() }),
-            FeatureItem(id: .schoolCalendar, title: "校历", icon: "calendar.badge.clock", color: .pink, destination: { SchoolCalendarListView() }),
-            FeatureItem(id: .electricityRecharge, title: "电费充值", icon: "creditcard.fill", color: .cyan, destination: { ElectricityRechargeView() }),
-            FeatureItem(id: .webVPNConverter, title: "WebVPN", icon: "lock.shield", color: .gray, destination: { WebVPNConverterView() }),
+            FeatureItem(id: .electricityQuery, title: "电量查询", icon: "bolt.fill", destination: { ElectricityQueryView() }),
+            FeatureItem(id: .availableClassroom, title: "空教室查询", icon: "building.2.fill", destination: { AvailableClassroomView() }),
+            FeatureItem(id: .campusMap, title: "校园地图", icon: "map.fill", destination: { CampusMapView() }),
+            FeatureItem(id: .schoolCalendar, title: "校历", icon: "calendar.badge.clock", destination: { SchoolCalendarListView() }),
+            FeatureItem(id: .electricityRecharge, title: "电费充值", icon: "creditcard.fill", destination: { ElectricityRechargeView() }),
+            FeatureItem(id: .webVPNConverter, title: "WebVPN", icon: "lock.shield", destination: { WebVPNConverterView() }),
         ]
     ),
     FeatureSection(
         title: "大学物理实验",
         items: [
-            FeatureItem(id: .physicsExperimentSchedule, title: "实验安排", icon: "calendar", color: .purple, destination: { PhysicsExperimentScheduleView().environmentObject(PhysicsExperimentManager.shared) }),
-            FeatureItem(id: .physicsExperimentGrade, title: "实验成绩", icon: "doc.text", color: .purple, destination: { PhysicsExperimentGradeView().environmentObject(PhysicsExperimentManager.shared) }),
+            FeatureItem(id: .physicsExperimentSchedule, title: "实验安排", icon: "calendar", destination: { PhysicsExperimentScheduleView().environmentObject(PhysicsExperimentManager.shared) }),
+            FeatureItem(id: .physicsExperimentGrade, title: "实验成绩", icon: "doc.text", destination: { PhysicsExperimentGradeView().environmentObject(PhysicsExperimentManager.shared) }),
         ]
     ),
     FeatureSection(
         title: "其他考试查询",
         items: [
-            FeatureItem(id: .cet, title: "四六级查询", icon: "character.book.closed", color: .indigo, destination: { CETView() }),
-            FeatureItem(id: .mandarin, title: "普通话查询", icon: "mic.circle.fill", color: .indigo, destination: { MandarinView() }),
+            FeatureItem(id: .cet, title: "四六级查询", icon: "character.book.closed", destination: { CETView() }),
+            FeatureItem(id: .mandarin, title: "普通话查询", icon: "mic.circle.fill", destination: { MandarinView() }),
         ]
     ),
 ]
@@ -142,13 +140,13 @@ struct ContentView: View {
                         NavigationSplitView {
                             List(selection: $globalManager.selectedTab) {
                                 Section {
-                                    ColoredLabel(title: "概览", iconName: "rectangle.stack", color: .blue).tag(TabItem.overview)
-                                    ColoredLabel(title: "我的", iconName: "person", color: .blue).tag(TabItem.profile)
+                                    Label("概览", systemImage: "rectangle.stack").tag(TabItem.overview)
+                                    Label("我的", systemImage: "person").tag(TabItem.profile)
                                 }
                                 ForEach(featureSections) { section in
                                     Section(section.title) {
                                         ForEach(section.items) { item in
-                                            ColoredLabel(title: item.title, iconName: item.icon, color: item.color).tag(item.id)
+                                            Label(item.title, systemImage: item.icon).tag(item.id)
                                         }
                                     }
                                 }
