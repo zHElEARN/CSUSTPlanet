@@ -11,18 +11,25 @@ struct SchoolCalendarView: View {
     let schoolCalendar: SchoolCalendar
 
     @State private var viewModel = SchoolCalendarViewModel()
-    @Environment(\.colorScheme) var colorScheme
 
     // 控制是否显示行内悬浮备注
     @State private var showInlineNotes: Bool = true
 
-    // 动态计算列宽 (总宽度 = 屏幕宽度 - 卡片左右边距 32)
-    private var tableWidth: CGFloat { UIScreen.main.bounds.width - 32 }
-    private var weekColWidth: CGFloat { tableWidth * 0.12 }
-    private var monthColWidth: CGFloat { tableWidth * 0.12 }
-    private var dayColWidth: CGFloat { (tableWidth - weekColWidth - monthColWidth) / 7 }
+    // MARK: - UI 配置常量
+    let horizontalPadding: CGFloat = 16
+    let sectionSpacing: CGFloat = 16
+    let innerSpacing: CGFloat = 8
+    let cornerRadius: CGFloat = 12
+    let borderThick: CGFloat = 1.5
+    let borderThin: CGFloat = 0.5
 
-    private var separatorColor: Color { Color(UIColor.separator).opacity(0.5) }
+    let weekColRatio: CGFloat = 0.12
+    let monthColRatio: CGFloat = 0.12
+
+    let pageBackground = Color.primary.opacity(0.04)
+    let cardBackground = Color.secondary.opacity(0.1)
+    let headerBackground = Color.secondary.opacity(0.15)
+    let separator = Color.secondary.opacity(0.3)
 
     var body: some View {
         Group {
@@ -31,50 +38,57 @@ struct SchoolCalendarView: View {
             } else if viewModel.isShowingError {
                 ContentUnavailableView("加载失败", systemImage: "exclamationmark.triangle", description: Text(viewModel.errorMessage))
             } else if viewModel.config != nil {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        // 静态概览卡片
-                        overviewCard
+                GeometryReader { proxy in
+                    let tableWidth = proxy.size.width - (horizontalPadding * 2)
+                    let weekColWidth = tableWidth * weekColRatio
+                    let monthColWidth = tableWidth * monthColRatio
+                    let dayColWidth = (tableWidth - weekColWidth - monthColWidth) / 7
 
-                        // 表格控制栏
-                        HStack {
-                            Text("校历详情")
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                            Spacer()
-                            Text("按住表格隐藏备注")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
+                    ScrollView {
+                        VStack(spacing: sectionSpacing) {
+                            // 静态概览卡片
+                            overviewCard
+
+                            // 表格控制栏
+                            HStack {
+                                Text("校历详情")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+                                Spacer()
+                                Text("按住表格隐藏备注")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 4)
+
+                            // 表格主体
+                            tableBody(weekWidth: weekColWidth, monthWidth: monthColWidth, dayWidth: dayColWidth)
+                                .background(cardBackground)
+                                // 挂载行内悬浮备注层，与表格顶部对齐
+                                .overlay(alignment: .top) {
+                                    if showInlineNotes {
+                                        inlineNotesOverlay
+                                            .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+                                    }
+                                }
+                                .animation(.easeInOut(duration: 0.2), value: showInlineNotes)
+                                .onLongPressGesture(minimumDuration: .infinity, maximumDistance: .infinity, perform: {}) { isPressing in
+                                    if showInlineNotes == isPressing {
+                                        showInlineNotes = !isPressing
+                                    }
+                                }
+                                .padding(.horizontal, horizontalPadding)
+                                .padding(.bottom, 20)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 4)
-
-                        // 表格主体
-                        tableBody
-                            .background(Color(UIColor.secondarySystemGroupedBackground))
-                            // 挂载行内悬浮备注层，与表格顶部对齐
-                            .overlay(alignment: .top) {
-                                if showInlineNotes {
-                                    inlineNotesOverlay
-                                        .transition(.opacity.animation(.easeInOut(duration: 0.2)))
-                                }
-                            }
-                            .animation(.easeInOut(duration: 0.2), value: showInlineNotes)
-                            .onLongPressGesture(minimumDuration: .infinity, maximumDistance: .infinity, perform: {}) { isPressing in
-                                if showInlineNotes == isPressing {
-                                    showInlineNotes = !isPressing
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 20)
+                        .padding(.vertical, sectionSpacing)
                     }
-                    .padding(.vertical)
                 }
             } else {
                 Color.clear
             }
         }
-        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .background(pageBackground.ignoresSafeArea())
         .navigationTitle("\(schoolCalendar.semesterCode)学年度校历")
         .apply { view in
             if #available(iOS 26.0, *) {
@@ -94,7 +108,7 @@ struct SchoolCalendarView: View {
     private var overviewCard: some View {
         Group {
             if let conf = viewModel.config {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: innerSpacing) {
                     HStack {
                         Image(systemName: "calendar.badge.clock")
                             .foregroundColor(.accentColor)
@@ -111,9 +125,9 @@ struct SchoolCalendarView: View {
                         .foregroundColor(.secondary)
                 }
                 .padding()
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .cornerRadius(12)
-                .padding(.horizontal, 16)
+                .background(cardBackground)
+                .cornerRadius(cornerRadius)
+                .padding(.horizontal, horizontalPadding)
             }
         }
     }
@@ -125,47 +139,47 @@ struct SchoolCalendarView: View {
             .fontWeight(.semibold)
             .foregroundColor(.secondary)
             .frame(width: width, height: viewModel.headerHeight)
-            .background(Color(UIColor.tertiarySystemGroupedBackground))
-            .customBorder(width: 0.5, edges: [.bottom, .trailing], color: separatorColor)
+            .background(headerBackground)
+            .customBorder(width: borderThin, edges: [.bottom, .trailing], color: separator)
     }
 
     // MARK: - 表格主体
-    private var tableBody: some View {
+    private func tableBody(weekWidth: CGFloat, monthWidth: CGFloat, dayWidth: CGFloat) -> some View {
         HStack(spacing: 0) {
             // 周次列
             VStack(spacing: 0) {
-                headerCell("周", width: weekColWidth)
+                headerCell("周", width: weekWidth)
                 ForEach(viewModel.weekSpans) { span in
                     Text(span.text)
                         .font(.caption)
                         .fontWeight(span.isCustom ? .bold : .regular)
                         .foregroundColor(span.isCustom ? .accentColor : .primary)
-                        .frame(width: weekColWidth, height: viewModel.rowHeight * CGFloat(span.rowCount))
+                        .frame(width: weekWidth, height: viewModel.rowHeight * CGFloat(span.rowCount))
                         .background(span.isCustom ? Color.accentColor.opacity(0.1) : Color.clear)
-                        .customBorder(width: 0.5, edges: [.bottom, .trailing], color: separatorColor)
+                        .customBorder(width: borderThin, edges: [.bottom, .trailing], color: separator)
                 }
             }
 
             // 月份列
             VStack(spacing: 0) {
-                headerCell("月", width: monthColWidth)
+                headerCell("月", width: monthWidth)
                 ForEach(viewModel.monthSpans) { span in
                     Text(span.text)
                         .font(.caption)
                         .fontWeight(.medium)
                         .multilineTextAlignment(.center)
-                        .frame(width: monthColWidth, height: viewModel.rowHeight * CGFloat(span.rowCount))
-                        .background(Color(UIColor.tertiarySystemGroupedBackground).opacity(0.4))
-                        .customBorder(width: 0.5, edges: [.bottom, .trailing], color: separatorColor)
+                        .frame(width: monthWidth, height: viewModel.rowHeight * CGFloat(span.rowCount))
+                        .background(headerBackground.opacity(0.4))
+                        .customBorder(width: borderThin, edges: [.bottom, .trailing], color: separator)
                 }
             }
 
             // 七天日期列
             ForEach(0..<7, id: \.self) { dayIndex in
                 VStack(spacing: 0) {
-                    headerCell(viewModel.dayNames[dayIndex], width: dayColWidth)
+                    headerCell(viewModel.dayNames[dayIndex], width: dayWidth)
                     ForEach(0..<viewModel.weeks.count, id: \.self) { rowIndex in
-                        dayCell(rowIndex: rowIndex, colIndex: dayIndex)
+                        dayCell(rowIndex: rowIndex, colIndex: dayIndex, dayWidth: dayWidth)
                     }
                 }
             }
@@ -192,7 +206,7 @@ struct SchoolCalendarView: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .apply { view in
-                                if #available(iOS 26.0, *) {
+                                if #available(iOS 26.0, macOS 15.0, *) {
                                     view.glassEffect()
                                 } else {
                                     view.background(.ultraThinMaterial, in: Capsule())
@@ -211,7 +225,7 @@ struct SchoolCalendarView: View {
     }
 
     // MARK: - 日期单元格与高亮逻辑
-    private func dayCell(rowIndex: Int, colIndex: Int) -> some View {
+    private func dayCell(rowIndex: Int, colIndex: Int, dayWidth: CGFloat) -> some View {
         let dayData = viewModel.weeks[rowIndex].days[colIndex]
         let currentMonthKey = dayData.monthKey
 
@@ -234,7 +248,7 @@ struct SchoolCalendarView: View {
         if leftKey != currentMonthKey { thickEdges.append(.leading) }
         if rightKey != currentMonthKey { thickEdges.append(.trailing) }
 
-        // 绘制内角修补块（核心逻辑：如果我的横竖都和我是同一个月，但对角线是别的月，说明我身处拐角内侧）
+        // 绘制内角修补块
         if topKey == currentMonthKey && leftKey == currentMonthKey && topLeftKey != nil && topLeftKey != currentMonthKey {
             thickEdges.append(.topLeft)
         }
@@ -256,9 +270,9 @@ struct SchoolCalendarView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.8)
             .foregroundColor(dayData.isWeekend ? .red.opacity(0.8) : .primary)
-            .frame(width: dayColWidth, height: viewModel.rowHeight)
-            .customBorder(width: 0.5, edges: [.bottom, .trailing], color: separatorColor)
-            .customBorder(width: 1.5, edges: thickEdges, color: highlightColor)
+            .frame(width: dayWidth, height: viewModel.rowHeight)
+            .customBorder(width: borderThin, edges: [.bottom, .trailing], color: separator)
+            .customBorder(width: borderThick, edges: thickEdges, color: highlightColor)
     }
 }
 
@@ -284,7 +298,6 @@ private struct EdgeBorder: Shape {
                 path.addRect(CGRect(x: 0, y: 0, width: width, height: rect.height))
             case .trailing:
                 path.addRect(CGRect(x: rect.maxX - width, y: 0, width: width, height: rect.height))
-            // 专门用来修补“内拐角”缺口的小方块
             case .topLeft:
                 path.addRect(CGRect(x: 0, y: 0, width: width, height: width))
             case .topRight:
