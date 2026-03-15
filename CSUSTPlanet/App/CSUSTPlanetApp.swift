@@ -59,8 +59,16 @@ struct CSUSTPlanetApp: App {
             ContentView()
                 #if os(iOS)
             .environment(NotificationManager.shared)
+                #elseif os(macOS)
+            .frame(
+                minWidth: 400, idealWidth: 800, maxWidth: 1200,
+                minHeight: 600, idealHeight: 800, maxHeight: 1000
+            )
                 #endif
         }
+        #if os(macOS)
+        .windowResizability(.contentSize)
+        #endif
         .modelContainer(SharedModelUtil.container)
         .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }
     }

@@ -171,6 +171,7 @@ struct ProfileView: View {
                 Text("帮助与支持")
             }
         }
+        .formStyle(.grouped)
         .navigationTitle("我的")
         .sheet(isPresented: $isLoginSheetPresented) {
             SSOLoginView(isShowingLoginSheet: $isLoginSheetPresented)

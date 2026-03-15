@@ -87,6 +87,7 @@ struct ProfileDetailView: View {
                 }
             }
         }
+        .formStyle(.grouped)
         .alert("错误", isPresented: $viewModel.isShowingError) {
             Button("确定", role: .cancel) {}
         } message: {
