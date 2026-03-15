@@ -33,7 +33,7 @@ struct ProfileView: View {
                                 )
                                 KFImage(source: .network(resource))
                                     .placeholder {
-                                        ProgressView().controlSize(.small)
+                                        ProgressView().smallControlSizeOnMac()
                                     }
                                     .resizable()
                                     .scaledToFill()
@@ -46,45 +46,42 @@ struct ProfileView: View {
                                         .font(.caption)
                                 }
                             } else {
-                                ProgressView().controlSize(.small)
+                                ProgressView().smallControlSizeOnMac()
                             }
                         }
                     }
 
-                    if authManager.isSSOLoggingIn {
-                        HStack {
-                            ProgressView().controlSize(.small)
-                            Text("正在登录统一身份认证...")
-                        }
-                    } else {
+                    HStack {
                         Button(action: authManager.ssoRelogin) {
                             Label("刷新统一身份认证登录", systemImage: "person.fill")
                         }
                         .disabled(!authManager.isSSOLoggedIn)
+                        if authManager.isSSOLoggingIn {
+                            Spacer()
+                            ProgressView().smallControlSizeOnMac()
+                        }
                     }
 
-                    if authManager.isEducationLoggingIn {
-                        HStack {
-                            ProgressView().controlSize(.small)
-                            Text("正在登录教务系统...")
-                        }
-                    } else {
+                    HStack {
                         Button(action: authManager.educationLogin) {
                             Label("刷新教务系统登录", systemImage: "graduationcap")
                         }
-                        .disabled(!authManager.isSSOLoggedIn)
+                        .disabled(!authManager.isSSOLoggedIn || authManager.isEducationLoggingIn)
+                        if authManager.isEducationLoggingIn {
+                            Spacer()
+                            ProgressView().smallControlSizeOnMac()
+                        }
                     }
 
-                    if authManager.isMoocLoggingIn {
-                        HStack {
-                            ProgressView().controlSize(.small)
-                            Text("正在登录网络课程中心...")
-                        }
-                    } else {
+                    HStack {
                         Button(action: authManager.moocLogin) {
                             Label("刷新网络课程中心登录", systemImage: "book.closed")
                         }
-                        .disabled(!authManager.isSSOLoggedIn)
+                        .disabled(!authManager.isSSOLoggedIn || authManager.isMoocLoggingIn)
+                        if authManager.isMoocLoggingIn {
+                            Spacer()
+                            ProgressView().smallControlSizeOnMac()
+                        }
                     }
 
                     Button(action: { isLogoutAlertPresented = true }) {
@@ -93,7 +90,7 @@ struct ProfileView: View {
                     .disabled(authManager.isSSOLoggingOut)
                 } else if authManager.isSSOLoggingIn {
                     HStack {
-                        ProgressView().controlSize(.small)
+                        ProgressView().smallControlSizeOnMac()
                         Text("正在登录统一身份认证...")
                     }
                 } else {

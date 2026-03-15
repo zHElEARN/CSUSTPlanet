@@ -98,7 +98,7 @@ struct ProfileDetailView: View {
             Text(title)
             Spacer()
             if isLoading {
-                ProgressView().controlSize(.small)
+                ProgressView().smallControlSizeOnMac()
             } else if let onRefresh = onRefresh {
                 Button(action: onRefresh) {
                     Image(systemName: "arrow.clockwise")
