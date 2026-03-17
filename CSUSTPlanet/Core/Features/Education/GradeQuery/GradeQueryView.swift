@@ -177,7 +177,8 @@ struct GradeQueryView: View {
                 .listStyle(.inset)
                 #endif
             } else {
-                emptyStateSection.background(Color.appSystemGroupedBackground)
+                emptyStateSection
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .safeAreaInset(edge: .top) {
@@ -209,13 +210,11 @@ struct GradeQueryView: View {
                 mainToolbar()
             }
         }
+        #if os(iOS)
         .sheet(isPresented: $viewModel.isShowingShareSheet) {
-            #if os(iOS)
             ShareSheet(items: [viewModel.shareContent!])
-            #else
-            Text("分享功能暂不支持在当前平台使用")
-            #endif
         }
+        #endif
         .navigationTitle("成绩查询")
         .apply { view in
             if #available(iOS 26.0, *) {
@@ -241,15 +240,15 @@ struct GradeQueryView: View {
             }
             .disabled(viewModel.isLoading || viewModel.data == nil)
             Button(action: viewModel.exportGradesAsCSV) {
-                Label("导出为CSV表格", systemImage: "doc.plaintext")
+                Label("导出表格", systemImage: "doc.plaintext")
             }
             .disabled(viewModel.isLoading || viewModel.data == nil)
         }
         ToolbarItem(placement: .primaryAction) {
-            if viewModel.isLoading {
-                ProgressView()
-            } else {
-                Button(action: { viewModel.loadCourseGrades() }) {
+            Button(action: { viewModel.loadCourseGrades() }) {
+                if viewModel.isLoading {
+                    ProgressView().smallControlSizeOnMac()
+                } else {
                     Label("查询", systemImage: "arrow.clockwise")
                 }
             }
