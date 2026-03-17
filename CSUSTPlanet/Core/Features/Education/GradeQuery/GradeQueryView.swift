@@ -130,8 +130,24 @@ struct GradeQueryView: View {
 
     @ViewBuilder
     private func gradeCard(courseGrade: EduHelper.CourseGrade) -> some View {
-        TrackLink(destination: GradeDetailView(courseGrade: courseGrade)) {
-            gradeCardContent(courseGrade: courseGrade)
+        if viewModel.isSelectionMode {
+            Button {
+                viewModel.toggleSelection(for: courseGrade.courseID)
+            } label: {
+                HStack {
+                    gradeCardContent(courseGrade: courseGrade)
+                    Image(systemName: viewModel.isSelected(courseGrade.courseID) ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(viewModel.isSelected(courseGrade.courseID) ? .accentColor : .secondary)
+                        .imageScale(.large)
+                }
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(viewModel.isSelected(courseGrade.courseID) ? Color.gray.opacity(0.2) : Color.clear)
+        } else {
+            TrackLink(destination: GradeDetailView(courseGrade: courseGrade)) {
+                gradeCardContent(courseGrade: courseGrade)
+            }
         }
     }
 
@@ -140,14 +156,12 @@ struct GradeQueryView: View {
     var body: some View {
         Group {
             if !viewModel.filteredCourseGrades.isEmpty {
-                // 这里是修复跳转页面选中状态问题
-                List(selection: viewModel.isSelectionMode ? $viewModel.selectedItems : .constant(Set<GradeQueryViewModel.SelectionItem>())) {
+                List {
                     ForEach(viewModel.groupedFilteredCourseGrades, id: \.semester) { group in
                         Section {
                             DisclosureGroup(isExpanded: viewModel.bindingForSemester(group.semester)) {
                                 ForEach(group.grades, id: \.courseID) { courseGrade in
                                     gradeCard(courseGrade: courseGrade)
-                                        .tag(GradeQueryViewModel.SelectionItem(course: courseGrade.courseID))
                                 }
                             } label: {
                                 HStack {
@@ -164,7 +178,7 @@ struct GradeQueryView: View {
                                             .foregroundColor(.secondary)
                                     }
                                 }
-                                .contentShape(Rectangle())
+                                .contentShape(.rect)
                                 .onTapGesture { viewModel.toggleExpandSemester(group.semester) }
                             }
                             .buttonStyle(.plain)
@@ -224,9 +238,6 @@ struct GradeQueryView: View {
             }
         }
         .inlineToolbarTitle()
-        #if os(iOS)
-        .environment(\.editMode, .constant(viewModel.isSelectionMode ? .active : .inactive))
-        #endif
         .trackView("GradeQuery")
     }
 

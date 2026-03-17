@@ -184,6 +184,21 @@ class GradeQueryViewModel {
         selectedItems.removeAll()
     }
 
+    func toggleSelection(for courseID: String) {
+        let item = SelectionItem(course: courseID)
+        withAnimation {
+            if selectedItems.contains(item) {
+                selectedItems.remove(item)
+            } else {
+                selectedItems.insert(item)
+            }
+        }
+    }
+
+    func isSelected(_ courseID: String) -> Bool {
+        selectedItems.contains(SelectionItem(course: courseID))
+    }
+
     private func updateAnalysis() {
         guard let allCourses = data?.value else {
             analysis = nil
