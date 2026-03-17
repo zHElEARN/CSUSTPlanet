@@ -21,11 +21,11 @@ class GradeQueryViewModel {
 
     // MARK: States
 
-    var data: Cached<[EduHelper.CourseGrade]>? = nil {
-        didSet { updateAnalysis() }
-    }
+    var data: Cached<[EduHelper.CourseGrade]>? = nil
     var analysis: GradeAnalysisData? = nil
-    var searchText: String = ""
+    var searchText: String = "" {
+        didSet { updateFilteredGrades() }
+    }
     var errorMessage: String = ""
     var warningMessage: String = ""
 
@@ -49,35 +49,14 @@ class GradeQueryViewModel {
     var shareContent: Any? = nil
     var isLoaded: Bool = false
 
-    var filteredCourseGrades: [EduHelper.CourseGrade] {
-        guard let data = data else { return [] }
-        if searchText.isEmpty {
-            return data.value
-        } else {
-            return data.value.filter { $0.courseName.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
-
-    var groupedFilteredCourseGrades: [(semester: String, grades: [EduHelper.CourseGrade])] {
-        let grades = filteredCourseGrades
-        let grouped = Dictionary(grouping: grades) { $0.semester }
-        let sortedSemesters = grouped.keys.sorted(by: >)
-        return sortedSemesters.map { (semester: $0, grades: grouped[$0] ?? []) }
-    }
+    private(set) var filteredCourseGrades: [EduHelper.CourseGrade] = []
+    private(set) var groupedFilteredCourseGrades: [(semester: String, grades: [EduHelper.CourseGrade])] = []
 
     // MARK: - Methods
 
     init() {
         guard let data = MMKVHelper.shared.courseGradesCache else { return }
-        self.data = data
-        self.expandedSemesters = Set(data.value.map { $0.semester })
-        self.semesterGPAs = Dictionary(grouping: data.value, by: { $0.semester }).map { semester, grades in
-            let totalCredits = grades.reduce(0) { $0 + $1.credit }
-            let totalGradePoints = grades.reduce(0) { $0 + $1.gradePoint * $1.credit }
-            let gpa = totalCredits > 0 ? totalGradePoints / totalCredits : 0.0
-            return (semester: semester, gpa: gpa)
-        }
-        .reduce(into: [:]) { $0[$1.semester] = $1.gpa }
+        applyData(data)
     }
 
     func task() {
@@ -95,17 +74,8 @@ class GradeQueryViewModel {
             if let eduHelper = AuthManager.shared.eduHelper {
                 do {
                     let courseGrades = try await eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
-                    // let courseGrades = mockCourseGrades
                     let data = Cached(cachedAt: .now, value: courseGrades)
-                    self.data = data
-                    self.expandedSemesters = Set(courseGrades.map { $0.semester })
-                    self.semesterGPAs = Dictionary(grouping: courseGrades, by: { $0.semester }).map { semester, grades in
-                        let totalCredits = grades.reduce(0) { $0 + $1.credit }
-                        let totalGradePoints = grades.reduce(0) { $0 + $1.gradePoint * $1.credit }
-                        let gpa = totalCredits > 0 ? totalGradePoints / totalCredits : 0.0
-                        return (semester: semester, gpa: gpa)
-                    }
-                    .reduce(into: [:]) { $0[$1.semester] = $1.gpa }
+                    applyData(data)
                     MMKVHelper.shared.courseGradesCache = data
                     WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
                 } catch {
@@ -120,15 +90,7 @@ class GradeQueryViewModel {
                     }
                     return
                 }
-                self.data = data
-                self.expandedSemesters = Set(data.value.map { $0.semester })
-                self.semesterGPAs = Dictionary(grouping: data.value, by: { $0.semester }).map { semester, grades in
-                    let totalCredits = grades.reduce(0) { $0 + $1.credit }
-                    let totalGradePoints = grades.reduce(0) { $0 + $1.gradePoint * $1.credit }
-                    let gpa = totalCredits > 0 ? totalGradePoints / totalCredits : 0.0
-                    return (semester: semester, gpa: gpa)
-                }
-                .reduce(into: [:]) { $0[$1.semester] = $1.gpa }
+                applyData(data)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     self.warningMessage = String(format: "教务系统未登录，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: data.cachedAt))
                     self.isShowingWarning = true
@@ -197,6 +159,39 @@ class GradeQueryViewModel {
 
     func isSelected(_ courseID: String) -> Bool {
         selectedItems.contains(SelectionItem(course: courseID))
+    }
+
+    private func applyData(_ data: Cached<[EduHelper.CourseGrade]>) {
+        self.data = data
+        self.expandedSemesters = Set(data.value.map { $0.semester })
+        self.semesterGPAs = computeSemesterGPAs(data.value)
+        updateFilteredGrades()
+        updateAnalysis()
+    }
+
+    private func computeSemesterGPAs(_ grades: [EduHelper.CourseGrade]) -> [String: Double] {
+        Dictionary(grouping: grades, by: { $0.semester }).reduce(into: [:]) { result, entry in
+            let totalCredits = entry.value.reduce(0) { $0 + $1.credit }
+            let totalGradePoints = entry.value.reduce(0) { $0 + $1.gradePoint * $1.credit }
+            result[entry.key] = totalCredits > 0 ? totalGradePoints / totalCredits : 0.0
+        }
+    }
+
+    private func updateFilteredGrades() {
+        guard let data = data else {
+            filteredCourseGrades = []
+            groupedFilteredCourseGrades = []
+            return
+        }
+        let filtered: [EduHelper.CourseGrade]
+        if searchText.isEmpty {
+            filtered = data.value
+        } else {
+            filtered = data.value.filter { $0.courseName.localizedCaseInsensitiveContains(searchText) }
+        }
+        filteredCourseGrades = filtered
+        let grouped = Dictionary(grouping: filtered) { $0.semester }
+        groupedFilteredCourseGrades = grouped.keys.sorted(by: >).map { (semester: $0, grades: grouped[$0] ?? []) }
     }
 
     private func updateAnalysis() {

@@ -29,10 +29,11 @@ struct GradeAnalysisData {
         let gradePointDistribution = courseGrades.reduce(into: [Double: Int]()) { result, course in
             result[course.gradePoint, default: 0] += 1
         }.map { (gradePoint: $0.key, count: $0.value) }
-        let semesterAverageGrades = Dictionary(grouping: courseGrades, by: { $0.semester }).map { semester, grades in
+        let groupedBySemester = Dictionary(grouping: courseGrades, by: { $0.semester })
+        let semesterAverageGrades = groupedBySemester.map { semester, grades in
             (semester: semester, average: Double(grades.reduce(0) { $0 + $1.grade }) / Double(grades.count))
         }
-        let semesterGPAs = Dictionary(grouping: courseGrades, by: { $0.semester }).map { semester, grades in
+        let semesterGPAs = groupedBySemester.map { semester, grades in
             let totalCredits = grades.reduce(0) { $0 + $1.credit }
             let totalGradePoints = grades.reduce(0) { $0 + $1.gradePoint * $1.credit }
             let gpa = totalCredits > 0 ? totalGradePoints / totalCredits : 0.0
