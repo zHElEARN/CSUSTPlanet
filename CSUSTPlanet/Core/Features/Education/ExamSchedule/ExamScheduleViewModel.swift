@@ -72,7 +72,7 @@ class ExamScheduleViewModel {
             }
 
             do {
-                (availableSemesters, selectedSemesters) = try await AuthManager.shared.eduHelper?.examService.getAvailableSemestersForExamSchedule() ?? ([], nil)
+                (availableSemesters, selectedSemesters) = try await AuthManager.shared.eduHelper.examService.getAvailableSemestersForExamSchedule()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true
@@ -163,34 +163,19 @@ class ExamScheduleViewModel {
                 isLoading = false
             }
 
-            if let eduHelper = AuthManager.shared.eduHelper {
-                do {
-                    let exams = try await eduHelper.examService.getExamSchedule(academicYearSemester: selectedSemesters, semesterType: selectedSemesterType)
-                    let sortedExams = exams.sorted {
-                        return $0.examStartTime < $1.examStartTime
-                    }
+            do {
+                let exams = try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: selectedSemesters, semesterType: selectedSemesterType)
+                let sortedExams = exams.sorted {
+                    return $0.examStartTime < $1.examStartTime
+                }
 
-                    let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
-                    self.data = data
-                    self.updateScrollTarget(exams: sortedExams)
-                    MMKVHelper.shared.examSchedulesCache = data
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                guard let data = MMKVHelper.shared.examSchedulesCache else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.warningMessage = "请先登录教务系统后再查询数据"
-                        self.isShowingWarning = true
-                    }
-                    return
-                }
+                let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
                 self.data = data
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.warningMessage = String(format: "教务系统未登录，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: data.cachedAt))
-                    self.isShowingWarning = true
-                }
+                self.updateScrollTarget(exams: sortedExams)
+                MMKVHelper.shared.examSchedulesCache = data
+            } catch {
+                errorMessage = error.localizedDescription
+                isShowingError = true
             }
         }
     }

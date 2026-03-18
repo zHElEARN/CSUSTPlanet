@@ -40,10 +40,6 @@ class ProfileDetailViewModel {
     }
 
     func loadEduProfile() {
-        guard let eduHelper = AuthManager.shared.eduHelper else {
-            return
-        }
-
         isEduProfileLoading = true
         Task {
             defer {
@@ -51,7 +47,7 @@ class ProfileDetailViewModel {
             }
 
             do {
-                eduProfile = try await eduHelper.profileService.getProfile()
+                eduProfile = try await AuthManager.shared.eduHelper.profileService.getProfile()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true
@@ -60,10 +56,6 @@ class ProfileDetailViewModel {
     }
 
     func loadMoocProfile() {
-        guard let moocHelper = AuthManager.shared.moocHelper else {
-            return
-        }
-
         isMoocProfileLoading = true
         Task {
             defer {
@@ -71,7 +63,7 @@ class ProfileDetailViewModel {
             }
 
             do {
-                moocProfile = try await moocHelper.getProfile()
+                moocProfile = try await AuthManager.shared.moocHelper.getProfile()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true

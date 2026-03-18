@@ -34,7 +34,6 @@ class CoursesViewModel {
     }
 
     func loadCourses() {
-        guard let moocHelper = AuthManager.shared.moocHelper else { return }
         isLoading = true
         Task {
             defer {
@@ -42,7 +41,7 @@ class CoursesViewModel {
             }
 
             do {
-                courses = try await moocHelper.getCourses()
+                courses = try await AuthManager.shared.moocHelper.getCourses()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true

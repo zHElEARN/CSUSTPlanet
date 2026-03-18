@@ -71,30 +71,16 @@ class GradeQueryViewModel {
             defer {
                 isLoading = false
             }
-            if let eduHelper = AuthManager.shared.eduHelper {
-                do {
-                    let courseGrades = try await eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
-                    let data = Cached(cachedAt: .now, value: courseGrades)
-                    applyData(data)
-                    MMKVHelper.shared.courseGradesCache = data
-                    WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                guard let data = MMKVHelper.shared.courseGradesCache else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.warningMessage = "请先登录教务系统后再查询数据"
-                        self.isShowingWarning = true
-                    }
-                    return
-                }
+
+            do {
+                let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
+                let data = Cached(cachedAt: .now, value: courseGrades)
                 applyData(data)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.warningMessage = String(format: "教务系统未登录，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: data.cachedAt))
-                    self.isShowingWarning = true
-                }
+                MMKVHelper.shared.courseGradesCache = data
+                WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
+            } catch {
+                errorMessage = error.localizedDescription
+                isShowingError = true
             }
         }
     }

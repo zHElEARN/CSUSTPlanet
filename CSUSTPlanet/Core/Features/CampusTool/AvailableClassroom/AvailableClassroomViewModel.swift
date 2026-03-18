@@ -41,18 +41,11 @@ final class AvailableClassroomViewModel: ObservableObject {
                 isLoading = false
             }
 
-            if let eduHelper = AuthManager.shared.eduHelper {
-                do {
-                    availableClassrooms = try await eduHelper.courseService.getAvailableClassrooms(campus: selectedCampus, week: selectedWeek, dayOfWeek: selectedDayOfWeek, section: selectedSection).sorted()
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.warningMessage = "请先登录教务系统后再查询数据"
-                    self.isShowingWarning = true
-                }
+            do {
+                availableClassrooms = try await AuthManager.shared.eduHelper.courseService.getAvailableClassrooms(campus: selectedCampus, week: selectedWeek, dayOfWeek: selectedDayOfWeek, section: selectedSection).sorted()
+            } catch {
+                errorMessage = error.localizedDescription
+                isShowingError = true
             }
         }
     }
