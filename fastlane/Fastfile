@@ -2,118 +2,56 @@
 
 default_platform(:ios)
 
+def load_api_key_if_present
+  app_store_connect_api_key(
+    key_id: ENV['APP_STORE_CONNECT_API_KEY_KEY_ID'],
+    issuer_id: ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID'],
+    key_content: ENV['APP_STORE_CONNECT_API_KEY_KEY_CONTENT'].to_s.gsub('\\n', "\n"),
+    is_key_content_base64: false,
+    duration: 1200,
+    in_house: false
+  )
+end
+
+def sync_for_platform(platform_name:, readonly:)
+  app_identifiers = [ENV['APP_IDENTIFIER'], ENV['WIDGET_IDENTIFIER']]
+
+  api_key = readonly ? nil : load_api_key_if_present
+
+  %w[development appstore].each do |cert_type|
+    params = {
+      type: cert_type,
+      platform: platform_name,
+      app_identifier: app_identifiers,
+      readonly: readonly
+    }
+    params[:api_key] = api_key if api_key
+    params[:force_for_new_devices] = true if !readonly && cert_type == 'development'
+
+    sync_code_signing(**params)
+  end
+end
+
 platform :ios do
-  def load_api_key
-    key_id = ENV['APP_STORE_CONNECT_API_KEY_KEY_ID']
-    issuer_id = ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
-    key_content = ENV['APP_STORE_CONNECT_API_KEY_KEY_CONTENT']
-    return nil if key_id.to_s.empty? || issuer_id.to_s.empty? || key_content.to_s.empty?
-
-    app_store_connect_api_key(
-      key_id: key_id,
-      issuer_id: issuer_id,
-      key_content: key_content.gsub('\n', "\n"),
-      is_key_content_base64: false,
-      duration: 1200,
-      in_house: false
-    )
+  desc '同步 iOS 证书'
+  lane :sync_certs do
+    sync_for_platform(platform_name: 'ios', readonly: true)
   end
 
-  desc '同步证书'
-  lane :sync_certs do |options|
-    type = options[:type]
-    if type.nil? || type == 'all'
-      match(type: 'development', readonly: true)
-      match(type: 'appstore', readonly: true)
-    elsif %w[development appstore].include?(type)
-      match(type: type, readonly: true)
-    else
-      UI.user_error!("type 参数必须是 'development', 'appstore' 或 'all' (默认 'all')")
-    end
+  desc '创建或更新 iOS 证书'
+  lane :update_certs do
+    sync_for_platform(platform_name: 'ios', readonly: false)
+  end
+end
+
+platform :mac do
+  desc '同步 macOS 证书'
+  lane :sync_certs do
+    sync_for_platform(platform_name: 'macos', readonly: true)
   end
 
-  desc '生成/更新证书'
-  lane :update_certs do |options|
-    type = options[:type]
-    UI.user_error!("type 参数必须是 'development' 或 'appstore'") unless %w[development appstore].include?(type)
-    match(
-      api_key: load_api_key,
-      type: type,
-      force_for_new_devices: true,
-      readonly: false
-    )
-  end
-
-  desc '添加新设备并刷新开发证书'
-  lane :add_new_device do |options|
-    name = options[:name]
-    udid = options[:udid]
-    UI.user_error!("请提供设备名称: fastlane add_new_device name:'iPhone 15' udid:'xxx'") unless name
-    UI.user_error!("请提供设备UDID: fastlane add_new_device name:'iPhone 15' udid:'xxx'") unless udid
-    api_key = load_api_key
-    register_device(
-      api_key: api_key,
-      name: name,
-      udid: udid
-    )
-    match(
-      api_key: api_key,
-      type: 'development',
-      force_for_new_devices: true,
-      readonly: false
-    )
-    UI.success("设备 #{name} 已添加，且开发证书已更新！")
-  end
-
-  desc '推送构建版本到 TestFlight'
-  lane :beta do
-    ENV['DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS'] = '--use-old-altool'
-    api_key = load_api_key
-    config_path = '../Configs/Shared.xcconfig'
-    UI.user_error!("找不到 xcconfig 文件，路径: #{config_path}") unless File.exist?(config_path)
-    config_content = File.read(config_path)
-    version_match = config_content.match(/CSUSTPLANET_VERSION\s*=\s*([\d.]+)/)
-    current_version = version_match ? version_match[1] : nil
-    UI.user_error!('无法在 xcconfig 中找到 CSUSTPLANET_VERSION') if current_version.nil?
-    UI.message("正在查询版本 #{current_version} 的云端构建状态...")
-    latest_build = latest_testflight_build_number(
-      api_key: api_key,
-      version: current_version,
-      initial_build_number: 0
-    )
-    new_build_number = latest_build + 1
-    UI.success("准备构建版本: #{current_version} (Build: #{new_build_number})")
-    updated_content = config_content.gsub(/(CSUSTPLANET_BUILD_NUMBER\s*=\s*)\d+/, "\\1#{new_build_number}")
-    File.open(config_path, 'w') { |file| file.puts updated_content }
-    UI.message("已同步本地构建号为: #{new_build_number}")
-    output_dir = "./fastlane/builds/#{current_version}/build_#{new_build_number}"
-    output_name = "CSUSTPlanet_#{current_version}_b#{new_build_number}.ipa"
-    match(api_key: api_key, type: 'appstore', readonly: true)
-    # 执行构建
-    build_app(
-      scheme: 'CSUSTPlanet',
-      project: 'CSUSTPlanet.xcodeproj',
-      export_method: 'app-store',
-      include_bitcode: false,
-      clean: true,
-      output_directory: output_dir,
-      output_name: output_name
-    )
-    # 上传符号文件到 Sentry
-    sentry_debug_files_upload(
-      auth_token: ENV['SENTRY_AUTH_TOKEN'],
-      org_slug: ENV['SENTRY_ORG_SLUG'],
-      project_slug: ENV['SENTRY_PROJECT_SLUG'],
-      url: ENV['SENTRY_URL'],
-      include_sources: true
-    )
-    # 上传至 TestFlight
-    upload_to_testflight(
-      api_key: api_key,
-      ipa: "#{output_dir}/#{output_name}",
-      skip_waiting_for_build_processing: true
-    )
-    UI.success("应用已成功上传至 TestFlight，版本号: #{current_version}, 构建号: #{new_build_number}")
-    UI.message("本地包路径: #{output_dir}/#{output_name}")
+  desc '创建或更新 macOS 证书'
+  lane :update_certs do
+    sync_for_platform(platform_name: 'macos', readonly: false)
   end
 end

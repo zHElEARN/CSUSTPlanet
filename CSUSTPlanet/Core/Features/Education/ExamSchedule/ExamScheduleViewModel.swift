@@ -11,26 +11,27 @@ import SwiftData
 import SwiftUI
 
 @MainActor
-class ExamScheduleViewModel: ObservableObject {
-    @Published var availableSemesters: [String] = []
-    @Published var errorMessage = ""
-    @Published var warningMessage = ""
-    @Published var successMessage = ""
-    @Published var data: Cached<[EduHelper.Exam]>? = nil
+@Observable
+class ExamScheduleViewModel {
+    var availableSemesters: [String] = []
+    var errorMessage = ""
+    var warningMessage = ""
+    var successMessage = ""
+    var data: Cached<[EduHelper.Exam]>? = nil
 
-    @Published var isShowingAddToCalendarAlert = false
-    @Published var isShowingError = false
-    @Published var isSemestersLoading = false
-    @Published var isLoading = false
-    @Published var isShowingFilter: Bool = false
-    @Published var isShowingSuccess: Bool = false
-    @Published var isShowingWarning: Bool = false
-    @Published var isShowingShareSheet: Bool = false
+    var isShowingAddToCalendarAlert = false
+    var isShowingError = false
+    var isSemestersLoading = false
+    var isLoading = false
+    var isShowingFilter: Bool = false
+    var isShowingSuccess: Bool = false
+    var isShowingWarning: Bool = false
+    var isShowingShareSheet: Bool = false
 
-    @Published var selectedSemesters: String? = nil
-    @Published var selectedSemesterType: EduHelper.SemesterType? = nil
-    @Published var scrollToID: String? = nil
-    @Published var now = Date()
+    var selectedSemesters: String? = nil
+    var selectedSemesterType: EduHelper.SemesterType? = nil
+    var scrollToID: String? = nil
+    var now = Date()
 
     var isLoaded: Bool = false
 
@@ -71,7 +72,7 @@ class ExamScheduleViewModel: ObservableObject {
             }
 
             do {
-                (availableSemesters, selectedSemesters) = try await AuthManager.shared.eduHelper?.examService.getAvailableSemestersForExamSchedule() ?? ([], nil)
+                (availableSemesters, selectedSemesters) = try await AuthManager.shared.eduHelper.examService.getAvailableSemestersForExamSchedule()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true
@@ -162,34 +163,19 @@ class ExamScheduleViewModel: ObservableObject {
                 isLoading = false
             }
 
-            if let eduHelper = AuthManager.shared.eduHelper {
-                do {
-                    let exams = try await eduHelper.examService.getExamSchedule(academicYearSemester: selectedSemesters, semesterType: selectedSemesterType)
-                    let sortedExams = exams.sorted {
-                        return $0.examStartTime < $1.examStartTime
-                    }
+            do {
+                let exams = try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: selectedSemesters, semesterType: selectedSemesterType)
+                let sortedExams = exams.sorted {
+                    return $0.examStartTime < $1.examStartTime
+                }
 
-                    let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
-                    self.data = data
-                    self.updateScrollTarget(exams: sortedExams)
-                    MMKVHelper.shared.examSchedulesCache = data
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                guard let data = MMKVHelper.shared.examSchedulesCache else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.warningMessage = "请先登录教务系统后再查询数据"
-                        self.isShowingWarning = true
-                    }
-                    return
-                }
+                let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
                 self.data = data
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.warningMessage = String(format: "教务系统未登录，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: data.cachedAt))
-                    self.isShowingWarning = true
-                }
+                self.updateScrollTarget(exams: sortedExams)
+                MMKVHelper.shared.examSchedulesCache = data
+            } catch {
+                errorMessage = error.localizedDescription
+                isShowingError = true
             }
         }
     }

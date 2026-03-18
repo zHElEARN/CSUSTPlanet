@@ -42,8 +42,8 @@ class AuthManager {
     // MARK: - Helpers
 
     var ssoHelper: SSOHelper
-    var eduHelper: EduHelper?
-    var moocHelper: MoocHelper?
+    var eduHelper: EduHelper
+    var moocHelper: MoocHelper
 
     private let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
     private let session: Session = CookieHelper.shared.session
@@ -52,6 +52,8 @@ class AuthManager {
 
     private init() {
         ssoHelper = SSOHelper(mode: mode, session: session)
+        eduHelper = EduHelper(mode: mode, session: session)
+        moocHelper = MoocHelper(mode: mode, session: session)
         ssoRelogin()
     }
 
@@ -83,8 +85,8 @@ class AuthManager {
             isSSOLoggingOut = true
             TrackHelper.shared.event(category: "Auth", action: "Logout")
             defer { isSSOLoggingOut = false }
-            try? await eduHelper?.authService.logout()
-            try? await moocHelper?.logout()
+            try? await eduHelper.authService.logout()
+            try? await moocHelper.logout()
             try? await ssoHelper.logout()
             CookieHelper.shared.save()
             KeychainUtil.ssoUsername = nil
@@ -92,8 +94,6 @@ class AuthManager {
             MMKVHelper.shared.userId = nil
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
-            eduHelper = nil
-            moocHelper = nil
         }
     }
 

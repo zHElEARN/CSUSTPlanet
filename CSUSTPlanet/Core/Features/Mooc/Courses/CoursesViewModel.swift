@@ -9,15 +9,15 @@ import CSUSTKit
 import Foundation
 
 @MainActor
-class CoursesViewModel: ObservableObject {
-    @Published var errorMessage = ""
-    @Published var courses: [MoocHelper.Course] = []
-    @Published var searchText: String = ""
+@Observable
+class CoursesViewModel {
+    var courses: [MoocHelper.Course] = []
+    var searchText: String = ""
 
-    @Published var isShowingError = false
-    @Published var isLoading = false
+    var isShowingError = false
+    var errorMessage = ""
 
-    var isLoaded = false
+    var isLoading = false
 
     var filteredCourses: [MoocHelper.Course] {
         if searchText.isEmpty {
@@ -29,8 +29,11 @@ class CoursesViewModel: ObservableObject {
         }
     }
 
+    func task() async {
+        loadCourses()
+    }
+
     func loadCourses() {
-        guard let moocHelper = AuthManager.shared.moocHelper else { return }
         isLoading = true
         Task {
             defer {
@@ -38,7 +41,7 @@ class CoursesViewModel: ObservableObject {
             }
 
             do {
-                courses = try await moocHelper.getCourses()
+                courses = try await AuthManager.shared.moocHelper.getCourses()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true

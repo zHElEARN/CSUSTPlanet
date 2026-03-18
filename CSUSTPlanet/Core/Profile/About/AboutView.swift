@@ -53,6 +53,7 @@ struct AboutView: View {
             }
             #endif
         }
+        .formStyle(.grouped)
         .background(Color.appSystemBackground)
         .navigationTitle("关于")
         .trackView("About")

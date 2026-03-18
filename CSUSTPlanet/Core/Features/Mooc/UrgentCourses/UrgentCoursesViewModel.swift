@@ -34,30 +34,15 @@ class UrgentCoursesViewModel: ObservableObject {
                 isLoading = false
             }
 
-            if let moocHelper = AuthManager.shared.moocHelper {
-                do {
-                    let urgentCourses = try await moocHelper.getCourseNamesWithPendingAssignments()
-                    let data = Cached(cachedAt: .now, value: UrgentCoursesData.fromCourses(urgentCourses))
-                    self.data = data
-                    MMKVHelper.shared.urgentCoursesCache = data
-                    WidgetCenter.shared.reloadTimelines(ofKind: "UrgentCoursesWidget")
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                guard let data = MMKVHelper.shared.urgentCoursesCache else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.warningMessage = "请先登录网络课程中心后再查询数据"
-                        self.isShowingWarning = true
-                    }
-                    return
-                }
+            do {
+                let urgentCourses = try await AuthManager.shared.moocHelper.getCourseNamesWithPendingAssignments()
+                let data = Cached(cachedAt: .now, value: UrgentCoursesData.fromCourses(urgentCourses))
                 self.data = data
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.warningMessage = String(format: "网络课程中心未登录，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: data.cachedAt))
-                    self.isShowingWarning = true
-                }
+                MMKVHelper.shared.urgentCoursesCache = data
+                WidgetCenter.shared.reloadTimelines(ofKind: "UrgentCoursesWidget")
+            } catch {
+                errorMessage = error.localizedDescription
+                isShowingError = true
             }
         }
     }

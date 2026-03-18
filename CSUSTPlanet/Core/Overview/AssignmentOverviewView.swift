@@ -9,11 +9,11 @@ import CSUSTKit
 import SwiftUI
 
 struct AssignmentOverviewView: View {
-    @ObservedObject var viewModel: OverviewViewModel
+    @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
         VStack(spacing: 12) {
-            HomeSectionHeader(
+            OverviewSectionHeader(
                 title: "待提交作业",
                 icon: "doc.text.fill",
                 color: .red,
@@ -22,11 +22,7 @@ struct AssignmentOverviewView: View {
 
             let courses = viewModel.urgentCourses
             if courses.isEmpty {
-                if viewModel.urgentCoursesData?.value == nil {
-                    HomeEmptyStateView(icon: "doc.text", text: "暂无数据，请前往详情页加载")
-                } else {
-                    HomeEmptyStateView(icon: "doc.text", text: "暂无待提交作业")
-                }
+                OverviewEmptyStateView(icon: "doc.text", text: "暂无待提交作业")
             } else {
                 AssignmentListView(viewModel: viewModel)
             }
@@ -35,11 +31,11 @@ struct AssignmentOverviewView: View {
 }
 
 private struct AssignmentListView: View {
-    @ObservedObject var viewModel: OverviewViewModel
+    @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
         VStack(spacing: 12) {
-            ForEach(viewModel.displayedUrgentCourses, id: \.name) { course in
+            ForEach(viewModel.urgentCourses, id: \.name) { course in
                 TrackLink(destination: UrgentCoursesView()) {
                     HStack(spacing: 12) {
                         RoundedRectangle(cornerRadius: 2)
@@ -65,20 +61,14 @@ private struct AssignmentListView: View {
                             .clipShape(Capsule())
                     }
                     .padding(12)
-                    .background(Color.appSecondarySystemGroupedBackground)
+                    #if os(iOS)
+                    .background(Color(PlatformColor.secondarySystemGroupedBackground))
+                    #else
+                    .background(Color(PlatformColor.controlBackgroundColor))
+                    #endif
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)
-            }
-
-            if viewModel.urgentCoursesRemainingCount > 0 {
-                TrackLink(destination: UrgentCoursesView()) {
-                    Text("还有 \(viewModel.urgentCoursesRemainingCount) 项作业待提交...")
-                        .font(.caption)
-                        .foregroundStyle(.blue)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 4)
-                }
             }
         }
     }

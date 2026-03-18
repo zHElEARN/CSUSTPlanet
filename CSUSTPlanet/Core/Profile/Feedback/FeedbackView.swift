@@ -74,6 +74,7 @@ struct FeedbackView: View {
                     .listRowBackground(Color.clear)
             }
         }
+        .formStyle(.grouped)
         .sheet(isPresented: $isShowingSurveySheet) {
             NavigationStack {
                 WebView(url: surveyURL)

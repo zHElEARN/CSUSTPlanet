@@ -21,7 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane ios sync_certs
 ```
 
-同步证书
+同步 iOS 证书
 
 ### ios update_certs
 
@@ -29,23 +29,28 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane ios update_certs
 ```
 
-生成/更新证书
+创建或更新 iOS 证书
 
-### ios add_new_device
+----
 
-```sh
-[bundle exec] fastlane ios add_new_device
-```
 
-添加新设备并刷新开发证书
+## Mac
 
-### ios beta
+### mac sync_certs
 
 ```sh
-[bundle exec] fastlane ios beta
+[bundle exec] fastlane mac sync_certs
 ```
 
-推送构建版本到 TestFlight
+同步 macOS 证书
+
+### mac update_certs
+
+```sh
+[bundle exec] fastlane mac update_certs
+```
+
+创建或更新 macOS 证书
 
 ----
 

@@ -9,38 +9,21 @@ import CSUSTKit
 import Foundation
 
 @MainActor
-class ProfileDetailViewModel: ObservableObject {
-    private var ssoHelper: SSOHelper?
-    private var eduHelper: EduHelper?
-    private var moocHelper: MoocHelper?
+@Observable
+class ProfileDetailViewModel {
+    var ssoProfile: SSOHelper.Profile?
+    var isSSOProfileLoading: Bool = false
 
-    @Published var ssoProfile: SSOHelper.Profile?
-    @Published var isSSOProfileLoading: Bool = false
+    var eduProfile: EduHelper.Profile?
+    var isEduProfileLoading: Bool = false
 
-    @Published var eduProfile: EduHelper.Profile?
-    @Published var isEduProfileLoading: Bool = false
+    var moocProfile: MoocHelper.Profile?
+    var isMoocProfileLoading: Bool = false
 
-    @Published var moocProfile: MoocHelper.Profile?
-    @Published var isMoocProfileLoading: Bool = false
-
-    @Published var isShowingError: Bool = false
-    @Published var errorMessage: String = ""
-
-    init(ssoHelper: SSOHelper? = nil, eduHelper: EduHelper? = nil, moocHelper: MoocHelper? = nil, ssoProfile: SSOHelper.Profile? = nil) {
-        self.ssoHelper = ssoHelper
-        self.eduHelper = eduHelper
-        self.moocHelper = moocHelper
-
-        self.ssoProfile = ssoProfile
-    }
+    var isShowingError: Bool = false
+    var errorMessage: String = ""
 
     func loadSSOProfile() {
-        guard let ssoHelper = ssoHelper else {
-            errorMessage = "单点登录服务未初始化"
-            isShowingError = true
-            return
-        }
-
         isSSOProfileLoading = true
         Task {
             defer {
@@ -48,7 +31,7 @@ class ProfileDetailViewModel: ObservableObject {
             }
 
             do {
-                ssoProfile = try await ssoHelper.getLoginUser()
+                ssoProfile = try await AuthManager.shared.ssoHelper.getLoginUser()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true
@@ -57,12 +40,6 @@ class ProfileDetailViewModel: ObservableObject {
     }
 
     func loadEduProfile() {
-        guard let eduHelper = eduHelper else {
-            // errorMessage = "教务服务未初始化"
-            // isShowingError = true
-            return
-        }
-
         isEduProfileLoading = true
         Task {
             defer {
@@ -70,7 +47,7 @@ class ProfileDetailViewModel: ObservableObject {
             }
 
             do {
-                eduProfile = try await eduHelper.profileService.getProfile()
+                eduProfile = try await AuthManager.shared.eduHelper.profileService.getProfile()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true
@@ -79,12 +56,6 @@ class ProfileDetailViewModel: ObservableObject {
     }
 
     func loadMoocProfile() {
-        guard let moocHelper = moocHelper else {
-            // errorMessage = "网络课程中心服务未初始化"
-            // isShowingError = true
-            return
-        }
-
         isMoocProfileLoading = true
         Task {
             defer {
@@ -92,7 +63,7 @@ class ProfileDetailViewModel: ObservableObject {
             }
 
             do {
-                moocProfile = try await moocHelper.getProfile()
+                moocProfile = try await AuthManager.shared.moocHelper.getProfile()
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true

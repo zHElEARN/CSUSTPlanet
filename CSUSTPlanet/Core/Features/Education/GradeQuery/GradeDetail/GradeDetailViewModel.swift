@@ -10,14 +10,23 @@ import Foundation
 import SwiftUI
 
 @MainActor
-class GradeDetailViewModel: ObservableObject {
-    @Published var gradeDetail: EduHelper.GradeDetail?
-    @Published var errorMessage: String = ""
-    @Published var warningMessage: String = ""
+@Observable
+class GradeDetailViewModel {
+    enum GradeRenderMode: String, CaseIterable, Identifiable {
+        case pie = "饼图"
+        case progress = "进度条"
+        var id: String { rawValue }
+    }
 
-    @Published var isLoading = false
-    @Published var isShowingError = false
-    @Published var isShowingWarning = false
+    var gradeRenderMode: GradeRenderMode = .progress
+
+    var gradeDetail: EduHelper.GradeDetail?
+    var errorMessage: String = ""
+    var warningMessage: String = ""
+
+    var isLoading = false
+    var isShowingError = false
+    var isShowingWarning = false
 
     func task(_ courseGrade: EduHelper.CourseGrade) {
         loadDetail(courseGrade)
@@ -30,19 +39,17 @@ class GradeDetailViewModel: ObservableObject {
             defer {
                 isLoading = false
             }
-            if let eduHelper = AuthManager.shared.eduHelper {
+            let maxRetryCount = 3
+
+            for _ in 1...maxRetryCount {
                 do {
-                    gradeDetail = try await eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.warningMessage = "请先登录教务系统后再查询数据"
-                    self.isShowingWarning = true
+                    gradeDetail = try await AuthManager.shared.eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
+                    return
                 }
             }
+
+            errorMessage = "获取成绩详情失败，请点击右上角刷新后重试"
+            isShowingError = true
         }
     }
 }

@@ -11,7 +11,7 @@ import SwiftUI
 
 struct ExamScheduleView: View {
     @Environment(\.colorScheme) var colorScheme
-    @StateObject var viewModel = ExamScheduleViewModel()
+    @State var viewModel = ExamScheduleViewModel()
 
     // MARK: - Filter View
 
@@ -37,7 +37,7 @@ struct ExamScheduleView: View {
                         }
                         if viewModel.isSemestersLoading {
                             Spacer()
-                            ProgressView()
+                            ProgressView().smallControlSizeOnMac()
                         }
                     }
                 }
@@ -50,6 +50,7 @@ struct ExamScheduleView: View {
                     }
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("高级查询")
             .inlineToolbarTitle()
             .toolbar {
@@ -161,7 +162,11 @@ struct ExamScheduleView: View {
             }
         }
         .padding(16)
-        .background(Color.appSecondarySystemGroupedBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.secondarySystemGroupedBackground))
+        #elseif os(macOS)
+        .background(Color(PlatformColor.controlBackgroundColor))
+        #endif
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         // 已结束状态：降低透明度，置灰
@@ -195,41 +200,36 @@ struct ExamScheduleView: View {
     // MARK: - Body
 
     var body: some View {
-        ZStack {
-            Color.appSystemGroupedBackground
-                .ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                if let data = viewModel.data, !data.value.isEmpty {
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            LazyVStack(spacing: 16) {
-                                ForEach(data.value, id: \.courseID) { exam in
-                                    examCard(exam: exam).id(exam.courseID)
-                                }
+        Group {
+            if let data = viewModel.data, !data.value.isEmpty {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(data.value, id: \.courseID) { exam in
+                                examCard(exam: exam).id(exam.courseID)
                             }
-                            .padding(.horizontal)
-                            .padding(.vertical)
                         }
-                        .refreshable {
-                            viewModel.loadExams()
-                        }
-                        .onChange(of: viewModel.scrollToID) { _, id in
-                            viewModel.handleScrollOnChange(proxy: proxy, newID: id)
-                        }
-                        .onAppear {
-                            viewModel.handleScrollOnAppear(proxy: proxy)
-                        }
+                        .padding(.horizontal)
+                        .padding(.vertical)
                     }
-                } else {
-                    ContentUnavailableView(
-                        "暂无考试安排",
-                        systemImage: "calendar.badge.exclamationmark",
-                        description: Text("当前筛选条件下没有找到考试安排")
-                    )
+                    .refreshable {
+                        viewModel.loadExams()
+                    }
+                    .onChange(of: viewModel.scrollToID) { _, id in
+                        viewModel.handleScrollOnChange(proxy: proxy, newID: id)
+                    }
+                    .onAppear {
+                        viewModel.handleScrollOnAppear(proxy: proxy)
+                    }
                 }
+            } else {
+                ContentUnavailableView("暂无考试安排", systemImage: "calendar.badge.exclamationmark", description: Text("当前筛选条件下没有找到考试安排"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
         .onAppear {
             viewModel.refreshNow()
         }
@@ -248,19 +248,21 @@ struct ExamScheduleView: View {
                 Button(action: { viewModel.isShowingFilter.toggle() }) {
                     Label("高级查询", systemImage: "slider.horizontal.3")
                 }
+                .disabled(viewModel.isLoading)
                 Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
                     Label("全部添加到日历", systemImage: "calendar.badge.plus")
                 }
-                .disabled(viewModel.data == nil)
+                .disabled(viewModel.data?.value.isEmpty == true || viewModel.isLoading)
             }
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Button(action: { viewModel.loadExams() }) {
+                Button(action: { viewModel.loadExams() }) {
+                    if viewModel.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
                         Label("查询", systemImage: "arrow.clockwise")
                     }
                 }
+                .disabled(viewModel.isLoading)
             }
         }
         .sheet(isPresented: $viewModel.isShowingFilter) { filterView }

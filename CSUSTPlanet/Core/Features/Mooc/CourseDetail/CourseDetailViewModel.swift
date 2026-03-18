@@ -45,15 +45,10 @@ class CourseDetailViewModel: ObservableObject {
                 isAssignmentsLoading = false
             }
 
-            if let moocHelper = AuthManager.shared.moocHelper {
-                do {
-                    assignments = try await moocHelper.getCourseAssignments(courseId: course.id)
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                errorMessage = "请先等待网络课程中心登录完成后再重试"
+            do {
+                assignments = try await AuthManager.shared.moocHelper.getCourseAssignments(courseId: course.id)
+            } catch {
+                errorMessage = error.localizedDescription
                 isShowingError = true
             }
         }
@@ -66,15 +61,10 @@ class CourseDetailViewModel: ObservableObject {
                 isTestsLoading = false
             }
 
-            if let moocHelper = AuthManager.shared.moocHelper {
-                do {
-                    tests = try await moocHelper.getCourseTests(courseId: course.id)
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                errorMessage = "请先等待网络课程中心登录完成后再重试"
+            do {
+                tests = try await AuthManager.shared.moocHelper.getCourseTests(courseId: course.id)
+            } catch {
+                errorMessage = error.localizedDescription
                 isShowingError = true
             }
         }

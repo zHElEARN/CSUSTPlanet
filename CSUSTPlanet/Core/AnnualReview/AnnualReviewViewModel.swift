@@ -125,10 +125,7 @@ final class AnnualReviewViewModel: ObservableObject {
                 isLoading = false
             }
 
-            guard let eduHelper = AuthManager.shared.eduHelper else {
-                debugPrint("EduHelper为空")
-                return
-            }
+            let eduHelper = AuthManager.shared.eduHelper
             // guard let moocHelper = AuthManager.shared.moocHelper else {
             //     debugPrint("MoocHelper为空")
             //     return
@@ -159,7 +156,7 @@ final class AnnualReviewViewModel: ObservableObject {
                 return
             }
             let allCourses = semester1Courses + semester2Courses
-            let moocProfile = try? await AuthManager.shared.moocHelper?.getProfile()
+            let moocProfile = try? await AuthManager.shared.moocHelper.getProfile()
             let dormDescriptor = FetchDescriptor<Dorm>()
             guard let dorms = try? SharedModelUtil.context.fetch(dormDescriptor) else {
                 debugPrint("获取宿舍信息失败")

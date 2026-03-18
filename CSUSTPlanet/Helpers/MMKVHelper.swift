@@ -92,9 +92,6 @@ class MMKVHelper {
     @MMKVStorage(key: "GlobalVars.isNotificationEnabled", defaultValue: true)
     var isNotificationEnabled: Bool
 
-    @MMKVStorage(key: "GlobalVars.isBackgroundTaskEnabled", defaultValue: false)
-    var isBackgroundTaskEnabled: Bool
-
     @MMKVOptionalStorage(key: "GlobalVars.userId")
     var userId: String?
 
@@ -127,6 +124,17 @@ class MMKVHelper {
 
     @MMKVStorage(key: "SwiftData.databaseVersion", defaultValue: 0)
     var databaseVersion: Int
+
+    // MARK: - BackgroundTask
+
+    @MMKVStorage(key: "BackgroundTask.enabledTaskIdentifiers", defaultValue: [])
+    var backgroundTaskEnabledTaskIdentifiers: [String]
+
+    @MMKVStorage(key: "BackgroundTask.isEnabled", defaultValue: false)
+    var backgroundTaskIsEnabled: Bool
+
+    @MMKVStorage(key: "BackgroundTask.interval", defaultValue: 6 * 60 * 60)
+    var backgroundTaskInterval: TimeInterval
 }
 
 // MARK: - Methods
@@ -307,6 +315,21 @@ extension Bool: MMKVValueType {
 
 extension Int: MMKVValueType {
     static func read(from helper: MMKVHelper, key: String) -> Int? { helper.int(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension Double: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Double? { helper.double(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension Array: MMKVValueType where Element: Codable {
+    static func read(from helper: MMKVHelper, key: String) -> Array? { return helper.object(forKey: key, as: Self.self) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension Dictionary: MMKVValueType where Key == String, Value: Codable {
+    static func read(from helper: MMKVHelper, key: String) -> Dictionary? { return helper.object(forKey: key, as: Self.self) }
     func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
 }
 

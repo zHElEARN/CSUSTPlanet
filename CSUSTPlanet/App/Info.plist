@@ -26,10 +26,8 @@
 	<string>$(CSUSTPLANET_MATOMO_USER_ID_SALT)</string>
 	<key>ConfigMatomoDimensionIDAppFullVersion</key>
 	<string>$(CSUSTPLANET_MATOMO_DIMENSION_ID_APP_FULL_VERSION)</string>
-	<key>ConfigBackgroundGradeID</key>
-	<string>$(CSUSTPLANET_BACKGROUND_GRADE_ID)</string>
-	<key>ConfigBackgroundElectricityID</key>
-	<string>$(CSUSTPLANET_BACKGROUND_ELECTRICITY_ID)</string>
+	<key>ConfigBackgroundID</key>
+	<string>$(CSUSTPLANET_BACKGROUND_ID)</string>
 	<key>ConfigSentryDSN</key>
 	<string>$(CSUSTPLANET_SENTRY_DSN)</string>
 	<key>CFBundleURLTypes</key>
@@ -79,8 +77,7 @@
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>$(CSUSTPLANET_BACKGROUND_GRADE_ID)</string>
-		<string>$(CSUSTPLANET_BACKGROUND_ELECTRICITY_ID)</string>
+		<string>$(CSUSTPLANET_BACKGROUND_ID)</string>
 	</array>
 </dict>
 </plist>

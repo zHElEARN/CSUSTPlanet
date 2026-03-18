@@ -48,7 +48,7 @@ struct CSUSTPlanetApp: App {
         ])
 
         #if os(iOS)
-        BackgroundTaskHelper.shared.registerAllTasks()
+        BackgroundTaskHelper.shared.register()
         ActivityHelper.shared.setup()
         NotificationManager.shared.setup()
         #endif
@@ -57,15 +57,18 @@ struct CSUSTPlanetApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .task {
-                    await SharedModelUtil.migrateDatabase()
-                }
-                .environment(GlobalManager.shared)
-                .environment(AuthManager.shared)
                 #if os(iOS)
             .environment(NotificationManager.shared)
+                #elseif os(macOS)
+            .frame(
+                minWidth: 400, idealWidth: 800, maxWidth: 1200,
+                minHeight: 600, idealHeight: 800, maxHeight: 1000
+            )
                 #endif
         }
+        #if os(macOS)
+        .windowResizability(.contentSize)
+        #endif
         .modelContainer(SharedModelUtil.container)
         .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }
     }
@@ -85,7 +88,7 @@ struct CSUSTPlanetApp: App {
             checkAndRelogin()
             #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
-            BackgroundTaskHelper.shared.cancelAllTasks()
+            BackgroundTaskHelper.shared.cancel()
             #endif
         case .inactive:
             Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
@@ -100,7 +103,7 @@ struct CSUSTPlanetApp: App {
             TrackHelper.shared.event(category: "Lifecycle", action: "Background")
 
             #if os(iOS)
-            BackgroundTaskHelper.shared.scheduleAllTasks()
+            BackgroundTaskHelper.shared.schedule()
             #endif
         default:
             break

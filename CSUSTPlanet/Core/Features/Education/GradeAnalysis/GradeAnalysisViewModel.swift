@@ -12,7 +12,8 @@ import SwiftUI
 import WidgetKit
 
 @MainActor
-class GradeAnalysisViewModel: NSObject, ObservableObject {
+@Observable
+class GradeAnalysisViewModel: NSObject {
     enum ChartType: String, CaseIterable {
         case averageGrade = "平均成绩"
         case gpa = "GPA"
@@ -32,18 +33,18 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
         return map
     }()
 
-    @Published var errorMessage: String = ""
-    @Published var warningMessage: String = ""
-    @Published var data: Cached<[EduHelper.CourseGrade]>?
-    @Published var weightedAverageGrade: Double?
-    @Published var selectedChartType: ChartType = .averageGrade
-    @Published var selectedDistributionChartType: DistributionChartType = .gradePoint
+    var errorMessage: String = ""
+    var warningMessage: String = ""
+    var data: Cached<[EduHelper.CourseGrade]>?
+    var weightedAverageGrade: Double?
+    var selectedChartType: ChartType = .averageGrade
+    var selectedDistributionChartType: DistributionChartType = .gradePoint
 
-    @Published var isLoading: Bool = false
-    @Published var isShowingWarning: Bool = false
-    @Published var isShowingError: Bool = false
-    @Published var isShowingSuccess: Bool = false
-    @Published var isShowingShareSheet: Bool = false
+    var isLoading: Bool = false
+    var isShowingWarning: Bool = false
+    var isShowingError: Bool = false
+    var isShowingSuccess: Bool = false
+    var isShowingShareSheet: Bool = false
 
     var analysisData: GradeAnalysisData? {
         guard let courseGrades = data?.value else { return nil }
@@ -69,30 +70,15 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
                 isLoading = false
             }
 
-            if let eduHelper = AuthManager.shared.eduHelper {
-                do {
-                    let courseGrades = try await eduHelper.courseService.getCourseGrades()
-                    let data = Cached(cachedAt: .now, value: courseGrades)
-                    self.data = data
-                    MMKVHelper.shared.courseGradesCache = data
-                    WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
-            } else {
-                guard let data = MMKVHelper.shared.courseGradesCache else {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.warningMessage = "请先登录教务系统后再查询数据"
-                        self.isShowingWarning = true
-                    }
-                    return
-                }
+            do {
+                let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
+                let data = Cached(cachedAt: .now, value: courseGrades)
                 self.data = data
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.warningMessage = String(format: "教务系统未登录，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: data.cachedAt))
-                    self.isShowingWarning = true
-                }
+                MMKVHelper.shared.courseGradesCache = data
+                WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
+            } catch {
+                errorMessage = error.localizedDescription
+                isShowingError = true
             }
         }
     }

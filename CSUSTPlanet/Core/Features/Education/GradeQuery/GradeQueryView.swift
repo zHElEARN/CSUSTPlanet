@@ -130,8 +130,24 @@ struct GradeQueryView: View {
 
     @ViewBuilder
     private func gradeCard(courseGrade: EduHelper.CourseGrade) -> some View {
-        TrackLink(destination: GradeDetailView(courseGrade: courseGrade)) {
-            gradeCardContent(courseGrade: courseGrade)
+        if viewModel.isSelectionMode {
+            Button {
+                viewModel.toggleSelection(for: courseGrade.courseID)
+            } label: {
+                HStack {
+                    gradeCardContent(courseGrade: courseGrade)
+                    Image(systemName: viewModel.isSelected(courseGrade.courseID) ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(viewModel.isSelected(courseGrade.courseID) ? .accentColor : .secondary)
+                        .imageScale(.large)
+                }
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(viewModel.isSelected(courseGrade.courseID) ? Color.gray.opacity(0.2) : Color.clear)
+        } else {
+            TrackLink(destination: GradeDetailView(courseGrade: courseGrade)) {
+                gradeCardContent(courseGrade: courseGrade)
+            }
         }
     }
 
@@ -140,14 +156,12 @@ struct GradeQueryView: View {
     var body: some View {
         Group {
             if !viewModel.filteredCourseGrades.isEmpty {
-                // 这里是修复跳转页面选中状态问题
-                List(selection: viewModel.isSelectionMode ? $viewModel.selectedItems : .constant(Set<GradeQueryViewModel.SelectionItem>())) {
+                List {
                     ForEach(viewModel.groupedFilteredCourseGrades, id: \.semester) { group in
                         Section {
                             DisclosureGroup(isExpanded: viewModel.bindingForSemester(group.semester)) {
                                 ForEach(group.grades, id: \.courseID) { courseGrade in
                                     gradeCard(courseGrade: courseGrade)
-                                        .tag(GradeQueryViewModel.SelectionItem(course: courseGrade.courseID))
                                 }
                             } label: {
                                 HStack {
@@ -164,7 +178,7 @@ struct GradeQueryView: View {
                                             .foregroundColor(.secondary)
                                     }
                                 }
-                                .contentShape(Rectangle())
+                                .contentShape(.rect)
                                 .onTapGesture { viewModel.toggleExpandSemester(group.semester) }
                             }
                             .buttonStyle(.plain)
@@ -177,9 +191,13 @@ struct GradeQueryView: View {
                 .listStyle(.inset)
                 #endif
             } else {
-                emptyStateSection.background(Color.appSystemGroupedBackground)
+                emptyStateSection
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
         .safeAreaInset(edge: .top) {
             statsSection
                 .padding(.horizontal)
@@ -209,13 +227,11 @@ struct GradeQueryView: View {
                 mainToolbar()
             }
         }
+        #if os(iOS)
         .sheet(isPresented: $viewModel.isShowingShareSheet) {
-            #if os(iOS)
             ShareSheet(items: [viewModel.shareContent!])
-            #else
-            Text("分享功能暂不支持在当前平台使用")
-            #endif
         }
+        #endif
         .navigationTitle("成绩查询")
         .apply { view in
             if #available(iOS 26.0, *) {
@@ -225,9 +241,6 @@ struct GradeQueryView: View {
             }
         }
         .inlineToolbarTitle()
-        #if os(iOS)
-        .environment(\.editMode, .constant(viewModel.isSelectionMode ? .active : .inactive))
-        #endif
         .trackView("GradeQuery")
     }
 
@@ -241,18 +254,19 @@ struct GradeQueryView: View {
             }
             .disabled(viewModel.isLoading || viewModel.data == nil)
             Button(action: viewModel.exportGradesAsCSV) {
-                Label("导出为CSV表格", systemImage: "doc.plaintext")
+                Label("导出表格", systemImage: "doc.plaintext")
             }
             .disabled(viewModel.isLoading || viewModel.data == nil)
         }
         ToolbarItem(placement: .primaryAction) {
-            if viewModel.isLoading {
-                ProgressView()
-            } else {
-                Button(action: { viewModel.loadCourseGrades() }) {
+            Button(action: { viewModel.loadCourseGrades() }) {
+                if viewModel.isLoading {
+                    ProgressView().smallControlSizeOnMac()
+                } else {
                     Label("查询", systemImage: "arrow.clockwise")
                 }
             }
+            .disabled(viewModel.isLoading)
         }
     }
 

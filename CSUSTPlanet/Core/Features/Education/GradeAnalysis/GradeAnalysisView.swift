@@ -12,7 +12,7 @@ import SwiftUI
 
 struct GradeAnalysisView: View {
     @Environment(\.colorScheme) var colorScheme
-    @StateObject var viewModel = GradeAnalysisViewModel()
+    @State var viewModel = GradeAnalysisViewModel()
 
     // MARK: - Statistic Item
 
@@ -65,7 +65,11 @@ struct GradeAnalysisView: View {
             }
         }
         .padding()
-        .background(Color.appSecondarySystemBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.secondarySystemBackground))
+        #elseif os(macOS)
+        .background(Color(PlatformColor.controlBackgroundColor))
+        #endif
         .cornerRadius(10)
         .padding(.horizontal)
     }
@@ -74,6 +78,15 @@ struct GradeAnalysisView: View {
 
     @ViewBuilder
     private func semesterAnalysisSection(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
+        let selectedChartTypeBinding = Binding(
+            get: { viewModel.selectedChartType },
+            set: { newValue in withAnimation { viewModel.selectedChartType = newValue } }
+        )
+        let selectedDistributionChartTypeBinding = Binding(
+            get: { viewModel.selectedDistributionChartType },
+            set: { newValue in withAnimation { viewModel.selectedDistributionChartType = newValue } }
+        )
+
         VStack(spacing: 30) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -81,13 +94,12 @@ struct GradeAnalysisView: View {
                         .font(.headline)
                     Spacer()
                     if !isShareable {
-                        Picker("图表类型", selection: $viewModel.selectedChartType) {
+                        Picker("图表类型", selection: selectedChartTypeBinding) {
                             ForEach(GradeAnalysisViewModel.ChartType.allCases, id: \.self) { type in
                                 Text(type.rawValue).tag(type)
                             }
                         }
                         .pickerStyle(.segmented)
-                        .labelsHidden()
                         .fixedSize()
                     }
                 }
@@ -154,13 +166,12 @@ struct GradeAnalysisView: View {
                         .font(.headline)
                     Spacer()
                     if !isShareable {
-                        Picker("分布类型", selection: $viewModel.selectedDistributionChartType) {
+                        Picker("分布类型", selection: selectedDistributionChartTypeBinding) {
                             ForEach(GradeAnalysisViewModel.DistributionChartType.allCases, id: \.self) { type in
                                 Text(type.rawValue).tag(type)
                             }
                         }
                         .pickerStyle(.segmented)
-                        .labelsHidden()
                         .fixedSize()
                     }
                 }
@@ -197,7 +208,6 @@ struct GradeAnalysisView: View {
                 }
                 .frame(height: 220)
                 .padding()
-                .animation(.easeInOut, value: viewModel.selectedDistributionChartType)
             }
         }
     }
@@ -212,44 +222,23 @@ struct GradeAnalysisView: View {
         }
     }
 
-    // MARK: - Empty State Section
-
-    @ViewBuilder
-    private var emptyStateSection: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 40))
-                .foregroundColor(.secondary)
-                .padding(.bottom, 8)
-
-            Text("暂无成绩数据")
-                .font(.headline)
-
-            Text("当前没有找到成绩数据")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 20)
-    }
-
     // MARK: - Shareable View
 
+    #if os(iOS)
     @ViewBuilder
     private var shareableView: some View {
         if let gradeAnalysisData = viewModel.analysisData {
             analysisContent(gradeAnalysisData, isShareable: true)
                 .padding(.vertical)
-                #if os(iOS)
-            .frame(width: UIScreen.main.bounds.width)
-                #endif
-                .background(Color.appSystemGroupedBackground)
+                .frame(width: UIScreen.main.bounds.width)
+                .background(Color(PlatformColor.systemGroupedBackground))
                 .environment(\.colorScheme, colorScheme)
         } else {
-            emptyStateSection
+            ContentUnavailableView("暂无成绩数据", systemImage: "doc.text.magnifyingglass", description: Text("当前没有找到成绩数据"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
+    #endif
 
     // MARK: - Body
 
@@ -260,7 +249,8 @@ struct GradeAnalysisView: View {
                     analysisContent(data)
                 }
             } else {
-                emptyStateSection
+                ContentUnavailableView("暂无成绩数据", systemImage: "doc.text.magnifyingglass", description: Text("当前没有找到成绩数据"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .task { viewModel.task() }
@@ -273,16 +263,15 @@ struct GradeAnalysisView: View {
         .toast(isPresenting: $viewModel.isShowingWarning) {
             AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
         }
+        #if os(iOS)
         .sheet(isPresented: $viewModel.isShowingShareSheet) {
-            #if os(iOS)
             ShareSheet(items: [viewModel.shareContent!])
-            #else
-            Text("分享功能暂不支持在当前平台使用")
-            #endif
         }
+        #endif
         .navigationTitle("成绩分析")
         .largeToolbarTitle()
         .toolbar {
+            #if os(iOS)
             ToolbarItemGroup(placement: .secondaryAction) {
                 Button(action: { viewModel.showShareSheet(shareableView) }) {
                     Label("分享", systemImage: "square.and.arrow.up")
@@ -293,15 +282,16 @@ struct GradeAnalysisView: View {
                 }
                 .disabled(viewModel.isLoading || viewModel.data == nil)
             }
+            #endif
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Button(action: viewModel.loadGradeAnalysis) {
+                Button(action: viewModel.loadGradeAnalysis) {
+                    if viewModel.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
                         Label("刷新成绩分析", systemImage: "arrow.clockwise")
                     }
-                    .disabled(viewModel.isLoading)
                 }
+                .disabled(viewModel.isLoading)
             }
         }
         .trackView("GradeAnalysis")

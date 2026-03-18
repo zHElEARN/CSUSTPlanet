@@ -9,11 +9,11 @@ import CSUSTKit
 import SwiftUI
 
 struct CourseOverviewView: View {
-    @ObservedObject var viewModel: OverviewViewModel
+    @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HomeSectionHeader(
+            OverviewSectionHeader(
                 title: "今日课程",
                 icon: "book.fill",
                 color: .purple,
@@ -87,7 +87,7 @@ struct CourseCard: View {
     let course: EduHelper.Course
     let session: EduHelper.ScheduleSession
     let isCurrent: Bool
-    @ObservedObject var viewModel: OverviewViewModel
+    @Bindable var viewModel: OverviewViewModel
 
     @State private var showDetail = false
 
@@ -179,7 +179,11 @@ struct EmptyCourseCard: View {
         .padding()
         .frame(height: 100)
         .frame(maxWidth: .infinity)
-        .background(Color.appSecondarySystemGroupedBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.secondarySystemGroupedBackground))
+        #else
+        .background(Color(PlatformColor.controlBackgroundColor))
+        #endif
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }

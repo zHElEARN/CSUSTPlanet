@@ -12,13 +12,10 @@ import SwiftUI
 // MARK: - CourseScheduleView
 
 struct CourseScheduleView: View {
-    @Environment(\.horizontalSizeClass) var sizeClass
-
     @State var viewModel = CourseScheduleViewModel()
 
-    private var isPad: Bool {
-        sizeClass == .regular
-    }
+    @Environment(\.horizontalSizeClass) var sizeClass
+    var isPad: Bool { sizeClass == .regular }
 
     var colSpacing: CGFloat { isPad ? 4 : 2 }
     var rowSpacing: CGFloat { isPad ? 4 : 2 }
@@ -33,11 +30,50 @@ struct CourseScheduleView: View {
                 let weeklyCourses = CourseScheduleUtil.getWeeklyCourses(courseScheduleData.value.courses)
 
                 #if os(macOS)
-                tableView(
-                    for: viewModel.currentWeek,
-                    semesterStartDate: courseScheduleData.value.semesterStartDate,
-                    weeklyCourses: weeklyCourses
-                )
+                // macOS下使用左右翻页按钮
+                HStack(spacing: 4) {
+                    // 左侧翻页按钮
+                    Button {
+                        withAnimation { viewModel.currentWeek -= 1 }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.title2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(maxHeight: .infinity)
+                            .frame(width: 48)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(PlatformColor.controlBackgroundColor))
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.currentWeek <= 1)
+
+                    tableView(
+                        for: viewModel.currentWeek,
+                        semesterStartDate: courseScheduleData.value.semesterStartDate,
+                        weeklyCourses: weeklyCourses
+                    )
+
+                    // 右侧翻页按钮
+                    Button {
+                        withAnimation { viewModel.currentWeek += 1 }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.title2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(maxHeight: .infinity)
+                            .frame(width: 48)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(PlatformColor.controlBackgroundColor))
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.currentWeek >= CourseScheduleUtil.weekCount)
+                }
                 .ignoresSafeArea(.container, edges: .bottom)
                 #else
                 TabView(selection: $viewModel.currentWeek) {
@@ -50,36 +86,35 @@ struct CourseScheduleView: View {
                 .ignoresSafeArea(.container, edges: .bottom)
                 #endif
             } else {
-                emptyStateView
+                ContentUnavailableView("暂无课表数据", systemImage: "doc.text.magnifyingglass", description: Text("当前学期未设置或数据加载失败"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onAppear {
+            #if os(iOS)
             if sizeClass == .regular {
                 viewModel.isShowingDetail = true
             }
+            #endif
         }
         .apply { view in
+            #if os(iOS)
             if sizeClass == .regular {
                 view
                     .inspector(isPresented: $viewModel.isShowingDetail) {
-                        Group {
-                            if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
-                                CourseScheduleDetailView(course: course, session: session, isShowingToolbar: false, isPresented: $viewModel.isShowingDetail)
-                            } else {
-                                ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
-                            }
-                        }
+                        sheetContent(isShowingToolbar: false)
                     }
                     .inspectorColumnWidth(min: 350, ideal: 400, max: 450)
             } else {
                 view.sheet(isPresented: $viewModel.isShowingDetail) {
-                    if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
-                        CourseScheduleDetailView(course: course, session: session, isShowingToolbar: true, isPresented: $viewModel.isShowingDetail)
-                    } else {
-                        ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
-                    }
+                    sheetContent(isShowingToolbar: true)
                 }
             }
+            #else
+            view.sheet(isPresented: $viewModel.isShowingDetail) {
+                sheetContent(isShowingToolbar: true)
+            }
+            #endif
         }
         .navigationTitle("我的课表")
         .apply { view in
@@ -101,13 +136,14 @@ struct CourseScheduleView: View {
                 }
             }
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Button(action: viewModel.loadCourses) {
+                Button(action: viewModel.loadCourses) {
+                    if viewModel.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
                         Label("刷新", systemImage: "arrow.clockwise")
                     }
                 }
+                .disabled(viewModel.isLoading)
             }
         }
         .task { viewModel.task() }
@@ -135,23 +171,17 @@ struct CourseScheduleView: View {
         .trackView("CourseSchedule")
     }
 
-    // MARK: - 空状态视图
-    private var emptyStateView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: isPad ? 80 : 50))
-                .foregroundColor(.secondary)
-            Text("暂无课表数据")
-                .font(isPad ? .title2 : .headline)
-            Text("当前学期未设置或数据加载失败")
-                .font(isPad ? .body : .subheadline)
-                .foregroundColor(.secondary)
+    // MARK: - 课程详情视图
+    @ViewBuilder
+    func sheetContent(isShowingToolbar: Bool) -> some View {
+        if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
+            CourseScheduleDetailView(course: course, session: session, isShowingToolbar: isShowingToolbar, isPresented: $viewModel.isShowingDetail)
+        } else {
+            ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
         }
-        .frame(maxHeight: .infinity)
     }
 
     // MARK: - 顶部全局控制栏
-
     @ViewBuilder
     private var topControlBar: some View {
         HStack {
@@ -186,7 +216,11 @@ struct CourseScheduleView: View {
                     }
                     .padding(.horizontal, isPad ? 16 : 12)
                     .padding(.vertical, isPad ? 8 : 6)
-                    .background(Color.appSecondarySystemBackground)
+                    #if os(iOS)
+                    .background(Color(PlatformColor.secondarySystemBackground))
+                    #else
+                    .background(Color(PlatformColor.controlBackgroundColor))
+                    #endif
                     .cornerRadius(8)
                 }
 
@@ -199,12 +233,12 @@ struct CourseScheduleView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color.appSystemBackground)
-        // .overlay(Divider().opacity(0.6), alignment: .bottom)
+        #if os(iOS)
+        .background(Color(PlatformColor.systemBackground))
+        #endif
     }
 
     // MARK: - 单周课表页面
-
     @ViewBuilder
     private func tableView(for week: Int, semesterStartDate: Date, weeklyCourses: [Int: [CourseDisplayInfo]]) -> some View {
         // 课表网格
@@ -237,7 +271,6 @@ struct CourseScheduleView: View {
     }
 
     // MARK: - 星期头部视图
-
     @ViewBuilder
     private func headerView(for week: Int, semesterStartDate: Date) -> some View {
         let dates = CourseScheduleUtil.getDatesForWeek(semesterStartDate: semesterStartDate, week: week)
@@ -283,7 +316,6 @@ struct CourseScheduleView: View {
     }
 
     // MARK: - 背景网格视图
-
     @ViewBuilder
     private var backgroundGrid: some View {
         HStack(spacing: colSpacing) {
@@ -311,7 +343,11 @@ struct CourseScheduleView: View {
                     HStack(spacing: colSpacing) {
                         ForEach(1...7, id: \.self) { _ in
                             Rectangle()
-                                .fill(Color.appSecondarySystemBackground.opacity(0.3))
+                                #if os(iOS)
+                            .fill(Color(PlatformColor.secondarySystemBackground).opacity(0.3))
+                                #else
+                            .fill(Color.primary.opacity(0.04))
+                                #endif
                                 .frame(height: sectionHeight)
                                 .cornerRadius(isPad ? 8 : 4)
                         }
@@ -324,7 +360,6 @@ struct CourseScheduleView: View {
     }
 
     // MARK: - 课程浮层视图
-
     @ViewBuilder
     private func coursesOverlay(for week: Int, weeklyCourses: [Int: [CourseDisplayInfo]]) -> some View {
         GeometryReader { geometry in
