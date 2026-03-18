@@ -9,22 +9,24 @@ import CSUSTKit
 import SwiftUI
 
 struct CoursesView: View {
-    @StateObject var viewModel = CoursesViewModel()
+    @State var viewModel = CoursesViewModel()
 
     var body: some View {
         Group {
             if viewModel.filteredCourses.isEmpty {
                 ContentUnavailableView("暂无课程信息", systemImage: "book.closed", description: Text(viewModel.searchText.isEmpty ? "没有找到任何课程信息" : "没有找到匹配的课程"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Form {
                     Section {
                         ForEach(viewModel.filteredCourses, id: \.self) { course in
                             TrackLink(destination: CourseDetailView(course: course)) {
-                                courseCard(course: course)
+                                courseRow(course: course)
                             }
                         }
                     }
                 }
+                .formStyle(.grouped)
             }
         }
         .searchable(text: $viewModel.searchText, prompt: "搜索课程")
@@ -33,11 +35,7 @@ struct CoursesView: View {
         } message: {
             Text(viewModel.errorMessage)
         }
-        .task {
-            guard !viewModel.isLoaded else { return }
-            viewModel.isLoaded = true
-            viewModel.loadCourses()
-        }
+        .task { await viewModel.task() }
         .navigationTitle("课程列表")
         .apply { view in
             if #available(iOS 26.0, *) {
@@ -48,19 +46,21 @@ struct CoursesView: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Button(action: viewModel.loadCourses) {
+                Button(action: viewModel.loadCourses) {
+                    if viewModel.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
                         Label("刷新", systemImage: "arrow.clockwise")
                     }
                 }
+                .disabled(viewModel.isLoading)
             }
         }
         .trackView("Courses")
     }
 
-    private func courseCard(course: MoocHelper.Course) -> some View {
+    @ViewBuilder
+    private func courseRow(course: MoocHelper.Course) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(course.name)
                 .font(.headline)
@@ -76,6 +76,7 @@ struct CoursesView: View {
         .padding(.vertical, 6)
     }
 
+    @ViewBuilder
     private func infoItem(icon: String, color: Color, text: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)

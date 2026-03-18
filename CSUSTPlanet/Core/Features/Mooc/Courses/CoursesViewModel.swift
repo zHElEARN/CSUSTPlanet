@@ -9,15 +9,15 @@ import CSUSTKit
 import Foundation
 
 @MainActor
-class CoursesViewModel: ObservableObject {
-    @Published var errorMessage = ""
-    @Published var courses: [MoocHelper.Course] = []
-    @Published var searchText: String = ""
+@Observable
+class CoursesViewModel {
+    var courses: [MoocHelper.Course] = []
+    var searchText: String = ""
 
-    @Published var isShowingError = false
-    @Published var isLoading = false
+    var isShowingError = false
+    var errorMessage = ""
 
-    var isLoaded = false
+    var isLoading = false
 
     var filteredCourses: [MoocHelper.Course] {
         if searchText.isEmpty {
@@ -27,6 +27,10 @@ class CoursesViewModel: ObservableObject {
                 course.name.localizedCaseInsensitiveContains(searchText) || course.teacher.localizedCaseInsensitiveContains(searchText) || course.department.localizedCaseInsensitiveContains(searchText)
             }
         }
+    }
+
+    func task() async {
+        loadCourses()
     }
 
     func loadCourses() {
