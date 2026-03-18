@@ -87,6 +87,7 @@ struct CourseScheduleView: View {
                 #endif
             } else {
                 ContentUnavailableView("暂无课表数据", systemImage: "doc.text.magnifyingglass", description: Text("当前学期未设置或数据加载失败"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onAppear {

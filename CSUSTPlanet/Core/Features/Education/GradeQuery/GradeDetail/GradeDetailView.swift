@@ -73,7 +73,7 @@ struct GradeDetailView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 180)
+                    .fixedSize()
                 }
                 .padding(.horizontal)
 

@@ -222,28 +222,6 @@ struct GradeAnalysisView: View {
         }
     }
 
-    // MARK: - Empty State Section
-
-    @ViewBuilder
-    private var emptyStateSection: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 40))
-                .foregroundColor(.secondary)
-                .padding(.bottom, 8)
-
-            Text("暂无成绩数据")
-                .font(.headline)
-
-            Text("当前没有找到成绩数据")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 20)
-    }
-
     // MARK: - Shareable View
 
     #if os(iOS)
@@ -256,7 +234,8 @@ struct GradeAnalysisView: View {
                 .background(Color(PlatformColor.systemGroupedBackground))
                 .environment(\.colorScheme, colorScheme)
         } else {
-            emptyStateSection
+            ContentUnavailableView("暂无成绩数据", systemImage: "doc.text.magnifyingglass", description: Text("当前没有找到成绩数据"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
     #endif
@@ -270,7 +249,8 @@ struct GradeAnalysisView: View {
                     analysisContent(data)
                 }
             } else {
-                emptyStateSection
+                ContentUnavailableView("暂无成绩数据", systemImage: "doc.text.magnifyingglass", description: Text("当前没有找到成绩数据"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .task { viewModel.task() }

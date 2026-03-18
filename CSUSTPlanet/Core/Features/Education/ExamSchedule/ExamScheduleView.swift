@@ -163,7 +163,7 @@ struct ExamScheduleView: View {
         }
         .padding(16)
         #if os(iOS)
-        .background(Color(PlatformColor.appSecondarySystemGroupedBackground))
+        .background(Color(PlatformColor.secondarySystemGroupedBackground))
         #elseif os(macOS)
         .background(Color(PlatformColor.controlBackgroundColor))
         #endif
@@ -223,11 +223,8 @@ struct ExamScheduleView: View {
                     }
                 }
             } else {
-                ContentUnavailableView(
-                    "暂无考试安排",
-                    systemImage: "calendar.badge.exclamationmark",
-                    description: Text("当前筛选条件下没有找到考试安排")
-                )
+                ContentUnavailableView("暂无考试安排", systemImage: "calendar.badge.exclamationmark", description: Text("当前筛选条件下没有找到考试安排"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         #if os(iOS)
@@ -251,10 +248,11 @@ struct ExamScheduleView: View {
                 Button(action: { viewModel.isShowingFilter.toggle() }) {
                     Label("高级查询", systemImage: "slider.horizontal.3")
                 }
+                .disabled(viewModel.isLoading)
                 Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
                     Label("全部添加到日历", systemImage: "calendar.badge.plus")
                 }
-                .disabled(viewModel.data == nil)
+                .disabled(viewModel.data?.value.isEmpty == true || viewModel.isLoading)
             }
             ToolbarItem(placement: .primaryAction) {
                 Button(action: { viewModel.loadExams() }) {
@@ -264,6 +262,7 @@ struct ExamScheduleView: View {
                         Label("查询", systemImage: "arrow.clockwise")
                     }
                 }
+                .disabled(viewModel.isLoading)
             }
         }
         .sheet(isPresented: $viewModel.isShowingFilter) { filterView }

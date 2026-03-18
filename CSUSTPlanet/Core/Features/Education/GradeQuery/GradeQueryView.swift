@@ -195,6 +195,9 @@ struct GradeQueryView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
         .safeAreaInset(edge: .top) {
             statsSection
                 .padding(.horizontal)
@@ -263,6 +266,7 @@ struct GradeQueryView: View {
                     Label("查询", systemImage: "arrow.clockwise")
                 }
             }
+            .disabled(viewModel.isLoading)
         }
     }
 
