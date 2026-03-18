@@ -12,7 +12,8 @@ import SwiftUI
 import WidgetKit
 
 @MainActor
-class GradeAnalysisViewModel: NSObject, ObservableObject {
+@Observable
+class GradeAnalysisViewModel: NSObject {
     enum ChartType: String, CaseIterable {
         case averageGrade = "平均成绩"
         case gpa = "GPA"
@@ -32,18 +33,18 @@ class GradeAnalysisViewModel: NSObject, ObservableObject {
         return map
     }()
 
-    @Published var errorMessage: String = ""
-    @Published var warningMessage: String = ""
-    @Published var data: Cached<[EduHelper.CourseGrade]>?
-    @Published var weightedAverageGrade: Double?
-    @Published var selectedChartType: ChartType = .averageGrade
-    @Published var selectedDistributionChartType: DistributionChartType = .gradePoint
+    var errorMessage: String = ""
+    var warningMessage: String = ""
+    var data: Cached<[EduHelper.CourseGrade]>?
+    var weightedAverageGrade: Double?
+    var selectedChartType: ChartType = .averageGrade
+    var selectedDistributionChartType: DistributionChartType = .gradePoint
 
-    @Published var isLoading: Bool = false
-    @Published var isShowingWarning: Bool = false
-    @Published var isShowingError: Bool = false
-    @Published var isShowingSuccess: Bool = false
-    @Published var isShowingShareSheet: Bool = false
+    var isLoading: Bool = false
+    var isShowingWarning: Bool = false
+    var isShowingError: Bool = false
+    var isShowingSuccess: Bool = false
+    var isShowingShareSheet: Bool = false
 
     var analysisData: GradeAnalysisData? {
         guard let courseGrades = data?.value else { return nil }
