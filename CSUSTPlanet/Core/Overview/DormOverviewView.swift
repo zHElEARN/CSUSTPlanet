@@ -10,8 +10,7 @@ import SwiftData
 import SwiftUI
 
 struct DormOverviewView: View {
-    let primaryDorm: Dorm?
-    let exhaustionInfo: String?
+    @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
         TrackLink(destination: ElectricityQueryView()) {
@@ -20,7 +19,7 @@ struct DormOverviewView: View {
                     Image(systemName: "bolt.fill")
                         .foregroundStyle(.yellow)
                     Spacer()
-                    if let dorm = primaryDorm {
+                    if let dorm = viewModel.primaryDorm {
                         Text(dorm.room)
                             .font(.caption)
                             .fontWeight(.bold)
@@ -30,7 +29,7 @@ struct DormOverviewView: View {
 
                 Spacer()
 
-                if let dorm = primaryDorm, let lastFetchElectricity = dorm.lastFetchElectricity {
+                if let dorm = viewModel.primaryDorm, let lastFetchElectricity = dorm.lastFetchElectricity {
                     HStack(alignment: .lastTextBaseline, spacing: 4) {
                         Text(String(format: "%.2f", lastFetchElectricity))
                             .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -43,7 +42,7 @@ struct DormOverviewView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    if let info = exhaustionInfo {
+                    if let info = viewModel.electricityExhaustionInfo {
                         Text(info)
                             .font(.caption2)
                             .foregroundStyle(.secondary)

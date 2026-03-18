@@ -10,24 +10,38 @@ import SwiftUI
 
 struct OverviewView: View {
     @State var viewModel = OverviewViewModel()
-    @Environment(\.horizontalSizeClass) var sizeClass
     @Bindable var globalManager = GlobalManager.shared
+
+    @Environment(\.horizontalSizeClass) var sizeClass
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 // 头部欢迎语
-                HomeHeaderView(weekInfo: viewModel.weekInfo)
-                    .padding(.horizontal)
-                    .padding(.top, 10)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(Date().formatted(.dateTime.month().day().weekday()))
+                        if let weekInfo = viewModel.weekInfo {
+                            Text("·")
+                            Text(weekInfo)
+                        }
+                    }
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+                .padding(.top, 10)
 
                 // 今日课程
                 CourseOverviewView(viewModel: viewModel)
 
                 // 核心数据网格 (成绩 + 电量)
                 HStack(spacing: 16) {
-                    GradeOverviewView(analysisData: viewModel.currentGradeAnalysis)
-                    DormOverviewView(primaryDorm: viewModel.primaryDorm, exhaustionInfo: viewModel.electricityExhaustionInfo)
+                    GradeOverviewView(viewModel: viewModel)
+                    DormOverviewView(viewModel: viewModel)
                 }
                 .padding(.horizontal)
 
@@ -45,30 +59,23 @@ struct OverviewView: View {
 
                 Spacer(minLength: 40)
             }
-            .readableContentWidth()
         }
         .navigationTitle("概览")
         #if os(iOS)
         .background(Color(PlatformColor.systemGroupedBackground))
         #endif
-        .onAppear {
-            viewModel.loadData()
-        }
+        .onAppear(perform: viewModel.onAppear)
         .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
-            ElectricityQueryView()
-                .trackRoot("Widget")
+            ElectricityQueryView().trackRoot("Widget")
         }
         .navigationDestination(isPresented: $globalManager.isFromCourseScheduleWidget) {
-            CourseScheduleView()
-                .trackRoot("Widget")
+            CourseScheduleView().trackRoot("Widget")
         }
         .navigationDestination(isPresented: $globalManager.isFromGradeAnalysisWidget) {
-            GradeAnalysisView()
-                .trackRoot("Widget")
+            GradeAnalysisView().trackRoot("Widget")
         }
         .navigationDestination(isPresented: $globalManager.isFromUrgentCoursesWidget) {
-            UrgentCoursesView()
-                .trackRoot("Widget")
+            UrgentCoursesView().trackRoot("Widget")
         }
         .trackView("Overview")
     }

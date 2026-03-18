@@ -13,7 +13,7 @@ struct CourseOverviewView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HomeSectionHeader(
+            OverviewSectionHeader(
                 title: "今日课程",
                 icon: "book.fill",
                 color: .purple,

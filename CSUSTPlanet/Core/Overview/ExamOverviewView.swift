@@ -13,7 +13,7 @@ struct ExamOverviewView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            HomeSectionHeader(
+            OverviewSectionHeader(
                 title: "考试安排",
                 icon: "calendar.badge.clock",
                 color: .orange,
@@ -22,11 +22,7 @@ struct ExamOverviewView: View {
 
             let pendingExams = viewModel.pendingExams
             if pendingExams.isEmpty {
-                if viewModel.examScheduleData?.value == nil {
-                    HomeEmptyStateView(icon: "calendar.badge.exclamationmark", text: "暂无数据，请前往详情页加载")
-                } else {
-                    HomeEmptyStateView(icon: "calendar.badge.checkmark", text: "近期没有考试")
-                }
+                OverviewEmptyStateView(icon: "calendar.badge.checkmark", text: "暂无考试安排")
             } else {
                 ExamListView(viewModel: viewModel)
             }
@@ -39,7 +35,7 @@ private struct ExamListView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            ForEach(viewModel.displayedExams, id: \.courseName) { exam in
+            ForEach(viewModel.pendingExams, id: \.courseName) { exam in
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(exam.courseName)
@@ -93,16 +89,6 @@ private struct ExamListView: View {
                 .background(Color(PlatformColor.controlBackgroundColor))
                 #endif
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-
-            if viewModel.examsRemainingCount > 0 {
-                TrackLink(destination: ExamScheduleView()) {
-                    Text("还有 \(viewModel.examsRemainingCount) 场考试安排...")
-                        .font(.caption)
-                        .foregroundStyle(.blue)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 4)
-                }
             }
         }
     }

@@ -8,28 +8,7 @@
 import CSUSTKit
 import SwiftUI
 
-struct HomeHeaderView: View {
-    let weekInfo: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
-                Text(Date().formatted(.dateTime.month().day().weekday()))
-                if let weekInfo {
-                    Text("·")
-                    Text(weekInfo)
-                }
-            }
-            .font(.caption)
-            .fontWeight(.medium)
-            .foregroundStyle(.secondary)
-            .textCase(.uppercase)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-struct HomeSectionHeader<Destination: View>: View {
+struct OverviewSectionHeader<Destination: View>: View {
     let title: String
     let icon: String
     let color: Color
@@ -58,7 +37,7 @@ struct HomeSectionHeader<Destination: View>: View {
     }
 }
 
-struct HomeEmptyStateView: View {
+struct OverviewEmptyStateView: View {
     let icon: String
     let text: String
 

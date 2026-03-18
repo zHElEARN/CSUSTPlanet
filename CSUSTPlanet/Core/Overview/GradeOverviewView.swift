@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct GradeOverviewView: View {
-    let analysisData: GradeAnalysisData?
+    @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
         TrackLink(destination: GradeQueryView()) {
@@ -24,12 +24,12 @@ struct GradeOverviewView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                if let gradeData = analysisData {
-                    Text(String(format: "%.2f", gradeData.overallGPA))
+                if let gradeAnalysis = viewModel.gradeAnalysis {
+                    Text(String(format: "%.2f", gradeAnalysis.overallGPA))
                         .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundStyle(ColorUtil.dynamicColor(point: gradeData.overallGPA))
+                        .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.overallGPA))
 
-                    Text("平均分: \(String(format: "%.1f", gradeData.overallAverageGrade))")
+                    Text("平均分: \(String(format: "%.1f", gradeAnalysis.overallAverageGrade))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
