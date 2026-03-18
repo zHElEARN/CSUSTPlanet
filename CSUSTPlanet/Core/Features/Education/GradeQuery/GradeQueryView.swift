@@ -212,13 +212,9 @@ struct GradeQueryView: View {
                     }
                 }
         }
-        .searchable(text: $viewModel.searchText, prompt: "搜索课程")
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingWarning) {
-            AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
-        }
+        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索课程")
+        .errorToast(isPresenting: $viewModel.isShowingError, message: viewModel.errorMessage)
+        .warningToast(isPresenting: $viewModel.isShowingWarning, message: viewModel.warningMessage)
         .task { viewModel.task() }
         .toolbar {
             if viewModel.isSelectionMode {
@@ -233,13 +229,7 @@ struct GradeQueryView: View {
         }
         #endif
         .navigationTitle("成绩查询")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共\(viewModel.data?.value.count ?? 0)门课程成绩")
-            } else {
-                view
-            }
-        }
+        .navigationSubtitleCompat("共\(viewModel.data?.value.count ?? 0)门课程成绩")
         .inlineToolbarTitle()
         .trackView("GradeQuery")
     }
