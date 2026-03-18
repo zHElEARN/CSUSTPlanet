@@ -13,6 +13,7 @@ import SwiftUI
 struct GradeDetailView: View {
     @Environment(\.colorScheme) var colorScheme
     @State var viewModel = GradeDetailViewModel()
+
     var courseGrade: EduHelper.CourseGrade
 
     // MARK: - Course Title
@@ -55,30 +56,76 @@ struct GradeDetailView: View {
 
     @ViewBuilder
     private var distributionChart: some View {
+        let gradeRenderModeBinding = Binding(
+            get: { viewModel.gradeRenderMode },
+            set: { newValue in withAnimation { viewModel.gradeRenderMode = newValue } }
+        )
+
         if let detail = viewModel.gradeDetail {
-            infoGroupBox(title: "成绩分布") {
-                Chart(detail.components, id: \.type) { component in
-                    SectorMark(
-                        angle: .value("占比", component.ratio),
-                        innerRadius: .ratio(0.4),
-                        angularInset: 1
-                    )
-                    .foregroundStyle(by: .value("类型", component.type))
-                    .annotation(position: .overlay) {
-                        VStack {
-                            Text(String(format: "%.1f", component.grade))
-                                .font(.subheadline)
-                                .foregroundStyle(.white)
-                                .bold()
-                            Text("(\(component.ratio)%)")
-                                .font(.subheadline)
-                                .foregroundStyle(.white.opacity(0.7))
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .center, spacing: 12) {
+                    Text("成绩分布")
+                        .font(.headline)
+                    Spacer()
+                    Picker("显示方式", selection: gradeRenderModeBinding) {
+                        ForEach(GradeDetailViewModel.GradeRenderMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 180)
+                }
+                .padding(.horizontal)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    if viewModel.gradeRenderMode == .pie {
+                        Chart(detail.components, id: \.type) { component in
+                            SectorMark(
+                                angle: .value("占比", component.ratio),
+                                innerRadius: .ratio(0.4),
+                                angularInset: 1
+                            )
+                            .foregroundStyle(by: .value("类型", component.type))
+                            .annotation(position: .overlay) {
+                                VStack {
+                                    Text(String(format: "%.1f", component.grade))
+                                        .font(.subheadline)
+                                        .foregroundStyle(.white)
+                                        .bold()
+                                    Text("(\(component.ratio)%)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.white.opacity(0.7))
+                                }
+                            }
+                        }
+                        .frame(height: 250)
+                        .chartLegend(position: .bottom, alignment: .center, spacing: 10)
+                        .padding(.horizontal)
+                    } else {
+                        ForEach(detail.components, id: \.type) { component in
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text("\(component.type) (\(component.ratio)%)")
+                                        .font(.callout)
+                                    Spacer()
+                                    Text("\(String(format: "%.1f", component.grade))/100")
+                                        .font(.callout)
+                                        .foregroundColor(.secondary)
+                                }
+
+                                ProgressView(value: min(max(component.grade, 0), 100), total: 100)
+                                    .tint(ColorUtil.dynamicColor(grade: component.grade))
+                            }
                         }
                     }
                 }
-                .frame(height: 250)
-                .chartLegend(position: .bottom, alignment: .center, spacing: 10)
-                .padding(.horizontal)
+                .padding()
+                #if os(iOS)
+                .background(Color(PlatformColor.secondarySystemGroupedBackground))
+                #else
+                .background(Color(PlatformColor.controlBackgroundColor))
+                #endif
+                .cornerRadius(12)
             }
         }
     }

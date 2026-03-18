@@ -12,6 +12,14 @@ import SwiftUI
 @MainActor
 @Observable
 class GradeDetailViewModel {
+    enum GradeRenderMode: String, CaseIterable, Identifiable {
+        case pie = "饼图"
+        case progress = "进度条"
+        var id: String { rawValue }
+    }
+
+    var gradeRenderMode: GradeRenderMode = .progress
+
     var gradeDetail: EduHelper.GradeDetail?
     var errorMessage: String = ""
     var warningMessage: String = ""
@@ -33,23 +41,15 @@ class GradeDetailViewModel {
             }
             if let eduHelper = AuthManager.shared.eduHelper {
                 let maxRetryCount = 3
-                var lastError: Error?
 
                 for _ in 1...maxRetryCount {
                     do {
                         gradeDetail = try await eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
                         return
-                    } catch {
-                        lastError = error
                     }
                 }
 
-                let retryHint = "获取成绩详情失败，请点击右上角刷新后重试"
-                if let lastError {
-                    errorMessage = "\(retryHint)\n\(lastError.localizedDescription)"
-                } else {
-                    errorMessage = retryHint
-                }
+                errorMessage = "获取成绩详情失败，请点击右上角刷新后重试"
                 isShowingError = true
             } else {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
