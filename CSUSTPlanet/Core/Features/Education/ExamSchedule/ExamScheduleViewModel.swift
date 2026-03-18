@@ -11,26 +11,27 @@ import SwiftData
 import SwiftUI
 
 @MainActor
-class ExamScheduleViewModel: ObservableObject {
-    @Published var availableSemesters: [String] = []
-    @Published var errorMessage = ""
-    @Published var warningMessage = ""
-    @Published var successMessage = ""
-    @Published var data: Cached<[EduHelper.Exam]>? = nil
+@Observable
+class ExamScheduleViewModel {
+    var availableSemesters: [String] = []
+    var errorMessage = ""
+    var warningMessage = ""
+    var successMessage = ""
+    var data: Cached<[EduHelper.Exam]>? = nil
 
-    @Published var isShowingAddToCalendarAlert = false
-    @Published var isShowingError = false
-    @Published var isSemestersLoading = false
-    @Published var isLoading = false
-    @Published var isShowingFilter: Bool = false
-    @Published var isShowingSuccess: Bool = false
-    @Published var isShowingWarning: Bool = false
-    @Published var isShowingShareSheet: Bool = false
+    var isShowingAddToCalendarAlert = false
+    var isShowingError = false
+    var isSemestersLoading = false
+    var isLoading = false
+    var isShowingFilter: Bool = false
+    var isShowingSuccess: Bool = false
+    var isShowingWarning: Bool = false
+    var isShowingShareSheet: Bool = false
 
-    @Published var selectedSemesters: String? = nil
-    @Published var selectedSemesterType: EduHelper.SemesterType? = nil
-    @Published var scrollToID: String? = nil
-    @Published var now = Date()
+    var selectedSemesters: String? = nil
+    var selectedSemesterType: EduHelper.SemesterType? = nil
+    var scrollToID: String? = nil
+    var now = Date()
 
     var isLoaded: Bool = false
 
