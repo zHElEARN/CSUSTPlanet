@@ -14,10 +14,6 @@ enum CalendarReminderOffset: TimeInterval, CaseIterable, Identifiable {
     case fifteenMinutes = 900
     case thirtyMinutes = 1800
     case oneHour = 3600
-    case twoHours = 7200
-    case oneDay = 86400
-    case twoDays = 172800
-    case oneWeek = 604800
 
     var id: TimeInterval { rawValue }
 
@@ -29,10 +25,6 @@ enum CalendarReminderOffset: TimeInterval, CaseIterable, Identifiable {
         case .fifteenMinutes: return "提前 15 分钟"
         case .thirtyMinutes: return "提前 30 分钟"
         case .oneHour: return "提前 1 小时"
-        case .twoHours: return "提前 2 小时"
-        case .oneDay: return "提前 1 天"
-        case .twoDays: return "提前 2 天"
-        case .oneWeek: return "提前 1 周"
         }
     }
 }
@@ -145,12 +137,41 @@ struct CourseScheduleCalendarSettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("添加") {
                         isPresented = false
+                        
+                        // 保存设置
+                        MMKVHelper.shared.calendarFirstReminderOffset = isFirstReminderEnabled ? firstReminderOffset.rawValue : nil
+                        MMKVHelper.shared.calendarSecondReminderOffset = isSecondReminderEnabled ? secondReminderOffset.rawValue : nil
+                        MMKVHelper.shared.calendarExportScopeLimit = isExportScopeLimited ? exportScope.rawValue : nil
+                        
                         onConfirm(
                             isFirstReminderEnabled ? firstReminderOffset.rawValue : nil,
                             isSecondReminderEnabled ? secondReminderOffset.rawValue : nil,
                             isExportScopeLimited ? exportScope.rawValue : nil
                         )
                     }
+                }
+            }
+            .onAppear {
+                // 加载保存的设置
+                if let firstOffset = MMKVHelper.shared.calendarFirstReminderOffset {
+                    isFirstReminderEnabled = true
+                    firstReminderOffset = CalendarReminderOffset(rawValue: firstOffset) ?? .tenMinutes
+                } else {
+                    isFirstReminderEnabled = false
+                }
+                
+                if let secondOffset = MMKVHelper.shared.calendarSecondReminderOffset {
+                    isSecondReminderEnabled = true
+                    secondReminderOffset = CalendarReminderOffset(rawValue: secondOffset) ?? .atTime
+                } else {
+                    isSecondReminderEnabled = false
+                }
+                
+                if let scope = MMKVHelper.shared.calendarExportScopeLimit {
+                    isExportScopeLimited = true
+                    exportScope = CalendarExportScope(rawValue: scope) ?? .next1Week
+                } else {
+                    isExportScopeLimited = false
                 }
             }
         }

@@ -69,6 +69,9 @@ class CourseScheduleViewModel {
         isLoaded = true
         loadAvailableSemesters()
         loadCourses()
+        Task {
+            syncCalendarIfNeeded()
+        }
     }
 
     func loadAvailableSemesters() {
@@ -136,17 +139,23 @@ class CourseScheduleViewModel {
         }
     }
 
-    func addToCalendar(firstReminderOffset: TimeInterval?, secondReminderOffset: TimeInterval?, scopeLimit: Int? = nil) {
+    func addToCalendar(firstReminderOffset: TimeInterval?, secondReminderOffset: TimeInterval?, scopeLimit: Int? = nil, isSilent: Bool = false) {
         guard let data = self.data?.value else {
-            self.errorMessage = "课表数据未加载，无法导出"
-            self.isShowingError = true
+            if !isSilent {
+                self.errorMessage = "课表数据未加载，无法导出"
+                self.isShowingError = true
+            }
             return
         }
 
-        isAddToCalendarExporting = true
+        if !isSilent {
+            isAddToCalendarExporting = true
+        }
         Task {
             defer {
-                isAddToCalendarExporting = false
+                if !isSilent {
+                    isAddToCalendarExporting = false
+                }
             }
             do {
                 let currentCalendar = Calendar.current
@@ -202,11 +211,38 @@ class CourseScheduleViewModel {
                 // 最后统一提交改变
                 try CalendarUtil.commitChanges()
 
-                isShowingAddToCalendarSuccess = true
+                if !isSilent {
+                    isShowingAddToCalendarSuccess = true
+                }
+                MMKVHelper.shared.calendarLastSyncDate = .now
             } catch {
-                self.errorMessage = "导出失败: \(error.localizedDescription)"
-                self.isShowingError = true
+                if !isSilent {
+                    self.errorMessage = "导出失败: \(error.localizedDescription)"
+                    self.isShowingError = true
+                }
             }
         }
+    }
+    
+    /// 如果用户设置了导出范围，则在每天进入 app 时自动同步一次日历
+    func syncCalendarIfNeeded() {
+        guard let scopeLimit = MMKVHelper.shared.calendarExportScopeLimit else { return }
+        
+        if let lastSync = MMKVHelper.shared.calendarLastSyncDate {
+            // 如果上次同步是在今天，就不再同步
+            if Calendar.current.isDateInToday(lastSync) {
+                return
+            }
+        }
+        
+        // 只有在数据加载完成后才同步
+        guard data != nil else { return }
+        
+        addToCalendar(
+            firstReminderOffset: MMKVHelper.shared.calendarFirstReminderOffset,
+            secondReminderOffset: MMKVHelper.shared.calendarSecondReminderOffset,
+            scopeLimit: scopeLimit,
+            isSilent: true
+        )
     }
 }
