@@ -15,7 +15,8 @@ end
 
 def sync_for_platform(platform_name:, readonly:)
   app_identifiers = [ENV['APP_IDENTIFIER'], ENV['WIDGET_IDENTIFIER']]
-  api_key = load_api_key_if_present
+
+  api_key = readonly ? nil : load_api_key_if_present
 
   %w[development appstore].each do |cert_type|
     params = {
