@@ -10,14 +10,15 @@ import Foundation
 import SwiftUI
 
 @MainActor
-class GradeDetailViewModel: ObservableObject {
-    @Published var gradeDetail: EduHelper.GradeDetail?
-    @Published var errorMessage: String = ""
-    @Published var warningMessage: String = ""
+@Observable
+class GradeDetailViewModel {
+    var gradeDetail: EduHelper.GradeDetail?
+    var errorMessage: String = ""
+    var warningMessage: String = ""
 
-    @Published var isLoading = false
-    @Published var isShowingError = false
-    @Published var isShowingWarning = false
+    var isLoading = false
+    var isShowingError = false
+    var isShowingWarning = false
 
     func task(_ courseGrade: EduHelper.CourseGrade) {
         loadDetail(courseGrade)
@@ -31,12 +32,25 @@ class GradeDetailViewModel: ObservableObject {
                 isLoading = false
             }
             if let eduHelper = AuthManager.shared.eduHelper {
-                do {
-                    gradeDetail = try await eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
-                } catch {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
+                let maxRetryCount = 3
+                var lastError: Error?
+
+                for _ in 1...maxRetryCount {
+                    do {
+                        gradeDetail = try await eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
+                        return
+                    } catch {
+                        lastError = error
+                    }
                 }
+
+                let retryHint = "获取成绩详情失败，请点击右上角刷新后重试"
+                if let lastError {
+                    errorMessage = "\(retryHint)\n\(lastError.localizedDescription)"
+                } else {
+                    errorMessage = retryHint
+                }
+                isShowingError = true
             } else {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     self.warningMessage = "请先登录教务系统后再查询数据"

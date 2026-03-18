@@ -12,7 +12,7 @@ import SwiftUI
 
 struct GradeDetailView: View {
     @Environment(\.colorScheme) var colorScheme
-    @StateObject var viewModel = GradeDetailViewModel()
+    @State var viewModel = GradeDetailViewModel()
     var courseGrade: EduHelper.CourseGrade
 
     // MARK: - Course Title
@@ -128,7 +128,11 @@ struct GradeDetailView: View {
                 content()
             }
             .padding()
-            .background(Color.appSecondarySystemGroupedBackground)
+            #if os(iOS)
+            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            #else
+            .background(Color(PlatformColor.controlBackgroundColor))
+            #endif
             .cornerRadius(12)
         }
     }
@@ -145,7 +149,9 @@ struct GradeDetailView: View {
             }
             .padding()
         }
-        .background(Color.appSystemGroupedBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
         .task { viewModel.task(courseGrade) }
         .toast(isPresenting: $viewModel.isShowingError) {
             AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
@@ -155,10 +161,10 @@ struct GradeDetailView: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Button(action: { viewModel.loadDetail(courseGrade) }) {
+                Button(action: { viewModel.loadDetail(courseGrade) }) {
+                    if viewModel.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
                         Label("刷新成绩分布", systemImage: "arrow.clockwise")
                     }
                 }
