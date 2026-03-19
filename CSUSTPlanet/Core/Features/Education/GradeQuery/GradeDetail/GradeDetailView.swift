@@ -141,6 +141,20 @@ struct GradeDetailView: View {
                                         .tint(ColorUtil.dynamicColor(grade: component.grade))
                                 }
                             }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text("总成绩 (100%)")
+                                        .font(.callout)
+                                    Spacer()
+                                    Text("\(String(format: "%.1f", Double(detail.totalGrade)))/100")
+                                        .font(.callout)
+                                        .foregroundColor(.secondary)
+                                }
+
+                                ProgressView(value: Double(min(max(detail.totalGrade, 0), 100)), total: 100.0)
+                                    .tint(ColorUtil.dynamicColor(grade: Double(detail.totalGrade)))
+                            }
                         }
                     }
                 }
