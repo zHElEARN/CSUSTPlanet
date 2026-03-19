@@ -28,7 +28,7 @@ class ExamScheduleViewModel {
 
     var errorToast: ToastState = .errorTitle
     var successToast: ToastState = .successTitle
-    var loadingToast: ToastState = .loadingTitle
+    var loadingToast: ToastState = .init(title: "添加中")
 
     var targetScrollID: String? = nil
 
@@ -98,6 +98,7 @@ class ExamScheduleViewModel {
             errorToast.show(message: "考试安排为空，无法添加到日历")
             return
         }
+        loadingToast.show(message: "正在添加到日历...")
         do {
             let calendar = try await CalendarUtil.getOrCreateEventCalendar(named: "长理星球 - 考试")
             for exam in exams {
@@ -110,8 +111,10 @@ class ExamScheduleViewModel {
                     location: exam.examRoom
                 )
             }
+            loadingToast.hide()
             successToast.show(message: "全部添加到日历成功")
         } catch {
+            loadingToast.hide()
             errorToast.show(message: error.localizedDescription)
         }
     }

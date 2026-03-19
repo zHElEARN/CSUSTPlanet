@@ -48,6 +48,7 @@ struct ExamScheduleView: View {
         .safeRefreshable { await viewModel.loadExams() }
         .errorToast($viewModel.errorToast)
         .successToast($viewModel.successToast)
+        .loadingToast($viewModel.loadingToast)
         .sheet(isPresented: $viewModel.isFilterPresented) { filterView }
         .alert("添加日历", isPresented: $viewModel.isAddToCalendarAlertPresented) {
             Button(asyncAction: viewModel.addToCalendar) {
