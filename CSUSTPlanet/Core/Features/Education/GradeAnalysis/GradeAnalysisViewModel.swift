@@ -33,49 +33,51 @@ class GradeAnalysisViewModel: NSObject {
         return map
     }()
 
-    var data: Cached<[EduHelper.CourseGrade]>?
+    var courseGradesData: Cached<[EduHelper.CourseGrade]>?
     var weightedAverageGrade: Double?
     var selectedChartType: ChartType = .averageGrade
     var selectedDistributionChartType: DistributionChartType = .gradePoint
 
-    var isLoading: Bool = false
+    var isLoadingAnalysis: Bool = false
     var isShowingShareSheet: Bool = false
 
-    var errorState = ToastState()
-    var successState = ToastState()
+    var errorToast: ToastState = .errorTitle
+    var successToast: ToastState = .successTitle
 
     var analysisData: GradeAnalysisData? {
-        guard let courseGrades = data?.value else { return nil }
+        guard let courseGrades = courseGradesData?.value else { return nil }
         return GradeAnalysisData.fromCourseGrades(courseGrades)
     }
 
     var shareContent: Any?
 
-    var refreshTrigger = false
+    var isInitial: Bool = true
 
     override init() {
         super.init()
         guard let data = MMKVHelper.shared.courseGradesCache else { return }
-        self.data = data
+        self.courseGradesData = data
     }
 
-    func triggerRefresh() {
-        refreshTrigger.toggle()
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        await loadGradeAnalysis()
     }
 
     func loadGradeAnalysis() async {
-        guard !isLoading else { return }
-        isLoading = true
-        defer { isLoading = false }
+        guard !isLoadingAnalysis else { return }
+        isLoadingAnalysis = true
+        defer { isLoadingAnalysis = false }
 
         do {
             let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
             let data = Cached(cachedAt: .now, value: courseGrades)
-            self.data = data
+            self.courseGradesData = data
             MMKVHelper.shared.courseGradesCache = data
             WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
         } catch {
-            errorState.show(message: error.localizedDescription)
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
@@ -84,7 +86,7 @@ class GradeAnalysisViewModel: NSObject {
         let renderer = ImageRenderer(content: shareableView)
         renderer.scale = UIScreen.main.scale
         guard let uiImage = renderer.uiImage else {
-            errorState.show(message: "生成图片失败")
+            errorToast.show(message: "生成图片失败")
             return
         }
         shareContent = ImageActivityItemSource(title: "我的成绩分析", image: uiImage)
@@ -97,16 +99,16 @@ class GradeAnalysisViewModel: NSObject {
         if let uiImage = renderer.uiImage {
             UIImageWriteToSavedPhotosAlbum(uiImage, self, #selector(saveToPhotoAlbumCallback(_:didFinishSavingWithError:contextInfo:)), nil)
         } else {
-            errorState.show(message: "生成图片失败")
+            errorToast.show(message: "生成图片失败")
         }
     }
 
     @objc
     func saveToPhotoAlbumCallback(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
         if let error = error {
-            errorState.show(message: "保存图片失败，可能是没有权限: \(error.localizedDescription)")
+            errorToast.show(message: "保存图片失败，可能是没有权限: \(error.localizedDescription)")
         } else {
-            successState.show(message: "图片保存成功")
+            successToast.show(message: "图片保存成功")
         }
     }
     #endif

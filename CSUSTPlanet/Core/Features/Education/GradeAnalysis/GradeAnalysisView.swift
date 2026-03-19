@@ -26,10 +26,10 @@ struct GradeAnalysisView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .task(id: viewModel.refreshTrigger) { await viewModel.loadGradeAnalysis() }
-        .refreshable { await viewModel.loadGradeAnalysis() }
-        .errorToast($viewModel.errorState)
-        .successToast($viewModel.successState)
+        .task { await viewModel.loadInitial() }
+        .safeRefreshable { await viewModel.loadGradeAnalysis() }
+        .errorToast($viewModel.errorToast)
+        .successToast($viewModel.successToast)
         #if os(iOS)
         .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent ?? "分享错误"]) }
         #endif
@@ -41,22 +41,22 @@ struct GradeAnalysisView: View {
                 Button(action: { viewModel.showShareSheet(shareableView) }) {
                     Label("分享", systemImage: "square.and.arrow.up")
                 }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
+                .disabled(viewModel.isLoadingAnalysis || viewModel.courseGradesData?.value.isEmpty == true)
                 Button(action: { viewModel.saveToPhotoAlbum(shareableView) }) {
                     Label("保存结果到相册", systemImage: "photo")
                 }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
+                .disabled(viewModel.isLoadingAnalysis || viewModel.courseGradesData?.value.isEmpty == true)
             }
             #endif
             ToolbarItem(placement: .primaryAction) {
-                Button(action: viewModel.triggerRefresh) {
-                    if viewModel.isLoading {
+                Button(asyncAction: viewModel.loadGradeAnalysis) {
+                    if viewModel.isLoadingAnalysis {
                         ProgressView().smallControlSizeOnMac()
                     } else {
                         Label("刷新成绩分析", systemImage: "arrow.clockwise")
                     }
                 }
-                .disabled(viewModel.isLoading)
+                .disabled(viewModel.isLoadingAnalysis)
             }
         }
         .trackView("GradeAnalysis")
