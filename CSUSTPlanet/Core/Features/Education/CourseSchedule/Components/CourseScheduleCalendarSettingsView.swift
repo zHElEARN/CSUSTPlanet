@@ -122,7 +122,7 @@ struct CourseScheduleCalendarSettingsView: View {
                 } header: {
                     Text("导出范围")
                 } footer: {
-                    Text("默认导出本学期所有课程。开启后可限制仅导出未来几周的课程。")
+                    Text("每次打开课表页面时会自动将课程导出到系统日历。默认导出本学期所有课程，开启后可限制仅导出未来几周的课程。")
                 }
             }
             .formStyle(.grouped)
@@ -137,12 +137,6 @@ struct CourseScheduleCalendarSettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("添加") {
                         isPresented = false
-                        
-                        // 保存设置
-                        MMKVHelper.shared.calendarFirstReminderOffset = isFirstReminderEnabled ? firstReminderOffset.rawValue : nil
-                        MMKVHelper.shared.calendarSecondReminderOffset = isSecondReminderEnabled ? secondReminderOffset.rawValue : nil
-                        MMKVHelper.shared.calendarExportScopeLimit = isExportScopeLimited ? exportScope.rawValue : nil
-                        
                         onConfirm(
                             isFirstReminderEnabled ? firstReminderOffset.rawValue : nil,
                             isSecondReminderEnabled ? secondReminderOffset.rawValue : nil,
@@ -152,26 +146,50 @@ struct CourseScheduleCalendarSettingsView: View {
                 }
             }
             .onAppear {
-                // 加载保存的设置
+                // 从 MMKV 加载保存的设置
                 if let firstOffset = MMKVHelper.shared.calendarFirstReminderOffset {
                     isFirstReminderEnabled = true
                     firstReminderOffset = CalendarReminderOffset(rawValue: firstOffset) ?? .tenMinutes
                 } else {
                     isFirstReminderEnabled = false
                 }
-                
+
                 if let secondOffset = MMKVHelper.shared.calendarSecondReminderOffset {
                     isSecondReminderEnabled = true
                     secondReminderOffset = CalendarReminderOffset(rawValue: secondOffset) ?? .atTime
                 } else {
                     isSecondReminderEnabled = false
                 }
-                
+
                 if let scope = MMKVHelper.shared.calendarExportScopeLimit {
                     isExportScopeLimited = true
                     exportScope = CalendarExportScope(rawValue: scope) ?? .next1Week
                 } else {
                     isExportScopeLimited = false
+                }
+            }
+            .onChange(of: isFirstReminderEnabled) {
+                MMKVHelper.shared.calendarFirstReminderOffset = isFirstReminderEnabled ? firstReminderOffset.rawValue : nil
+            }
+            .onChange(of: firstReminderOffset) {
+                if isFirstReminderEnabled {
+                    MMKVHelper.shared.calendarFirstReminderOffset = firstReminderOffset.rawValue
+                }
+            }
+            .onChange(of: isSecondReminderEnabled) {
+                MMKVHelper.shared.calendarSecondReminderOffset = isSecondReminderEnabled ? secondReminderOffset.rawValue : nil
+            }
+            .onChange(of: secondReminderOffset) {
+                if isSecondReminderEnabled {
+                    MMKVHelper.shared.calendarSecondReminderOffset = secondReminderOffset.rawValue
+                }
+            }
+            .onChange(of: isExportScopeLimited) {
+                MMKVHelper.shared.calendarExportScopeLimit = isExportScopeLimited ? exportScope.rawValue : nil
+            }
+            .onChange(of: exportScope) {
+                if isExportScopeLimited {
+                    MMKVHelper.shared.calendarExportScopeLimit = exportScope.rawValue
                 }
             }
         }
