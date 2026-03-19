@@ -20,7 +20,7 @@ struct ExamScheduleView: View {
         NavigationStack {
             Form {
                 Section(header: Text("学期选择")) {
-                    Picker("学期", selection: $viewModel.selectedSemesters) {
+                    Picker("学期", selection: $viewModel.selectedSemester) {
                         Text("默认学期").tag(nil as String?)
                         ForEach(viewModel.availableSemesters, id: \.self) { semester in
                             Text(semester).tag(semester as String?)
@@ -28,14 +28,14 @@ struct ExamScheduleView: View {
                     }
                     #if os(iOS)
                     .pickerStyle(.wheel)
-                    #else
+                    #elseif os(macOS)
                     .pickerStyle(.menu)
                     #endif
                     HStack {
-                        Button(action: viewModel.loadAvailableSemesters) {
+                        Button(action: { viewModel.semestersRefreshTrigger.toggle() }) {
                             Text("刷新学期列表")
                         }
-                        if viewModel.isSemestersLoading {
+                        if viewModel.isLoadingSemesters {
                             Spacer()
                             ProgressView().smallControlSizeOnMac()
                         }
@@ -50,19 +50,20 @@ struct ExamScheduleView: View {
                     }
                 }
             }
+            .task(id: viewModel.semestersRefreshTrigger) { await viewModel.loadAvailableSemesters() }
             .formStyle(.grouped)
             .navigationTitle("高级查询")
             .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        viewModel.isShowingFilter = false
+                        viewModel.isFilterPresented = false
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
-                        viewModel.isShowingFilter = false
-                        viewModel.loadExams()
+                        viewModel.isFilterPresented = false
+                        viewModel.refreshTrigger.toggle()
                     }
                 }
             }
@@ -77,108 +78,94 @@ struct ExamScheduleView: View {
         let finished = viewModel.isExamFinished(exam)
         let daysLeft = viewModel.daysUntilExam(exam)
 
-        VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack(alignment: .top) {
-                Text(exam.courseName)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(finished ? .secondary : .primary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 0) {
+                // Header
+                HStack(alignment: .top) {
+                    Text(exam.courseName)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(finished ? .secondary : .primary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
 
-                Spacer()
+                    Spacer()
 
-                // 状态/倒计时 Badge
-                if finished {
-                    Text("已结束")
-                        .font(.caption.bold())
-                        .foregroundColor(.gray)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.gray.opacity(0.15), in: Capsule())
-                } else {
-                    if daysLeft == 0 {
-                        Text("今天")
+                    // 状态/倒计时 Badge
+                    if finished {
+                        Text("已结束")
                             .font(.caption.bold())
-                            .foregroundColor(.white)
+                            .foregroundColor(.gray)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.red, in: Capsule())
-                    } else if daysLeft == 1 {
-                        Text("明天")
-                            .font(.caption.bold())
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.orange, in: Capsule())
+                            .background(Color.gray.opacity(0.15), in: Capsule())
                     } else {
-                        Text("还有 \(daysLeft) 天")
-                            .font(.caption.bold())
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1), in: Capsule())
+                        if daysLeft == 0 {
+                            Text("今天")
+                                .font(.caption.bold())
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.red, in: Capsule())
+                        } else if daysLeft == 1 {
+                            Text("明天")
+                                .font(.caption.bold())
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.orange, in: Capsule())
+                        } else {
+                            Text("还有 \(daysLeft) 天")
+                                .font(.caption.bold())
+                                .foregroundColor(.blue)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.1), in: Capsule())
+                        }
                     }
                 }
-            }
-            .padding(.bottom, 12)
-
-            Divider()
                 .padding(.bottom, 12)
 
-            // Info Rows
-            VStack(alignment: .leading, spacing: 10) {
-                detailRow(icon: "clock.fill", color: .blue, text: exam.examTime, finished: finished)
+                Divider()
+                    .padding(.bottom, 12)
 
-                HStack(spacing: 0) {
-                    detailRow(icon: "building.columns.fill", color: .green, text: exam.examRoom, finished: finished)
-                    Spacer()
-                    if !exam.seatNumber.isEmpty {
-                        detailRow(icon: "number.square.fill", color: .orange, text: "座号: \(exam.seatNumber)", finished: finished)
+                // Info Rows
+                VStack(alignment: .leading, spacing: 10) {
+                    detailRow(icon: "clock.fill", color: .blue, text: exam.examTime, finished: finished)
+
+                    HStack(spacing: 0) {
+                        detailRow(icon: "building.columns.fill", color: .green, text: exam.examRoom, finished: finished)
+                        Spacer()
+                        if !exam.seatNumber.isEmpty {
+                            detailRow(icon: "number.square.fill", color: .orange, text: "座号: \(exam.seatNumber)", finished: finished)
+                        }
                     }
-                }
 
-                if !exam.teacher.isEmpty {
-                    detailRow(icon: "person.fill", color: .purple, text: exam.teacher, finished: finished)
-                }
-
-                if !exam.admissionTicketNumber.isEmpty {
-                    detailRow(icon: "doc.text.fill", color: .red, text: "准考证: \(exam.admissionTicketNumber)", finished: finished)
-                }
-
-                if !exam.remarks.isEmpty {
-                    HStack(alignment: .top, spacing: 6) {
-                        Image(systemName: "note.text")
-                            .font(.caption)
-                            .foregroundColor(finished ? .gray : .secondary)
-                            .frame(width: 16)
-                        Text(exam.remarks)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    if !exam.teacher.isEmpty {
+                        detailRow(icon: "person.fill", color: .purple, text: exam.teacher, finished: finished)
                     }
-                    .padding(.top, 4)
+
+                    if !exam.admissionTicketNumber.isEmpty {
+                        detailRow(icon: "doc.text.fill", color: .red, text: "准考证: \(exam.admissionTicketNumber)", finished: finished)
+                    }
+
+                    if !exam.remarks.isEmpty {
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(systemName: "note.text")
+                                .font(.caption)
+                                .foregroundColor(finished ? .gray : .secondary)
+                                .frame(width: 16)
+                            Text(exam.remarks)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.top, 4)
+                    }
                 }
             }
         }
-        .padding(16)
-        #if os(iOS)
-        .background(Color(PlatformColor.secondarySystemGroupedBackground))
-        #elseif os(macOS)
-        .background(Color(PlatformColor.controlBackgroundColor))
-        #endif
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-        // 已结束状态：降低透明度，置灰
         .opacity(finished ? 0.6 : 1.0)
         .saturation(finished ? 0.0 : 1.0)
-        .contextMenu {
-            Button(action: {
-                viewModel.addToCalendar(exam: exam)
-            }) {
-                Label("添加到日历", systemImage: "calendar.badge.plus")
-            }
-        }
     }
 
     // 辅助视图：详情行
@@ -201,7 +188,7 @@ struct ExamScheduleView: View {
 
     var body: some View {
         Group {
-            if let data = viewModel.data, !data.value.isEmpty {
+            if let data = viewModel.examData, !data.value.isEmpty {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 16) {
@@ -212,10 +199,7 @@ struct ExamScheduleView: View {
                         .padding(.horizontal)
                         .padding(.vertical)
                     }
-                    .refreshable {
-                        viewModel.loadExams()
-                    }
-                    .onChange(of: viewModel.scrollToID) { _, id in
+                    .onChange(of: viewModel.targetScrollID) { _, id in
                         viewModel.handleScrollOnChange(proxy: proxy, newID: id)
                     }
                     .onAppear {
@@ -227,47 +211,36 @@ struct ExamScheduleView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
-        .onAppear {
-            viewModel.refreshNow()
-        }
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingSuccess) {
-            AlertToast(type: .complete(.green), title: viewModel.successMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingWarning) {
-            AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
-        }
-        .task { viewModel.task() }
+        .refreshable { await viewModel.loadExams() }
+        .onAppear { viewModel.now = .now }
+        .errorToast($viewModel.errorToast)
+        .successToast($viewModel.successToast)
+        .task(id: viewModel.refreshTrigger) { await viewModel.loadInitial() }
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
-                Button(action: { viewModel.isShowingFilter.toggle() }) {
+                Button(action: { viewModel.isFilterPresented.toggle() }) {
                     Label("高级查询", systemImage: "slider.horizontal.3")
                 }
-                .disabled(viewModel.isLoading)
-                Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                .disabled(viewModel.isLoadingExams)
+                Button(action: { viewModel.isAddToCalendarAlertPresented = true }) {
                     Label("全部添加到日历", systemImage: "calendar.badge.plus")
                 }
-                .disabled(viewModel.data?.value.isEmpty == true || viewModel.isLoading)
+                .disabled(viewModel.examData?.value.isEmpty == true || viewModel.isLoadingExams)
             }
             ToolbarItem(placement: .primaryAction) {
-                Button(action: { viewModel.loadExams() }) {
-                    if viewModel.isLoading {
+                Button(action: { viewModel.refreshTrigger.toggle() }) {
+                    if viewModel.isLoadingExams {
                         ProgressView().smallControlSizeOnMac()
                     } else {
                         Label("查询", systemImage: "arrow.clockwise")
                     }
                 }
-                .disabled(viewModel.isLoading)
+                .disabled(viewModel.isLoadingExams)
             }
         }
-        .sheet(isPresented: $viewModel.isShowingFilter) { filterView }
-        .alert("添加日历", isPresented: $viewModel.isShowingAddToCalendarAlert) {
-            Button(action: viewModel.addAllToCalendar) {
+        .sheet(isPresented: $viewModel.isFilterPresented) { filterView }
+        .alert("添加日历", isPresented: $viewModel.isAddToCalendarAlertPresented) {
+            Button(action: { Task { await viewModel.addAllToCalendar() } }) {
                 Text("确认添加")
             }
             Button("取消", role: .cancel) {}
@@ -277,7 +250,7 @@ struct ExamScheduleView: View {
         .navigationTitle("考试安排")
         .apply { view in
             if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共 \(viewModel.data?.value.count ?? 0) 门考试")
+                view.navigationSubtitle("共 \(viewModel.examData?.value.count ?? 0) 门考试")
             } else {
                 view
             }

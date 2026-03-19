@@ -14,35 +14,31 @@ import SwiftUI
 @Observable
 class ExamScheduleViewModel {
     var availableSemesters: [String] = []
-    var errorMessage = ""
-    var warningMessage = ""
-    var successMessage = ""
-    var data: Cached<[EduHelper.Exam]>? = nil
+    var examData: Cached<[EduHelper.Exam]>? = nil
 
-    var isShowingAddToCalendarAlert = false
-    var isShowingError = false
-    var isSemestersLoading = false
-    var isLoading = false
-    var isShowingFilter: Bool = false
-    var isShowingSuccess: Bool = false
-    var isShowingWarning: Bool = false
-    var isShowingShareSheet: Bool = false
+    var isLoadingSemesters = false
+    var isLoadingExams = false
 
-    var selectedSemesters: String? = nil
+    var isAddToCalendarAlertPresented = false
+    var isFilterPresented: Bool = false
+    var isShareSheetPresented: Bool = false
+
+    var selectedSemester: String? = nil
     var selectedSemesterType: EduHelper.SemesterType? = nil
-    var scrollToID: String? = nil
+
+    var targetScrollID: String? = nil
     var now = Date()
 
-    var isLoaded: Bool = false
+    var refreshTrigger = false
+    var semestersRefreshTrigger = false
+
+    var errorToast = ToastState()
+    var successToast = ToastState()
 
     init() {
         guard let data = MMKVHelper.shared.examSchedulesCache else { return }
-        self.data = data
+        self.examData = data
         updateScrollTarget(exams: data.value)
-    }
-
-    func refreshNow() {
-        now = Date()
     }
 
     func isExamFinished(_ exam: EduHelper.Exam) -> Bool {
@@ -57,31 +53,26 @@ class ExamScheduleViewModel {
         return components.day ?? 0
     }
 
-    func task() {
-        guard !isLoaded else { return }
-        isLoaded = true
-        loadAvailableSemesters()
-        loadExams()
+    func loadInitial() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.loadAvailableSemesters() }
+            group.addTask { await self.loadExams() }
+        }
     }
 
-    func loadAvailableSemesters() {
-        isSemestersLoading = true
-        Task {
-            defer {
-                isSemestersLoading = false
-            }
+    func loadAvailableSemesters() async {
+        isLoadingSemesters = true
+        defer { isLoadingSemesters = false }
 
-            do {
-                (availableSemesters, selectedSemesters) = try await AuthManager.shared.eduHelper.examService.getAvailableSemestersForExamSchedule()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            (availableSemesters, selectedSemester) = try await AuthManager.shared.eduHelper.examService.getAvailableSemestersForExamSchedule()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
     func handleScrollOnAppear(proxy: ScrollViewProxy) {
-        if let id = scrollToID {
+        if let id = targetScrollID {
             DispatchQueue.main.async {
                 withAnimation {
                     proxy.scrollTo(id, anchor: .top)
@@ -98,10 +89,14 @@ class ExamScheduleViewModel {
         }
     }
 
-    func addToCalendar(exam: EduHelper.Exam) {
-        Task {
-            do {
-                let calendar = try await CalendarUtil.getOrCreateEventCalendar(named: "长理星球 - 考试")
+    func addAllToCalendar() async {
+        guard let exams = examData?.value else {
+            errorToast.show(message: "考试安排为空，无法添加到日历")
+            return
+        }
+        do {
+            let calendar = try await CalendarUtil.getOrCreateEventCalendar(named: "长理星球 - 考试")
+            for exam in exams {
                 try await CalendarUtil.addEvent(
                     calendar: calendar,
                     title: "考试：\(exam.courseName)",
@@ -110,73 +105,38 @@ class ExamScheduleViewModel {
                     notes: "课程老师：\(exam.teacher)",
                     location: exam.examRoom
                 )
-                successMessage = "已添加到日历"
-                isShowingSuccess = true
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
             }
-        }
-    }
-
-    func addAllToCalendar() {
-        guard let exams = data?.value else {
-            errorMessage = "考试安排为空，无法添加到日历"
-            isShowingError = true
-            return
-        }
-        Task {
-            do {
-                let calendar = try await CalendarUtil.getOrCreateEventCalendar(named: "长理星球 - 考试")
-                for exam in exams {
-                    try await CalendarUtil.addEvent(
-                        calendar: calendar,
-                        title: "考试：\(exam.courseName)",
-                        startDate: exam.examStartTime,
-                        endDate: exam.examEndTime,
-                        notes: "课程老师：\(exam.teacher)",
-                        location: exam.examRoom
-                    )
-                }
-                successMessage = "全部添加到日历成功"
-                isShowingSuccess = true
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+            successToast.show(message: "全部添加到日历成功")
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
     private func updateScrollTarget(exams: [EduHelper.Exam]) {
-        let now = Date()
         if let firstUnfinished = exams.first(where: { $0.examEndTime >= now }) {
-            self.scrollToID = firstUnfinished.courseID
+            self.targetScrollID = firstUnfinished.courseID
         } else {
-            self.scrollToID = nil
+            self.targetScrollID = nil
         }
     }
 
-    func loadExams() {
-        isLoading = true
-        Task {
-            defer {
-                isLoading = false
+    func loadExams() async {
+        guard !isLoadingExams else { return }
+        isLoadingExams = true
+        defer { isLoadingExams = false }
+
+        do {
+            let exams = try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: selectedSemester, semesterType: selectedSemesterType)
+            let sortedExams = exams.sorted {
+                return $0.examStartTime < $1.examStartTime
             }
 
-            do {
-                let exams = try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: selectedSemesters, semesterType: selectedSemesterType)
-                let sortedExams = exams.sorted {
-                    return $0.examStartTime < $1.examStartTime
-                }
-
-                let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
-                self.data = data
-                self.updateScrollTarget(exams: sortedExams)
-                MMKVHelper.shared.examSchedulesCache = data
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+            let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
+            self.examData = data
+            self.updateScrollTarget(exams: sortedExams)
+            MMKVHelper.shared.examSchedulesCache = data
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }
