@@ -13,74 +13,86 @@ struct ExamScheduleView: View {
     @Environment(\.colorScheme) var colorScheme
     @State var viewModel = ExamScheduleViewModel()
 
-    // MARK: - Filter View
+    // MARK: - Body
 
-    @ViewBuilder
-    private var filterView: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("学期选择")) {
-                    Picker("学期", selection: $viewModel.selectedSemester) {
-                        Text("默认学期").tag(nil as String?)
-                        ForEach(viewModel.availableSemesters, id: \.self) { semester in
-                            Text(semester).tag(semester as String?)
+    var body: some View {
+        Group {
+            if let data = viewModel.examData, !data.value.isEmpty {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(data.value, id: \.courseID) { exam in
+                                examCard(exam: exam).id(exam.courseID)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical)
+                    }
+                    .onChange(of: viewModel.targetScrollID) { _, newValue in
+                        if let id = newValue {
+                            withAnimation { proxy.scrollTo(id, anchor: .top) }
                         }
                     }
-                    #if os(iOS)
-                    .pickerStyle(.wheel)
-                    #elseif os(macOS)
-                    .pickerStyle(.menu)
-                    #endif
-                    HStack {
-                        Button(action: { viewModel.shouldRefreshSemesters.toggle() }) {
-                            Text("刷新学期列表")
-                        }
-                        if viewModel.isLoadingSemesters {
-                            Spacer()
-                            ProgressView().smallControlSizeOnMac()
-                        }
-                    }
-                }
-                Section(header: Text("筛选条件")) {
-                    Picker("考试类型", selection: $viewModel.selectedSemesterType) {
-                        Text("全部类型").tag(nil as EduHelper.SemesterType?)
-                        ForEach(EduHelper.SemesterType.allCases, id: \.self) { semesterType in
-                            Text(semesterType.rawValue).tag(semesterType as EduHelper.SemesterType?)
+                    .onAppear {
+                        if let id = viewModel.targetScrollID {
+                            withAnimation { proxy.scrollTo(id, anchor: .top) }
                         }
                     }
                 }
-            }
-            .task(id: viewModel.shouldRefreshSemesters) { await viewModel.loadAvailableSemesters() }
-            .formStyle(.grouped)
-            .navigationTitle("高级查询")
-            .inlineToolbarTitle()
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
-                        viewModel.isFilterPresented = false
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") {
-                        viewModel.isFilterPresented = false
-                        viewModel.shouldRefreshExams.toggle()
-                    }
-                }
+            } else {
+                ContentUnavailableView("暂无考试安排", systemImage: "calendar.badge.exclamationmark", description: Text("当前筛选条件下没有找到考试安排"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .trackView("ExamScheduleFilter")
+        .safeRefreshable { await viewModel.loadExams() }
+        .errorToast($viewModel.errorToast)
+        .successToast($viewModel.successToast)
+        .sheet(isPresented: $viewModel.isFilterPresented) { filterView }
+        .alert("添加日历", isPresented: $viewModel.isAddToCalendarAlertPresented) {
+            Button(asyncAction: viewModel.addToCalendar) {
+                Text("确认添加")
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("是否将所有考试安排添加到系统日历？")
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: { viewModel.isFilterPresented.toggle() }) {
+                    Label("高级查询", systemImage: "slider.horizontal.3")
+                }
+                .disabled(viewModel.isLoadingExams)
+
+                Button(action: { viewModel.isAddToCalendarAlertPresented = true }) {
+                    Label("全部添加到日历", systemImage: "calendar.badge.plus")
+                }
+                .disabled(viewModel.examData?.value.isEmpty == true || viewModel.isLoadingExams)
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button(asyncAction: viewModel.loadExams) {
+                    if viewModel.isLoadingExams {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
+                        Label("查询", systemImage: "arrow.clockwise")
+                    }
+                }
+                .disabled(viewModel.isLoadingExams)
+            }
+        }
+        .navigationTitle("考试安排")
+        .navigationSubtitleCompat("共 \(viewModel.examData?.value.count ?? 0) 门考试")
+        .trackView("ExamSchedule")
     }
 
     // MARK: - Exam Card
 
     @ViewBuilder
-    private func examCard(exam: EduHelper.Exam) -> some View {
+    func examCard(exam: EduHelper.Exam) -> some View {
         let finished = viewModel.isExamFinished(exam)
         let daysLeft = viewModel.daysUntilExam(exam)
 
         CustomGroupBox {
             VStack(alignment: .leading, spacing: 0) {
-                // Header
                 HStack(alignment: .top) {
                     Text(exam.courseName)
                         .font(.headline)
@@ -91,7 +103,6 @@ struct ExamScheduleView: View {
 
                     Spacer()
 
-                    // 状态/倒计时 Badge
                     if finished {
                         Text("已结束")
                             .font(.caption.bold())
@@ -168,9 +179,8 @@ struct ExamScheduleView: View {
         .saturation(finished ? 0.0 : 1.0)
     }
 
-    // 辅助视图：详情行
     @ViewBuilder
-    private func detailRow(icon: String, color: Color, text: String, finished: Bool) -> some View {
+    func detailRow(icon: String, color: Color, text: String, finished: Bool) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.caption)
@@ -183,79 +193,63 @@ struct ExamScheduleView: View {
                 .lineLimit(1)
         }
     }
+}
 
-    // MARK: - Body
+extension ExamScheduleView {
+    // MARK: - Filter View
 
-    var body: some View {
-        Group {
-            if let data = viewModel.examData, !data.value.isEmpty {
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(data.value, id: \.courseID) { exam in
-                                examCard(exam: exam).id(exam.courseID)
-                            }
+    @ViewBuilder
+    var filterView: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("学期选择")) {
+                    Picker("学期", selection: $viewModel.selectedSemester) {
+                        Text("默认学期").tag(nil as String?)
+                        ForEach(viewModel.availableSemesters, id: \.self) { semester in
+                            Text(semester).tag(semester as String?)
                         }
-                        .padding(.horizontal)
-                        .padding(.vertical)
                     }
-                    .onChange(of: viewModel.targetScrollID) { _, id in
-                        viewModel.handleScrollOnChange(proxy: proxy, newID: id)
-                    }
-                    .onAppear {
-                        viewModel.handleScrollOnAppear(proxy: proxy)
-                    }
-                }
-            } else {
-                ContentUnavailableView("暂无考试安排", systemImage: "calendar.badge.exclamationmark", description: Text("当前筛选条件下没有找到考试安排"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .refreshable { await viewModel.loadExams() }
-        .onAppear { viewModel.now = .now }
-        .errorToast($viewModel.errorToast)
-        .successToast($viewModel.successToast)
-        .task(id: viewModel.shouldRefreshExams) { await viewModel.loadInitial() }
-        .toolbar {
-            ToolbarItemGroup(placement: .secondaryAction) {
-                Button(action: { viewModel.isFilterPresented.toggle() }) {
-                    Label("高级查询", systemImage: "slider.horizontal.3")
-                }
-                .disabled(viewModel.isLoadingExams)
-                Button(action: { viewModel.isAddToCalendarAlertPresented = true }) {
-                    Label("全部添加到日历", systemImage: "calendar.badge.plus")
-                }
-                .disabled(viewModel.examData?.value.isEmpty == true || viewModel.isLoadingExams)
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: { viewModel.shouldRefreshExams.toggle() }) {
-                    if viewModel.isLoadingExams {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("查询", systemImage: "arrow.clockwise")
+                    #if os(iOS)
+                    .pickerStyle(.wheel)
+                    #elseif os(macOS)
+                    .pickerStyle(.menu)
+                    #endif
+                    HStack {
+                        Button(asyncAction: viewModel.loadAvailableSemesters) {
+                            Text("刷新学期列表")
+                        }
+                        if viewModel.isLoadingSemesters {
+                            Spacer()
+                            ProgressView().smallControlSizeOnMac()
+                        }
                     }
                 }
-                .disabled(viewModel.isLoadingExams)
+                Section(header: Text("筛选条件")) {
+                    Picker("考试类型", selection: $viewModel.selectedSemesterType) {
+                        Text("全部类型").tag(nil as EduHelper.SemesterType?)
+                        ForEach(EduHelper.SemesterType.allCases, id: \.self) { semesterType in
+                            Text(semesterType.rawValue).tag(semesterType as EduHelper.SemesterType?)
+                        }
+                    }
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle("高级查询")
+            .inlineToolbarTitle()
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        viewModel.isFilterPresented = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") {
+                        viewModel.isFilterPresented = false
+                        await viewModel.loadExams()
+                    }
+                }
             }
         }
-        .sheet(isPresented: $viewModel.isFilterPresented) { filterView }
-        .alert("添加日历", isPresented: $viewModel.isAddToCalendarAlertPresented) {
-            Button(action: { Task { await viewModel.addAllToCalendar() } }) {
-                Text("确认添加")
-            }
-            Button("取消", role: .cancel) {}
-        } message: {
-            Text("是否将所有考试安排添加到系统日历？")
-        }
-        .navigationTitle("考试安排")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共 \(viewModel.examData?.value.count ?? 0) 门考试")
-            } else {
-                view
-            }
-        }
-        .largeToolbarTitle()
-        .trackView("ExamSchedule")
+        .trackView("ExamScheduleFilter")
     }
 }
