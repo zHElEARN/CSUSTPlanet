@@ -14,10 +14,6 @@ enum CalendarReminderOffset: TimeInterval, CaseIterable, Identifiable {
     case fifteenMinutes = 900
     case thirtyMinutes = 1800
     case oneHour = 3600
-    case twoHours = 7200
-    case oneDay = 86400
-    case twoDays = 172800
-    case oneWeek = 604800
 
     var id: TimeInterval { rawValue }
 
@@ -29,10 +25,26 @@ enum CalendarReminderOffset: TimeInterval, CaseIterable, Identifiable {
         case .fifteenMinutes: return "提前 15 分钟"
         case .thirtyMinutes: return "提前 30 分钟"
         case .oneHour: return "提前 1 小时"
-        case .twoHours: return "提前 2 小时"
-        case .oneDay: return "提前 1 天"
-        case .twoDays: return "提前 2 天"
-        case .oneWeek: return "提前 1 周"
+        }
+    }
+}
+
+enum CalendarExportScope: Int, CaseIterable, Identifiable {
+    case next1Week = 1
+    case next2Weeks = 2
+    case next3Weeks = 3
+    case next4Weeks = 4
+    case next5Weeks = 5
+
+    var id: Int { rawValue }
+
+    var title: String {
+        switch self {
+        case .next1Week: return "未来 1 周"
+        case .next2Weeks: return "未来 2 周"
+        case .next3Weeks: return "未来 3 周"
+        case .next4Weeks: return "未来 4 周"
+        case .next5Weeks: return "未来 5 周"
         }
     }
 }
@@ -46,7 +58,10 @@ struct CourseScheduleCalendarSettingsView: View {
     @State private var secondReminderOffset: CalendarReminderOffset = .atTime
     @State private var isSecondReminderEnabled: Bool = false
 
-    var onConfirm: (_ firstReminderOffset: TimeInterval?, _ secondReminderOffset: TimeInterval?) -> Void
+    @State private var exportScope: CalendarExportScope = .next1Week
+    @State private var isExportScopeLimited: Bool = false
+
+    var onConfirm: (_ firstReminderOffset: TimeInterval?, _ secondReminderOffset: TimeInterval?, _ exportScope: Int?) -> Void
 
     var body: some View {
         NavigationStack {
@@ -86,6 +101,29 @@ struct CourseScheduleCalendarSettingsView: View {
                 } footer: {
                     Text("你也可以设置两个不同的提醒时间，一个用于预留充足的准备时间，另一个用于临近上课时的最终提醒。")
                 }
+
+                Section {
+                    Toggle(
+                        "限制导出范围",
+                        isOn: Binding(
+                            get: { isExportScopeLimited },
+                            set: { value in withAnimation { isExportScopeLimited = value } }
+                        )
+                    )
+
+                    if isExportScopeLimited {
+                        Picker("导出范围", selection: $exportScope) {
+                            ForEach(CalendarExportScope.allCases) { scope in
+                                Text(scope.title).tag(scope)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                } header: {
+                    Text("导出范围")
+                } footer: {
+                    Text("每次打开课表页面时会自动将课程导出到系统日历。默认导出本学期所有课程，开启后可限制仅导出未来几周的课程。")
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("添加课表到系统日历")
@@ -101,9 +139,57 @@ struct CourseScheduleCalendarSettingsView: View {
                         isPresented = false
                         onConfirm(
                             isFirstReminderEnabled ? firstReminderOffset.rawValue : nil,
-                            isSecondReminderEnabled ? secondReminderOffset.rawValue : nil
+                            isSecondReminderEnabled ? secondReminderOffset.rawValue : nil,
+                            isExportScopeLimited ? exportScope.rawValue : nil
                         )
                     }
+                }
+            }
+            .onAppear {
+                // 从 MMKV 加载保存的设置
+                if let firstOffset = MMKVHelper.shared.calendarFirstReminderOffset {
+                    isFirstReminderEnabled = true
+                    firstReminderOffset = CalendarReminderOffset(rawValue: firstOffset) ?? .tenMinutes
+                } else {
+                    isFirstReminderEnabled = false
+                }
+
+                if let secondOffset = MMKVHelper.shared.calendarSecondReminderOffset {
+                    isSecondReminderEnabled = true
+                    secondReminderOffset = CalendarReminderOffset(rawValue: secondOffset) ?? .atTime
+                } else {
+                    isSecondReminderEnabled = false
+                }
+
+                if let scope = MMKVHelper.shared.calendarExportScopeLimit {
+                    isExportScopeLimited = true
+                    exportScope = CalendarExportScope(rawValue: scope) ?? .next1Week
+                } else {
+                    isExportScopeLimited = false
+                }
+            }
+            .onChange(of: isFirstReminderEnabled) {
+                MMKVHelper.shared.calendarFirstReminderOffset = isFirstReminderEnabled ? firstReminderOffset.rawValue : nil
+            }
+            .onChange(of: firstReminderOffset) {
+                if isFirstReminderEnabled {
+                    MMKVHelper.shared.calendarFirstReminderOffset = firstReminderOffset.rawValue
+                }
+            }
+            .onChange(of: isSecondReminderEnabled) {
+                MMKVHelper.shared.calendarSecondReminderOffset = isSecondReminderEnabled ? secondReminderOffset.rawValue : nil
+            }
+            .onChange(of: secondReminderOffset) {
+                if isSecondReminderEnabled {
+                    MMKVHelper.shared.calendarSecondReminderOffset = secondReminderOffset.rawValue
+                }
+            }
+            .onChange(of: isExportScopeLimited) {
+                MMKVHelper.shared.calendarExportScopeLimit = isExportScopeLimited ? exportScope.rawValue : nil
+            }
+            .onChange(of: exportScope) {
+                if isExportScopeLimited {
+                    MMKVHelper.shared.calendarExportScopeLimit = exportScope.rawValue
                 }
             }
         }
@@ -121,5 +207,5 @@ struct CourseScheduleCalendarSettingsView: View {
 }
 
 #Preview {
-    CourseScheduleCalendarSettingsView(isPresented: .constant(true)) { _, _ in }
+    CourseScheduleCalendarSettingsView(isPresented: .constant(true)) { _, _, _ in }
 }

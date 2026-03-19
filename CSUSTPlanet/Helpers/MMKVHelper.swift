@@ -135,6 +135,19 @@ class MMKVHelper {
 
     @MMKVStorage(key: "BackgroundTask.interval", defaultValue: 6 * 60 * 60)
     var backgroundTaskInterval: TimeInterval
+    // MARK: - Calendar Sync Properties
+
+    @MMKVOptionalStorage(key: "CalendarSync.exportScopeLimit")
+    var calendarExportScopeLimit: Int?
+
+    @MMKVOptionalStorage(key: "CalendarSync.firstReminderOffset")
+    var calendarFirstReminderOffset: Double?
+
+    @MMKVOptionalStorage(key: "CalendarSync.secondReminderOffset")
+    var calendarSecondReminderOffset: Double?
+
+    @MMKVOptionalStorage(key: "CalendarSync.lastSyncDate")
+    var calendarLastSyncDate: Date?
 }
 
 // MARK: - Methods
@@ -331,6 +344,16 @@ extension Array: MMKVValueType where Element: Codable {
 extension Dictionary: MMKVValueType where Key == String, Value: Codable {
     static func read(from helper: MMKVHelper, key: String) -> Dictionary? { return helper.object(forKey: key, as: Self.self) }
     func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
+extension Date: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Date? {
+        guard let timeInterval = helper.double(forKey: key) else { return nil }
+        return Date(timeIntervalSince1970: timeInterval)
+    }
+    func write(to helper: MMKVHelper, key: String) {
+        helper.set(forKey: key, self.timeIntervalSince1970)
+    }
 }
 
 extension Cached: MMKVValueType {

@@ -160,8 +160,8 @@ struct CourseScheduleView: View {
             AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
         }
         .sheet(isPresented: $viewModel.isShowingAddToCalendarAlert) {
-            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, secondOffset in
-                viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset)
+            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, secondOffset, scopeLimit in
+                viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset, scopeLimit: scopeLimit)
             }
         }
         .sheet(isPresented: $viewModel.isShowingSemestersSheet) {
@@ -201,28 +201,16 @@ struct CourseScheduleView: View {
             Spacer()
 
             HStack(spacing: 12) {
-                Menu {
+                let currentWeekBinding = Binding(
+                    get: { viewModel.currentWeek },
+                    set: { newValue in withAnimation { viewModel.currentWeek = newValue } }
+                )
+                Picker("选择周数", selection: currentWeekBinding) {
                     ForEach(1...CourseScheduleUtil.weekCount, id: \.self) { week in
-                        Button("第 \(week) 周") {
-                            withAnimation { viewModel.currentWeek = week }
-                        }
+                        Text("第 \(week) 周").tag(week)
                     }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("第 \(viewModel.currentWeek) 周")
-                            .fontWeight(.medium)
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(isPad ? .subheadline : .caption2)
-                    }
-                    .padding(.horizontal, isPad ? 16 : 12)
-                    .padding(.vertical, isPad ? 8 : 6)
-                    #if os(iOS)
-                    .background(Color(PlatformColor.secondarySystemBackground))
-                    #else
-                    .background(Color(PlatformColor.controlBackgroundColor))
-                    #endif
-                    .cornerRadius(8)
                 }
+                .fixedSize()
 
                 Button(action: viewModel.goToCurrentWeek) {
                     Text("本周")
