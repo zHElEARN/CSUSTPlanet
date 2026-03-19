@@ -44,6 +44,7 @@ struct ExamScheduleView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .task { await viewModel.loadInitial() }
         .safeRefreshable { await viewModel.loadExams() }
         .errorToast($viewModel.errorToast)
         .successToast($viewModel.successToast)
@@ -178,6 +179,8 @@ struct ExamScheduleView: View {
         .opacity(finished ? 0.6 : 1.0)
         .saturation(finished ? 0.0 : 1.0)
     }
+
+    // MARK: - Detail Row
 
     @ViewBuilder
     func detailRow(icon: String, color: Color, text: String, finished: Bool) -> some View {
