@@ -8,6 +8,16 @@
 import AlertToast
 import SwiftUI
 
+struct ToastState {
+    var isPresenting: Bool = false
+    var message: String = ""
+
+    mutating func show(message: String) {
+        self.message = message
+        self.isPresenting = true
+    }
+}
+
 extension View {
     func errorToast(isPresenting: Binding<Bool>, message: String) -> some View {
         toast(isPresenting: isPresenting) {
@@ -25,5 +35,17 @@ extension View {
         toast(isPresenting: isPresenting) {
             AlertToast(type: .complete(.green), title: message)
         }
+    }
+
+    func errorToast(_ state: Binding<ToastState>) -> some View {
+        errorToast(isPresenting: state.isPresenting, message: state.wrappedValue.message)
+    }
+
+    func warningToast(_ state: Binding<ToastState>) -> some View {
+        warningToast(isPresenting: state.isPresenting, message: state.wrappedValue.message)
+    }
+
+    func successToast(_ state: Binding<ToastState>) -> some View {
+        successToast(isPresenting: state.isPresenting, message: state.wrappedValue.message)
     }
 }

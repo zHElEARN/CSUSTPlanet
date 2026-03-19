@@ -26,13 +26,11 @@ class GradeQueryViewModel {
     var searchText: String = "" {
         didSet { updateFilteredGrades() }
     }
-    var errorMessage: String = ""
-    var warningMessage: String = ""
 
     var isLoading: Bool = false
     var isShowingShareSheet: Bool = false
-    var isShowingError: Bool = false
-    var isShowingWarning: Bool = false
+
+    var errorState = ToastState()
 
     var isSelectionMode: Bool = false {
         didSet { updateAnalysis() }
@@ -47,7 +45,7 @@ class GradeQueryViewModel {
     var semesterGPAs: [String: Double] = [:]
 
     var shareContent: Any? = nil
-    var isLoaded: Bool = false
+    var refreshTrigger: Bool = false
 
     private(set) var filteredCourseGrades: [EduHelper.CourseGrade] = []
     private(set) var groupedFilteredCourseGrades: [(semester: String, grades: [EduHelper.CourseGrade])] = []
@@ -59,29 +57,23 @@ class GradeQueryViewModel {
         applyData(data)
     }
 
-    func task() {
-        guard !isLoaded else { return }
-        isLoaded = true
-        loadCourseGrades()
+    func triggerRefresh() {
+        refreshTrigger.toggle()
     }
 
-    func loadCourseGrades() {
+    func loadCourseGrades() async {
+        guard !isLoading else { return }
         isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
+        defer { isLoading = false }
 
-            do {
-                let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
-                let data = Cached(cachedAt: .now, value: courseGrades)
-                applyData(data)
-                MMKVHelper.shared.courseGradesCache = data
-                WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
+            let data = Cached(cachedAt: .now, value: courseGrades)
+            applyData(data)
+            MMKVHelper.shared.courseGradesCache = data
+            WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
+        } catch {
+            errorState.show(message: error.localizedDescription)
         }
     }
 
@@ -201,14 +193,12 @@ class GradeQueryViewModel {
 
     func exportGradesAsCSV() {
         guard let csvString = generateCSVString(from: filteredCourseGrades) else {
-            errorMessage = "没有可导出的成绩数据"
-            isShowingError = true
+            errorState.show(message: "没有可导出的成绩数据")
             return
         }
 
         guard let csvData = csvString.data(using: .utf8) else {
-            errorMessage = "无法将CSV数据编码为UTF-8"
-            isShowingError = true
+            errorState.show(message: "无法将CSV数据编码为UTF-8")
             return
         }
 
@@ -225,8 +215,7 @@ class GradeQueryViewModel {
             isShowingShareSheet = true
 
         } catch {
-            errorMessage = "无法保存临时的CSV文件: \(error.localizedDescription)"
-            isShowingError = true
+            errorState.show(message: "无法保存临时的CSV文件: \(error.localizedDescription)")
         }
         #elseif os(macOS)
         let savePanel = NSSavePanel()
@@ -240,10 +229,7 @@ class GradeQueryViewModel {
             do {
                 try csvData.write(to: url)
             } catch {
-                Task { @MainActor in
-                    self.errorMessage = "无法保存CSV文件: \(error.localizedDescription)"
-                    self.isShowingError = true
-                }
+                Task { @MainActor in self.errorState.show(message: "无法保存CSV文件: \(error.localizedDescription)") }
             }
         }
         #endif

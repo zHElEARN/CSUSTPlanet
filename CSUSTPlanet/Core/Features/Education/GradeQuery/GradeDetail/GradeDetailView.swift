@@ -11,10 +11,41 @@ import Charts
 import SwiftUI
 
 struct GradeDetailView: View {
-    @Environment(\.colorScheme) var colorScheme
     @State var viewModel = GradeDetailViewModel()
 
     var courseGrade: EduHelper.CourseGrade
+
+    // MARK: - Body
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                courseTitle
+                scoresSection
+                distributionChart
+                courseInfoSection
+            }
+            .padding()
+        }
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
+        .refreshable { await viewModel.loadDetail(courseGrade) }
+        .task(id: viewModel.refreshTrigger) { await viewModel.loadDetail(courseGrade) }
+        .errorToast($viewModel.errorState)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: viewModel.triggerRefresh) {
+                    if viewModel.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
+                        Label("刷新成绩分布", systemImage: "arrow.clockwise")
+                    }
+                }
+            }
+        }
+        .trackView("GradeDetail")
+    }
 
     // MARK: - Course Title
 
@@ -56,18 +87,13 @@ struct GradeDetailView: View {
 
     @ViewBuilder
     private var distributionChart: some View {
-        let gradeRenderModeBinding = Binding(
-            get: { viewModel.gradeRenderMode },
-            set: { newValue in withAnimation { viewModel.gradeRenderMode = newValue } }
-        )
-
         if let detail = viewModel.gradeDetail {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .center, spacing: 12) {
                     Text("成绩分布")
                         .font(.headline)
                     Spacer()
-                    Picker("显示方式", selection: gradeRenderModeBinding) {
+                    Picker("显示方式", selection: $viewModel.gradeRenderMode.withAnimation()) {
                         ForEach(GradeDetailViewModel.GradeRenderMode.allCases) { mode in
                             Text(mode.rawValue).tag(mode)
                         }
@@ -182,41 +208,5 @@ struct GradeDetailView: View {
             #endif
             .cornerRadius(12)
         }
-    }
-
-    // MARK: - Body
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                courseTitle
-                scoresSection
-                distributionChart
-                courseInfoSection
-            }
-            .padding()
-        }
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
-        .task { viewModel.task(courseGrade) }
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingWarning) {
-            AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
-        }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: { viewModel.loadDetail(courseGrade) }) {
-                    if viewModel.isLoading {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("刷新成绩分布", systemImage: "arrow.clockwise")
-                    }
-                }
-            }
-        }
-        .trackView("GradeDetail")
     }
 }

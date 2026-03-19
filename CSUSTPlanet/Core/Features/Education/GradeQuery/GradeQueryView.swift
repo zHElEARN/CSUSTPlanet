@@ -12,6 +12,96 @@ import SwiftUI
 struct GradeQueryView: View {
     @State var viewModel = GradeQueryViewModel()
 
+    // MARK: - Body
+
+    var body: some View {
+        Group {
+            if !viewModel.filteredCourseGrades.isEmpty {
+                List {
+                    ForEach(viewModel.groupedFilteredCourseGrades, id: \.semester) { group in
+                        Section {
+                            DisclosureGroup(isExpanded: viewModel.bindingForSemester(group.semester)) {
+                                ForEach(group.grades, id: \.courseID) { courseGrade in
+                                    gradeCard(courseGrade: courseGrade)
+                                }
+                            } label: {
+                                HStack {
+                                    Text(group.semester)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    VStack(alignment: .trailing) {
+                                        Text("\(group.grades.count)门课程")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        Text("学期GPA: \(viewModel.semesterGPAs[group.semester] ?? 0.0, specifier: "%.2f")")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .contentShape(.rect)
+                                .onTapGesture { viewModel.toggleExpandSemester(group.semester) }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                #if os(iOS)
+                .listStyle(.insetGrouped)
+                #elseif os(macOS)
+                .listStyle(.inset)
+                #endif
+            } else {
+                if viewModel.searchText.isEmpty {
+                    ContentUnavailableView("暂无成绩记录", systemImage: "doc.text.magnifyingglass", description: Text("当前筛选条件下没有找到成绩记录"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ContentUnavailableView.search(text: viewModel.searchText)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+        }
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
+        .safeAreaInset(edge: .top) {
+            statsSection
+                .padding(.horizontal)
+                .padding(.vertical)
+                .apply { view in
+                    if #available(iOS 26.0, *) {
+                        view
+                            .glassEffect()
+                            .padding(.horizontal)
+                    } else {
+                        view.background(.ultraThinMaterial)
+                    }
+                }
+        }
+        #if os(iOS)
+        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索课程")
+        #elseif os(macOS)
+        .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "搜索课程")
+        #endif
+        .refreshable { await viewModel.loadCourseGrades() }
+        .errorToast($viewModel.errorState)
+        .task(id: viewModel.refreshTrigger) { await viewModel.loadCourseGrades() }
+        .toolbar {
+            if viewModel.isSelectionMode {
+                selectionToolbar()
+            } else {
+                mainToolbar()
+            }
+        }
+        #if os(iOS)
+        .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent ?? "分享错误"]) }
+        #endif
+        .navigationTitle("成绩查询")
+        .navigationSubtitleCompat("共\(viewModel.data?.value.count ?? 0)门课程成绩")
+        .inlineToolbarTitle()
+        .trackView("GradeQuery")
+    }
+
     // MARK: - Stat Item
 
     @ViewBuilder
@@ -58,22 +148,7 @@ struct GradeQueryView: View {
         }
     }
 
-    // MARK: - Empty State Section
-
-    @ViewBuilder
-    private var emptyStateSection: some View {
-        if viewModel.searchText.isEmpty {
-            ContentUnavailableView {
-                Label("暂无成绩记录", systemImage: "doc.text.magnifyingglass")
-            } description: {
-                Text("当前筛选条件下没有找到成绩记录")
-            }
-        } else {
-            ContentUnavailableView.search(text: viewModel.searchText)
-        }
-    }
-
-    // MARK: - Grade Card
+    // MARK: - Grade Card Content
 
     @ViewBuilder
     private func gradeCardContent(courseGrade: EduHelper.CourseGrade) -> some View {
@@ -128,6 +203,8 @@ struct GradeQueryView: View {
         .padding(.vertical, 8)
     }
 
+    // MARK: - Grade Card
+
     @ViewBuilder
     private func gradeCard(courseGrade: EduHelper.CourseGrade) -> some View {
         if viewModel.isSelectionMode {
@@ -151,89 +228,6 @@ struct GradeQueryView: View {
         }
     }
 
-    // MARK: - Body
-
-    var body: some View {
-        Group {
-            if !viewModel.filteredCourseGrades.isEmpty {
-                List {
-                    ForEach(viewModel.groupedFilteredCourseGrades, id: \.semester) { group in
-                        Section {
-                            DisclosureGroup(isExpanded: viewModel.bindingForSemester(group.semester)) {
-                                ForEach(group.grades, id: \.courseID) { courseGrade in
-                                    gradeCard(courseGrade: courseGrade)
-                                }
-                            } label: {
-                                HStack {
-                                    Text(group.semester)
-                                        .font(.headline)
-                                        .foregroundColor(.primary)
-                                    Spacer()
-                                    VStack(alignment: .trailing) {
-                                        Text("\(group.grades.count)门课程")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                        Text("学期GPA: \(viewModel.semesterGPAs[group.semester] ?? 0.0, specifier: "%.2f")")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                .contentShape(.rect)
-                                .onTapGesture { viewModel.toggleExpandSemester(group.semester) }
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-                #if os(iOS)
-                .listStyle(.insetGrouped)
-                #elseif os(macOS)
-                .listStyle(.inset)
-                #endif
-            } else {
-                emptyStateSection
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
-        .safeAreaInset(edge: .top) {
-            statsSection
-                .padding(.horizontal)
-                .padding(.vertical)
-                .apply { view in
-                    if #available(iOS 26.0, *) {
-                        view
-                            .glassEffect()
-                            .padding(.horizontal)
-                    } else {
-                        view.background(.ultraThinMaterial)
-                    }
-                }
-        }
-        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索课程")
-        .errorToast(isPresenting: $viewModel.isShowingError, message: viewModel.errorMessage)
-        .warningToast(isPresenting: $viewModel.isShowingWarning, message: viewModel.warningMessage)
-        .task { viewModel.task() }
-        .toolbar {
-            if viewModel.isSelectionMode {
-                selectionToolbar()
-            } else {
-                mainToolbar()
-            }
-        }
-        #if os(iOS)
-        .sheet(isPresented: $viewModel.isShowingShareSheet) {
-            ShareSheet(items: [viewModel.shareContent!])
-        }
-        #endif
-        .navigationTitle("成绩查询")
-        .navigationSubtitleCompat("共\(viewModel.data?.value.count ?? 0)门课程成绩")
-        .inlineToolbarTitle()
-        .trackView("GradeQuery")
-    }
-
     // MARK: - Main Toolbar
 
     @ToolbarContentBuilder
@@ -249,7 +243,7 @@ struct GradeQueryView: View {
             .disabled(viewModel.isLoading || viewModel.data == nil)
         }
         ToolbarItem(placement: .primaryAction) {
-            Button(action: { viewModel.loadCourseGrades() }) {
+            Button(action: viewModel.triggerRefresh) {
                 if viewModel.isLoading {
                     ProgressView().smallControlSizeOnMac()
                 } else {

@@ -21,35 +21,30 @@ class GradeDetailViewModel {
     var gradeRenderMode: GradeRenderMode = .progress
 
     var gradeDetail: EduHelper.GradeDetail?
-    var errorMessage: String = ""
-    var warningMessage: String = ""
 
     var isLoading = false
-    var isShowingError = false
-    var isShowingWarning = false
 
-    func task(_ courseGrade: EduHelper.CourseGrade) {
-        loadDetail(courseGrade)
+    var errorState = ToastState()
+
+    var refreshTrigger = false
+
+    func triggerRefresh() {
+        refreshTrigger.toggle()
     }
 
-    func loadDetail(_ courseGrade: EduHelper.CourseGrade) {
+    func loadDetail(_ courseGrade: EduHelper.CourseGrade) async {
+        guard !isLoading else { return }
         isLoading = true
+        defer { isLoading = false }
 
-        Task {
-            defer {
-                isLoading = false
+        let maxRetryCount = 3
+        for _ in 1...maxRetryCount {
+            if let gradeDetail = try? await AuthManager.shared.eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl) {
+                self.gradeDetail = gradeDetail
+                return
             }
-            let maxRetryCount = 3
-
-            for _ in 1...maxRetryCount {
-                do {
-                    gradeDetail = try await AuthManager.shared.eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
-                    return
-                }
-            }
-
-            errorMessage = "获取成绩详情失败，请点击右上角刷新后重试"
-            isShowingError = true
         }
+
+        errorState.show(message: "获取成绩详情失败，请刷新重试")
     }
 }
