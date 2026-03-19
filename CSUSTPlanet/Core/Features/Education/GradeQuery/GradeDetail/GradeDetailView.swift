@@ -28,12 +28,12 @@ struct GradeDetailView: View {
             .padding()
         }
         .refreshable { await viewModel.loadDetail(courseGrade) }
-        .task(id: viewModel.refreshTrigger) { await viewModel.loadDetail(courseGrade) }
-        .errorToast($viewModel.errorState)
+        .task(id: viewModel.shouldRefreshDetail) { await viewModel.loadDetail(courseGrade) }
+        .errorToast($viewModel.errorToast)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: viewModel.triggerRefresh) {
-                    if viewModel.isLoading {
+                Button(action: { viewModel.shouldRefreshDetail.toggle() }) {
+                    if viewModel.isLoadingDetail {
                         ProgressView().smallControlSizeOnMac()
                     } else {
                         Label("刷新成绩分布", systemImage: "arrow.clockwise")
@@ -84,13 +84,13 @@ struct GradeDetailView: View {
 
     @ViewBuilder
     private var distributionChart: some View {
-        if let detail = viewModel.gradeDetail {
+        if let detail = viewModel.detail {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .center, spacing: 12) {
                     Text("成绩分布")
                         .font(.headline)
                     Spacer()
-                    Picker("显示方式", selection: $viewModel.gradeRenderMode.withAnimation()) {
+                    Picker("显示方式", selection: $viewModel.renderMode.withAnimation()) {
                         ForEach(GradeDetailViewModel.GradeRenderMode.allCases) { mode in
                             Text(mode.rawValue).tag(mode)
                         }
@@ -102,7 +102,7 @@ struct GradeDetailView: View {
 
                 CustomGroupBox {
                     VStack(alignment: .leading, spacing: 12) {
-                        if viewModel.gradeRenderMode == .pie {
+                        if viewModel.renderMode == .pie {
                             Chart(detail.components, id: \.type) { component in
                                 SectorMark(
                                     angle: .value("占比", component.ratio),

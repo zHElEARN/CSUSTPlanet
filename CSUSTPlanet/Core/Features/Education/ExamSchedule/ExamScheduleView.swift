@@ -32,7 +32,7 @@ struct ExamScheduleView: View {
                     .pickerStyle(.menu)
                     #endif
                     HStack {
-                        Button(action: { viewModel.semestersRefreshTrigger.toggle() }) {
+                        Button(action: { viewModel.shouldRefreshSemesters.toggle() }) {
                             Text("刷新学期列表")
                         }
                         if viewModel.isLoadingSemesters {
@@ -50,7 +50,7 @@ struct ExamScheduleView: View {
                     }
                 }
             }
-            .task(id: viewModel.semestersRefreshTrigger) { await viewModel.loadAvailableSemesters() }
+            .task(id: viewModel.shouldRefreshSemesters) { await viewModel.loadAvailableSemesters() }
             .formStyle(.grouped)
             .navigationTitle("高级查询")
             .inlineToolbarTitle()
@@ -63,7 +63,7 @@ struct ExamScheduleView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
                         viewModel.isFilterPresented = false
-                        viewModel.refreshTrigger.toggle()
+                        viewModel.shouldRefreshExams.toggle()
                     }
                 }
             }
@@ -215,7 +215,7 @@ struct ExamScheduleView: View {
         .onAppear { viewModel.now = .now }
         .errorToast($viewModel.errorToast)
         .successToast($viewModel.successToast)
-        .task(id: viewModel.refreshTrigger) { await viewModel.loadInitial() }
+        .task(id: viewModel.shouldRefreshExams) { await viewModel.loadInitial() }
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
                 Button(action: { viewModel.isFilterPresented.toggle() }) {
@@ -228,7 +228,7 @@ struct ExamScheduleView: View {
                 .disabled(viewModel.examData?.value.isEmpty == true || viewModel.isLoadingExams)
             }
             ToolbarItem(placement: .primaryAction) {
-                Button(action: { viewModel.refreshTrigger.toggle() }) {
+                Button(action: { viewModel.shouldRefreshExams.toggle() }) {
                     if viewModel.isLoadingExams {
                         ProgressView().smallControlSizeOnMac()
                     } else {

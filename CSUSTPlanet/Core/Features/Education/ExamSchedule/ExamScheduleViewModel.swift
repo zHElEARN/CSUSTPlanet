@@ -29,8 +29,8 @@ class ExamScheduleViewModel {
     var targetScrollID: String? = nil
     var now = Date()
 
-    var refreshTrigger = false
-    var semestersRefreshTrigger = false
+    var shouldRefreshExams = false
+    var shouldRefreshSemesters = false
 
     var errorToast = ToastState()
     var successToast = ToastState()

@@ -16,9 +16,9 @@ struct GradeQueryView: View {
 
     var body: some View {
         Group {
-            if !viewModel.filteredCourseGrades.isEmpty {
+            if !viewModel.filteredGrades.isEmpty {
                 List {
-                    ForEach(viewModel.groupedFilteredCourseGrades, id: \.semester) { group in
+                    ForEach(viewModel.groupedFilteredGrades, id: \.semester) { group in
                         Section {
                             DisclosureGroup(isExpanded: viewModel.bindingForSemester(group.semester)) {
                                 ForEach(group.grades, id: \.courseID) { courseGrade in
@@ -84,8 +84,8 @@ struct GradeQueryView: View {
         .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "搜索课程")
         #endif
         .refreshable { await viewModel.loadCourseGrades() }
-        .errorToast($viewModel.errorState)
-        .task(id: viewModel.refreshTrigger) { await viewModel.loadCourseGrades() }
+        .errorToast($viewModel.errorToast)
+        .task(id: viewModel.shouldRefreshGrades) { await viewModel.loadCourseGrades() }
         .toolbar {
             if viewModel.isSelectionMode {
                 selectionToolbar()
@@ -94,10 +94,10 @@ struct GradeQueryView: View {
             }
         }
         #if os(iOS)
-        .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent ?? "分享错误"]) }
+        .sheet(isPresented: $viewModel.isShareSheetPresented) { ShareSheet(items: [viewModel.shareContent ?? "分享错误"]) }
         #endif
         .navigationTitle("成绩查询")
-        .navigationSubtitleCompat("共\(viewModel.data?.value.count ?? 0)门课程成绩")
+        .navigationSubtitleCompat("共\(viewModel.gradeData?.value.count ?? 0)门课程成绩")
         .inlineToolbarTitle()
         .trackView("GradeQuery")
     }
@@ -125,7 +125,7 @@ struct GradeQueryView: View {
     @ViewBuilder
     private var statsSection: some View {
         VStack(alignment: .center) {
-            if let analysis = viewModel.analysis {
+            if let analysis = viewModel.gradeAnalysis {
                 HStack(spacing: 10) {
                     statItem(title: "GPA", value: String(format: "%.2f", analysis.overallGPA), color: ColorUtil.dynamicColor(point: analysis.overallGPA))
                     statItem(title: "平均成绩", value: String(format: "%.2f", analysis.overallAverageGrade), color: ColorUtil.dynamicColor(grade: analysis.overallAverageGrade))
@@ -143,7 +143,7 @@ struct GradeQueryView: View {
                     statItem(title: "课程总数", value: "0", color: .primary)
                 }
                 .frame(maxWidth: .infinity)
-                .redacted(reason: viewModel.isLoading ? .placeholder : [])
+                .redacted(reason: viewModel.isLoadingGrades ? .placeholder : [])
             }
         }
     }
@@ -236,21 +236,21 @@ struct GradeQueryView: View {
             Button(action: viewModel.enterSelectionMode) {
                 Label("选择", systemImage: "checkmark.circle")
             }
-            .disabled(viewModel.isLoading || viewModel.data == nil)
+            .disabled(viewModel.isLoadingGrades || viewModel.gradeData == nil)
             Button(action: viewModel.exportGradesAsCSV) {
                 Label("导出表格", systemImage: "doc.plaintext")
             }
-            .disabled(viewModel.isLoading || viewModel.data == nil)
+            .disabled(viewModel.isLoadingGrades || viewModel.gradeData == nil)
         }
         ToolbarItem(placement: .primaryAction) {
-            Button(action: viewModel.triggerRefresh) {
-                if viewModel.isLoading {
+            Button(action: { viewModel.shouldRefreshGrades.toggle() }) {
+                if viewModel.isLoadingGrades {
                     ProgressView().smallControlSizeOnMac()
                 } else {
                     Label("查询", systemImage: "arrow.clockwise")
                 }
             }
-            .disabled(viewModel.isLoading)
+            .disabled(viewModel.isLoadingGrades)
         }
     }
 

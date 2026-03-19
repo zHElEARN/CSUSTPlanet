@@ -21,16 +21,16 @@ class GradeQueryViewModel {
 
     // MARK: States
 
-    var data: Cached<[EduHelper.CourseGrade]>? = nil
-    var analysis: GradeAnalysisData? = nil
+    var gradeData: Cached<[EduHelper.CourseGrade]>? = nil
+    var gradeAnalysis: GradeAnalysisData? = nil
     var searchText: String = "" {
         didSet { updateFilteredGrades() }
     }
 
-    var isLoading: Bool = false
-    var isShowingShareSheet: Bool = false
+    var isLoadingGrades: Bool = false
+    var isShareSheetPresented: Bool = false
 
-    var errorState = ToastState()
+    var errorToast = ToastState()
 
     var isSelectionMode: Bool = false {
         didSet { updateAnalysis() }
@@ -45,10 +45,10 @@ class GradeQueryViewModel {
     var semesterGPAs: [String: Double] = [:]
 
     var shareContent: Any? = nil
-    var refreshTrigger: Bool = false
+    var shouldRefreshGrades: Bool = false
 
-    private(set) var filteredCourseGrades: [EduHelper.CourseGrade] = []
-    private(set) var groupedFilteredCourseGrades: [(semester: String, grades: [EduHelper.CourseGrade])] = []
+    private(set) var filteredGrades: [EduHelper.CourseGrade] = []
+    private(set) var groupedFilteredGrades: [(semester: String, grades: [EduHelper.CourseGrade])] = []
 
     // MARK: - Methods
 
@@ -57,14 +57,10 @@ class GradeQueryViewModel {
         applyData(data)
     }
 
-    func triggerRefresh() {
-        refreshTrigger.toggle()
-    }
-
     func loadCourseGrades() async {
-        guard !isLoading else { return }
-        isLoading = true
-        defer { isLoading = false }
+        guard !isLoadingGrades else { return }
+        isLoadingGrades = true
+        defer { isLoadingGrades = false }
 
         do {
             let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
@@ -73,7 +69,7 @@ class GradeQueryViewModel {
             MMKVHelper.shared.courseGradesCache = data
             WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
         } catch {
-            errorState.show(message: error.localizedDescription)
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
@@ -107,7 +103,7 @@ class GradeQueryViewModel {
     // MARK: - Selection Mode
 
     func enterSelectionMode() {
-        selectedItems = Set(filteredCourseGrades.map { SelectionItem(course: $0.courseID) })
+        selectedItems = Set(filteredGrades.map { SelectionItem(course: $0.courseID) })
         isSelectionMode = true
     }
 
@@ -117,7 +113,7 @@ class GradeQueryViewModel {
     }
 
     func selectAll() {
-        selectedItems = Set(filteredCourseGrades.map { SelectionItem(course: $0.courseID) })
+        selectedItems = Set(filteredGrades.map { SelectionItem(course: $0.courseID) })
     }
 
     func selectNone() {
@@ -140,7 +136,7 @@ class GradeQueryViewModel {
     }
 
     private func applyData(_ data: Cached<[EduHelper.CourseGrade]>) {
-        self.data = data
+        self.gradeData = data
         self.expandedSemesters = Set(data.value.map { $0.semester })
         self.semesterGPAs = computeSemesterGPAs(data.value)
         updateFilteredGrades()
@@ -156,9 +152,9 @@ class GradeQueryViewModel {
     }
 
     private func updateFilteredGrades() {
-        guard let data = data else {
-            filteredCourseGrades = []
-            groupedFilteredCourseGrades = []
+        guard let data = gradeData else {
+            filteredGrades = []
+            groupedFilteredGrades = []
             return
         }
         let filtered: [EduHelper.CourseGrade]
@@ -167,14 +163,14 @@ class GradeQueryViewModel {
         } else {
             filtered = data.value.filter { $0.courseName.localizedCaseInsensitiveContains(searchText) }
         }
-        filteredCourseGrades = filtered
+        filteredGrades = filtered
         let grouped = Dictionary(grouping: filtered) { $0.semester }
-        groupedFilteredCourseGrades = grouped.keys.sorted(by: >).map { (semester: $0, grades: grouped[$0] ?? []) }
+        groupedFilteredGrades = grouped.keys.sorted(by: >).map { (semester: $0, grades: grouped[$0] ?? []) }
     }
 
     private func updateAnalysis() {
-        guard let allCourses = data?.value else {
-            analysis = nil
+        guard let allCourses = gradeData?.value else {
+            gradeAnalysis = nil
             return
         }
 
@@ -186,19 +182,19 @@ class GradeQueryViewModel {
             coursesToAnalyze = allCourses
         }
 
-        analysis = GradeAnalysisData.fromCourseGrades(coursesToAnalyze)
+        gradeAnalysis = GradeAnalysisData.fromCourseGrades(coursesToAnalyze)
     }
 
     // MARK: - CSV Export
 
     func exportGradesAsCSV() {
-        guard let csvString = generateCSVString(from: filteredCourseGrades) else {
-            errorState.show(message: "没有可导出的成绩数据")
+        guard let csvString = generateCSVString(from: filteredGrades) else {
+            errorToast.show(message: "没有可导出的成绩数据")
             return
         }
 
         guard let csvData = csvString.data(using: .utf8) else {
-            errorState.show(message: "无法将CSV数据编码为UTF-8")
+            errorToast.show(message: "无法将CSV数据编码为UTF-8")
             return
         }
 
@@ -212,10 +208,10 @@ class GradeQueryViewModel {
             try csvData.write(to: fileURL)
 
             shareContent = fileURL
-            isShowingShareSheet = true
+            isShareSheetPresented = true
 
         } catch {
-            errorState.show(message: "无法保存临时的CSV文件: \(error.localizedDescription)")
+            errorToast.show(message: "无法保存临时的CSV文件: \(error.localizedDescription)")
         }
         #elseif os(macOS)
         let savePanel = NSSavePanel()
@@ -229,7 +225,7 @@ class GradeQueryViewModel {
             do {
                 try csvData.write(to: url)
             } catch {
-                Task { @MainActor in self.errorState.show(message: "无法保存CSV文件: \(error.localizedDescription)") }
+                Task { @MainActor in self.errorToast.show(message: "无法保存CSV文件: \(error.localizedDescription)") }
             }
         }
         #endif
