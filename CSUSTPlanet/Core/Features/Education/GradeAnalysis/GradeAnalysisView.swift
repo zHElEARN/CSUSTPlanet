@@ -80,7 +80,7 @@ struct GradeAnalysisView: View {
 
     @ViewBuilder
     private func summaryCard(_ gradeAnalysisData: GradeAnalysisData) -> some View {
-        GroupBox {
+        CustomGroupBox {
             VStack(alignment: .leading, spacing: 12) {
                 Text("学习总览")
                     .font(.headline)
@@ -113,7 +113,6 @@ struct GradeAnalysisView: View {
                     )
                 }
             }
-            .padding()
         }
         .padding(.horizontal)
     }

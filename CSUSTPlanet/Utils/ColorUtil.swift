@@ -19,7 +19,7 @@ enum ColorUtil {
         (range: "72-74", min: 72, max: 74, point: 2.3),
         (range: "68-71", min: 68, max: 71, point: 2.0),
         (range: "66-67", min: 66, max: 67, point: 1.7),
-        (range: "64-65", min: 64, max: 65, point: 1.5),
+        (range: "64-65", min: 64, max: 65, point: 1.3),
         (range: "60-63", min: 60, max: 63, point: 1.0),
         (range: "≤59", min: 0, max: 59, point: 0.0),
     ]
