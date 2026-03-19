@@ -27,9 +27,6 @@ struct GradeDetailView: View {
             }
             .padding()
         }
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
         .refreshable { await viewModel.loadDetail(courseGrade) }
         .task(id: viewModel.refreshTrigger) { await viewModel.loadDetail(courseGrade) }
         .errorToast($viewModel.errorState)
@@ -103,55 +100,50 @@ struct GradeDetailView: View {
                 }
                 .padding(.horizontal)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    if viewModel.gradeRenderMode == .pie {
-                        Chart(detail.components, id: \.type) { component in
-                            SectorMark(
-                                angle: .value("占比", component.ratio),
-                                innerRadius: .ratio(0.4),
-                                angularInset: 1
-                            )
-                            .foregroundStyle(by: .value("类型", component.type))
-                            .annotation(position: .overlay) {
-                                VStack {
-                                    Text(String(format: "%.1f", component.grade))
-                                        .font(.subheadline)
-                                        .foregroundStyle(.white)
-                                        .bold()
-                                    Text("(\(component.ratio)%)")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.white.opacity(0.7))
+                CustomGroupBox {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if viewModel.gradeRenderMode == .pie {
+                            Chart(detail.components, id: \.type) { component in
+                                SectorMark(
+                                    angle: .value("占比", component.ratio),
+                                    innerRadius: .ratio(0.4),
+                                    angularInset: 1
+                                )
+                                .foregroundStyle(by: .value("类型", component.type))
+                                .annotation(position: .overlay) {
+                                    VStack {
+                                        Text(String(format: "%.1f", component.grade))
+                                            .font(.subheadline)
+                                            .foregroundStyle(.white)
+                                            .bold()
+                                        Text("(\(component.ratio)%)")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.white.opacity(0.7))
+                                    }
                                 }
                             }
-                        }
-                        .frame(height: 250)
-                        .chartLegend(position: .bottom, alignment: .center, spacing: 10)
-                        .padding(.horizontal)
-                    } else {
-                        ForEach(detail.components, id: \.type) { component in
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack {
-                                    Text("\(component.type) (\(component.ratio)%)")
-                                        .font(.callout)
-                                    Spacer()
-                                    Text("\(String(format: "%.1f", component.grade))/100")
-                                        .font(.callout)
-                                        .foregroundColor(.secondary)
-                                }
+                            .frame(height: 250)
+                            .chartLegend(position: .bottom, alignment: .center, spacing: 10)
+                            .padding(.horizontal)
+                        } else {
+                            ForEach(detail.components, id: \.type) { component in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Text("\(component.type) (\(component.ratio)%)")
+                                            .font(.callout)
+                                        Spacer()
+                                        Text("\(String(format: "%.1f", component.grade))/100")
+                                            .font(.callout)
+                                            .foregroundColor(.secondary)
+                                    }
 
-                                ProgressView(value: min(max(component.grade, 0), 100), total: 100)
-                                    .tint(ColorUtil.dynamicColor(grade: component.grade))
+                                    ProgressView(value: min(max(component.grade, 0), 100), total: 100)
+                                        .tint(ColorUtil.dynamicColor(grade: component.grade))
+                                }
                             }
                         }
                     }
                 }
-                .padding()
-                #if os(iOS)
-                .background(Color(PlatformColor.secondarySystemGroupedBackground))
-                #else
-                .background(Color(PlatformColor.controlBackgroundColor))
-                #endif
-                .cornerRadius(12)
             }
         }
     }
@@ -192,21 +184,16 @@ struct GradeDetailView: View {
 
     // MARK: - Info Group Box
 
-    private func infoGroupBox<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.headline)
-                .padding(.leading)
-            VStack(alignment: .leading, spacing: 12) {
-                content()
+    private func infoGroupBox<Content: View>(title: String, @ViewBuilder content: @escaping () -> Content) -> some View {
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.headline)
+                    .padding(.leading)
+                VStack(alignment: .leading, spacing: 12) {
+                    content()
+                }
             }
-            .padding()
-            #if os(iOS)
-            .background(Color(PlatformColor.secondarySystemGroupedBackground))
-            #else
-            .background(Color(PlatformColor.controlBackgroundColor))
-            #endif
-            .cornerRadius(12)
         }
     }
 }
