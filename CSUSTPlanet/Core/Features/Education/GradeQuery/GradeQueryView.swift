@@ -53,7 +53,7 @@ struct GradeQueryView: View {
                 #endif
             } else {
                 if viewModel.searchText.isEmpty {
-                    ContentUnavailableView("暂无成绩记录", systemImage: "doc.text.magnifyingglass", description: Text("当前筛选条件下没有找到成绩记录"))
+                    ContentUnavailableView("暂无成绩记录", systemImage: "doc.text.magnifyingglass", description: Text("没有找到成绩记录"))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ContentUnavailableView.search(text: viewModel.searchText)
@@ -83,9 +83,9 @@ struct GradeQueryView: View {
         #elseif os(macOS)
         .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "搜索课程")
         #endif
-        .refreshable { await viewModel.loadCourseGrades() }
+        .safeRefreshable { await viewModel.loadCourseGrades() }
         .errorToast($viewModel.errorToast)
-        .task(id: viewModel.shouldRefreshGrades) { await viewModel.loadCourseGrades() }
+        .task { await viewModel.loadInitial() }
         .toolbar {
             if viewModel.isSelectionMode {
                 selectionToolbar()
@@ -236,14 +236,14 @@ struct GradeQueryView: View {
             Button(action: viewModel.enterSelectionMode) {
                 Label("选择", systemImage: "checkmark.circle")
             }
-            .disabled(viewModel.isLoadingGrades || viewModel.gradeData == nil)
+            .disabled(viewModel.isLoadingGrades || viewModel.gradeData?.value.isEmpty == true)
             Button(action: viewModel.exportGradesAsCSV) {
                 Label("导出表格", systemImage: "doc.plaintext")
             }
-            .disabled(viewModel.isLoadingGrades || viewModel.gradeData == nil)
+            .disabled(viewModel.isLoadingGrades || viewModel.gradeData?.value.isEmpty == true)
         }
         ToolbarItem(placement: .primaryAction) {
-            Button(action: { viewModel.shouldRefreshGrades.toggle() }) {
+            Button(asyncAction: viewModel.loadInitial) {
                 if viewModel.isLoadingGrades {
                     ProgressView().smallControlSizeOnMac()
                 } else {

@@ -24,9 +24,7 @@ class GradeDetailViewModel {
 
     var isLoadingDetail = false
 
-    var errorToast = ToastState()
-
-    var shouldRefreshDetail = false
+    var errorToast: ToastState = .errorTitle
 
     func loadDetail(_ courseGrade: EduHelper.CourseGrade) async {
         guard !isLoadingDetail else { return }

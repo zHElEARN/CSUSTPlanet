@@ -10,7 +10,6 @@ import Foundation
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
-import WidgetKit
 
 @MainActor
 @Observable
@@ -23,38 +22,42 @@ class GradeQueryViewModel {
 
     var gradeData: Cached<[EduHelper.CourseGrade]>? = nil
     var gradeAnalysis: GradeAnalysisData? = nil
+    private(set) var filteredGrades: [EduHelper.CourseGrade] = []
+    private(set) var groupedFilteredGrades: [(semester: String, grades: [EduHelper.CourseGrade])] = []
+    var semesterGPAs: [String: Double] = [:]
+
     var searchText: String = "" {
         didSet { updateFilteredGrades() }
     }
 
     var isLoadingGrades: Bool = false
-    var isShareSheetPresented: Bool = false
 
     var errorToast = ToastState()
 
     var isSelectionMode: Bool = false {
         didSet { updateAnalysis() }
     }
-
     var selectedItems = Set<SelectionItem>() {
         didSet { if isSelectionMode { updateAnalysis() } }
     }
-
     var expandedSemesters: Set<String> = []
 
-    var semesterGPAs: [String: Double] = [:]
-
     var shareContent: Any? = nil
-    var shouldRefreshGrades: Bool = false
+    var isShareSheetPresented: Bool = false
 
-    private(set) var filteredGrades: [EduHelper.CourseGrade] = []
-    private(set) var groupedFilteredGrades: [(semester: String, grades: [EduHelper.CourseGrade])] = []
+    var isInitial: Bool = true
 
     // MARK: - Methods
 
     init() {
         guard let data = MMKVHelper.shared.courseGradesCache else { return }
         applyData(data)
+    }
+
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        await loadCourseGrades()
     }
 
     func loadCourseGrades() async {
@@ -67,7 +70,6 @@ class GradeQueryViewModel {
             let data = Cached(cachedAt: .now, value: courseGrades)
             applyData(data)
             MMKVHelper.shared.courseGradesCache = data
-            WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

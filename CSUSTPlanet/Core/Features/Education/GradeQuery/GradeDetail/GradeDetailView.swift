@@ -27,12 +27,12 @@ struct GradeDetailView: View {
             }
             .padding()
         }
-        .refreshable { await viewModel.loadDetail(courseGrade) }
-        .task(id: viewModel.shouldRefreshDetail) { await viewModel.loadDetail(courseGrade) }
+        .safeRefreshable { await viewModel.loadDetail(courseGrade) }
+        .task { await viewModel.loadDetail(courseGrade) }
         .errorToast($viewModel.errorToast)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: { viewModel.shouldRefreshDetail.toggle() }) {
+                Button(asyncAction: { await viewModel.loadDetail(courseGrade) }) {
                     if viewModel.isLoadingDetail {
                         ProgressView().smallControlSizeOnMac()
                     } else {
