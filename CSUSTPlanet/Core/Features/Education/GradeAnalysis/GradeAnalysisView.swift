@@ -11,8 +11,56 @@ import Charts
 import SwiftUI
 
 struct GradeAnalysisView: View {
-    @Environment(\.colorScheme) var colorScheme
     @State var viewModel = GradeAnalysisViewModel()
+
+    // MARK: - Body
+
+    var body: some View {
+        Group {
+            if let data = viewModel.analysisData {
+                ScrollView {
+                    analysisContent(data)
+                }
+            } else {
+                ContentUnavailableView("暂无成绩数据", systemImage: "doc.text.magnifyingglass", description: Text("当前没有找到成绩数据"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .task(id: viewModel.refreshTrigger) { await viewModel.loadGradeAnalysis() }
+        .refreshable { await viewModel.loadGradeAnalysis() }
+        .errorToast($viewModel.errorState)
+        .successToast($viewModel.successState)
+        #if os(iOS)
+        .sheet(isPresented: $viewModel.isShowingShareSheet) { ShareSheet(items: [viewModel.shareContent ?? "分享错误"]) }
+        #endif
+        .navigationTitle("成绩分析")
+        .largeToolbarTitle()
+        .toolbar {
+            #if os(iOS)
+            ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: { viewModel.showShareSheet(shareableView) }) {
+                    Label("分享", systemImage: "square.and.arrow.up")
+                }
+                .disabled(viewModel.isLoading || viewModel.data == nil)
+                Button(action: { viewModel.saveToPhotoAlbum(shareableView) }) {
+                    Label("保存结果到相册", systemImage: "photo")
+                }
+                .disabled(viewModel.isLoading || viewModel.data == nil)
+            }
+            #endif
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: viewModel.triggerRefresh) {
+                    if viewModel.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
+                        Label("刷新成绩分析", systemImage: "arrow.clockwise")
+                    }
+                }
+                .disabled(viewModel.isLoading)
+            }
+        }
+        .trackView("GradeAnalysis")
+    }
 
     // MARK: - Statistic Item
 
@@ -32,45 +80,41 @@ struct GradeAnalysisView: View {
 
     @ViewBuilder
     private func summaryCard(_ gradeAnalysisData: GradeAnalysisData) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("学习总览")
-                .font(.headline)
-                .padding(.bottom, 4)
-            HStack {
-                statisticItem(title: "课程总数", value: "\(gradeAnalysisData.totalCourses)", color: .purple)
-                Spacer()
-                statisticItem(title: "总学分", value: String(format: "%.1f", gradeAnalysisData.totalCredits), color: .blue)
-                Spacer()
-                statisticItem(title: "总学时", value: "\(gradeAnalysisData.totalHours)", color: .red)
+        GroupBox {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("学习总览")
+                    .font(.headline)
+                    .padding(.bottom, 4)
+                HStack {
+                    statisticItem(title: "课程总数", value: "\(gradeAnalysisData.totalCourses)", color: .purple)
+                    Spacer()
+                    statisticItem(title: "总学分", value: String(format: "%.1f", gradeAnalysisData.totalCredits), color: .blue)
+                    Spacer()
+                    statisticItem(title: "总学时", value: "\(gradeAnalysisData.totalHours)", color: .red)
+                }
+                Divider()
+                HStack {
+                    statisticItem(
+                        title: "平均成绩",
+                        value: String(format: "%.2f", gradeAnalysisData.overallAverageGrade),
+                        color: ColorUtil.dynamicColor(grade: gradeAnalysisData.overallAverageGrade)
+                    )
+                    Spacer()
+                    statisticItem(
+                        title: "加权平均成绩",
+                        value: String(format: "%.2f", gradeAnalysisData.weightedAverageGrade),
+                        color: ColorUtil.dynamicColor(grade: gradeAnalysisData.weightedAverageGrade)
+                    )
+                    Spacer()
+                    statisticItem(
+                        title: "平均绩点",
+                        value: String(format: "%.2f", gradeAnalysisData.overallGPA),
+                        color: ColorUtil.dynamicColor(point: gradeAnalysisData.overallGPA)
+                    )
+                }
             }
-            Divider()
-            HStack {
-                statisticItem(
-                    title: "平均成绩",
-                    value: String(format: "%.2f", gradeAnalysisData.overallAverageGrade),
-                    color: ColorUtil.dynamicColor(grade: gradeAnalysisData.overallAverageGrade)
-                )
-                Spacer()
-                statisticItem(
-                    title: "加权平均成绩",
-                    value: String(format: "%.2f", gradeAnalysisData.weightedAverageGrade),
-                    color: ColorUtil.dynamicColor(grade: gradeAnalysisData.weightedAverageGrade)
-                )
-                Spacer()
-                statisticItem(
-                    title: "平均绩点",
-                    value: String(format: "%.2f", gradeAnalysisData.overallGPA),
-                    color: ColorUtil.dynamicColor(point: gradeAnalysisData.overallGPA)
-                )
-            }
+            .padding()
         }
-        .padding()
-        #if os(iOS)
-        .background(Color(PlatformColor.secondarySystemBackground))
-        #elseif os(macOS)
-        .background(Color(PlatformColor.controlBackgroundColor))
-        #endif
-        .cornerRadius(10)
         .padding(.horizontal)
     }
 
@@ -78,15 +122,6 @@ struct GradeAnalysisView: View {
 
     @ViewBuilder
     private func semesterAnalysisSection(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
-        let selectedChartTypeBinding = Binding(
-            get: { viewModel.selectedChartType },
-            set: { newValue in withAnimation { viewModel.selectedChartType = newValue } }
-        )
-        let selectedDistributionChartTypeBinding = Binding(
-            get: { viewModel.selectedDistributionChartType },
-            set: { newValue in withAnimation { viewModel.selectedDistributionChartType = newValue } }
-        )
-
         VStack(spacing: 30) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -94,7 +129,7 @@ struct GradeAnalysisView: View {
                         .font(.headline)
                     Spacer()
                     if !isShareable {
-                        Picker("图表类型", selection: selectedChartTypeBinding) {
+                        Picker("图表类型", selection: $viewModel.selectedChartType.withAnimation()) {
                             ForEach(GradeAnalysisViewModel.ChartType.allCases, id: \.self) { type in
                                 Text(type.rawValue).tag(type)
                             }
@@ -166,7 +201,7 @@ struct GradeAnalysisView: View {
                         .font(.headline)
                     Spacer()
                     if !isShareable {
-                        Picker("分布类型", selection: selectedDistributionChartTypeBinding) {
+                        Picker("分布类型", selection: $viewModel.selectedDistributionChartType.withAnimation()) {
                             ForEach(GradeAnalysisViewModel.DistributionChartType.allCases, id: \.self) { type in
                                 Text(type.rawValue).tag(type)
                             }
@@ -225,6 +260,8 @@ struct GradeAnalysisView: View {
     // MARK: - Shareable View
 
     #if os(iOS)
+    @Environment(\.colorScheme) var colorScheme
+
     @ViewBuilder
     private var shareableView: some View {
         if let gradeAnalysisData = viewModel.analysisData {
@@ -239,61 +276,4 @@ struct GradeAnalysisView: View {
         }
     }
     #endif
-
-    // MARK: - Body
-
-    var body: some View {
-        Group {
-            if let data = viewModel.analysisData {
-                ScrollView {
-                    analysisContent(data)
-                }
-            } else {
-                ContentUnavailableView("暂无成绩数据", systemImage: "doc.text.magnifyingglass", description: Text("当前没有找到成绩数据"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .task { viewModel.task() }
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingSuccess) {
-            AlertToast(type: .complete(.green), title: "图片保存成功")
-        }
-        .toast(isPresenting: $viewModel.isShowingWarning) {
-            AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
-        }
-        #if os(iOS)
-        .sheet(isPresented: $viewModel.isShowingShareSheet) {
-            ShareSheet(items: [viewModel.shareContent!])
-        }
-        #endif
-        .navigationTitle("成绩分析")
-        .largeToolbarTitle()
-        .toolbar {
-            #if os(iOS)
-            ToolbarItemGroup(placement: .secondaryAction) {
-                Button(action: { viewModel.showShareSheet(shareableView) }) {
-                    Label("分享", systemImage: "square.and.arrow.up")
-                }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
-                Button(action: { viewModel.saveToPhotoAlbum(shareableView) }) {
-                    Label("保存结果到相册", systemImage: "photo")
-                }
-                .disabled(viewModel.isLoading || viewModel.data == nil)
-            }
-            #endif
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: viewModel.loadGradeAnalysis) {
-                    if viewModel.isLoading {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("刷新成绩分析", systemImage: "arrow.clockwise")
-                    }
-                }
-                .disabled(viewModel.isLoading)
-            }
-        }
-        .trackView("GradeAnalysis")
-    }
 }

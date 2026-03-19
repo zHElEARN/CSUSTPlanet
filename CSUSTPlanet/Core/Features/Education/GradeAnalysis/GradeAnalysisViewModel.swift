@@ -33,18 +33,16 @@ class GradeAnalysisViewModel: NSObject {
         return map
     }()
 
-    var errorMessage: String = ""
-    var warningMessage: String = ""
     var data: Cached<[EduHelper.CourseGrade]>?
     var weightedAverageGrade: Double?
     var selectedChartType: ChartType = .averageGrade
     var selectedDistributionChartType: DistributionChartType = .gradePoint
 
     var isLoading: Bool = false
-    var isShowingWarning: Bool = false
-    var isShowingError: Bool = false
-    var isShowingSuccess: Bool = false
     var isShowingShareSheet: Bool = false
+
+    var errorState = ToastState()
+    var successState = ToastState()
 
     var analysisData: GradeAnalysisData? {
         guard let courseGrades = data?.value else { return nil }
@@ -53,71 +51,62 @@ class GradeAnalysisViewModel: NSObject {
 
     var shareContent: Any?
 
+    var refreshTrigger = false
+
     override init() {
         super.init()
         guard let data = MMKVHelper.shared.courseGradesCache else { return }
         self.data = data
     }
 
-    func task() {
-        loadGradeAnalysis()
+    func triggerRefresh() {
+        refreshTrigger.toggle()
     }
 
-    func loadGradeAnalysis() {
+    func loadGradeAnalysis() async {
+        guard !isLoading else { return }
         isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
+        defer { isLoading = false }
 
-            do {
-                let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
-                let data = Cached(cachedAt: .now, value: courseGrades)
-                self.data = data
-                MMKVHelper.shared.courseGradesCache = data
-                WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
+            let data = Cached(cachedAt: .now, value: courseGrades)
+            self.data = data
+            MMKVHelper.shared.courseGradesCache = data
+            WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
+        } catch {
+            errorState.show(message: error.localizedDescription)
         }
     }
 
+    #if os(iOS)
     func showShareSheet(_ shareableView: some View) {
-        #if os(iOS)
         let renderer = ImageRenderer(content: shareableView)
         renderer.scale = UIScreen.main.scale
         guard let uiImage = renderer.uiImage else {
-            errorMessage = "生成图片失败"
-            isShowingError = true
+            errorState.show(message: "生成图片失败")
             return
         }
         shareContent = ImageActivityItemSource(title: "我的成绩分析", image: uiImage)
-        #endif
         isShowingShareSheet = true
     }
 
     func saveToPhotoAlbum(_ shareableView: some View) {
-        #if os(iOS)
         let renderer = ImageRenderer(content: shareableView)
         renderer.scale = UIScreen.main.scale
         if let uiImage = renderer.uiImage {
             UIImageWriteToSavedPhotosAlbum(uiImage, self, #selector(saveToPhotoAlbumCallback(_:didFinishSavingWithError:contextInfo:)), nil)
         } else {
-            errorMessage = "生成图片失败"
-            isShowingError = true
+            errorState.show(message: "生成图片失败")
         }
-        #endif
     }
 
-    #if os(iOS)
     @objc
     func saveToPhotoAlbumCallback(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
         if let error = error {
-            errorMessage = "保存图片失败，可能是没有权限: \(error.localizedDescription)"
-            isShowingError = true
+            errorState.show(message: "保存图片失败，可能是没有权限: \(error.localizedDescription)")
         } else {
-            isShowingSuccess = true
+            successState.show(message: "图片保存成功")
         }
     }
     #endif
