@@ -19,18 +19,10 @@ struct DormCardView: View {
         return ColorUtil.electricityColor(electricity: electricity)
     }
 
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.appSecondarySystemGroupedBackground)
-                .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 1)
-
-            TrackLink(destination: DormDetailView(viewModel: viewModel, dorm: dorm)) {
-                EmptyView()
-            }
-            .opacity(0)
-
-            // 卡片内容
+    @ViewBuilder
+    private var cardContent: some View {
+        // 卡片内容
+        CustomGroupBox {
             HStack(alignment: .top) {
                 // MARK: - Left Column
                 VStack(alignment: .leading, spacing: 12) {
@@ -111,7 +103,26 @@ struct DormCardView: View {
                     }
                 }
             }
-            .padding(16)
+        }
+    }
+
+    var body: some View {
+        Group {
+            #if os(macOS)
+            TrackLink(destination: DormDetailView(viewModel: viewModel, dorm: dorm)) {
+                cardContent
+            }
+            .buttonStyle(.plain)
+            #elseif os(iOS)
+            ZStack {
+                TrackLink(destination: DormDetailView(viewModel: viewModel, dorm: dorm)) {
+                    EmptyView()
+                }
+                .opacity(0)
+
+                cardContent
+            }
+            #endif
         }
         // MARK: - 交互修饰符
         .swipeActions(edge: .leading, allowsFullSwipe: true) {

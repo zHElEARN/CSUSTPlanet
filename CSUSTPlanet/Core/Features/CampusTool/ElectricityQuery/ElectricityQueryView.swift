@@ -22,6 +22,17 @@ struct ElectricityQueryView: View {
                     description: Text("点击右上角添加您的宿舍信息")
                 )
             } else {
+                #if os(macOS)
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(dorms) { dorm in
+                            DormCardView(dorm: dorm)
+                                .padding(.horizontal, 16)
+                        }
+                    }
+                    .padding(.vertical, 6)
+                }
+                #elseif os(iOS)
                 List {
                     ForEach(dorms) { dorm in
                         DormCardView(dorm: dorm)
@@ -31,17 +42,11 @@ struct ElectricityQueryView: View {
                     }
                 }
                 .listStyle(.plain)
-                .background(Color.appSystemGroupedBackground)
+                #endif
             }
         }
         .navigationTitle("电量查询")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共\(dorms.count)个宿舍")
-            } else {
-                view
-            }
-        }
+        .navigationSubtitleCompat("共\(dorms.count)个宿舍")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(action: { isShowingAddDormSheet = true }) {
