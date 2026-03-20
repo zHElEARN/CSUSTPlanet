@@ -136,18 +136,21 @@ class MMKVHelper {
     @MMKVStorage(key: "BackgroundTask.interval", defaultValue: 6 * 60 * 60)
     var backgroundTaskInterval: TimeInterval
     // MARK: - Calendar Sync Properties
+}
 
-    @MMKVOptionalStorage(key: "CalendarSync.exportScopeLimit")
-    var calendarExportScopeLimit: Int?
+extension MMKVHelper {
+    enum CourseSchedule {
+        enum CalendarSync {
+            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
+            static var exportScopeLimit: Int?
 
-    @MMKVOptionalStorage(key: "CalendarSync.firstReminderOffset")
-    var calendarFirstReminderOffset: Double?
+            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
+            static var firstReminderOffset: Double?
 
-    @MMKVOptionalStorage(key: "CalendarSync.secondReminderOffset")
-    var calendarSecondReminderOffset: Double?
-
-    @MMKVOptionalStorage(key: "CalendarSync.lastSyncDate")
-    var calendarLastSyncDate: Date?
+            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
+            static var secondReminderOffset: Double?
+        }
+    }
 }
 
 // MARK: - Methods

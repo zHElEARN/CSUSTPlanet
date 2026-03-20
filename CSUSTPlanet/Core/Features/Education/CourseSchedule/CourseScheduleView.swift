@@ -113,23 +113,19 @@ struct CourseScheduleView: View {
             #endif
         }
         .navigationTitle("我的课表")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle(viewModel.selectedSemester == nil ? "默认学期" : "学期" + (viewModel.selectedSemester ?? ""))
-            } else {
-                view
-            }
-        }
+        .navigationSubtitleCompat(viewModel.selectedSemester == nil ? "默认学期" : "学期" + (viewModel.selectedSemester ?? ""))
         .inlineToolbarTitle()
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
                 Button(action: { viewModel.isSemestersSheetPresented = true }) {
                     Label("学期选择", systemImage: "calendar")
                 }
+                .disabled(viewModel.isSemestersLoading)
 
                 Button(action: { viewModel.isCalendarSettingsSheetPresented = true }) {
                     Label("添加课表到系统日历", systemImage: "calendar.badge.plus")
                 }
+                .disabled(viewModel.isSemestersLoading || viewModel.courseScheduleData?.value.courses.isEmpty == true)
             }
             ToolbarItem(placement: .primaryAction) {
                 Button(asyncAction: viewModel.loadCourses) {
@@ -147,9 +143,7 @@ struct CourseScheduleView: View {
         .loadingToast($viewModel.loadingToast)
         .successToast($viewModel.successToast)
         .sheet(isPresented: $viewModel.isCalendarSettingsSheetPresented) {
-            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isCalendarSettingsSheetPresented) { firstOffset, secondOffset, scopeLimit in
-                viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset, scopeLimit: scopeLimit)
-            }
+            CourseScheduleCalendarSettingsView(viewModel: viewModel)
         }
         .sheet(isPresented: $viewModel.isSemestersSheetPresented) {
             CourseSemesterView(viewModel: viewModel)
