@@ -35,6 +35,13 @@ struct CourseDetailView: View {
         }
         .task { await viewModel.loadInitial(course: course) }
         .navigationTitle(course.name)
+        .apply { view in
+            if let teacher = course.teacher {
+                view.navigationSubtitleCompat("\(teacher)老师")
+            } else {
+                view
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .secondaryAction) {
                 Button(action: { viewModel.isRemindersSettingsPresented = true }) {
