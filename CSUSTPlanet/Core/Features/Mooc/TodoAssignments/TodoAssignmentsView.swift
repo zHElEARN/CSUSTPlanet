@@ -20,7 +20,7 @@ struct TodoAssignmentsView: View {
                             DisclosureGroup(isExpanded: bindingForCourse(group.course.id)) {
                                 let assignments = viewModel.displayedAssignments(for: group)
                                 ForEach(assignments.indices, id: \.self) { index in
-                                    assignmentCard(assignment: assignments[index])
+                                    AssignmentInfoView(assignment: assignments[index])
                                 }
                             } label: {
                                 HStack {
@@ -88,9 +88,13 @@ struct TodoAssignmentsView: View {
         )
         .withAnimation()
     }
+}
+
+struct AssignmentInfoView: View {
+    let assignment: MoocHelper.Assignment
 
     @ViewBuilder
-    private func assignmentCard(assignment: MoocHelper.Assignment) -> some View {
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(assignment.title)
