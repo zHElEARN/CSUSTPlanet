@@ -243,7 +243,7 @@ struct GradeQueryView: View {
             .disabled(viewModel.isLoadingGrades || viewModel.gradeData?.value.isEmpty == true)
         }
         ToolbarItem(placement: .primaryAction) {
-            Button(asyncAction: viewModel.loadInitial) {
+            Button(asyncAction: viewModel.loadCourseGrades) {
                 if viewModel.isLoadingGrades {
                     ProgressView().smallControlSizeOnMac()
                 } else {
