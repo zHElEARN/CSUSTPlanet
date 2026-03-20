@@ -10,7 +10,8 @@ import SwiftUI
 
 struct TodoAssignmentCourseGroup: Identifiable, Hashable {
     let course: MoocHelper.Course
-    let assignments: [MoocHelper.Assignment]
+    let allAssignments: [MoocHelper.Assignment]
+    let unexpiredAssignments: [MoocHelper.Assignment]
 
     var id: String { course.id }
 }
@@ -20,6 +21,8 @@ struct TodoAssignmentCourseGroup: Identifiable, Hashable {
 final class TodoAssignmentsViewModel {
     var courseGroups: [TodoAssignmentCourseGroup] = []
     var expandedCourseIDs: Set<String> = []
+    var showAllAssignmentsCourseIDs: Set<String> = []
+    var unexpiredAssignmentsCount = 0
 
     var isLoadingAssignments = false
 
@@ -45,12 +48,20 @@ final class TodoAssignmentsViewModel {
             for course in courses {
                 let assignments = try await AuthManager.shared.moocHelper.getCourseAssignments(course: course)
                 let unexpiredAssignments = assignments.filter { $0.deadline >= .now }
-                guard !unexpiredAssignments.isEmpty else { continue }
-                newGroups.append(TodoAssignmentCourseGroup(course: course, assignments: unexpiredAssignments))
+                newGroups.append(
+                    TodoAssignmentCourseGroup(
+                        course: course,
+                        allAssignments: assignments,
+                        unexpiredAssignments: unexpiredAssignments
+                    )
+                )
             }
 
             courseGroups = newGroups
             expandedCourseIDs = Set(newGroups.map(\.id))
+            unexpiredAssignmentsCount = newGroups.reduce(0) { partialResult, group in
+                partialResult + group.unexpiredAssignments.count
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -74,5 +85,25 @@ final class TodoAssignmentsViewModel {
         } else {
             expandedCourseIDs.insert(courseID)
         }
+    }
+
+    func isShowingAllAssignments(courseID: String) -> Bool {
+        showAllAssignmentsCourseIDs.contains(courseID)
+    }
+
+    func toggleShowAllAssignments(courseID: String) {
+        if showAllAssignmentsCourseIDs.contains(courseID) {
+            showAllAssignmentsCourseIDs.remove(courseID)
+        } else {
+            showAllAssignmentsCourseIDs.insert(courseID)
+        }
+    }
+
+    func displayedAssignments(for group: TodoAssignmentCourseGroup) -> [MoocHelper.Assignment] {
+        if isShowingAllAssignments(courseID: group.id) {
+            return group.allAssignments
+        }
+
+        return group.unexpiredAssignments
     }
 }

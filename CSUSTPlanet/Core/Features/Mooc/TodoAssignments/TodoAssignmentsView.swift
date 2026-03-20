@@ -21,15 +21,31 @@ struct TodoAssignmentsView: View {
                     ForEach(viewModel.courseGroups) { group in
                         Section {
                             DisclosureGroup(isExpanded: bindingForCourse(group.id)) {
-                                ForEach(group.assignments.indices, id: \.self) { index in
-                                    assignmentCard(assignment: group.assignments[index])
+                                let assignments = viewModel.displayedAssignments(for: group)
+                                ForEach(assignments.indices, id: \.self) { index in
+                                    assignmentCard(assignment: assignments[index])
                                 }
                             } label: {
-                                Text(group.course.name)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
-                                    .contentShape(.rect)
-                                    .onTapGesture { viewModel.toggleExpanded(courseID: group.id) }
+                                HStack {
+                                    Text(group.course.name)
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                        .contentShape(.rect)
+                                        .onTapGesture {
+                                            withAnimation { viewModel.toggleExpanded(courseID: group.id) }
+                                        }
+
+                                    Spacer()
+
+                                    Button {
+                                        withAnimation { viewModel.toggleShowAllAssignments(courseID: group.id) }
+                                    } label: {
+                                        Text(viewModel.isShowingAllAssignments(courseID: group.id) ? "仅未截止" : "查看全部")
+                                            .font(.caption)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+                                }
                             }
                             .buttonStyle(.plain)
                         }
@@ -61,7 +77,7 @@ struct TodoAssignmentsView: View {
             }
         }
         .navigationTitle("待提交作业")
-        .navigationSubtitleCompat("共\(viewModel.courseGroups.count)门课程")
+        .navigationSubtitleCompat("共\(viewModel.unexpiredAssignmentsCount)个未截止作业")
         .trackView("TodoAssignments")
     }
 
@@ -70,6 +86,7 @@ struct TodoAssignmentsView: View {
             get: { viewModel.isExpanded(courseID: courseID) },
             set: { viewModel.setExpanded($0, courseID: courseID) }
         )
+        .withAnimation()
     }
 
     @ViewBuilder
@@ -123,6 +140,13 @@ struct TodoAssignmentsView: View {
                 Text(assignment.startTime, format: .relative(presentation: .named, unitsStyle: .abbreviated))
                     .font(.caption2)
                     .foregroundColor(.secondary)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(.secondary.opacity(0.15), in: Capsule())
+                    .overlay {
+                        Capsule()
+                            .stroke(.secondary.opacity(0.25), lineWidth: 0.5)
+                    }
             }
 
             HStack {
@@ -138,6 +162,13 @@ struct TodoAssignmentsView: View {
                 Text(assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
                     .font(.caption2)
                     .foregroundColor(assignment.submitStatus ? .secondary : .red)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background((assignment.submitStatus ? Color.secondary : .red).opacity(0.15), in: Capsule())
+                    .overlay {
+                        Capsule()
+                            .stroke((assignment.submitStatus ? Color.secondary : .red).opacity(0.25), lineWidth: 0.5)
+                    }
             }
         }
         .padding(.vertical, 6)
