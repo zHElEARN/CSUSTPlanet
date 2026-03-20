@@ -10,34 +10,26 @@ import EventKit
 import Foundation
 import SwiftData
 import SwiftUI
-import WidgetKit
 
 @MainActor
 @Observable
 class CourseScheduleViewModel {
-    var data: Cached<CourseScheduleData>? = nil
-    var errorMessage: String = ""
-    var warningMessage: String = ""
+    var courseScheduleData: Cached<CourseScheduleData>? = nil
     var availableSemesters: [String] = []
 
-    var isLoading: Bool = false
-    var isShowingWarning: Bool = false
-    var isShowingError: Bool = false
+    var isCourseScheduleLoading: Bool = false
     var isSemestersLoading: Bool = false
-    var isShowingSemestersSheet: Bool = false
 
-    // 导出日历相关状态
-    var isShowingAddToCalendarAlert: Bool = false
-    var isAddToCalendarExporting: Bool = false
-    var isShowingAddToCalendarSuccess: Bool = false
+    var isSemestersSheetPresented: Bool = false
+    var isCalendarSettingsSheetPresented: Bool = false
+
+    var isCourseDetailPresented: Bool = false
 
     // TabView显示的第几周
     var currentWeek: Int = 1
     var selectedSemester: String? = nil
 
-    var selectedCourse: EduHelper.Course?
-    var selectedSession: EduHelper.ScheduleSession?
-    var isShowingDetail: Bool = false
+    var selectedCourseInfo: CourseDisplayInfo?
 
     var courseColors: [String: Color] = [:]
 
@@ -56,37 +48,56 @@ class CourseScheduleViewModel {
     // 当前日期在第几周
     var realCurrentWeek: Int? = nil
 
-    var isLoaded = false
+    var errorToast: ToastState = .errorTitle
+    var loadingToast: ToastState = .init(title: "添加中")
+    var successToast: ToastState = .init(title: "添加成功")
+
+    var isInitial: Bool = true
 
     init() {
         guard let data = MMKVHelper.shared.courseScheduleCache else { return }
-        self.data = data
+        self.courseScheduleData = data
         updateSchedules(data.value.semesterStartDate, data.value.courses)
     }
 
-    func task() {
-        guard !isLoaded else { return }
-        isLoaded = true
-        loadAvailableSemesters()
-        loadCourses()
-        Task {
-            syncCalendarIfNeeded()
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.loadAvailableSemesters() }
+            group.addTask { await self.loadCourses() }
+        }
+        // Task {
+        //     syncCalendarIfNeeded()
+        // }
+    }
+
+    func loadAvailableSemesters() async {
+        guard !isSemestersLoading else { return }
+        isSemestersLoading = true
+        defer { isSemestersLoading = false }
+
+        do {
+            (availableSemesters, selectedSemester) = try await AuthManager.shared.eduHelper.courseService.getAvailableSemestersForCourseSchedule()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func loadAvailableSemesters() {
-        isSemestersLoading = true
-        Task {
-            defer {
-                isSemestersLoading = false
-            }
+    func loadCourses() async {
+        guard !isCourseScheduleLoading else { return }
+        isCourseScheduleLoading = true
+        defer { isCourseScheduleLoading = false }
 
-            do {
-                (availableSemesters, selectedSemester) = try await AuthManager.shared.eduHelper.courseService.getAvailableSemestersForCourseSchedule()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            let courses = try await AuthManager.shared.eduHelper.courseService.getCourseSchedule(academicYearSemester: selectedSemester)
+            let semesterStartDate = try await AuthManager.shared.eduHelper.semesterService.getSemesterStartDate(academicYearSemester: selectedSemester)
+            let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
+            self.courseScheduleData = data
+            MMKVHelper.shared.courseScheduleCache = data
+            updateSchedules(semesterStartDate, courses)
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
@@ -104,29 +115,6 @@ class CourseScheduleViewModel {
         }
     }
 
-    func loadCourses() {
-        isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
-
-            do {
-                let courses = try await AuthManager.shared.eduHelper.courseService.getCourseSchedule(academicYearSemester: selectedSemester)
-                let semesterStartDate = try await AuthManager.shared.eduHelper.semesterService.getSemesterStartDate(academicYearSemester: selectedSemester)
-                let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
-                self.data = data
-                MMKVHelper.shared.courseScheduleCache = data
-                updateSchedules(semesterStartDate, courses)
-                WidgetCenter.shared.reloadTimelines(ofKind: "TodayCoursesWidget")
-                WidgetCenter.shared.reloadTimelines(ofKind: "WeeklyCoursesWidget")
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
-        }
-    }
-
     func goToCurrentWeek() {
         if let realWeek = realCurrentWeek, realWeek > 0 && realWeek <= CourseScheduleUtil.weekCount {
             withAnimation {
@@ -140,21 +128,20 @@ class CourseScheduleViewModel {
     }
 
     func addToCalendar(firstReminderOffset: TimeInterval?, secondReminderOffset: TimeInterval?, scopeLimit: Int? = nil, isSilent: Bool = false) {
-        guard let data = self.data?.value else {
+        guard let data = self.courseScheduleData?.value else {
             if !isSilent {
-                self.errorMessage = "课表数据未加载，无法导出"
-                self.isShowingError = true
+                errorToast.show(message: "课表数据未加载，无法导出")
             }
             return
         }
 
         if !isSilent {
-            isAddToCalendarExporting = true
+            loadingToast.show(message: "正在将课表添加到日历")
         }
         Task {
             defer {
                 if !isSilent {
-                    isAddToCalendarExporting = false
+                    loadingToast.hide()
                 }
             }
             do {
@@ -212,32 +199,31 @@ class CourseScheduleViewModel {
                 try CalendarUtil.commitChanges()
 
                 if !isSilent {
-                    isShowingAddToCalendarSuccess = true
+                    successToast.show(message: "课表已成功添加到日历")
                 }
                 MMKVHelper.shared.calendarLastSyncDate = .now
             } catch {
                 if !isSilent {
-                    self.errorMessage = "导出失败: \(error.localizedDescription)"
-                    self.isShowingError = true
+                    errorToast.show(message: "导出失败: \(error.localizedDescription)")
                 }
             }
         }
     }
-    
+
     /// 如果用户设置了导出范围，则在每天进入 app 时自动同步一次日历
     func syncCalendarIfNeeded() {
         guard let scopeLimit = MMKVHelper.shared.calendarExportScopeLimit else { return }
-        
+
         if let lastSync = MMKVHelper.shared.calendarLastSyncDate {
             // 如果上次同步是在今天，就不再同步
             if Calendar.current.isDateInToday(lastSync) {
                 return
             }
         }
-        
+
         // 只有在数据加载完成后才同步
-        guard data != nil else { return }
-        
+        guard courseScheduleData != nil else { return }
+
         addToCalendar(
             firstReminderOffset: MMKVHelper.shared.calendarFirstReminderOffset,
             secondReminderOffset: MMKVHelper.shared.calendarSecondReminderOffset,

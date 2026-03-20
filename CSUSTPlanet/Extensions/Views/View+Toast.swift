@@ -26,7 +26,10 @@ struct ToastState {
 
     static var loadingTitle: ToastState { ToastState(title: "加载中") }
 
-    mutating func show(message: String) {
+    mutating func show(title: String? = nil, message: String) {
+        if let title = title {
+            self.title = title
+        }
         self.message = message
         self.isPresenting = true
     }

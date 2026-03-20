@@ -23,11 +23,13 @@ struct CourseScheduleView: View {
     var headerHeight: CGFloat { isPad ? 70 : 50 }
     var sectionHeight: CGFloat { isPad ? 90 : 60 }
 
+    // MARK: - Body
+
     var body: some View {
         VStack(spacing: 0) {
             topControlBar
-            if let courseScheduleData = viewModel.data {
-                let weeklyCourses = CourseScheduleUtil.getWeeklyCourses(courseScheduleData.value.courses)
+            if let data = viewModel.courseScheduleData, !data.value.courses.isEmpty {
+                let weeklyCourses = CourseScheduleUtil.getWeeklyCourses(data.value.courses)
 
                 #if os(macOS)
                 // macOS下使用左右翻页按钮
@@ -36,23 +38,20 @@ struct CourseScheduleView: View {
                     Button {
                         withAnimation { viewModel.currentWeek -= 1 }
                     } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(maxHeight: .infinity)
-                            .frame(width: 48)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color(PlatformColor.controlBackgroundColor))
-                            )
-                            .contentShape(Rectangle())
+                        GroupBox {
+                            Image(systemName: "chevron.left")
+                                .font(.title2.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(maxHeight: .infinity)
+                                .frame(width: 48)
+                        }
                     }
                     .buttonStyle(.plain)
                     .disabled(viewModel.currentWeek <= 1)
 
                     tableView(
                         for: viewModel.currentWeek,
-                        semesterStartDate: courseScheduleData.value.semesterStartDate,
+                        semesterStartDate: data.value.semesterStartDate,
                         weeklyCourses: weeklyCourses
                     )
 
@@ -60,16 +59,13 @@ struct CourseScheduleView: View {
                     Button {
                         withAnimation { viewModel.currentWeek += 1 }
                     } label: {
-                        Image(systemName: "chevron.right")
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(maxHeight: .infinity)
-                            .frame(width: 48)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color(PlatformColor.controlBackgroundColor))
-                            )
-                            .contentShape(Rectangle())
+                        GroupBox {
+                            Image(systemName: "chevron.right")
+                                .font(.title2.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(maxHeight: .infinity)
+                                .frame(width: 48)
+                        }
                     }
                     .buttonStyle(.plain)
                     .disabled(viewModel.currentWeek >= CourseScheduleUtil.weekCount)
@@ -78,7 +74,7 @@ struct CourseScheduleView: View {
                 #else
                 TabView(selection: $viewModel.currentWeek) {
                     ForEach(1...CourseScheduleUtil.weekCount, id: \.self) { week in
-                        tableView(for: week, semesterStartDate: courseScheduleData.value.semesterStartDate, weeklyCourses: weeklyCourses)
+                        tableView(for: week, semesterStartDate: data.value.semesterStartDate, weeklyCourses: weeklyCourses)
                             .tag(week)
                     }
                 }
@@ -86,14 +82,14 @@ struct CourseScheduleView: View {
                 .ignoresSafeArea(.container, edges: .bottom)
                 #endif
             } else {
-                ContentUnavailableView("暂无课表数据", systemImage: "doc.text.magnifyingglass", description: Text("当前学期未设置或数据加载失败"))
+                ContentUnavailableView("暂无课表数据", systemImage: "doc.text.magnifyingglass", description: Text("当前筛选条件下没有找到课程"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .onAppear {
             #if os(iOS)
             if sizeClass == .regular {
-                viewModel.isShowingDetail = true
+                viewModel.isCourseDetailPresented = true
             }
             #endif
         }
@@ -101,17 +97,17 @@ struct CourseScheduleView: View {
             #if os(iOS)
             if sizeClass == .regular {
                 view
-                    .inspector(isPresented: $viewModel.isShowingDetail) {
+                    .inspector(isPresented: $viewModel.isCourseDetailPresented) {
                         sheetContent(isShowingToolbar: false)
                     }
                     .inspectorColumnWidth(min: 350, ideal: 400, max: 450)
             } else {
-                view.sheet(isPresented: $viewModel.isShowingDetail) {
+                view.sheet(isPresented: $viewModel.isCourseDetailPresented) {
                     sheetContent(isShowingToolbar: true)
                 }
             }
             #else
-            view.sheet(isPresented: $viewModel.isShowingDetail) {
+            view.sheet(isPresented: $viewModel.isCourseDetailPresented) {
                 sheetContent(isShowingToolbar: true)
             }
             #endif
@@ -127,46 +123,36 @@ struct CourseScheduleView: View {
         .inlineToolbarTitle()
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
-                Button(action: { viewModel.isShowingSemestersSheet = true }) {
+                Button(action: { viewModel.isSemestersSheetPresented = true }) {
                     Label("学期选择", systemImage: "calendar")
                 }
 
-                Button(action: { viewModel.isShowingAddToCalendarAlert = true }) {
+                Button(action: { viewModel.isCalendarSettingsSheetPresented = true }) {
                     Label("添加课表到系统日历", systemImage: "calendar.badge.plus")
                 }
             }
             ToolbarItem(placement: .primaryAction) {
-                Button(action: viewModel.loadCourses) {
-                    if viewModel.isLoading {
+                Button(asyncAction: viewModel.loadCourses) {
+                    if viewModel.isCourseScheduleLoading {
                         ProgressView().smallControlSizeOnMac()
                     } else {
                         Label("刷新", systemImage: "arrow.clockwise")
                     }
                 }
-                .disabled(viewModel.isLoading)
+                .disabled(viewModel.isCourseScheduleLoading)
             }
         }
-        .task { viewModel.task() }
-        .toast(isPresenting: $viewModel.isShowingWarning) {
-            AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingAddToCalendarSuccess) {
-            AlertToast(type: .complete(.green), title: "添加成功", subTitle: "已成功将课表添加到日历")
-        }
-        .toast(isPresenting: $viewModel.isAddToCalendarExporting) {
-            AlertToast(type: .loading, title: "正在添加", subTitle: "正在将课表添加到日历")
-        }
-        .sheet(isPresented: $viewModel.isShowingAddToCalendarAlert) {
-            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isShowingAddToCalendarAlert) { firstOffset, secondOffset, scopeLimit in
+        .task { await viewModel.loadInitial() }
+        .errorToast($viewModel.errorToast)
+        .loadingToast($viewModel.loadingToast)
+        .successToast($viewModel.successToast)
+        .sheet(isPresented: $viewModel.isCalendarSettingsSheetPresented) {
+            CourseScheduleCalendarSettingsView(isPresented: $viewModel.isCalendarSettingsSheetPresented) { firstOffset, secondOffset, scopeLimit in
                 viewModel.addToCalendar(firstReminderOffset: firstOffset, secondReminderOffset: secondOffset, scopeLimit: scopeLimit)
             }
         }
-        .sheet(isPresented: $viewModel.isShowingSemestersSheet) {
-            CourseSemesterView()
-                .environment(viewModel)
+        .sheet(isPresented: $viewModel.isSemestersSheetPresented) {
+            CourseSemesterView(viewModel: viewModel)
         }
         .trackView("CourseSchedule")
     }
@@ -174,8 +160,8 @@ struct CourseScheduleView: View {
     // MARK: - 课程详情视图
     @ViewBuilder
     func sheetContent(isShowingToolbar: Bool) -> some View {
-        if let course = viewModel.selectedCourse, let session = viewModel.selectedSession {
-            CourseScheduleDetailView(course: course, session: session, isShowingToolbar: isShowingToolbar, isPresented: $viewModel.isShowingDetail)
+        if let courseInfo = viewModel.selectedCourseInfo {
+            CourseScheduleDetailView(course: courseInfo.course, session: courseInfo.session, isShowingToolbar: isShowingToolbar, isPresented: $viewModel.isCourseDetailPresented)
         } else {
             ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
         }
@@ -201,11 +187,7 @@ struct CourseScheduleView: View {
             Spacer()
 
             HStack(spacing: 12) {
-                let currentWeekBinding = Binding(
-                    get: { viewModel.currentWeek },
-                    set: { newValue in withAnimation { viewModel.currentWeek = newValue } }
-                )
-                Picker("选择周数", selection: currentWeekBinding) {
+                Picker("选择周数", selection: $viewModel.currentWeek.withAnimation()) {
                     ForEach(1...CourseScheduleUtil.weekCount, id: \.self) { week in
                         Text("第 \(week) 周").tag(week)
                     }
@@ -331,11 +313,7 @@ struct CourseScheduleView: View {
                     HStack(spacing: colSpacing) {
                         ForEach(1...7, id: \.self) { _ in
                             Rectangle()
-                                #if os(iOS)
-                            .fill(Color(PlatformColor.secondarySystemBackground).opacity(0.3))
-                                #else
-                            .fill(Color.primary.opacity(0.04))
-                                #endif
+                                .fill(Color.primary.opacity(0.04))
                                 .frame(height: sectionHeight)
                                 .cornerRadius(isPad ? 8 : 4)
                         }
@@ -367,9 +345,8 @@ struct CourseScheduleView: View {
                 if let coursesForWeek = weeklyCourses[week] {
                     ForEach(coursesForWeek) { courseInfo in
                         CourseCardView(course: courseInfo.course, session: courseInfo.session, color: viewModel.courseColors[courseInfo.course.courseName] ?? .gray) {
-                            viewModel.selectedCourse = courseInfo.course
-                            viewModel.selectedSession = courseInfo.session
-                            viewModel.isShowingDetail = true
+                            viewModel.selectedCourseInfo = courseInfo
+                            viewModel.isCourseDetailPresented = true
                         }
                         .frame(width: dayColumnWidth)
                         .frame(height: calculateHeight(for: courseInfo.session))

@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct CourseSemesterView: View {
-    @Environment(CourseScheduleViewModel.self) var viewModel
+    @Bindable var viewModel: CourseScheduleViewModel
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("学期选择") {
-                    Picker("学期", selection: Bindable(viewModel).selectedSemester) {
+                    Picker("学期", selection: $viewModel.selectedSemester) {
                         Text("默认学期").tag(nil as String?)
                         ForEach(viewModel.availableSemesters, id: \.self) { semester in
                             Text(semester).tag(semester as String?)
@@ -22,12 +22,12 @@ struct CourseSemesterView: View {
                     }
                     #if os(iOS)
                     .pickerStyle(.wheel)
-                    #else
+                    #elseif os(macOS)
                     .pickerStyle(.menu)
                     #endif
                 }
                 HStack {
-                    Button(action: viewModel.loadAvailableSemesters) {
+                    Button(asyncAction: viewModel.loadAvailableSemesters) {
                         Text("刷新学期列表")
                     }
                     .disabled(viewModel.isSemestersLoading)
@@ -40,13 +40,13 @@ struct CourseSemesterView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("完成") {
-                        viewModel.loadCourses()
-                        viewModel.isShowingSemestersSheet = false
+                        await viewModel.loadCourses()
+                        viewModel.isSemestersSheetPresented = false
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        viewModel.isShowingSemestersSheet = false
+                        viewModel.isSemestersSheetPresented = false
                     }
                 }
             }
@@ -56,8 +56,4 @@ struct CourseSemesterView: View {
             .trackView("CourseSemester")
         }
     }
-}
-
-#Preview {
-    CourseSemesterView()
 }
