@@ -115,6 +115,9 @@ class MMKVHelper {
     @MMKVOptionalStorage(key: "Cached.physicsExperimentScheduleCache")
     var physicsExperimentScheduleCache: Cached<[PhysicsExperimentHelper.Course]>?
 
+    @MMKVOptionalStorage(key: "Cached.todoAssignmentsCache")
+    var todoAssignmentsCache: Cached<[TodoAssignmentsData]>?
+
     // MARK: - CampusMap Properties
 
     @MMKVOptionalStorage(key: "CampusMap.selectedCampus")

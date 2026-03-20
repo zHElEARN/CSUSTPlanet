@@ -13,14 +13,11 @@ struct TodoAssignmentsView: View {
 
     var body: some View {
         Group {
-            if viewModel.courseGroups.isEmpty {
-                ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
+            if let courseGroups = viewModel.todoAssignmentsData?.value, !courseGroups.isEmpty {
                 List {
-                    ForEach(viewModel.courseGroups) { group in
+                    ForEach(courseGroups, id: \.course.id) { group in
                         Section {
-                            DisclosureGroup(isExpanded: bindingForCourse(group.id)) {
+                            DisclosureGroup(isExpanded: bindingForCourse(group.course.id)) {
                                 let assignments = viewModel.displayedAssignments(for: group)
                                 ForEach(assignments.indices, id: \.self) { index in
                                     assignmentCard(assignment: assignments[index])
@@ -32,15 +29,15 @@ struct TodoAssignmentsView: View {
                                         .foregroundColor(.primary)
                                         .contentShape(.rect)
                                         .onTapGesture {
-                                            withAnimation { viewModel.toggleExpanded(courseID: group.id) }
+                                            withAnimation { viewModel.toggleExpanded(courseID: group.course.id) }
                                         }
 
                                     Spacer()
 
                                     Button {
-                                        withAnimation { viewModel.toggleShowAllAssignments(courseID: group.id) }
+                                        withAnimation { viewModel.toggleShowAllAssignments(courseID: group.course.id) }
                                     } label: {
-                                        Text(viewModel.isShowingAllAssignments(courseID: group.id) ? "仅未截止" : "查看全部")
+                                        Text(viewModel.isShowingAllAssignments(courseID: group.course.id) ? "仅未截止" : "查看全部")
                                             .font(.caption)
                                     }
                                     .buttonStyle(.bordered)
@@ -56,6 +53,9 @@ struct TodoAssignmentsView: View {
                 #elseif os(macOS)
                 .listStyle(.inset)
                 #endif
+            } else {
+                ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         #if os(iOS)

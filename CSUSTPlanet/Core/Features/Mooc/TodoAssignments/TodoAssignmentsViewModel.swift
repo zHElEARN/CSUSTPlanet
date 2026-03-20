@@ -8,27 +8,27 @@
 import CSUSTKit
 import SwiftUI
 
-struct TodoAssignmentCourseGroup: Identifiable, Hashable {
-    let course: MoocHelper.Course
-    let allAssignments: [MoocHelper.Assignment]
-    let unexpiredAssignments: [MoocHelper.Assignment]
-
-    var id: String { course.id }
-}
-
 @MainActor
 @Observable
 final class TodoAssignmentsViewModel {
-    var courseGroups: [TodoAssignmentCourseGroup] = []
+    var todoAssignmentsData: Cached<[TodoAssignmentsData]>? = nil
+
+    private var unexpiredAssignmentsByCourseID: [String: [MoocHelper.Assignment]] = [:]
+    private(set) var unexpiredAssignmentsCount: Int = 0
+
     var expandedCourseIDs: Set<String> = []
     var showAllAssignmentsCourseIDs: Set<String> = []
-    var unexpiredAssignmentsCount = 0
 
     var isLoadingAssignments = false
 
     var errorToast: ToastState = .errorTitle
 
     var isInitial = true
+
+    init() {
+        guard let data = MMKVHelper.shared.todoAssignmentsCache else { return }
+        applyData(data)
+    }
 
     func loadInitial() async {
         guard isInitial else { return }
@@ -43,25 +43,16 @@ final class TodoAssignmentsViewModel {
 
         do {
             let courses = try await AuthManager.shared.moocHelper.getCoursesWithPendingAssignments()
-            var newGroups: [TodoAssignmentCourseGroup] = []
+            var newGroups: [TodoAssignmentsData] = []
 
             for course in courses {
                 let assignments = try await AuthManager.shared.moocHelper.getCourseAssignments(course: course)
-                let unexpiredAssignments = assignments.filter { $0.deadline >= .now }
-                newGroups.append(
-                    TodoAssignmentCourseGroup(
-                        course: course,
-                        allAssignments: assignments,
-                        unexpiredAssignments: unexpiredAssignments
-                    )
-                )
+                newGroups.append(.init(course: course, assignments: assignments))
             }
 
-            courseGroups = newGroups
-            expandedCourseIDs = Set(newGroups.map(\.id))
-            unexpiredAssignmentsCount = newGroups.reduce(0) { partialResult, group in
-                partialResult + group.unexpiredAssignments.count
-            }
+            let data = Cached(cachedAt: .now, value: newGroups)
+            applyData(data)
+            MMKVHelper.shared.todoAssignmentsCache = data
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -99,11 +90,32 @@ final class TodoAssignmentsViewModel {
         }
     }
 
-    func displayedAssignments(for group: TodoAssignmentCourseGroup) -> [MoocHelper.Assignment] {
-        if isShowingAllAssignments(courseID: group.id) {
-            return group.allAssignments
+    func displayedAssignments(for group: TodoAssignmentsData) -> [MoocHelper.Assignment] {
+        if isShowingAllAssignments(courseID: group.course.id) {
+            return group.assignments
         }
 
-        return group.unexpiredAssignments
+        return unexpiredAssignmentsByCourseID[group.course.id] ?? []
+    }
+
+    private func applyData(_ data: Cached<[TodoAssignmentsData]>) {
+        todoAssignmentsData = data
+
+        let referenceDate = Date.now
+        var unexpiredMap: [String: [MoocHelper.Assignment]] = [:]
+        var totalCount = 0
+
+        for group in data.value {
+            let unexpiredAssignments = group.assignments.filter { $0.deadline >= referenceDate }
+            unexpiredMap[group.course.id] = unexpiredAssignments
+            totalCount += unexpiredAssignments.count
+        }
+
+        unexpiredAssignmentsByCourseID = unexpiredMap
+        unexpiredAssignmentsCount = totalCount
+
+        let existingCourseIDs = Set(data.value.map(\.course.id))
+        expandedCourseIDs = existingCourseIDs
+        showAllAssignmentsCourseIDs = showAllAssignmentsCourseIDs.intersection(existingCourseIDs)
     }
 }
