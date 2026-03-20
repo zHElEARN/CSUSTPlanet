@@ -99,6 +99,7 @@ class ExamScheduleViewModel {
             return
         }
         loadingToast.show(message: "正在添加到日历...")
+        defer { loadingToast.hide() }
         do {
             let calendar = try await CalendarUtil.getOrCreateEventCalendar(named: "长理星球 - 考试")
             for exam in exams {
@@ -111,10 +112,8 @@ class ExamScheduleViewModel {
                     location: exam.examRoom
                 )
             }
-            loadingToast.hide()
             successToast.show(message: "全部添加到日历成功")
         } catch {
-            loadingToast.hide()
             errorToast.show(message: error.localizedDescription)
         }
     }
