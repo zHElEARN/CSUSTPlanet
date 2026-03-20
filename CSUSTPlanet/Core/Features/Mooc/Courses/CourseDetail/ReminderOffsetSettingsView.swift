@@ -20,77 +20,34 @@ struct ReminderOffsetSettingsView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                Text("选择提醒时间")
-                    .font(.headline)
-                    .padding(.top, 20)
-
-                HStack(spacing: 0) {
+            Form {
+                Section {
                     Picker("小时", selection: $selectedHourOffset) {
                         ForEach(hours, id: \.self) { hour in
                             Text("\(hour)小时").tag(hour)
                         }
                     }
-                    #if os(iOS)
-                    .pickerStyle(.wheel)
-                    .frame(width: 120)
-                    #else
                     .pickerStyle(.menu)
-                    .frame(width: 80)
-                    #endif
-                    .clipped()
 
                     Picker("分钟", selection: $selectedMinuteOffset) {
                         ForEach(minutes, id: \.self) { minute in
                             Text("\(minute)分钟").tag(minute)
                         }
                     }
-                    #if os(iOS)
-                    .pickerStyle(.wheel)
-                    .frame(width: 120)
-                    #else
                     .pickerStyle(.menu)
-                    .frame(width: 80)
-                    #endif
-                    .clipped()
+                } header: {
+                    Text("提醒时间")
+                } footer: {
+                    Text("系统会在作业截止时间前提醒您。提醒将添加到系统提醒事项中，并且只会添加未提交的作业。")
                 }
-                .frame(height: 150)
 
-                Text("提前 \(formatOffset()) 提醒")
-                    .font(.title3)
-                    .padding()
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("作业提醒设置")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(alignment: .top) {
-                            Text("•")
-                            Text("系统将在作业截止时间前提醒您")
-                        }
-
-                        HStack(alignment: .top) {
-                            Text("•")
-                            Text("提醒将添加到系统提醒事项中")
-                        }
-
-                        HStack(alignment: .top) {
-                            Text("•")
-                            Text("只会添加未提交的作业")
-                        }
+                Section {
+                    LabeledContent("提醒预览") {
+                        Text("提前 \(formatOffset()) 提醒")
                     }
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
                 }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
-                .padding(.horizontal)
-
-                Spacer()
             }
+            .formStyle(.grouped)
             .navigationTitle("作业提醒设置")
             .inlineToolbarTitle()
             .toolbar {
