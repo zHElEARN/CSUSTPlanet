@@ -32,7 +32,7 @@ private enum ChartTimeRange: String, CaseIterable, Identifiable {
 }
 
 struct DormDetailView: View {
-    @ObservedObject var viewModel: DormElectricityViewModel
+    @Bindable var viewModel: DormElectricityViewModel
     @Bindable var dorm: Dorm
 
     @State private var showDeleteAlert = false
@@ -59,18 +59,19 @@ struct DormDetailView: View {
                 DormInfoCard(dorm: dorm)
 
                 TrackLink(destination: DormHistoryView(viewModel: viewModel, dorm: dorm)) {
-                    HStack {
-                        Label("查看所有历史记录", systemImage: "list.bullet.clipboard")
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    CustomGroupBox {
+                        HStack {
+                            Label("查看所有历史记录", systemImage: "list.bullet.clipboard")
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                    .padding()
-                    .background(Color.appSecondarySystemGroupedBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+                .buttonStyle(.plain)
+
                 if let records = dorm.records, !records.isEmpty {
                     Button(role: .destructive) {
                         showDeleteAlert = true
@@ -83,13 +84,14 @@ struct DormDetailView: View {
                             .background(Color.red)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    .buttonStyle(.plain)
                     .padding(.top, 10)
                 }
             }
             .padding()
         }
-        .background(Color.appSystemGroupedBackground)
         .navigationTitle("宿舍详情")
+        .navigationSubtitleCompat("\(dorm.buildingName) \(dorm.room)")
         .alert("清除记录", isPresented: $showDeleteAlert) {
             Button("取消", role: .cancel) {}
             Button("确认清除", role: .destructive) {
@@ -109,7 +111,7 @@ struct DormDetailView: View {
 }
 
 private struct ElectricityDashboardCard: View {
-    @ObservedObject var viewModel: DormElectricityViewModel
+    @Bindable var viewModel: DormElectricityViewModel
     let records: [ElectricityRecord]?
     let isLoading: Bool
     let lastFetchDate: Date?
@@ -123,64 +125,62 @@ private struct ElectricityDashboardCard: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("剩余电量")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                if let date = lastFetchDate {
-                    Text("更新于 " + date.formatted(.relative(presentation: .named)))
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-
-            ZStack {
-                if let electricity = record?.electricity {
-                    VStack {
-                        HStack(alignment: .lastTextBaseline) {
-                            Text(String(format: "%.2f", electricity))
-                                .font(.system(size: 48, weight: .bold, design: .rounded))
-                                .foregroundStyle(ColorUtil.electricityColor(electricity: electricity))
-
-                            Text("kWh")
-                                .font(.title3)
-                                .foregroundStyle(.secondary)
-                                .fontWeight(.medium)
-                                .padding(.bottom, 6)
-                        }
-
-                        if let info = exhaustionInfo {
-                            Text(info)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                } else {
-                    Text("--.--")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
+        CustomGroupBox {
+            VStack(spacing: 12) {
+                HStack {
+                    Text("剩余电量")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
+                    Spacer()
+                    if let date = lastFetchDate {
+                        Text("更新于 " + date.formatted(.relative(presentation: .named)))
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
 
-                if isLoading {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(.thinMaterial)
+                ZStack {
+                    if let electricity = record?.electricity {
+                        VStack {
+                            HStack(alignment: .lastTextBaseline) {
+                                Text(String(format: "%.2f", electricity))
+                                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                                    .foregroundStyle(ColorUtil.electricityColor(electricity: electricity))
+
+                                Text("kWh")
+                                    .font(.title3)
+                                    .foregroundStyle(.secondary)
+                                    .fontWeight(.medium)
+                                    .padding(.bottom, 6)
+                            }
+
+                            if let info = exhaustionInfo {
+                                Text(info)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    } else {
+                        Text("--.--")
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    if isLoading {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(.thinMaterial)
+                    }
                 }
             }
         }
-        .padding(20)
-        .background(Color.appSecondarySystemGroupedBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }
 
 private struct QuickActionsGrid: View {
     var dorm: Dorm
-    @ObservedObject var viewModel: DormElectricityViewModel
+    @Bindable var viewModel: DormElectricityViewModel
 
     var body: some View {
         HStack(spacing: 12) {
@@ -199,8 +199,7 @@ private struct QuickActionsGrid: View {
                 icon: dorm.isFavorite ? "star.fill" : "star",
                 title: dorm.isFavorite ? "已收藏" : "收藏",
                 titleColor: .primary,
-                iconColor: dorm.isFavorite ? .yellow : .primary,
-                backgroundColor: AnyShapeStyle(Color.appSecondarySystemGroupedBackground)
+                iconColor: dorm.isFavorite ? .yellow : .primary
             ) {
                 viewModel.toggleFavorite(dorm)
             }
@@ -213,8 +212,7 @@ private struct QuickActionsGrid: View {
                 icon: dorm.scheduleEnabled ? "bell.fill" : "bell",
                 title: scheduleTitle,
                 titleColor: .primary,
-                iconColor: dorm.scheduleEnabled ? .purple : .primary,
-                backgroundColor: AnyShapeStyle(Color.appSecondarySystemGroupedBackground)
+                iconColor: dorm.scheduleEnabled ? .purple : .primary
             ) {
                 if dorm.scheduleEnabled {
                     viewModel.isCancelScheduleAlertPresented = true
@@ -226,36 +224,49 @@ private struct QuickActionsGrid: View {
         }
     }
 
-    private struct ActionButton<S: ShapeStyle>: View {
+    private struct ActionButton: View {
         let icon: String
         let title: String
         let titleColor: Color
         let iconColor: Color
-        let backgroundColor: S
+        var backgroundColor: AnyShapeStyle? = nil
         let action: () -> Void
 
         var body: some View {
             Button(action: action) {
-                VStack(spacing: 6) {
-                    Group {
-                        Image(systemName: icon)
-                            .font(.title2)
-                            .foregroundStyle(iconColor)
+                if let backgroundColor {
+                    buttonContent
+                        .frame(maxHeight: .infinity)
+                        .background(RoundedRectangle(cornerRadius: 15).fill(backgroundColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 15))
+                } else {
+                    CustomGroupBox {
+                        buttonContent
                     }
-                    .frame(height: 28)
-
-                    Text(title)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(titleColor)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 80)
-                .background(backgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
             }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
+            .frame(height: 80)
+        }
+
+        private var buttonContent: some View {
+            VStack(spacing: 6) {
+                Group {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundStyle(iconColor)
+                }
+                .frame(height: 28)
+
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(titleColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
@@ -267,62 +278,61 @@ private struct ElectricityTrendCard: View {
     @State private var displayData: [ElectricityRecord] = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Label("电量趋势", systemImage: "chart.xyaxis.line")
-                    .font(.headline)
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                    Label("电量趋势", systemImage: "chart.xyaxis.line")
+                        .font(.headline)
 
-                Spacer()
+                    Spacer()
 
-                Picker("时间范围", selection: $selectedRange) {
-                    ForEach(ChartTimeRange.allCases) { range in
-                        Text(range.rawValue).tag(range)
-                    }
-                }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .tint(.primary)
-            }
-
-            if displayData.isEmpty {
-                ContentUnavailableView("该时段无数据", systemImage: "chart.bar.xaxis")
-                    .frame(height: 200)
-            } else {
-                let yMin = (displayData.map(\.electricity).min() ?? 0) - 2
-                let yMax = (displayData.map(\.electricity).max() ?? 0) + 2
-
-                Chart(displayData) { record in
-                    LineMark(
-                        x: .value("日期", record.date),
-                        y: .value("电量", record.electricity)
-                    )
-                    .foregroundStyle(.blue)
-                    .interpolationMethod(.linear)
-                    .symbol {
-                        if displayData.count < 15 {
-                            Circle()
-                                .fill(.blue)
-                                .frame(width: 8)
+                    Picker("时间范围", selection: $selectedRange) {
+                        ForEach(ChartTimeRange.allCases) { range in
+                            Text(range.rawValue).tag(range)
                         }
                     }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .tint(.primary)
                 }
-                .chartYScale(domain: max(0, yMin)...yMax)
-                .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: 4)) { _ in
-                        AxisValueLabel(format: .dateTime.month().day())
+
+                if displayData.isEmpty {
+                    ContentUnavailableView("该时段无数据", systemImage: "chart.bar.xaxis")
+                        .frame(height: 200)
+                } else {
+                    let yMin = (displayData.map(\.electricity).min() ?? 0) - 2
+                    let yMax = (displayData.map(\.electricity).max() ?? 0) + 2
+
+                    Chart(displayData) { record in
+                        LineMark(
+                            x: .value("日期", record.date),
+                            y: .value("电量", record.electricity)
+                        )
+                        .foregroundStyle(.blue)
+                        .interpolationMethod(.linear)
+                        .symbol {
+                            if displayData.count < 15 {
+                                Circle()
+                                    .fill(.blue)
+                                    .frame(width: 8)
+                            }
+                        }
+                    }
+                    .chartYScale(domain: max(0, yMin)...yMax)
+                    .chartXAxis {
+                        AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                            AxisValueLabel(format: .dateTime.month().day())
+                        }
+                    }
+                    .frame(height: 220)
+                    .transaction { transaction in
+                        transaction.animation = nil
                     }
                 }
-                .frame(height: 220)
-                .transaction { transaction in
-                    transaction.animation = nil
-                }
             }
+            .onChange(of: selectedRange, initial: true) { updateDisplayData() }
+            .onChange(of: records) { updateDisplayData() }
         }
-        .padding()
-        .background(Color.appSecondarySystemGroupedBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .onChange(of: selectedRange, initial: true) { updateDisplayData() }
-        .onChange(of: records) { updateDisplayData() }
     }
 
     private func updateDisplayData() {
@@ -339,15 +349,13 @@ private struct DormInfoCard: View {
     let dorm: Dorm
 
     var body: some View {
-        VStack(spacing: 0) {
-            infoRow(icon: "house.fill", color: .blue, title: "宿舍", value: dorm.room)
-            Divider().padding(.leading, 44)
-            infoRow(icon: "building.2.fill", color: .green, title: "楼栋", value: dorm.buildingName)
-            Divider().padding(.leading, 44)
-            infoRow(icon: "map.fill", color: .orange, title: "校区", value: dorm.campusName)
+        CustomGroupBox {
+            VStack(spacing: 12) {
+                infoRow(icon: "house.fill", color: .blue, title: "宿舍", value: dorm.room)
+                infoRow(icon: "building.2.fill", color: .green, title: "楼栋", value: dorm.buildingName)
+                infoRow(icon: "map.fill", color: .orange, title: "校区", value: dorm.campusName)
+            }
         }
-        .background(Color.appSecondarySystemGroupedBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func infoRow(icon: String, color: Color, title: String, value: String) -> some View {
@@ -360,6 +368,5 @@ private struct DormInfoCard: View {
             Text(value)
                 .foregroundStyle(.secondary)
         }
-        .padding()
     }
 }

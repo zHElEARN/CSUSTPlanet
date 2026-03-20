@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DormHistoryView: View {
-    @ObservedObject var viewModel: DormElectricityViewModel
+    @Bindable var viewModel: DormElectricityViewModel
     var dorm: Dorm
 
     var body: some View {

@@ -13,23 +13,24 @@ import SwiftUI
 import WidgetKit
 
 @MainActor
-class DormElectricityViewModel: ObservableObject {
+@Observable
+class DormElectricityViewModel {
     private let campusCardHelper = CampusCardHelper()
     private let modelContext = SharedModelUtil.mainContext
 
-    @Published var isShowingError: Bool = false
-    @Published var errorMessage: String = ""
+    var isShowingError: Bool = false
+    var errorMessage: String = ""
 
-    @Published var isQueryingElectricity: Bool = false
+    var isQueryingElectricity: Bool = false
 
-    @Published var isConfirmationDialogPresented: Bool = false
-    @Published var isCancelScheduleAlertPresented: Bool = false
-    @Published var isTermsPresented: Bool = false
-    @Published var isShowNotificationSettings: Bool = false
+    var isConfirmationDialogPresented: Bool = false
+    var isCancelScheduleAlertPresented: Bool = false
+    var isTermsPresented: Bool = false
+    var isShowNotificationSettings: Bool = false
 
-    @Published var isScheduleLoading: Bool = false
+    var isScheduleLoading: Bool = false
 
-    @Published var sortedRecords: [ElectricityRecord] = []
+    var sortedRecords: [ElectricityRecord] = []
 
     private let dateFormatter = {
         let dateFormatter = DateFormatter()

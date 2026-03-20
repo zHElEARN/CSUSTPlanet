@@ -11,7 +11,7 @@ import SwiftData
 import SwiftUI
 
 struct DormCardView: View {
-    @StateObject var viewModel = DormElectricityViewModel()
+    @State var viewModel = DormElectricityViewModel()
     @Bindable var dorm: Dorm
 
     private var electricityColor: Color {
@@ -19,92 +19,7 @@ struct DormCardView: View {
         return ColorUtil.electricityColor(electricity: electricity)
     }
 
-    @ViewBuilder
-    private var cardContent: some View {
-        // 卡片内容
-        CustomGroupBox {
-            HStack(alignment: .top) {
-                // MARK: - Left Column
-                VStack(alignment: .leading, spacing: 12) {
-                    // 1. Room + Icons
-                    HStack(spacing: 6) {
-                        Text(dorm.room)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-
-                        if dorm.isFavorite {
-                            Image(systemName: "star.fill")
-                                .font(.caption)
-                                .foregroundStyle(.yellow)
-                        }
-
-                        if dorm.scheduleEnabled {
-                            Image(systemName: "bell.fill")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary.opacity(0.5))
-                        }
-                    }
-
-                    // 2. Electricity
-                    if let electricity = dorm.lastFetchElectricity {
-                        HStack(alignment: .lastTextBaseline, spacing: 4) {
-                            Text(String(format: "%.2f", electricity))
-                                .font(.system(.largeTitle, design: .rounded))
-                                .fontWeight(.bold)
-                                .foregroundStyle(electricityColor)
-                                .contentTransition(.numericText())
-
-                            Text("kWh")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.secondary)
-                                .padding(.bottom, 2)
-                        }
-                    } else {
-                        Text("暂无数据")
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
-                            .padding(.vertical, 4)
-                    }
-
-                    // 3. Campus info
-                    Text("\(dorm.campusName) · \(dorm.buildingName)")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-
-                Spacer()
-
-                // MARK: - Right Column
-                VStack(alignment: .trailing) {
-                    // 1. Refresh Button
-                    Button(action: { viewModel.handleQueryElectricity(dorm) }) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(viewModel.isQueryingElectricity ? Color.secondary : .blue)
-                            .rotationEffect(.degrees(viewModel.isQueryingElectricity ? 360 : 0))
-                            .animation(viewModel.isQueryingElectricity ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: viewModel.isQueryingElectricity)
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-
-                    // 3. Update Info
-                    if let lastFetchDate = dorm.lastFetchDate {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text("更新于 " + lastFetchDate.formatted(.relative(presentation: .named)))
-                            if let info = viewModel.getExhaustionInfo(from: dorm.records) {
-                                Text(info)
-                            }
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                    }
-                }
-            }
-        }
-    }
+    // MARK: - Body
 
     var body: some View {
         Group {
@@ -124,7 +39,6 @@ struct DormCardView: View {
             }
             #endif
         }
-        // MARK: - 交互修饰符
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button(action: { viewModel.handleQueryElectricity(dorm) }) {
                 Label("查询", systemImage: "bolt.fill")
@@ -147,27 +61,21 @@ struct DormCardView: View {
             }
             Button(action: { viewModel.handleQueryElectricity(dorm) }) {
                 Label("查询电量", systemImage: "bolt.fill")
-                    .tint(.yellow)
             }
             .disabled(viewModel.isQueryingElectricity)
             Divider()
             Menu {
                 Button(action: { viewModel.isShowNotificationSettings = true }) {
                     Label("设置定时查询", systemImage: "bell")
-                        .tint(.blue)
                 }
                 .disabled(viewModel.isScheduleLoading || dorm.scheduleEnabled)
                 Button(action: { viewModel.isCancelScheduleAlertPresented = true }) {
-                    Label("取消定时查询", systemImage: "bell.slash")
-                        .tint(.red)
+                    Label("取消定时查询", systemImage: "bell.slash").tint(.red)
                 }
                 .disabled(viewModel.isScheduleLoading || !dorm.scheduleEnabled)
             } label: {
                 Label("定时查询", systemImage: "clock")
             }
-        } preview: {
-            // MARK: - Chart Preview
-            DormChartPreview(dorm: dorm)
         }
         .alert("删除宿舍", isPresented: $viewModel.isConfirmationDialogPresented) {
             Button("取消", role: .cancel) {}
@@ -193,65 +101,84 @@ struct DormCardView: View {
             )
         }
     }
-}
 
-// MARK: - 图表 Preview 组件
-struct DormChartPreview: View {
-    let dorm: Dorm
+    // MARK: - Card Content
 
-    var body: some View {
-        let electricityValues = dorm.records?.map { $0.electricity } ?? []
-        let minValue = electricityValues.min() ?? 0
-        let maxValue = electricityValues.max() ?? 0
-        let yMin = max(0, minValue - 5)
-        let yMax = maxValue + 5
+    @ViewBuilder
+    private var cardContent: some View {
+        CustomGroupBox {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 6) {
+                        Text(dorm.room)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.primary)
 
-        VStack(alignment: .leading, spacing: 8) {
-            // Header for Preview
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text("宿舍号：\(dorm.room)")
-                        .font(.headline)
-                    if dorm.isFavorite {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.yellow)
-                    }
-                }
-                Text("\(dorm.campusName) · \(dorm.buildingName)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding()
+                        if dorm.isFavorite {
+                            Image(systemName: "star.fill")
+                                .font(.caption)
+                                .foregroundStyle(.yellow)
+                        }
 
-            // Chart
-            if let records = dorm.records, !records.isEmpty {
-                Chart(records.sorted(by: { $0.date < $1.date })) { record in
-                    LineMark(
-                        x: .value("日期", record.date),
-                        y: .value("电量", record.electricity)
-                    )
-                    .interpolationMethod(.linear)
-                    .symbol {
-                        if records.count <= 1 {
-                            Circle()
-                                .frame(width: 8)
-                                .foregroundStyle(.primary)
+                        if dorm.scheduleEnabled {
+                            Image(systemName: "bell.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary.opacity(0.5))
                         }
                     }
+
+                    if let electricity = dorm.lastFetchElectricity {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text(String(format: "%.2f", electricity))
+                                .font(.system(.largeTitle, design: .rounded))
+                                .fontWeight(.bold)
+                                .foregroundStyle(electricityColor)
+                                .contentTransition(.numericText())
+
+                            Text("kWh")
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.secondary)
+                                .padding(.bottom, 2)
+                        }
+                    } else {
+                        Text("暂无数据")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                            .padding(.vertical, 4)
+                    }
+
+                    Text("\(dorm.campusName) · \(dorm.buildingName)")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                 }
-                .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: 3)) { _ in
-                        AxisValueLabel(format: .dateTime.month().day())
+
+                Spacer()
+
+                VStack(alignment: .trailing) {
+                    Button(action: { viewModel.handleQueryElectricity(dorm) }) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(viewModel.isQueryingElectricity ? Color.secondary : .blue)
+                            .rotationEffect(.degrees(viewModel.isQueryingElectricity ? 360 : 0))
+                            .animation(viewModel.isQueryingElectricity ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: viewModel.isQueryingElectricity)
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    if let lastFetchDate = dorm.lastFetchDate {
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("更新于 " + lastFetchDate.formatted(.relative(presentation: .named)))
+                            if let info = viewModel.getExhaustionInfo(from: dorm.records) {
+                                Text(info)
+                            }
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                     }
                 }
-                .chartYScale(domain: yMin...yMax)
-                .frame(width: 300, height: 200)
-                .padding(8)
-            } else {
-                Text("暂无历史数据")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(width: 300, height: 100)
             }
         }
     }
