@@ -26,7 +26,7 @@ final class TodoAssignmentsViewModel {
     var isInitial = true
 
     init() {
-        guard let data = MMKVHelper.shared.todoAssignmentsCache else { return }
+        guard let data = MMKVHelper.TodoAssignments.cache else { return }
         applyData(data)
     }
 
@@ -52,7 +52,7 @@ final class TodoAssignmentsViewModel {
 
             let data = Cached(cachedAt: .now, value: newGroups)
             applyData(data)
-            MMKVHelper.shared.todoAssignmentsCache = data
+            MMKVHelper.TodoAssignments.cache = data
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

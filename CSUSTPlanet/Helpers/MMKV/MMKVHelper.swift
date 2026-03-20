@@ -115,9 +115,6 @@ class MMKVHelper {
     @MMKVOptionalStorage(key: "Cached.physicsExperimentScheduleCache")
     var physicsExperimentScheduleCache: Cached<[PhysicsExperimentHelper.Course]>?
 
-    @MMKVOptionalStorage(key: "Cached.todoAssignmentsCache")
-    var todoAssignmentsCache: Cached<[TodoAssignmentsData]>?
-
     // MARK: - CampusMap Properties
 
     @MMKVOptionalStorage(key: "CampusMap.selectedCampus")
@@ -153,6 +150,11 @@ extension MMKVHelper {
             @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
             static var secondReminderOffset: Double?
         }
+    }
+
+    enum TodoAssignments {
+        @MMKVOptionalStorage(key: "TodoAssignments.cache")
+        static var cache: Cached<[TodoAssignmentsData]>?
     }
 }
 
