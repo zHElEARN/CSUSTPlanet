@@ -17,7 +17,7 @@ struct AssignmentOverviewView: View {
                 title: "待提交作业",
                 icon: "doc.text.fill",
                 color: .red,
-                destination: UrgentCoursesView()
+                destination: TodoAssignmentsView()
             )
 
             let courses = viewModel.urgentCourses
@@ -36,7 +36,7 @@ private struct AssignmentListView: View {
     var body: some View {
         VStack(spacing: 12) {
             ForEach(viewModel.urgentCourses, id: \.name) { course in
-                TrackLink(destination: UrgentCoursesView()) {
+                TrackLink(destination: TodoAssignmentsView()) {
                     HStack(spacing: 12) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(Color.orange)

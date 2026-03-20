@@ -77,9 +77,15 @@ struct CourseDetailView: View {
                 InfoRow(label: "课程名称", value: viewModel.courseInfo.name)
             } else {
                 InfoRow(label: "课程名称", value: viewModel.courseInfo.name)
-                InfoRow(label: "课程编号", value: viewModel.courseInfo.number)
-                InfoRow(label: "开课院系", value: viewModel.courseInfo.department)
-                InfoRow(label: "授课教师", value: viewModel.courseInfo.teacher)
+                if let number = viewModel.courseInfo.number {
+                    InfoRow(label: "课程编号", value: number)
+                }
+                if let department = viewModel.courseInfo.department {
+                    InfoRow(label: "开课院系", value: department)
+                }
+                if let teacher = viewModel.courseInfo.teacher {
+                    InfoRow(label: "授课教师", value: teacher)
+                }
             }
         }
     }
@@ -214,7 +220,7 @@ struct CourseDetailView: View {
 
     // MARK: - Test Card
 
-    private func testCard(test: MoocHelper.Test) -> some View {
+    private func testCard(test: MoocHelper.Exam) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(test.title)

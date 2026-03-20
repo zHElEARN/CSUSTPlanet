@@ -123,6 +123,11 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Widgets/UrgentCourses/RefreshUrgentCoursesTimelineIntent.swift,
+				Widgets/UrgentCourses/UrgentCoursesEntry.swift,
+				Widgets/UrgentCourses/UrgentCoursesEntryView.swift,
+				Widgets/UrgentCourses/UrgentCoursesProvider.swift,
+				Widgets/UrgentCourses/UrgentCoursesWidget.swift,
 			);
 			target = 00E89C5F2E2C88D800B43162 /* CSUSTPlanetWidgetExtension */;
 		};

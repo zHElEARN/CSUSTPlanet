@@ -24,7 +24,7 @@ class CoursesViewModel {
             return courses
         } else {
             return courses.filter { course in
-                course.name.localizedCaseInsensitiveContains(searchText) || course.teacher.localizedCaseInsensitiveContains(searchText) || course.department.localizedCaseInsensitiveContains(searchText)
+                course.name.localizedCaseInsensitiveContains(searchText) || course.teacher?.localizedCaseInsensitiveContains(searchText) == true || course.department?.localizedCaseInsensitiveContains(searchText) == true
             }
         }
     }

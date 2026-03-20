@@ -75,7 +75,7 @@ struct OverviewView: View {
             GradeAnalysisView().trackRoot("Widget")
         }
         .navigationDestination(isPresented: $globalManager.isFromUrgentCoursesWidget) {
-            UrgentCoursesView().trackRoot("Widget")
+            TodoAssignmentsView().trackRoot("Widget")
         }
         .trackView("Overview")
     }

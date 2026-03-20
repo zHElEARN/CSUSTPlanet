@@ -43,7 +43,7 @@ private let featureSections: [FeatureSection] = [
         title: "网络课程中心",
         items: [
             FeatureItem(id: .courses, title: "所有课程", icon: "books.vertical.fill", destination: { CoursesView() }),
-            FeatureItem(id: .urgentCourses, title: "待提交作业", icon: "list.bullet.clipboard", destination: { UrgentCoursesView() }),
+            FeatureItem(id: .urgentCourses, title: "待提交作业", icon: "list.bullet.clipboard", destination: { TodoAssignmentsView() }),
         ]
     ),
     FeatureSection(

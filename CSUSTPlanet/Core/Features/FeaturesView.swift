@@ -123,7 +123,7 @@ struct FeaturesView: View {
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
                 HeroCard(destination: CoursesView(), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
-                HeroCard(destination: UrgentCoursesView(), title: "待提交作业", icon: "list.bullet.clipboard", color: .red)
+                HeroCard(destination: TodoAssignmentsView(), title: "待提交作业", icon: "list.bullet.clipboard", color: .red)
             }
         }
         .padding(.horizontal, horizontalPadding)

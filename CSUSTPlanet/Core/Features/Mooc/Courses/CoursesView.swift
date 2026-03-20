@@ -69,8 +69,12 @@ struct CoursesView: View {
                 .multilineTextAlignment(.leading)
 
             HStack(spacing: 12) {
-                infoItem(icon: "person.fill", color: .purple, text: course.teacher)
-                infoItem(icon: "building.columns.fill", color: .green, text: course.department)
+                if let teacher = course.teacher {
+                    infoItem(icon: "person.fill", color: .purple, text: teacher)
+                }
+                if let department = course.department {
+                    infoItem(icon: "building.columns.fill", color: .green, text: department)
+                }
             }
         }
         .padding(.vertical, 6)

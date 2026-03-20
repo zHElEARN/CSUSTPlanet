@@ -11,7 +11,7 @@ import Foundation
 @MainActor
 class CourseDetailViewModel: ObservableObject {
     @Published var assignments: [MoocHelper.Assignment] = []
-    @Published var tests: [MoocHelper.Test] = []
+    @Published var tests: [MoocHelper.Exam] = []
     @Published var errorMessage = ""
 
     @Published var isShowingSuccess = false
@@ -34,7 +34,7 @@ class CourseDetailViewModel: ObservableObject {
     }
 
     init(id: String, name: String) {
-        self.course = MoocHelper.Course(id: id, number: "", name: name, department: "", teacher: "")
+        self.course = MoocHelper.Course(id: id, name: name, number: nil, department: nil, teacher: nil)
         self.isSimplified = true
     }
 
@@ -46,7 +46,7 @@ class CourseDetailViewModel: ObservableObject {
             }
 
             do {
-                assignments = try await AuthManager.shared.moocHelper.getCourseAssignments(courseId: course.id)
+                assignments = try await AuthManager.shared.moocHelper.getCourseAssignments(course: course)
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true
@@ -62,7 +62,7 @@ class CourseDetailViewModel: ObservableObject {
             }
 
             do {
-                tests = try await AuthManager.shared.moocHelper.getCourseTests(courseId: course.id)
+                tests = try await AuthManager.shared.moocHelper.getCourseExams(course: course)
             } catch {
                 errorMessage = error.localizedDescription
                 isShowingError = true
