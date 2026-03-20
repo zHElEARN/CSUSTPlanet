@@ -14,8 +14,13 @@ struct CoursesView: View {
     var body: some View {
         Group {
             if viewModel.filteredCourses.isEmpty {
-                ContentUnavailableView("暂无课程信息", systemImage: "book.closed", description: Text(viewModel.searchText.isEmpty ? "没有找到任何课程信息" : "没有找到匹配的课程"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                if viewModel.searchText.isEmpty {
+                    ContentUnavailableView("暂无课程信息", systemImage: "book.closed", description: Text("没有找到任何课程信息"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ContentUnavailableView.search(text: viewModel.searchText)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             } else {
                 Form {
                     Section {
@@ -29,31 +34,29 @@ struct CoursesView: View {
                 .formStyle(.grouped)
             }
         }
-        .searchable(text: $viewModel.searchText, prompt: "搜索课程")
-        .alert("错误", isPresented: $viewModel.isShowingError) {
-            Button("确定", role: .cancel) {}
-        } message: {
-            Text(viewModel.errorMessage)
-        }
-        .task { await viewModel.task() }
+        #if os(iOS)
+        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索课程")
+        #elseif os(macOS)
+        .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "搜索课程")
+        #endif
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
+        .errorToast($viewModel.errorToast)
+        .task { await viewModel.loadInitial() }
+        .safeRefreshable { await viewModel.loadCourses() }
         .navigationTitle("课程列表")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共\(viewModel.courses.count)门课程")
-            } else {
-                view
-            }
-        }
+        .navigationSubtitleCompat("共\(viewModel.courses.count)门课程")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: viewModel.loadCourses) {
-                    if viewModel.isLoading {
+                Button(asyncAction: viewModel.loadCourses) {
+                    if viewModel.isLoadingCourses {
                         ProgressView().smallControlSizeOnMac()
                     } else {
                         Label("刷新", systemImage: "arrow.clockwise")
                     }
                 }
-                .disabled(viewModel.isLoading)
+                .disabled(viewModel.isLoadingCourses)
             }
         }
         .trackView("Courses")
@@ -68,11 +71,9 @@ struct CoursesView: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
 
-            HStack(spacing: 12) {
-                if let teacher = course.teacher {
+            if let teacher = course.teacher, let department = course.department {
+                HStack(spacing: 12) {
                     infoItem(icon: "person.fill", color: .purple, text: teacher)
-                }
-                if let department = course.department {
                     infoItem(icon: "building.columns.fill", color: .green, text: department)
                 }
             }

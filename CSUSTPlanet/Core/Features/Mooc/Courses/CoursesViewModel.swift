@@ -14,10 +14,11 @@ class CoursesViewModel {
     var courses: [MoocHelper.Course] = []
     var searchText: String = ""
 
-    var isShowingError = false
-    var errorMessage = ""
+    var errorToast: ToastState = .errorTitle
 
-    var isLoading = false
+    var isLoadingCourses = false
+
+    var isInitial = true
 
     var filteredCourses: [MoocHelper.Course] {
         if searchText.isEmpty {
@@ -29,23 +30,21 @@ class CoursesViewModel {
         }
     }
 
-    func task() async {
-        loadCourses()
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        await loadCourses()
     }
 
-    func loadCourses() {
-        isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
+    func loadCourses() async {
+        guard !isLoadingCourses else { return }
+        isLoadingCourses = true
+        defer { isLoadingCourses = false }
 
-            do {
-                courses = try await AuthManager.shared.moocHelper.getCourses()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            courses = try await AuthManager.shared.moocHelper.getCourses()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }
