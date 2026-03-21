@@ -37,24 +37,7 @@ final class DormDetailViewModel {
         }
 
         do {
-            try pool.write { db in
-                guard var targetDorm = try DormGRDB.fetchOne(db, key: dormID) else { return }
-
-                if targetDorm.isFavorite {
-                    targetDorm.isFavorite = false
-                    try targetDorm.update(db)
-                    return
-                }
-
-                let favorites = try DormGRDB.filter(DormGRDB.Columns.isFavorite == true).fetchAll(db)
-                for var favorite in favorites {
-                    favorite.isFavorite = false
-                    try favorite.update(db)
-                }
-
-                targetDorm.isFavorite = true
-                try targetDorm.update(db)
-            }
+            try pool.write { db in try DormGRDB.toggleFavorite(dormID: dormID, in: db) }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -79,7 +62,7 @@ final class DormDetailViewModel {
 
         do {
             let electricity = try await campusCardHelper.getElectricity(building: building, room: dorm.room)
-            try updateDormElectricity(pool: pool, dormID: dormID, electricity: electricity)
+            try await pool.write { db in try DormGRDB.updateElectricity(dormID: dormID, electricity: electricity, in: db) }
             refreshSortedRecords()
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -194,21 +177,4 @@ final class DormDetailViewModel {
         )
     }
 
-    private func updateDormElectricity(pool: DatabasePool, dormID: Int64, electricity: Double) throws {
-        try pool.write { db in
-            guard var latestDorm = try DormGRDB.fetchOne(db, key: dormID) else { return }
-            let now = Date()
-
-            if let lastFetchElectricity = latestDorm.lastFetchElectricity, abs(lastFetchElectricity - electricity) < 0.001 {
-                latestDorm.lastFetchDate = now
-            } else {
-                var record = ElectricityRecordGRDB(id: nil, electricity: electricity, date: now, dormID: dormID)
-                try record.insert(db)
-                latestDorm.lastFetchDate = now
-                latestDorm.lastFetchElectricity = electricity
-            }
-
-            try latestDorm.update(db)
-        }
-    }
 }

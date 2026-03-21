@@ -34,3 +34,37 @@ struct DormGRDB: Codable, FetchableRecord, MutablePersistableRecord, TableRecord
 
     static let records = hasMany(ElectricityRecordGRDB.self)
 }
+
+extension DormGRDB {
+    static func toggleFavorite(dormID: Int64, in db: Database) throws {
+        let request = DormGRDB.filter(Columns.id == dormID).select(Columns.isFavorite)
+        guard let isCurrentlyFavorite = try Bool.fetchOne(db, request) else { return }
+
+        if isCurrentlyFavorite {
+            try DormGRDB.filter(Columns.id == dormID)
+                .updateAll(db, Columns.isFavorite.set(to: false))
+        } else {
+            try DormGRDB.filter(Columns.isFavorite == true)
+                .updateAll(db, Columns.isFavorite.set(to: false))
+            try DormGRDB.filter(Columns.id == dormID)
+                .updateAll(db, Columns.isFavorite.set(to: true))
+        }
+    }
+
+    static func updateElectricity(dormID: Int64, electricity: Double, in db: Database) throws {
+        let lastValue = try Double.fetchOne(db, DormGRDB.filter(Columns.id == dormID).select(Columns.lastFetchElectricity))
+
+        let now = Date()
+
+        if let lastValue = lastValue, abs(lastValue - electricity) < 0.001 {
+            try DormGRDB.filter(Columns.id == dormID)
+                .updateAll(db, Columns.lastFetchDate.set(to: now))
+        } else {
+            var record = ElectricityRecordGRDB(id: nil, electricity: electricity, date: now, dormID: dormID)
+            try record.insert(db)
+
+            try DormGRDB.filter(Columns.id == dormID)
+                .updateAll(db, [Columns.lastFetchDate.set(to: now), Columns.lastFetchElectricity.set(to: electricity)])
+        }
+    }
+}
