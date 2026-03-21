@@ -75,7 +75,7 @@ struct DormListView: View {
             }
         }
         .errorToast($viewModel.errorToast)
-        .trackView("DormListView")
+        .trackView("DormList")
     }
 
     // MARK: - Dorm Card
@@ -87,6 +87,55 @@ struct DormListView: View {
             return ColorUtil.electricityColor(electricity: electricity)
         }()
 
+        Group {
+            #if os(macOS)
+            TrackLink(destination: DormDetailView(dorm: dorm)) {
+                dormCardContent(dorm, electricityColor: electricityColor)
+            }
+            .buttonStyle(.plain)
+            #elseif os(iOS)
+            ZStack {
+                TrackLink(destination: DormDetailView(dorm: dorm)) {
+                    EmptyView()
+                }
+                .opacity(0)
+
+                dormCardContent(dorm, electricityColor: electricityColor)
+            }
+            #endif
+        }
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
+                Label("查询", systemImage: "bolt.fill")
+            }
+            .tint(.yellow)
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(action: { viewModel.targetDeleteDorm = dorm }) {
+                Label("删除", systemImage: "trash")
+            }
+            .tint(.red)
+        }
+        .contextMenu {
+            Button(action: { viewModel.toggleFavorite(dorm) }) {
+                Label(dorm.isFavorite ? "取消收藏" : "收藏宿舍", systemImage: dorm.isFavorite ? "star.slash" : "star")
+            }
+
+            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
+                Label("查询电量", systemImage: "bolt")
+            }
+            .disabled(viewModel.isQuerying(dorm))
+
+            Button(role: .destructive, action: { viewModel.targetDeleteDorm = dorm }) {
+                Label("删除宿舍", systemImage: "trash")
+            }
+        }
+    }
+
+    // MARK: - Dorm Card Content
+
+    @ViewBuilder
+    private func dormCardContent(_ dorm: DormGRDB, electricityColor: Color) -> some View {
         CustomGroupBox {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -161,32 +210,6 @@ struct DormListView: View {
                             .foregroundStyle(.tertiary)
                     }
                 }
-            }
-        }
-        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
-                Label("查询", systemImage: "bolt.fill")
-            }
-            .tint(.yellow)
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(action: { viewModel.targetDeleteDorm = dorm }) {
-                Label("删除", systemImage: "trash")
-            }
-            .tint(.red)
-        }
-        .contextMenu {
-            Button(action: { viewModel.toggleFavorite(dorm) }) {
-                Label(dorm.isFavorite ? "取消收藏" : "收藏宿舍", systemImage: dorm.isFavorite ? "star.slash" : "star")
-            }
-
-            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
-                Label("查询电量", systemImage: "bolt")
-            }
-            .disabled(viewModel.isQuerying(dorm))
-
-            Button(role: .destructive, action: { viewModel.targetDeleteDorm = dorm }) {
-                Label("删除宿舍", systemImage: "trash")
             }
         }
     }
