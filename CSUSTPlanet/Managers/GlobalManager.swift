@@ -88,11 +88,11 @@ final class GlobalManager {
         didSet { MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled }
     }
 
+    var hasDatabaseFatalError = false
+    var databaseFatalErrorMessage: String = ""
+
     var isFromElectricityWidget: Bool = false
     var isFromGradeAnalysisWidget: Bool = false
     var isFromCourseScheduleWidget: Bool = false
     var isFromUrgentCoursesWidget: Bool = false
-
-    // var showWipeRecoveryAlert = (SharedModelUtil.containerLoadState == .recoveredAfterWipe)
-    // var showFatalErrorAlert = (SharedModelUtil.containerLoadState == .fatalError)
 }

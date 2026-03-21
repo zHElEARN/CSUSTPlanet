@@ -28,6 +28,10 @@ struct CSUSTPlanetApp: App {
         // corruptDatabaseForTesting()
         // #endif
 
+        _ = DatabaseManager.shared
+        GlobalManager.shared.hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
+        GlobalManager.shared.databaseFatalErrorMessage = DatabaseManager.shared.fatalErrorMessage
+
         TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
 
         SentrySDK.start { options in

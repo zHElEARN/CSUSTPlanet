@@ -79,8 +79,6 @@ struct ContentView: View {
 
     @Environment(\.horizontalSizeClass) var sizeClass
 
-    @State var isDatabaseReady = false
-
     var preferredColorScheme: ColorScheme? {
         switch globalManager.appearance {
         case "light":
@@ -94,7 +92,45 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if isDatabaseReady {
+            if globalManager.hasDatabaseFatalError {
+                VStack(spacing: 16) {
+                    Text("数据库异常，请联系开发者")
+                        .font(.headline)
+                        .multilineTextAlignment(.center)
+
+                    Text(globalManager.databaseFatalErrorMessage)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    Text("你可以复制错误信息并反馈给开发者")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    if let emailURL = URL(string: "mailto:developer@zhelearn.com") {
+                        Link("联系邮箱：developer@zhelearn.com", destination: emailURL)
+                    }
+
+                    Button("复制错误信息") {
+                        let text = globalManager.databaseFatalErrorMessage
+                        guard !text.isEmpty else { return }
+                        #if os(iOS)
+                        PlatformPasteboard.general.string = text
+                        #elseif os(macOS)
+                        PlatformPasteboard.general.clearContents()
+                        PlatformPasteboard.general.setString(text, forType: .string)
+                        #endif
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button("退出应用") {
+                        exit(0)
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+            } else {
                 if #available(iOS 18.0, macOS 15.0, *) {
                     TabView(selection: $globalManager.selectedTab) {
                         Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
@@ -172,16 +208,9 @@ struct ContentView: View {
                         }
                     }
                 }
-            } else {
-                ProgressView()
             }
         }
         .trackRoot("App")
-
-        .task {
-            // await SharedModelUtil.migrateDatabase()
-            withAnimation { isDatabaseReady = true }
-        }
 
         #if os(iOS)
         .apply { view in
@@ -213,19 +242,6 @@ struct ContentView: View {
         .toast(isPresenting: $authManager.isShowingMoocError) {
             AlertToast(displayMode: .hud, type: .error(.red), title: "网络课程中心登录错误")
         }
-
-        // MARK: - 数据库Fatal提示
-
-        // .alert("本地数据异常", isPresented: $globalManager.showWipeRecoveryAlert) {
-        //     Button("我知道了", role: .cancel) {}
-        // } message: {
-        //     Text("检测到本地缓存数据出现异常，为了保证应用正常运行，我们已重置了本地环境。如果您之前开启了 iCloud 同步，您的数据稍后将从云端自动恢复。")
-        // }
-        // .alert("存储空间不可用", isPresented: $globalManager.showFatalErrorAlert) {
-        //     Button("我知道了", role: .cancel) {}
-        // } message: {
-        //     Text("应用无法访问设备的本地存储空间，当前正以“临时模式”运行。您可以继续浏览信息，但任何关于宿舍电量新的更改或记录在退出应用后都将丢失。建议您检查设备的剩余存储空间，或尝试重启设备。")
-        // }
 
         // MARK: - 主题设置 & 用户协议弹窗
 
