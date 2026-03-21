@@ -169,7 +169,7 @@ struct DormCardView: View {
                     if let lastFetchDate = dorm.lastFetchDate {
                         VStack(alignment: .trailing, spacing: 2) {
                             Text("更新于 " + lastFetchDate.formatted(.relative(presentation: .named)))
-                            if let info = ElectricityUtil.getExhaustionInfo(from: dorm.records) {
+                            if let info = ElectricityUtil.getExhaustionInfo(for: dorm) {
                                 Text(info)
                             }
                         }

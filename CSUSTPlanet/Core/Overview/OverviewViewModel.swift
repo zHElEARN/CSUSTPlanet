@@ -52,8 +52,8 @@ class OverviewViewModel {
 
     /// 预计电量耗尽时间
     var electricityExhaustionInfo: String? {
-        guard let dorm = primaryDorm, let records = dorm.records, !records.isEmpty else { return nil }
-        return ElectricityUtil.getExhaustionInfo(from: records)
+        guard let dorm = primaryDorm else { return nil }
+        return ElectricityUtil.getExhaustionInfo(for: dorm)
     }
 
     enum CourseDisplayState {

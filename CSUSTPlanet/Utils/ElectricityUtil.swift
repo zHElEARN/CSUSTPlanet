@@ -6,29 +6,39 @@
 //
 
 import Foundation
+import SwiftData
 
+@MainActor
 enum ElectricityUtil {
-    static func getExhaustionInfo(from records: [ElectricityRecord]?) -> String? {
-        guard let records, !records.isEmpty else { return nil }
+    static func getExhaustionInfo(for dorm: Dorm) -> String? {
+        guard let records = fetchRecordsSortedByDate(for: dorm), !records.isEmpty else { return nil }
         guard let predictionDate = predictExhaustionDate(from: records) else { return nil }
         guard predictionDate > Date() else { return nil }
 
         return "预计\(predictionDate.formatted(.relative(presentation: .named)))电量耗尽"
     }
 
+    private static func fetchRecordsSortedByDate(for dorm: Dorm) -> [ElectricityRecord]? {
+        let dormID = dorm.id
+        let predicate = #Predicate<ElectricityRecord> { $0.dorm?.id == dormID }
+        let descriptor = FetchDescriptor<ElectricityRecord>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.date, order: .forward)]
+        )
+        return try? SharedModelUtil.mainContext.fetch(descriptor)
+    }
+
     static func predictExhaustionDate(from records: [ElectricityRecord]) -> Date? {
         // 至少需要两个点才能做线性拟合
         guard records.count >= 2 else { return nil }
-        // 确保按时间排序
-        let sortedRecords = records.sorted { $0.date < $1.date }
         // 截取最后一次“充电”后的数据段
         // 策略：从后往前遍历，如果发现当前项电量大于前一项，说明此处是充电后的起点
         var lastSegment: [ElectricityRecord] = []
-        var i = sortedRecords.count - 1
+        var i = records.count - 1
 
         while i >= 0 {
-            lastSegment.insert(sortedRecords[i], at: 0)
-            if i > 0 && sortedRecords[i].electricity > sortedRecords[i - 1].electricity {
+            lastSegment.insert(records[i], at: 0)
+            if i > 0 && records[i].electricity > records[i - 1].electricity {
                 // 发现电量跳变（充电），截断并跳出
                 break
             }

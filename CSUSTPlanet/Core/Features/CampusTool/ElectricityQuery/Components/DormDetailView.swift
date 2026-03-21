@@ -42,6 +42,7 @@ struct DormDetailView: View {
             VStack(spacing: 20) {
                 ElectricityDashboardCard(
                     viewModel: viewModel,
+                    dorm: dorm,
                     records: dorm.records,
                     isLoading: viewModel.isQueryingElectricity,
                     lastFetchDate: dorm.lastFetchDate
@@ -112,6 +113,7 @@ struct DormDetailView: View {
 
 private struct ElectricityDashboardCard: View {
     @Bindable var viewModel: DormElectricityViewModel
+    let dorm: Dorm
     let records: [ElectricityRecord]?
     let isLoading: Bool
     let lastFetchDate: Date?
@@ -121,7 +123,7 @@ private struct ElectricityDashboardCard: View {
     }
 
     private var exhaustionInfo: String? {
-        ElectricityUtil.getExhaustionInfo(from: records)
+        ElectricityUtil.getExhaustionInfo(for: dorm)
     }
 
     var body: some View {
