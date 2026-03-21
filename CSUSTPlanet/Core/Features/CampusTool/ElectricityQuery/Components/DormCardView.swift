@@ -83,9 +83,7 @@ struct DormCardView: View {
         } message: {
             Text("确定要删除 \(dorm.room) 宿舍吗？")
         }
-        .alert(isPresented: $viewModel.isShowingError) {
-            Alert(title: Text("错误"), message: Text(viewModel.errorMessage), dismissButton: .default(Text("确定")))
-        }
+        .errorToast($viewModel.errorToast)
         .alert("取消定时查询", isPresented: $viewModel.isCancelScheduleAlertPresented) {
             Button("取消", role: .cancel) {}
             Button("确定", role: .destructive) { viewModel.removeSchedule(dorm) }
@@ -171,7 +169,7 @@ struct DormCardView: View {
                     if let lastFetchDate = dorm.lastFetchDate {
                         VStack(alignment: .trailing, spacing: 2) {
                             Text("更新于 " + lastFetchDate.formatted(.relative(presentation: .named)))
-                            if let info = viewModel.getExhaustionInfo(from: dorm.records) {
+                            if let info = ElectricityUtil.getExhaustionInfo(from: dorm.records) {
                                 Text(info)
                             }
                         }

@@ -8,6 +8,14 @@
 import Foundation
 
 enum ElectricityUtil {
+    static func getExhaustionInfo(from records: [ElectricityRecord]?) -> String? {
+        guard let records, !records.isEmpty else { return nil }
+        guard let predictionDate = predictExhaustionDate(from: records) else { return nil }
+        guard predictionDate > Date() else { return nil }
+
+        return "预计\(predictionDate.formatted(.relative(presentation: .named)))电量耗尽"
+    }
+
     static func predictExhaustionDate(from records: [ElectricityRecord]) -> Date? {
         // 至少需要两个点才能做线性拟合
         guard records.count >= 2 else { return nil }

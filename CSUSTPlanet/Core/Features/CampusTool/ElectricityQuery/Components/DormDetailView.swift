@@ -121,7 +121,7 @@ private struct ElectricityDashboardCard: View {
     }
 
     private var exhaustionInfo: String? {
-        viewModel.getExhaustionInfo(from: records)
+        ElectricityUtil.getExhaustionInfo(from: records)
     }
 
     var body: some View {

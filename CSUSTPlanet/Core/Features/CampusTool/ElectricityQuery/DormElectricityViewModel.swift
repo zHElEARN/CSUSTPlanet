@@ -18,8 +18,7 @@ class DormElectricityViewModel {
     private let campusCardHelper = CampusCardHelper()
     private let modelContext = SharedModelUtil.mainContext
 
-    var isShowingError: Bool = false
-    var errorMessage: String = ""
+    var errorToast = ToastState.errorTitle
 
     var isQueryingElectricity: Bool = false
 
@@ -43,27 +42,6 @@ class DormElectricityViewModel {
         return dateFormatter.string(from: date)
     }
 
-    func getExhaustionInfo(from records: [ElectricityRecord]?) -> String? {
-        guard let records = records, !records.isEmpty else { return nil }
-        guard let predictionDate = ElectricityUtil.predictExhaustionDate(from: records) else { return nil }
-
-        let now = Date()
-        let interval = predictionDate.timeIntervalSince(now)
-        guard interval > 0 else { return nil }
-
-        let days = Int(interval) / 86400
-        let hours = (Int(interval) % 86400) / 3600
-        let minutes = (Int(interval) % 3600) / 60
-
-        if days > 0 {
-            return "预计\(days)天后电量耗尽"
-        } else if hours > 0 {
-            return "预计\(hours)小时后电量耗尽"
-        } else {
-            return "预计\(minutes)分钟后电量耗尽"
-        }
-    }
-
     func removeSchedule(_ dorm: Dorm) {
         guard dorm.scheduleEnabled else { return }
         isScheduleLoading = true
@@ -78,8 +56,7 @@ class DormElectricityViewModel {
                 try modelContext.save()
             } catch {
                 modelContext.rollback()
-                errorMessage = error.localizedDescription
-                isShowingError = true
+                errorToast.show(message: error.localizedDescription)
             }
         }
     }
@@ -87,8 +64,7 @@ class DormElectricityViewModel {
     func handleQueryElectricity(_ dorm: Dorm) {
         isQueryingElectricity = true
         guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else {
-            errorMessage = "无效的校区ID"
-            isShowingError = true
+            errorToast.show(message: "无效的校区ID")
             return
         }
         let building = CampusCardHelper.Building(name: dorm.buildingName, id: dorm.buildingID, campus: campus)
@@ -112,11 +88,8 @@ class DormElectricityViewModel {
                 }
 
                 try modelContext.save()
-
-                WidgetCenter.shared.reloadTimelines(ofKind: "DormElectricityWidget")
             } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
+                errorToast.show(message: error.localizedDescription)
             }
         }
     }
@@ -132,8 +105,7 @@ class DormElectricityViewModel {
                 try modelContext.save()
             } catch {
                 modelContext.rollback()
-                errorMessage = error.localizedDescription
-                isShowingError = true
+                errorToast.show(message: error.localizedDescription)
             }
         }
     }
@@ -145,8 +117,7 @@ class DormElectricityViewModel {
         do {
             try modelContext.save()
         } catch {
-            errorMessage = error.localizedDescription
-            isShowingError = true
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
@@ -162,8 +133,7 @@ class DormElectricityViewModel {
         do {
             try modelContext.save()
         } catch {
-            errorMessage = error.localizedDescription
-            isShowingError = true
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
@@ -176,8 +146,7 @@ class DormElectricityViewModel {
                 try modelContext.save()
             } catch {
                 modelContext.rollback()
-                errorMessage = error.localizedDescription
-                isShowingError = true
+                errorToast.show(message: error.localizedDescription)
             }
         }
     }
@@ -197,8 +166,7 @@ class DormElectricityViewModel {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            errorMessage = error.localizedDescription
-            isShowingError = true
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }
