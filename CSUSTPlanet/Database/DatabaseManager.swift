@@ -66,6 +66,16 @@ final class DatabaseManager {
             try db.create(index: "idx_electricity_record_dormID_date", on: ElectricityRecordGRDB.databaseTableName, columns: [ElectricityRecordGRDB.Columns.dormID.name, ElectricityRecordGRDB.Columns.date.name])
         }
 
+        migrator.registerMigration("v2_make_dorm_isFavorite_unique") { db in
+            let dormTable = DormGRDB.databaseTableName
+            let isFavoriteColumn = DormGRDB.Columns.isFavorite.name
+
+            try db.execute(sql: "UPDATE \(dormTable) SET \(isFavoriteColumn) = 0 WHERE \(isFavoriteColumn) != 0")
+
+            try db.drop(index: "idx_dorm_isFavorite")
+            try db.execute(sql: "CREATE UNIQUE INDEX idx_dorm_isFavorite_unique ON \(dormTable) (\(isFavoriteColumn)) WHERE \(isFavoriteColumn) = 1")
+        }
+
         return migrator
     }
 }
