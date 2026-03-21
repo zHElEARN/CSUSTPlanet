@@ -10,24 +10,38 @@ import SwiftUI
 struct DormListView: View {
     @State var viewModel = DormListViewModel()
 
+    // MARK: - Body
+
     var body: some View {
         Group {
             if viewModel.dorms.isEmpty {
                 ContentUnavailableView("暂无宿舍", systemImage: "building.2", description: Text("点击右上角添加宿舍"))
             } else {
-                List {
-                    ForEach(viewModel.dorms) { dorm in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(dorm.buildingName) \(dorm.room)")
-                            Text(dorm.campusName)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                #if os(macOS)
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.dorms) { dorm in
+                            dormCard(dorm)
+                                .padding(.horizontal, 16)
                         }
                     }
+                    .padding(.vertical, 6)
                 }
+                #elseif os(iOS)
+                List {
+                    ForEach(viewModel.dorms) { dorm in
+                        dormCard(dorm)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(.plain)
+                #endif
             }
         }
         .navigationTitle("宿舍列表")
+        .navigationSubtitleCompat("共\(viewModel.dorms.count)个宿舍")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(action: { viewModel.isAddDormSheetPresented = true }) {
@@ -40,10 +54,140 @@ struct DormListView: View {
                 viewModel.addDorm(building: building, room: room)
             }
         }
-        .task {
-            viewModel.startObserveDorms()
+        .alert(
+            "删除宿舍",
+            isPresented: .init(
+                get: { viewModel.targetDeleteDorm != nil },
+                set: { newValue in
+                    if !newValue { viewModel.targetDeleteDorm = nil }
+                }
+            )
+        ) {
+            Button("取消", role: .cancel) {}
+            Button("删除", role: .destructive) {
+                guard let targetDeleteDorm = viewModel.targetDeleteDorm else { return }
+                viewModel.deleteDorm(targetDeleteDorm)
+                viewModel.targetDeleteDorm = nil
+            }
+        } message: {
+            if let targetDeleteDorm = viewModel.targetDeleteDorm {
+                Text("确定要删除 \(targetDeleteDorm.buildingName) \(targetDeleteDorm.room) 吗？")
+            }
         }
         .errorToast($viewModel.errorToast)
         .trackView("DormListView")
+    }
+
+    // MARK: - Dorm Card
+
+    @ViewBuilder
+    private func dormCard(_ dorm: DormGRDB) -> some View {
+        let electricityColor: Color = {
+            guard let electricity = dorm.lastFetchElectricity else { return .secondary }
+            return ColorUtil.electricityColor(electricity: electricity)
+        }()
+
+        CustomGroupBox {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 6) {
+                        Text(dorm.room)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.primary)
+
+                        if dorm.isFavorite {
+                            Image(systemName: "star.fill")
+                                .font(.caption)
+                                .foregroundStyle(.yellow)
+                        }
+                    }
+
+                    if let electricity = dorm.lastFetchElectricity {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text(String(format: "%.2f", electricity))
+                                .font(.system(.largeTitle, design: .rounded))
+                                .fontWeight(.bold)
+                                .foregroundStyle(electricityColor)
+                                .contentTransition(.numericText())
+
+                            Text("kWh")
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.secondary)
+                                .padding(.bottom, 2)
+                        }
+                    } else {
+                        Text("暂无数据")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                            .padding(.vertical, 4)
+                    }
+
+                    Text("\(dorm.campusName) · \(dorm.buildingName)")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 8) {
+                    Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
+                        if viewModel.isQuerying(dorm) {
+                            ProgressView()
+                                .smallControlSizeOnMac()
+                                .frame(width: 15, height: 15)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.blue)
+                                .frame(width: 15, height: 15)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.isQuerying(dorm))
+
+                    Spacer()
+
+                    if let lastFetchDate = dorm.lastFetchDate {
+                        Text("更新于：")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            + Text(lastFetchDate, style: .relative)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            + Text("前")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
+        }
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
+                Label("查询", systemImage: "bolt.fill")
+            }
+            .tint(.yellow)
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(action: { viewModel.targetDeleteDorm = dorm }) {
+                Label("删除", systemImage: "trash")
+            }
+            .tint(.red)
+        }
+        .contextMenu {
+            Button(action: { viewModel.toggleFavorite(dorm) }) {
+                Label(dorm.isFavorite ? "取消收藏" : "收藏宿舍", systemImage: dorm.isFavorite ? "star.slash" : "star")
+            }
+
+            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
+                Label("查询电量", systemImage: "bolt")
+            }
+            .disabled(viewModel.isQuerying(dorm))
+
+            Button(role: .destructive, action: { viewModel.targetDeleteDorm = dorm }) {
+                Label("删除宿舍", systemImage: "trash")
+            }
+        }
     }
 }
