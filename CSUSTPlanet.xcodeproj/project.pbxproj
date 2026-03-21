@@ -89,8 +89,6 @@
 				"Helpers/MMKV/MMKVHelper+LogHandler.swift",
 				"Helpers/MMKV/MMKVHelper+Wrapper.swift",
 				Models/Storage/CourseScheduleData.swift,
-				Models/Storage/Database/DormMigrationPlan.swift,
-				Models/Storage/Database/DormSchema.swift,
 				Models/Storage/GradeAnalysisData.swift,
 				Models/Storage/TodoAssignmentsData.swift,
 				Models/Storage/UrgentCoursesData.swift,
@@ -101,7 +99,6 @@
 				Utils/EnvironmentUtil.swift,
 				Utils/KeychainUtil.swift,
 				Utils/PlatformAliases.swift,
-				Utils/SharedModelUtil.swift,
 			);
 			target = 00E89C5F2E2C88D800B43162 /* CSUSTPlanetWidgetExtension */;
 		};
@@ -109,6 +106,33 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/Info.plist,
+				Core/AnnualReview/AnnualReviewEndPage.swift,
+				Core/AnnualReview/AnnualReviewStartPage.swift,
+				Core/AnnualReview/AnnualReviewView.swift,
+				Core/AnnualReview/AnnualReviewViewModel.swift,
+				Core/AnnualReview/DormPage.swift,
+				Core/AnnualReview/GradesPage.swift,
+				Core/AnnualReview/MoocPage.swift,
+				Core/AnnualReview/ProfilePage.swift,
+				Core/AnnualReview/SpacePeoplePage.swift,
+				Core/AnnualReview/TimeSchedulePage.swift,
+				Core/Features/CampusTool/ElectricityQuery/AddDormitory/AddDormitoryView.swift,
+				Core/Features/CampusTool/ElectricityQuery/AddDormitory/AddDormitoryViewModel.swift,
+				Core/Features/CampusTool/ElectricityQuery/Components/DormCardView.swift,
+				Core/Features/CampusTool/ElectricityQuery/Components/DormDetailView.swift,
+				Core/Features/CampusTool/ElectricityQuery/Components/DormHistoryView.swift,
+				Core/Features/CampusTool/ElectricityQuery/Components/DormNotificationSettingsView.swift,
+				Core/Features/CampusTool/ElectricityQuery/DormElectricityViewModel.swift,
+				Core/Features/CampusTool/ElectricityQuery/ElectricityQueryView.swift,
+				Core/Overview/DormOverviewView.swift,
+				Helpers/BackgroundTask/ElectricityBackgroundTask.swift,
+				Models/Storage/Database/DormMigrationPlan.swift,
+				Models/Storage/Database/DormSchema.swift,
+				Utils/ElectricityBindingUtil.swift,
+				Utils/ElectricityRecordCleaner.swift,
+				Utils/ElectricityUtil.swift,
+				Utils/SharedModelUtil.swift,
+				"Utils/SharedModelUtil+Migrate.swift",
 			);
 			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
 		};
@@ -124,6 +148,14 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Widgets/DormElectricity/DormElectricityAppIntent.swift,
+				Widgets/DormElectricity/DormElectricityEntry.swift,
+				Widgets/DormElectricity/DormElectricityEntryView.swift,
+				Widgets/DormElectricity/DormElectricityProvider.swift,
+				Widgets/DormElectricity/DormElectricityWidget.swift,
+				Widgets/DormElectricity/DormIntentEntity.swift,
+				Widgets/DormElectricity/DormIntentQuery.swift,
+				Widgets/DormElectricity/RefreshElectricityTimelineIntent.swift,
 				Widgets/UrgentCourses/RefreshUrgentCoursesTimelineIntent.swift,
 				Widgets/UrgentCourses/UrgentCoursesEntry.swift,
 				Widgets/UrgentCourses/UrgentCoursesEntryView.swift,

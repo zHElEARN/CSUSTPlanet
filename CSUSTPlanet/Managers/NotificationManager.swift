@@ -67,7 +67,7 @@ class NotificationManager {
     }
 
     func syncAll() {
-        Task { await ElectricityBindingUtil.sync() }
+        // Task { await ElectricityBindingUtil.sync() }
     }
 
     func toggle() {

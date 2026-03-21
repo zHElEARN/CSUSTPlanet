@@ -106,56 +106,56 @@ final class AboutViewModel {
         ]
         MMKVHelper.shared.examSchedulesCache = Cached(cachedAt: today, value: mockExams)
 
-        // 宿舍电量
-        let context = SharedModelUtil.mainContext
+        // // 宿舍电量
+        // let context = SharedModelUtil.mainContext
 
-        let dormDescriptor = FetchDescriptor<Dorm>()
-        var targetDorm: Dorm?
-        if let dorms = try? context.fetch(dormDescriptor) {
-            for dorm in dorms {
-                if dorm.room == "A233" && dorm.campusID == CampusCardHelper.Campus.yuntang.id {
-                    targetDorm = dorm
-                }
-            }
-        }
+        // let dormDescriptor = FetchDescriptor<Dorm>()
+        // var targetDorm: Dorm?
+        // if let dorms = try? context.fetch(dormDescriptor) {
+        //     for dorm in dorms {
+        //         if dorm.room == "A233" && dorm.campusID == CampusCardHelper.Campus.yuntang.id {
+        //             targetDorm = dorm
+        //         }
+        //     }
+        // }
 
-        if targetDorm == nil {
-            targetDorm = Dorm(room: "A233", building: CampusCardHelper.Building(name: "至诚轩5栋A区", id: "1", campus: .yuntang))
-            if let targetDorm = targetDorm {
-                context.insert(targetDorm)
-            }
-        }
+        // if targetDorm == nil {
+        //     targetDorm = Dorm(room: "A233", building: CampusCardHelper.Building(name: "至诚轩5栋A区", id: "1", campus: .yuntang))
+        //     if let targetDorm = targetDorm {
+        //         context.insert(targetDorm)
+        //     }
+        // }
 
-        if let dorm = targetDorm {
-            let dormID = dorm.id
-            let electricityPredicate = #Predicate<ElectricityRecord> { $0.dorm?.id == dormID }
-            let electricityDescriptor = FetchDescriptor<ElectricityRecord>(predicate: electricityPredicate)
-            if let records = try? context.fetch(electricityDescriptor) {
-                for record in records {
-                    context.delete(record)
-                }
-            }
+        // if let dorm = targetDorm {
+        //     let dormID = dorm.id
+        //     let electricityPredicate = #Predicate<ElectricityRecord> { $0.dorm?.id == dormID }
+        //     let electricityDescriptor = FetchDescriptor<ElectricityRecord>(predicate: electricityPredicate)
+        //     if let records = try? context.fetch(electricityDescriptor) {
+        //         for record in records {
+        //             context.delete(record)
+        //         }
+        //     }
 
-            var currentElectricity = Double.random(in: 350...370)
+        //     var currentElectricity = Double.random(in: 350...370)
 
-            for i in (0..<10).reversed() {
-                let recordDate = calendar.date(byAdding: .day, value: -i, to: today)!
-                let consumption = Double.random(in: 2.0...5.0)
-                currentElectricity -= consumption
-                let finalElectricity = max(0, currentElectricity)
-                let record = ElectricityRecord(electricity: finalElectricity, date: recordDate, dorm: dorm)
-                context.insert(record)
-                if i == 0 {
-                    dorm.lastFetchElectricity = finalElectricity
-                    dorm.lastFetchDate = recordDate
-                }
-            }
-            try? context.save()
-        }
+        //     for i in (0..<10).reversed() {
+        //         let recordDate = calendar.date(byAdding: .day, value: -i, to: today)!
+        //         let consumption = Double.random(in: 2.0...5.0)
+        //         currentElectricity -= consumption
+        //         let finalElectricity = max(0, currentElectricity)
+        //         let record = ElectricityRecord(electricity: finalElectricity, date: recordDate, dorm: dorm)
+        //         context.insert(record)
+        //         if i == 0 {
+        //             dorm.lastFetchElectricity = finalElectricity
+        //             dorm.lastFetchDate = recordDate
+        //         }
+        //     }
+        //     try? context.save()
+        // }
     }
 
     func clearAllSwiftData() {
-        try? SharedModelUtil.clearAllData()
+        // try? SharedModelUtil.clearAllData()
     }
 
     func clearAllMMKVData() {

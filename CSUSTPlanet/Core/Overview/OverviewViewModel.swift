@@ -17,7 +17,7 @@ class OverviewViewModel {
     private var examScheduleData: Cached<[EduHelper.Exam]>?
     private var courseScheduleData: Cached<CourseScheduleData>?
     private var urgentCoursesData: Cached<UrgentCoursesData>?
-    var primaryDorm: Dorm?
+    // var primaryDorm: Dorm?
 
     // MARK: - 计算数据
 
@@ -51,10 +51,10 @@ class OverviewViewModel {
     }
 
     /// 预计电量耗尽时间
-    var electricityExhaustionInfo: String? {
-        guard let dorm = primaryDorm else { return nil }
-        return ElectricityUtil.getExhaustionInfo(for: dorm)
-    }
+    // var electricityExhaustionInfo: String? {
+    //     guard let dorm = primaryDorm else { return nil }
+    //     return ElectricityUtil.getExhaustionInfo(for: dorm)
+    // }
 
     enum CourseDisplayState {
         case loading  // No data available
@@ -93,22 +93,22 @@ class OverviewViewModel {
         courseScheduleData = MMKVHelper.shared.courseScheduleCache
         urgentCoursesData = MMKVHelper.shared.urgentCoursesCache
 
-        primaryDorm = fetchPrimaryDorm()
+        // primaryDorm = fetchPrimaryDorm()
     }
 
-    private func fetchPrimaryDorm() -> Dorm? {
-        let favoritePredicate = #Predicate<Dorm> { $0.isFavorite == true }
-        var favoriteDescriptor = FetchDescriptor<Dorm>(predicate: favoritePredicate)
-        favoriteDescriptor.fetchLimit = 1
+    // private func fetchPrimaryDorm() -> Dorm? {
+    //     let favoritePredicate = #Predicate<Dorm> { $0.isFavorite == true }
+    //     var favoriteDescriptor = FetchDescriptor<Dorm>(predicate: favoritePredicate)
+    //     favoriteDescriptor.fetchLimit = 1
 
-        if let favoriteDorm = try? SharedModelUtil.mainContext.fetch(favoriteDescriptor).first {
-            return favoriteDorm
-        }
+    //     if let favoriteDorm = try? SharedModelUtil.mainContext.fetch(favoriteDescriptor).first {
+    //         return favoriteDorm
+    //     }
 
-        var anyDormDescriptor = FetchDescriptor<Dorm>()
-        anyDormDescriptor.fetchLimit = 1
-        return try? SharedModelUtil.mainContext.fetch(anyDormDescriptor).first
-    }
+    //     var anyDormDescriptor = FetchDescriptor<Dorm>()
+    //     anyDormDescriptor.fetchLimit = 1
+    //     return try? SharedModelUtil.mainContext.fetch(anyDormDescriptor).first
+    // }
 
     func daysUntilExam(_ exam: EduHelper.Exam) -> Int {
         let calendar = Calendar.current

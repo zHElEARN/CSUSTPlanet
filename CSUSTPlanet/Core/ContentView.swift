@@ -49,7 +49,7 @@ private let featureSections: [FeatureSection] = [
     FeatureSection(
         title: "校园工具",
         items: [
-            FeatureItem(id: .electricityQuery, title: "电量查询", icon: "bolt.fill", destination: { ElectricityQueryView() }),
+            FeatureItem(id: .electricityQuery, title: "电量查询", icon: "bolt.fill", destination: { DormListView() }),
             FeatureItem(id: .availableClassroom, title: "空教室查询", icon: "building.2.fill", destination: { AvailableClassroomView() }),
             FeatureItem(id: .campusMap, title: "校园地图", icon: "map.fill", destination: { CampusMapView() }),
             FeatureItem(id: .schoolCalendar, title: "校历", icon: "calendar.badge.clock", destination: { SchoolCalendarListView() }),
@@ -179,7 +179,7 @@ struct ContentView: View {
         .trackRoot("App")
 
         .task {
-            await SharedModelUtil.migrateDatabase()
+            // await SharedModelUtil.migrateDatabase()
             withAnimation { isDatabaseReady = true }
         }
 
@@ -216,16 +216,16 @@ struct ContentView: View {
 
         // MARK: - 数据库Fatal提示
 
-        .alert("本地数据异常", isPresented: $globalManager.showWipeRecoveryAlert) {
-            Button("我知道了", role: .cancel) {}
-        } message: {
-            Text("检测到本地缓存数据出现异常，为了保证应用正常运行，我们已重置了本地环境。如果您之前开启了 iCloud 同步，您的数据稍后将从云端自动恢复。")
-        }
-        .alert("存储空间不可用", isPresented: $globalManager.showFatalErrorAlert) {
-            Button("我知道了", role: .cancel) {}
-        } message: {
-            Text("应用无法访问设备的本地存储空间，当前正以“临时模式”运行。您可以继续浏览信息，但任何关于宿舍电量新的更改或记录在退出应用后都将丢失。建议您检查设备的剩余存储空间，或尝试重启设备。")
-        }
+        // .alert("本地数据异常", isPresented: $globalManager.showWipeRecoveryAlert) {
+        //     Button("我知道了", role: .cancel) {}
+        // } message: {
+        //     Text("检测到本地缓存数据出现异常，为了保证应用正常运行，我们已重置了本地环境。如果您之前开启了 iCloud 同步，您的数据稍后将从云端自动恢复。")
+        // }
+        // .alert("存储空间不可用", isPresented: $globalManager.showFatalErrorAlert) {
+        //     Button("我知道了", role: .cancel) {}
+        // } message: {
+        //     Text("应用无法访问设备的本地存储空间，当前正以“临时模式”运行。您可以继续浏览信息，但任何关于宿舍电量新的更改或记录在退出应用后都将丢失。建议您检查设备的剩余存储空间，或尝试重启设备。")
+        // }
 
         // MARK: - 主题设置 & 用户协议弹窗
 

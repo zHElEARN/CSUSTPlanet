@@ -69,7 +69,7 @@ struct CSUSTPlanetApp: App {
         #if os(macOS)
         .windowResizability(.contentSize)
         #endif
-        .modelContainer(SharedModelUtil.container)
+        // .modelContainer(SharedModelUtil.container)
         .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }
     }
 

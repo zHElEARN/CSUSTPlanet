@@ -93,6 +93,6 @@ final class GlobalManager {
     var isFromCourseScheduleWidget: Bool = false
     var isFromUrgentCoursesWidget: Bool = false
 
-    var showWipeRecoveryAlert = (SharedModelUtil.containerLoadState == .recoveredAfterWipe)
-    var showFatalErrorAlert = (SharedModelUtil.containerLoadState == .fatalError)
+    // var showWipeRecoveryAlert = (SharedModelUtil.containerLoadState == .recoveredAfterWipe)
+    // var showFatalErrorAlert = (SharedModelUtil.containerLoadState == .fatalError)
 }
