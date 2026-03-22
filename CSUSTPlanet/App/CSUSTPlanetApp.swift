@@ -28,8 +28,6 @@ struct CSUSTPlanetApp: App {
         GlobalManager.shared.hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
         GlobalManager.shared.databaseFatalErrorMessage = DatabaseManager.shared.fatalErrorMessage
 
-        MMKVHelper.SwiftData.hasMigratedToGRDB = false
-
         TrackHelper.shared.event(category: "Lifecycle", action: "Launch")
 
         SentrySDK.start { options in
