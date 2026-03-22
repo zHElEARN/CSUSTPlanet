@@ -9,6 +9,9 @@ import SwiftUI
 
 struct DormListView: View {
     @State var viewModel = DormListViewModel()
+    @State private var dormRefreshMap: [AnyHashable: Int] = [:]
+
+    @Namespace var namespace
 
     // MARK: - Body
 
@@ -90,17 +93,42 @@ struct DormListView: View {
         Group {
             #if os(macOS)
             TrackLink(destination: DormDetailView(dorm: dorm)) {
-                dormCardContent(dorm, electricityColor: electricityColor)
+                CustomGroupBox {
+                    dormCardContent(dorm, electricityColor: electricityColor)
+                }
             }
             .buttonStyle(.plain)
             #elseif os(iOS)
-            ZStack {
-                TrackLink(destination: DormDetailView(dorm: dorm)) {
-                    EmptyView()
-                }
-                .opacity(0)
+            if #available(iOS 18.0, *) {
+                ZStack {
+                    TrackLink(
+                        destination: DormDetailView(dorm: dorm)
+                            .navigationTransition(.zoom(sourceID: dorm.id, in: namespace))
+                            .onDisappear {
+                                dormRefreshMap[dorm.id] = Int(CFAbsoluteTimeGetCurrent() * 1000)
+                            }
+                    ) {
+                        EmptyView()
+                    }
+                    .opacity(0)
 
-                dormCardContent(dorm, electricityColor: electricityColor)
+                    CustomGroupBox {
+                        dormCardContent(dorm, electricityColor: electricityColor)
+                            .matchedTransitionSource(id: dorm.id, in: namespace)
+                    }
+                }
+                .id(dormRefreshMap[dorm.id] ?? dorm.id.hashValue)
+            } else {
+                ZStack {
+                    TrackLink(destination: DormDetailView(dorm: dorm)) {
+                        EmptyView()
+                    }
+                    .opacity(0)
+
+                    CustomGroupBox {
+                        dormCardContent(dorm, electricityColor: electricityColor)
+                    }
+                }
             }
             #endif
         }
@@ -136,79 +164,77 @@ struct DormListView: View {
 
     @ViewBuilder
     private func dormCardContent(_ dorm: DormGRDB, electricityColor: Color) -> some View {
-        CustomGroupBox {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack(spacing: 6) {
-                        Text(dorm.room)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 6) {
+                    Text(dorm.room)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
 
-                        if dorm.isFavorite {
-                            Image(systemName: "star.fill")
-                                .font(.caption)
-                                .foregroundStyle(.yellow)
-                        }
+                    if dorm.isFavorite {
+                        Image(systemName: "star.fill")
+                            .font(.caption)
+                            .foregroundStyle(.yellow)
                     }
-
-                    if let electricity = dorm.lastFetchElectricity {
-                        HStack(alignment: .lastTextBaseline, spacing: 4) {
-                            Text(String(format: "%.2f", electricity))
-                                .font(.system(.largeTitle, design: .rounded))
-                                .fontWeight(.bold)
-                                .foregroundStyle(electricityColor)
-                                .contentTransition(.numericText())
-
-                            Text("kWh")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.secondary)
-                                .padding(.bottom, 2)
-                        }
-                    } else {
-                        Text("暂无数据")
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
-                            .padding(.vertical, 4)
-                    }
-
-                    Text("\(dorm.campusName) · \(dorm.buildingName)")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
                 }
+
+                if let electricity = dorm.lastFetchElectricity {
+                    HStack(alignment: .lastTextBaseline, spacing: 4) {
+                        Text(String(format: "%.2f", electricity))
+                            .font(.system(.largeTitle, design: .rounded))
+                            .fontWeight(.bold)
+                            .foregroundStyle(electricityColor)
+                            .contentTransition(.numericText())
+
+                        Text("kWh")
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, 2)
+                    }
+                } else {
+                    Text("暂无数据")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, 4)
+                }
+
+                Text("\(dorm.campusName) · \(dorm.buildingName)")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 8) {
+                Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
+                    if viewModel.isQuerying(dorm) {
+                        ProgressView()
+                            .smallControlSizeOnMac()
+                            .frame(width: 15, height: 15)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.blue)
+                            .frame(width: 15, height: 15)
+                    }
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isQuerying(dorm))
 
                 Spacer()
 
-                VStack(alignment: .trailing, spacing: 8) {
-                    Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
-                        if viewModel.isQuerying(dorm) {
-                            ProgressView()
-                                .smallControlSizeOnMac()
-                                .frame(width: 15, height: 15)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(.blue)
-                                .frame(width: 15, height: 15)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(viewModel.isQuerying(dorm))
-
-                    Spacer()
-
-                    if let lastFetchDate = dorm.lastFetchDate {
-                        Text("更新于：")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            + Text(lastFetchDate, style: .relative)
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            + Text("前")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                    }
+                if let lastFetchDate = dorm.lastFetchDate {
+                    Text("更新于：")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        + Text(lastFetchDate, style: .relative)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        + Text("前")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                 }
             }
         }

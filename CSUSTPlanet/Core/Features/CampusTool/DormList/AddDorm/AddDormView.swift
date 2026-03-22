@@ -77,15 +77,14 @@ struct AddDormView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
-                        let trimmedRoom = viewModel.room.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard let building = viewModel.selectedBuilding else {
                             viewModel.errorToast.show(message: "请选择宿舍楼")
                             return
                         }
-                        onConfirm(building, trimmedRoom)
+                        onConfirm(building, viewModel.trimmedRoom)
                         isPresented = false
                     }
-                    .disabled(viewModel.selectedBuildingID.isEmpty || viewModel.room.isEmpty)
+                    .disabled(viewModel.selectedBuildingID.isEmpty || viewModel.trimmedRoom.isEmpty)
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {

@@ -19,6 +19,7 @@ final class AddDormViewModel: Observable {
     var selectedCampus: CampusCardHelper.Campus = .jinpenling
     var selectedBuildingID: String = ""
     var room: String = ""
+    var trimmedRoom: String { room.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     var buildings: [CampusCardHelper.Campus: [CampusCardHelper.Building]] = [:]
     var isBuildingsLoading: Bool = false

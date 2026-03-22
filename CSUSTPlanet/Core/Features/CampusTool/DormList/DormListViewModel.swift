@@ -44,10 +44,6 @@ final class DormListViewModel {
     }
 
     func addDorm(building: CampusCardHelper.Building, room: String) {
-        guard !room.isEmpty else {
-            errorToast.show(message: "宿舍号不能为空")
-            return
-        }
         guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
