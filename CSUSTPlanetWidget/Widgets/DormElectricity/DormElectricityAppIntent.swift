@@ -7,7 +7,6 @@
 
 import AppIntents
 import CSUSTKit
-import SwiftData
 import WidgetKit
 
 struct DormElectricityAppIntent: AppIntent, WidgetConfigurationIntent {
@@ -19,7 +18,7 @@ struct DormElectricityAppIntent: AppIntent, WidgetConfigurationIntent {
 
     static let mockIntent = {
         let intent = DormElectricityAppIntent()
-        intent.dorm = DormIntentEntity(id: UUID(), room: "A233", buildingName: "至诚轩5栋A区", campusName: "云塘校区")
+        intent.dorm = DormIntentEntity(id: 1, room: "A233", buildingName: "至诚轩5栋A区", campusName: "云塘校区")
         return intent
     }()
 }

@@ -9,7 +9,6 @@ import AppIntents
 import CSUSTKit
 import Charts
 import OSLog
-import SwiftData
 import SwiftUI
 import WidgetKit
 
@@ -19,7 +18,6 @@ struct DormElectricityWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: DormElectricityAppIntent.self, provider: DormElectricityProvider()) { entry in
             DormElectricityEntryView(entry: entry)
-                .modelContainer(SharedModelUtil.container)
         }
         .configurationDisplayName("宿舍电量")
         .description("查询宿舍电量使用情况")

@@ -9,7 +9,7 @@ import AppIntents
 import Foundation
 
 struct DormIntentEntity: AppEntity {
-    var id: UUID
+    var id: String
 
     var room: String
 
@@ -24,10 +24,16 @@ struct DormIntentEntity: AppEntity {
 
     static var defaultQuery = DormIntentQuery()
 
-    init(id: UUID, room: String, buildingName: String, campusName: String) {
+    var dormID: Int64? { Int64(id) }
+
+    init(id: String, room: String, buildingName: String, campusName: String) {
         self.id = id
         self.room = room
         self.buildingName = buildingName
         self.campusName = campusName
+    }
+
+    init(id: Int64, room: String, buildingName: String, campusName: String) {
+        self.init(id: String(id), room: room, buildingName: buildingName, campusName: campusName)
     }
 }

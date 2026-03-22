@@ -6,14 +6,13 @@
 //
 
 import AppIntents
-import SwiftData
 import SwiftUI
 import WidgetKit
 
 @main
 struct CSUSTPlanetWidgetBundle: WidgetBundle {
     var body: some Widget {
-        // DormElectricityWidget()
+        DormElectricityWidget()
         GradeAnalysisWidget()
         TodayCoursesWidget()
         WeeklyCoursesWidget()

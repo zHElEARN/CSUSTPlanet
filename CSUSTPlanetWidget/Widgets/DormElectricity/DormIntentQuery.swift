@@ -7,20 +7,33 @@
 
 import AppIntents
 import Foundation
-import SwiftData
+import GRDB
 
 struct DormIntentQuery: EntityQuery {
     func suggestedEntities() async throws -> [DormIntentEntity] {
-        let dorms = try SharedModelUtil.context.fetch(FetchDescriptor<Dorm>())
-        return dorms.map { DormIntentEntity(id: $0.id, room: $0.room, buildingName: $0.buildingName, campusName: $0.campusName) }
+        guard let pool = DatabaseManager.shared.pool else { return [] }
+
+        return try await pool.read { db in
+            let dorms = try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
+            return dorms.compactMap { dorm in
+                guard let dormID = dorm.id else { return nil }
+                return DormIntentEntity(id: dormID, room: dorm.room, buildingName: dorm.buildingName, campusName: dorm.campusName)
+            }
+        }
     }
 
-    func entities(for identifiers: [UUID]) async throws -> [DormIntentEntity] {
-        let predicate = #Predicate<Dorm> { dorm in
-            identifiers.contains(dorm.id)
+    func entities(for identifiers: [String]) async throws -> [DormIntentEntity] {
+        let dormIDs = identifiers.compactMap(Int64.init)
+        guard !dormIDs.isEmpty else { return [] }
+        guard let pool = DatabaseManager.shared.pool else { return [] }
+
+        return try await pool.read { db in
+            let dorms = try DormGRDB.filter(dormIDs.contains(DormGRDB.Columns.id)).fetchAll(db)
+            return dorms.compactMap { dorm in
+                guard let dormID = dorm.id else { return nil }
+                return DormIntentEntity(id: dormID, room: dorm.room, buildingName: dorm.buildingName, campusName: dorm.campusName)
+            }
         }
-        let dorms = try SharedModelUtil.context.fetch(FetchDescriptor(predicate: predicate))
-        return dorms.map { DormIntentEntity(id: $0.id, room: $0.room, buildingName: $0.buildingName, campusName: $0.campusName) }
     }
 
     func defaultResult() async -> DormIntentEntity? {

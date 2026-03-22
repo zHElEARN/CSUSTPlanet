@@ -80,6 +80,9 @@
 		006CA2AE2E2D01F300340655 /* Exceptions for "CSUSTPlanet" folder in "CSUSTPlanetWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Database/DatabaseManager.swift,
+				Database/Models/Dorm.swift,
+				Database/Models/ElectricityRecord.swift,
 				"Extensions/Color+Hex.swift",
 				"Extensions/Color+Theme.swift",
 				"Extensions/DayOfWeek+Formatter.swift",
@@ -136,14 +139,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Widgets/DormElectricity/DormElectricityAppIntent.swift,
-				Widgets/DormElectricity/DormElectricityEntry.swift,
-				Widgets/DormElectricity/DormElectricityEntryView.swift,
-				Widgets/DormElectricity/DormElectricityProvider.swift,
-				Widgets/DormElectricity/DormElectricityWidget.swift,
-				Widgets/DormElectricity/DormIntentEntity.swift,
-				Widgets/DormElectricity/DormIntentQuery.swift,
-				Widgets/DormElectricity/RefreshElectricityTimelineIntent.swift,
 				Widgets/UrgentCourses/RefreshUrgentCoursesTimelineIntent.swift,
 				Widgets/UrgentCourses/UrgentCoursesEntry.swift,
 				Widgets/UrgentCourses/UrgentCoursesEntryView.swift,

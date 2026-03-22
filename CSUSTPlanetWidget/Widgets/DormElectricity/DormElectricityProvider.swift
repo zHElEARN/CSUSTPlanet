@@ -7,8 +7,9 @@
 
 import AppIntents
 import CSUSTKit
+import Foundation
+import GRDB
 import OSLog
-import SwiftData
 import WidgetKit
 
 struct DormElectricityProvider: AppIntentTimelineProvider {
@@ -30,16 +31,20 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
             return .mockEntry
         }
 
-        let modelContext = SharedModelUtil.context
-
         // Snapshot 应该尽量快，不进行网络请求，直接读取本地最新的缓存数据
-        guard let dormID = configuration.dorm?.id,
-            let dorm = fetchLocalDorm(dormID: dormID, context: modelContext)
-        else {
+        guard let dormID = configuration.dorm?.dormID else {
             return emptyEntry(for: configuration)
         }
 
-        let records = fetchChartRecords(dormID: dormID, limit: 50, context: modelContext)
+        guard let pool = DatabaseManager.shared.pool else {
+            return emptyEntry(for: configuration)
+        }
+
+        guard let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) else {
+            return emptyEntry(for: configuration)
+        }
+
+        let records = (try? await fetchChartRecords(dormID: dormID, limit: 50, pool: pool)) ?? []
         return DormElectricityEntry(
             date: .now,
             configuration: configuration,
@@ -62,10 +67,18 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
             return Timeline(entries: [emptyEntry(for: configuration)], policy: .never)
         }
 
-        let modelContext = SharedModelUtil.context
+        guard let dormID = selectedDormEntity.dormID else {
+            Logger.dormElectricityWidget.warning("无法解析宿舍ID")
+            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
+        }
+
+        guard let pool = DatabaseManager.shared.pool else {
+            Logger.dormElectricityWidget.error("打开数据库失败")
+            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
+        }
 
         // 获取本地宿舍对象
-        guard let dorm = fetchLocalDorm(dormID: selectedDormEntity.id, context: modelContext) else {
+        guard var dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) else {
             Logger.dormElectricityWidget.warning("未在数据库中找到对应的宿舍记录")
             return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
         }
@@ -73,7 +86,8 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
         // 解析校区与楼栋信息
         guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else {
             Logger.dormElectricityWidget.warning("无法解析校区枚举")
-            return Timeline(entries: [buildEntry(dorm: dorm, configuration: configuration, context: modelContext)], policy: policy)
+            let fallbackEntry = (try? await buildEntry(dorm: dorm, configuration: configuration, pool: pool)) ?? emptyEntry(for: configuration)
+            return Timeline(entries: [fallbackEntry], policy: policy)
         }
         let building = CampusCardHelper.Building(name: dorm.buildingName, id: dorm.buildingID, campus: campus)
 
@@ -81,22 +95,26 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
         do {
             #if DEBUG
             if Self.shouldMock {
-                updateDatabaseIfNeeded(dorm: dorm, newElectricity: Self.mockElectricity, context: modelContext)
+                try await updateDatabaseIfNeeded(dormID: dormID, newElectricity: Self.mockElectricity, pool: pool)
             } else {
                 let networkElectricity = try await CampusCardHelper().getElectricity(building: building, room: dorm.room)
-                updateDatabaseIfNeeded(dorm: dorm, newElectricity: networkElectricity, context: modelContext)
+                try await updateDatabaseIfNeeded(dormID: dormID, newElectricity: networkElectricity, pool: pool)
             }
             #else
             let networkElectricity = try await CampusCardHelper().getElectricity(building: building, room: dorm.room)
-            updateDatabaseIfNeeded(dorm: dorm, newElectricity: networkElectricity, context: modelContext)
+            try await updateDatabaseIfNeeded(dormID: dormID, newElectricity: networkElectricity, pool: pool)
             #endif
+
+            if let refreshedDorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) {
+                dorm = refreshedDorm
+            }
         } catch {
             Logger.dormElectricityWidget.error("网络请求电量失败: \(error.localizedDescription)")
             // 请求失败时，继续使用本地旧数据渲染
         }
 
         // 构建并返回最终的 Entry
-        let entry = buildEntry(dorm: dorm, configuration: configuration, context: modelContext)
+        let entry = (try? await buildEntry(dorm: dorm, configuration: configuration, pool: pool)) ?? emptyEntry(for: configuration)
         Logger.dormElectricityWidget.info("timeline 生成完成")
         return Timeline(entries: [entry], policy: policy)
     }
@@ -109,61 +127,40 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
     }
 
     /// 从本地数据库获取 Dorm 对象
-    private func fetchLocalDorm(dormID: UUID, context: ModelContext) -> Dorm? {
-        let predicate = #Predicate<Dorm> { $0.id == dormID }
-        var descriptor = FetchDescriptor<Dorm>(predicate: predicate)
-        descriptor.fetchLimit = 1
-
-        return try? context.fetch(descriptor).first
+    private func fetchLocalDorm(dormID: Int64, pool: DatabasePool) async throws -> DormGRDB? {
+        try await pool.read { db in
+            try DormGRDB.filter(key: dormID).fetchOne(db)
+        }
     }
 
     /// 获取图表所需的最轻量级记录数据
-    private func fetchChartRecords(dormID: UUID, limit: Int = 50, context: ModelContext) -> [DormElectricityEntry.Record] {
-        let predicate = #Predicate<ElectricityRecord> { $0.dorm?.id == dormID }
-        var descriptor = FetchDescriptor<ElectricityRecord>(predicate: predicate, sortBy: [SortDescriptor(\.date, order: .reverse)])
-        descriptor.fetchLimit = limit
+    private func fetchChartRecords(dormID: Int64, limit: Int = 50, pool: DatabasePool) async throws -> [DormElectricityEntry.Record] {
+        let records = try await pool.read { db in
+            try ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                .order(ElectricityRecordGRDB.Columns.date.desc)
+                .limit(limit)
+                .fetchAll(db)
+        }
 
-        guard let models = try? context.fetch(descriptor) else { return [] }
-
-        return models.map { DormElectricityEntry.Record(electricity: $0.electricity, date: $0.date) }
-            .sorted { $0.date < $1.date }
-    }
-
-    /// 获取该宿舍本地最新的一条电量数值
-    private func fetchLastElectricityValue(dormID: UUID, context: ModelContext) -> Double? {
-        let predicate = #Predicate<ElectricityRecord> { $0.dorm?.id == dormID }
-        var descriptor = FetchDescriptor<ElectricityRecord>(predicate: predicate, sortBy: [SortDescriptor(\.date, order: .reverse)])
-        descriptor.fetchLimit = 1
-
-        return try? context.fetch(descriptor).first?.electricity
+        let entryRecords = records.map { DormElectricityEntry.Record(electricity: $0.electricity, date: $0.date) }
+        return Array(entryRecords.reversed())
     }
 
     /// 执行核心的缓存比较与数据库更新逻辑
-    private func updateDatabaseIfNeeded(dorm: Dorm, newElectricity: Double, context: ModelContext) {
-        let lastElectricity = fetchLastElectricityValue(dormID: dorm.id, context: context)
-        let now = Date()
-
-        if let lastElectricity = lastElectricity, abs(lastElectricity - newElectricity) < 0.001 {
-            Logger.dormElectricityWidget.info("电量未变化，仅更新 lastFetchDate")
-            dorm.lastFetchDate = now
-        } else {
-            Logger.dormElectricityWidget.info("电量发生变化，插入新记录")
-            let record = ElectricityRecord(electricity: newElectricity, date: now, dorm: dorm)
-            context.insert(record)
-            dorm.lastFetchDate = now
-            dorm.lastFetchElectricity = newElectricity
-        }
-
-        do {
-            try context.save()
-        } catch {
-            Logger.dormElectricityWidget.error("保存数据库失败: \(error.localizedDescription)")
+    private func updateDatabaseIfNeeded(dormID: Int64, newElectricity: Double, pool: DatabasePool) async throws {
+        try await pool.write { db in
+            try DormGRDB.updateElectricity(dormID: dormID, electricity: newElectricity, in: db)
         }
     }
 
     /// 统一构建最终的 Entry
-    private func buildEntry(dorm: Dorm, configuration: DormElectricityAppIntent, context: ModelContext) -> DormElectricityEntry {
-        let records = fetchChartRecords(dormID: dorm.id, limit: 50, context: context)
+    private func buildEntry(dorm: DormGRDB, configuration: DormElectricityAppIntent, pool: DatabasePool) async throws -> DormElectricityEntry {
+        guard let dormID = dorm.id else {
+            return emptyEntry(for: configuration)
+        }
+
+        let records = try await fetchChartRecords(dormID: dormID, limit: 50, pool: pool)
         return DormElectricityEntry(
             date: .now,
             configuration: configuration,
