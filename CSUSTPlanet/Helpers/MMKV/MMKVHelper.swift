@@ -120,11 +120,6 @@ class MMKVHelper {
     @MMKVOptionalStorage(key: "CampusMap.selectedCampus")
     var selectedCampus: CampusCardHelper.Campus?
 
-    // MARK: - SwiftData Properties
-
-    @MMKVStorage(key: "SwiftData.databaseVersion", defaultValue: 0)
-    var databaseVersion: Int
-
     // MARK: - BackgroundTask
 
     @MMKVStorage(key: "BackgroundTask.enabledTaskIdentifiers", defaultValue: [])
@@ -135,8 +130,9 @@ class MMKVHelper {
 
     @MMKVStorage(key: "BackgroundTask.interval", defaultValue: 6 * 60 * 60)
     var backgroundTaskInterval: TimeInterval
-    // MARK: - Calendar Sync Properties
 }
+
+// MARK: - Calendar Sync Properties
 
 extension MMKVHelper {
     enum CourseSchedule {
@@ -155,6 +151,18 @@ extension MMKVHelper {
     enum TodoAssignments {
         @MMKVOptionalStorage(key: "TodoAssignments.cache")
         static var cache: Cached<[TodoAssignmentsData]>?
+    }
+}
+
+// MARK: - Swift Data
+
+extension MMKVHelper {
+    enum SwiftData {
+        @MMKVStorage(key: "SwiftData.databaseVersion", defaultValue: 0)
+        static var databaseVersion: Int
+
+        @MMKVStorage(key: "SwiftData.hasMigratedToGRDB", defaultValue: false)
+        static var hasMigratedToGRDB: Bool
     }
 }
 

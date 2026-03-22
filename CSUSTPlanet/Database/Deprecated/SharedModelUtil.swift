@@ -103,7 +103,7 @@ enum SharedModelUtil {
             }
 
             // 重置业务迁移版本号
-            MMKVHelper.shared.databaseVersion = 0
+            MMKVHelper.SwiftData.databaseVersion = 0
 
         } catch {
             Logger.sharedModel.error("尝试清理底层数据库文件时发生错误: \(error)")

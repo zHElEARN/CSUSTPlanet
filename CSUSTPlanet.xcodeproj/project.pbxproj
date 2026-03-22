@@ -122,12 +122,7 @@
 				Core/AnnualReview/TimeSchedulePage.swift,
 				Core/Overview/DormOverviewView.swift,
 				Helpers/BackgroundTask/ElectricityBackgroundTask.swift,
-				Models/Storage/Database/DormMigrationPlan.swift,
-				Models/Storage/Database/DormSchema.swift,
 				Utils/ElectricityBindingUtil.swift,
-				Utils/ElectricityRecordCleaner.swift,
-				Utils/SharedModelUtil.swift,
-				"Utils/SharedModelUtil+Migrate.swift",
 			);
 			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
 		};

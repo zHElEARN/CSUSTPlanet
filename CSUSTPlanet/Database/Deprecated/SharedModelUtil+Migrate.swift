@@ -17,7 +17,7 @@ extension SharedModelUtil {
         // 数据库挂了则不用迁移了
         guard containerLoadState == .normal else { return }
 
-        let currentVersion = MMKVHelper.shared.databaseVersion
+        let currentVersion = MMKVHelper.SwiftData.databaseVersion
 
         guard currentVersion < currentDatabaseVersion else {
             return
@@ -44,7 +44,7 @@ extension SharedModelUtil {
             // 保存所有修改
             try context.save()
 
-            MMKVHelper.shared.databaseVersion = currentDatabaseVersion
+            MMKVHelper.SwiftData.databaseVersion = currentDatabaseVersion
             Logger.sharedModel.info("迁移完成，当前数据库版本已更新至\(currentDatabaseVersion)")
 
         } catch {
