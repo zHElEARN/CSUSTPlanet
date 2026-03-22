@@ -25,10 +25,8 @@ final class DormListViewModel {
 
     init() {
         guard dormObservationCancellable == nil else { return }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
         let observation = ValueObservation.tracking { db in
             try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
         }
@@ -50,10 +48,7 @@ final class DormListViewModel {
             errorToast.show(message: "宿舍号不能为空")
             return
         }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
             try pool.write { db in
@@ -89,10 +84,7 @@ final class DormListViewModel {
 
     func deleteDorm(_ dorm: DormGRDB) {
         guard let dormID = dorm.id else { return }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
             try pool.write { db in _ = try DormGRDB.deleteOne(db, key: dormID) }
@@ -103,10 +95,7 @@ final class DormListViewModel {
 
     func toggleFavorite(_ dorm: DormGRDB) {
         guard let dormID = dorm.id else { return }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
             try pool.write { db in try DormGRDB.toggleFavorite(dormID: dormID, in: db) }
@@ -122,16 +111,10 @@ final class DormListViewModel {
 
     func queryElectricity(for dorm: DormGRDB) async {
         guard let dormID = dorm.id else { return }
-        guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else {
-            errorToast.show(message: "无效的校区ID")
-            return
-        }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
-        guard !queryingDormIDs.contains(dormID) else { return }
+        guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
+        guard !queryingDormIDs.contains(dormID) else { return }
         queryingDormIDs.insert(dormID)
         defer { queryingDormIDs.remove(dormID) }
 

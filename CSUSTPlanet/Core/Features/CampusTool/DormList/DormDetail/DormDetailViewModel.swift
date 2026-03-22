@@ -31,10 +31,7 @@ final class DormDetailViewModel {
 
     func toggleFavorite() {
         guard let dormID = dorm.id else { return }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
             try pool.write { db in try DormGRDB.toggleFavorite(dormID: dormID, in: db) }
@@ -45,16 +42,10 @@ final class DormDetailViewModel {
 
     func queryElectricity() async {
         guard let dormID = dorm.id else { return }
-        guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else {
-            errorToast.show(message: "无效的校区ID")
-            return
-        }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
-        guard !isQueryingElectricity else { return }
+        guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
+        guard !isQueryingElectricity else { return }
         isQueryingElectricity = true
         defer { isQueryingElectricity = false }
 
@@ -75,10 +66,7 @@ final class DormDetailViewModel {
 
     private func fetchSortedRecords() -> [ElectricityRecordGRDB] {
         guard let dormID = dorm.id else { return [] }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return []
-        }
+        guard let pool = DatabaseManager.shared.pool else { return [] }
 
         do {
             return try pool.read { db in
@@ -96,26 +84,10 @@ final class DormDetailViewModel {
     func deleteRecord(_ record: ElectricityRecordGRDB) {
         guard let dormID = dorm.id else { return }
         guard let recordID = record.id else { return }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
-            try pool.write { db in
-                _ = try ElectricityRecordGRDB.deleteOne(db, key: recordID)
-
-                let remainingCount =
-                    try ElectricityRecordGRDB
-                    .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
-                    .fetchCount(db)
-
-                if remainingCount == 0, var latestDorm = try DormGRDB.fetchOne(db, key: dormID) {
-                    latestDorm.lastFetchDate = nil
-                    latestDorm.lastFetchElectricity = nil
-                    try latestDorm.update(db)
-                }
-            }
+            try pool.write { db in try DormGRDB.deleteElectricityRecord(dormID: dormID, recordID: recordID, in: db) }
             refreshSortedRecords()
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -124,24 +96,10 @@ final class DormDetailViewModel {
 
     func deleteAllRecords() {
         guard let dormID = dorm.id else { return }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
-            try pool.write { db in
-                _ =
-                    try ElectricityRecordGRDB
-                    .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
-                    .deleteAll(db)
-
-                if var latestDorm = try DormGRDB.fetchOne(db, key: dormID) {
-                    latestDorm.lastFetchDate = nil
-                    latestDorm.lastFetchElectricity = nil
-                    try latestDorm.update(db)
-                }
-            }
+            try pool.write { db in try DormGRDB.deleteAllElectricityRecords(dormID: dormID, in: db) }
             sortedRecords = []
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -151,10 +109,7 @@ final class DormDetailViewModel {
     private func observeDormDetail() {
         guard let dormID = dorm.id else { return }
         guard dormObservationCancellable == nil else { return }
-        guard let pool = DatabaseManager.shared.pool else {
-            errorToast.show(message: "数据库未初始化")
-            return
-        }
+        guard let pool = DatabaseManager.shared.pool else { return }
 
         let observation = ValueObservation.tracking { db in
             try DormGRDB.fetchOne(db, key: dormID)
@@ -168,11 +123,7 @@ final class DormDetailViewModel {
             },
             onChange: { [weak self] (latestDorm: DormGRDB?) in
                 guard let latestDorm else { return }
-                Task { @MainActor in
-                    withAnimation {
-                        self?.dorm = latestDorm
-                    }
-                }
+                Task { @MainActor in withAnimation { self?.dorm = latestDorm } }
             }
         )
     }

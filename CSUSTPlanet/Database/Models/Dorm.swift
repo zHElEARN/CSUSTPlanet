@@ -67,4 +67,29 @@ extension DormGRDB {
                 .updateAll(db, [Columns.lastFetchDate.set(to: now), Columns.lastFetchElectricity.set(to: electricity)])
         }
     }
+
+    static func deleteElectricityRecord(dormID: Int64, recordID: Int64, in db: Database) throws {
+        let deleted = try ElectricityRecordGRDB.deleteOne(db, key: recordID)
+
+        if deleted {
+            let hasRemaining = try
+                !ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                .isEmpty(db)
+
+            if !hasRemaining {
+                try DormGRDB.filter(id: dormID)
+                    .updateAll(db, [Columns.lastFetchDate.set(to: nil), Columns.lastFetchElectricity.set(to: nil)])
+            }
+        }
+    }
+
+    static func deleteAllElectricityRecords(dormID: Int64, in db: Database) throws {
+        try ElectricityRecordGRDB
+            .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+            .deleteAll(db)
+
+        try DormGRDB.filter(id: dormID)
+            .updateAll(db, [Columns.lastFetchDate.set(to: nil), Columns.lastFetchElectricity.set(to: nil)])
+    }
 }
