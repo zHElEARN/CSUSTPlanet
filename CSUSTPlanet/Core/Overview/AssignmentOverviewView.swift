@@ -20,56 +20,73 @@ struct AssignmentOverviewView: View {
                 destination: TodoAssignmentsView()
             )
 
-            let courses = viewModel.urgentCourses
-            if courses.isEmpty {
+            let assignments = viewModel.submittableAssignments
+            if assignments.isEmpty {
                 OverviewEmptyStateView(icon: "doc.text", text: "暂无待提交作业")
             } else {
-                AssignmentListView(viewModel: viewModel)
+                AssignmentListView(assignments: assignments)
             }
         }
     }
 }
 
 private struct AssignmentListView: View {
-    @Bindable var viewModel: OverviewViewModel
+    let assignments: [(courseName: String, assignment: MoocHelper.Assignment)]
 
     var body: some View {
-        VStack(spacing: 12) {
-            ForEach(viewModel.urgentCourses, id: \.name) { course in
-                TrackLink(destination: TodoAssignmentsView()) {
+        TrackLink(destination: TodoAssignmentsView()) {
+            VStack(spacing: 0) {
+                ForEach(assignments.indices, id: \.self) { index in
+                    let item = assignments[index]
+
                     HStack(spacing: 12) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(Color.orange)
-                            .frame(width: 4, height: 36)
+                            .frame(width: 4, height: 40)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(course.name)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.assignment.title)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
+
+                            Text(item.courseName)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
                         }
 
-                        Spacer()
+                        Spacer(minLength: 12)
 
-                        Text("待提交")
-                            .font(.caption2)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.orange.opacity(0.1))
-                            .foregroundStyle(.orange)
-                            .clipShape(Capsule())
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Text("截止时间")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+
+                            Text(item.assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
+                                .font(.caption2)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.orange.opacity(0.12))
+                                .foregroundStyle(.orange)
+                                .clipShape(Capsule())
+                        }
                     }
                     .padding(12)
-                    #if os(iOS)
-                    .background(Color(PlatformColor.secondarySystemGroupedBackground))
-                    #else
-                    .background(Color(PlatformColor.controlBackgroundColor))
-                    #endif
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    if index < assignments.count - 1 {
+                        Divider().padding(.leading, 28)
+                    }
                 }
-                .buttonStyle(.plain)
             }
+            #if os(iOS)
+            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            #else
+            .background(Color(PlatformColor.controlBackgroundColor))
+            #endif
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .buttonStyle(.plain)
     }
 }

@@ -18,6 +18,7 @@ class OverviewViewModel {
     private var examScheduleData: Cached<[EduHelper.Exam]>?
     private var courseScheduleData: Cached<CourseScheduleData>?
     private var urgentCoursesData: Cached<UrgentCoursesData>?
+    private var todoAssignmentsData: Cached<[TodoAssignmentsData]>?
     var primaryDorm: DormGRDB?
     var electricityExhaustionInfo: String?
 
@@ -52,6 +53,19 @@ class OverviewViewModel {
     var urgentCourses: [UrgentCoursesData.Course] {
         guard let data = urgentCoursesData?.value else { return [] }
         return data.courses
+    }
+
+    var submittableAssignments: [(courseName: String, assignment: MoocHelper.Assignment)] {
+        guard let groups = todoAssignmentsData?.value else { return [] }
+
+        return groups
+            .flatMap { group in
+                group.assignments.compactMap { assignment in
+                    guard assignment.canSubmit, !assignment.submitStatus else { return nil }
+                    return (courseName: group.course.name, assignment: assignment)
+                }
+            }
+            .sorted { $0.assignment.deadline < $1.assignment.deadline }
     }
 
     enum CourseDisplayState {
@@ -90,6 +104,7 @@ class OverviewViewModel {
         examScheduleData = MMKVHelper.shared.examSchedulesCache
         courseScheduleData = MMKVHelper.shared.courseScheduleCache
         urgentCoursesData = MMKVHelper.shared.urgentCoursesCache
+        todoAssignmentsData = MMKVHelper.TodoAssignments.cache
 
         observePrimaryDorm()
     }

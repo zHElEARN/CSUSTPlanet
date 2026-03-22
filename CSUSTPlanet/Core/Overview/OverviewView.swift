@@ -12,8 +12,6 @@ struct OverviewView: View {
     @State var viewModel = OverviewViewModel()
     @Bindable var globalManager = GlobalManager.shared
 
-    @Environment(\.horizontalSizeClass) var sizeClass
-
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -38,17 +36,13 @@ struct OverviewView: View {
                 // 今日课程
                 CourseOverviewView(viewModel: viewModel)
 
-                // 核心数据网格 (成绩 + 电量)
-                HStack(spacing: 16) {
+                VStack(spacing: 24) {
+                    // 成绩
                     GradeOverviewView(viewModel: viewModel)
+
+                    // 宿舍电量
                     DormOverviewView(viewModel: viewModel)
-                }
-                .padding(.horizontal)
 
-                // 作业与考试
-                let columns = sizeClass == .regular ? [GridItem(.flexible(), spacing: 24), GridItem(.flexible(), spacing: 24)] : [GridItem(.flexible(), spacing: 24)]
-
-                LazyVGrid(columns: columns, spacing: 24) {
                     // 待提交作业
                     AssignmentOverviewView(viewModel: viewModel)
 
