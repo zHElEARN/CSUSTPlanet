@@ -43,14 +43,7 @@ struct DormHistoryView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("历史记录")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共\(viewModel.sortedRecords.count)条记录")
-            } else {
-                view
-            }
-        }
-        .onAppear { viewModel.refreshSortedRecords() }
+        .navigationSubtitleCompat("共\(viewModel.sortedRecords.count)条记录")
         .errorToast($viewModel.errorToast)
         .trackView("DormHistory")
     }

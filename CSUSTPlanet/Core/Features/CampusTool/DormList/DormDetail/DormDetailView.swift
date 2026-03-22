@@ -40,7 +40,6 @@ struct DormDetailView: View {
         } message: {
             Text("此操作将删除该宿舍所有的历史电量记录且无法恢复，确定要继续吗？")
         }
-        .task { viewModel.refreshSortedRecords() }
         .errorToast($viewModel.errorToast)
         .trackView("DormDetail")
     }

@@ -22,11 +22,12 @@ final class DormDetailViewModel {
     var isDeleteAllRecordsAlertPresented: Bool = false
 
     var dormObservationCancellable: (any DatabaseCancellable)?
+    var recordsObservationCancellable: (any DatabaseCancellable)?
 
     init(dorm: DormGRDB) {
         self.dorm = dorm
         observeDormDetail()
-        refreshSortedRecords()
+        observeRecords()
     }
 
     func toggleFavorite() {
@@ -54,30 +55,8 @@ final class DormDetailViewModel {
         do {
             let electricity = try await campusCardHelper.getElectricity(building: building, room: dorm.room)
             try await pool.write { db in try DormGRDB.updateElectricity(dormID: dormID, electricity: electricity, in: db) }
-            refreshSortedRecords()
         } catch {
             errorToast.show(message: error.localizedDescription)
-        }
-    }
-
-    func refreshSortedRecords() {
-        sortedRecords = fetchSortedRecords()
-    }
-
-    private func fetchSortedRecords() -> [ElectricityRecordGRDB] {
-        guard let dormID = dorm.id else { return [] }
-        guard let pool = DatabaseManager.shared.pool else { return [] }
-
-        do {
-            return try pool.read { db in
-                try ElectricityRecordGRDB
-                    .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
-                    .order(ElectricityRecordGRDB.Columns.date.desc)
-                    .fetchAll(db)
-            }
-        } catch {
-            errorToast.show(message: error.localizedDescription)
-            return []
         }
     }
 
@@ -88,7 +67,7 @@ final class DormDetailViewModel {
 
         do {
             try pool.write { db in try DormGRDB.deleteElectricityRecord(dormID: dormID, recordID: recordID, in: db) }
-            refreshSortedRecords()
+            // 移除手动 refreshSortedRecords()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -100,7 +79,6 @@ final class DormDetailViewModel {
 
         do {
             try pool.write { db in try DormGRDB.deleteAllElectricityRecords(dormID: dormID, in: db) }
-            sortedRecords = []
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -128,4 +106,27 @@ final class DormDetailViewModel {
         )
     }
 
+    private func observeRecords() {
+        guard let dormID = dorm.id else { return }
+        guard recordsObservationCancellable == nil else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        let observation = ValueObservation.tracking { db in
+            try ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                .order(ElectricityRecordGRDB.Columns.date.desc)
+                .fetchAll(db)
+        }
+
+        recordsObservationCancellable = observation.start(
+            in: pool,
+            scheduling: .immediate,
+            onError: { [weak self] error in
+                Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
+            },
+            onChange: { [weak self] records in
+                Task { @MainActor in withAnimation(.snappy) { self?.sortedRecords = records } }
+            }
+        )
+    }
 }
