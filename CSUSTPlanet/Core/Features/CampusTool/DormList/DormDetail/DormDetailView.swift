@@ -68,17 +68,25 @@ struct DormDetailView: View {
                 }
 
                 if let electricity = viewModel.dorm.lastFetchElectricity {
-                    HStack(alignment: .lastTextBaseline) {
-                        Text(String(format: "%.2f", electricity))
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .foregroundStyle(ColorUtil.electricityColor(electricity: electricity))
-                            .contentTransition(.numericText())
+                    VStack {
+                        HStack(alignment: .lastTextBaseline) {
+                            Text(String(format: "%.2f", electricity))
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundStyle(ColorUtil.electricityColor(electricity: electricity))
+                                .contentTransition(.numericText())
 
-                        Text("kWh")
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
-                            .fontWeight(.medium)
-                            .padding(.bottom, 6)
+                            Text("kWh")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                                .fontWeight(.medium)
+                                .padding(.bottom, 6)
+                        }
+
+                        if let info = viewModel.exhaustionInfo {
+                            Text(info)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 } else {
                     Text("--.--")

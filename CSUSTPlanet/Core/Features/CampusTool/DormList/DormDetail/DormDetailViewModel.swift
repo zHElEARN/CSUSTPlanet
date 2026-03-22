@@ -17,6 +17,7 @@ final class DormDetailViewModel {
 
     var dorm: DormGRDB
     var sortedRecords: [ElectricityRecordGRDB] = []
+    var exhaustionInfo: String?
     var errorToast: ToastState = .errorTitle
     var isQueryingElectricity: Bool = false
     var isDeleteAllRecordsAlertPresented: Bool = false
@@ -125,7 +126,12 @@ final class DormDetailViewModel {
                 Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
             },
             onChange: { [weak self] records in
-                Task { @MainActor in withAnimation(.snappy) { self?.sortedRecords = records } }
+                Task { @MainActor in
+                    withAnimation(.snappy) {
+                        self?.sortedRecords = records
+                        self?.exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: Array(records.reversed()))
+                    }
+                }
             }
         )
     }

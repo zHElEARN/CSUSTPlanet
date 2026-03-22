@@ -134,7 +134,6 @@
 				Models/Storage/Database/DormSchema.swift,
 				Utils/ElectricityBindingUtil.swift,
 				Utils/ElectricityRecordCleaner.swift,
-				Utils/ElectricityUtil.swift,
 				Utils/SharedModelUtil.swift,
 				"Utils/SharedModelUtil+Migrate.swift",
 			);
