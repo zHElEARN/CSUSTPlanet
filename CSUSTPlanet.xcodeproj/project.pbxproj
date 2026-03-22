@@ -121,7 +121,6 @@
 				Core/AnnualReview/ProfilePage.swift,
 				Core/AnnualReview/SpacePeoplePage.swift,
 				Core/AnnualReview/TimeSchedulePage.swift,
-				Helpers/BackgroundTask/ElectricityBackgroundTask.swift,
 				Utils/ElectricityBindingUtil.swift,
 			);
 			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
