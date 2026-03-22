@@ -20,25 +20,46 @@ final class DormListViewModel {
     var errorToast: ToastState = .errorTitle
     var queryingDormIDs: Set<Int64> = []
     var targetDeleteDorm: DormGRDB?
+    var exhaustionInfoMap: [Int64: String] = [:]
 
-    var dormObservationCancellable: (any DatabaseCancellable)?
+    var combinedObservationCancellable: (any DatabaseCancellable)?
 
     init() {
-        guard dormObservationCancellable == nil else { return }
+        guard combinedObservationCancellable == nil else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
-        let observation = ValueObservation.tracking { db in
-            try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
+        let observation = ValueObservation.tracking { db -> ([DormGRDB], [ElectricityRecordGRDB]) in
+            let dorms = try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
+            let records = try ElectricityRecordGRDB.order(ElectricityRecordGRDB.Columns.date.asc).fetchAll(db)
+            return (dorms, records)
+        }
+        .map { (dorms, records) -> ([DormGRDB], [Int64: String]) in
+            let recordsByDormID = Dictionary(grouping: records, by: { $0.dormID })
+
+            var infoMap: [Int64: String] = [:]
+            infoMap.reserveCapacity(dorms.count)
+
+            for dorm in dorms {
+                guard let dormID = dorm.id else { continue }
+                let dormRecords = recordsByDormID[dormID] ?? []
+                infoMap[dormID] = ElectricityUtil.getExhaustionInfo(from: dormRecords)
+            }
+            return (dorms, infoMap)
         }
 
-        dormObservationCancellable = observation.start(
+        combinedObservationCancellable = observation.start(
             in: pool,
             scheduling: .immediate,
             onError: { [weak self] error in
                 Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
             },
-            onChange: { [weak self] dorms in
-                Task { @MainActor in withAnimation { self?.dorms = dorms } }
+            onChange: { [weak self] result in
+                Task { @MainActor in
+                    withAnimation(.snappy) {
+                        self?.dorms = result.0
+                        self?.exhaustionInfoMap = result.1
+                    }
+                }
             }
         )
     }
