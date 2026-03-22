@@ -17,6 +17,8 @@ final class DormDetailViewModel {
 
     var dorm: DormGRDB
     var sortedRecords: [ElectricityRecordGRDB] = []
+    var chartRecords: [ElectricityRecordGRDB] = []
+    var chartYDomain: ClosedRange<Double> = 0...2
     var exhaustionInfo: String?
     var errorToast: ToastState = .errorTitle
     var isQueryingElectricity: Bool = false
@@ -129,6 +131,16 @@ final class DormDetailViewModel {
                 Task { @MainActor in
                     withAnimation(.snappy) {
                         self?.sortedRecords = records
+
+                        let recordsAscending = Array(records.reversed())
+                        let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 120)
+                        let minValue = chartRecords.map(\.electricity).min() ?? 0
+                        let maxValue = chartRecords.map(\.electricity).max() ?? 0
+                        let yMin = max(0, minValue - 2)
+                        let yMax = max(yMin + 1, maxValue + 2)
+                        self?.chartRecords = chartRecords
+                        self?.chartYDomain = yMin...yMax
+
                         self?.exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: Array(records.reversed()))
                     }
                 }

@@ -75,4 +75,71 @@ enum ElectricityUtil {
 
         return Date(timeIntervalSince1970: predictedTimestamp)
     }
+
+    static func downsample(from records: [ElectricityRecordGRDB], to threshold: Int) -> [ElectricityRecordGRDB] {
+        let dataCount = records.count
+
+        // 如果数据量本身小于等于阈值，直接返回原数据
+        guard threshold > 0, dataCount > threshold else { return records }
+        if threshold <= 2 {
+            return [records.first, records.last].compactMap { $0 }
+        }
+
+        var sampled: [ElectricityRecordGRDB] = []
+        sampled.reserveCapacity(threshold)
+
+        sampled.append(records[0])
+
+        let bucketSize = Double(dataCount - 2) / Double(threshold - 2)
+
+        var lastSelectedStep = 0
+
+        for i in 0..<(threshold - 2) {
+            let bucketStart = Int(floor(Double(i) * bucketSize)) + 1
+            let bucketEnd = Int(floor(Double(i + 1) * bucketSize)) + 1
+
+            let nextBucketStart = Int(floor(Double(i + 1) * bucketSize)) + 1
+            let nextBucketEnd = min(Int(floor(Double(i + 2) * bucketSize)) + 1, dataCount)
+
+            var avgX: Double = 0
+            var avgY: Double = 0
+            if nextBucketStart < dataCount {
+                let count = Double(nextBucketEnd - nextBucketStart)
+                for j in nextBucketStart..<nextBucketEnd {
+                    avgX += records[j].date.timeIntervalSince1970
+                    avgY += records[j].electricity
+                }
+                avgX /= count
+                avgY /= count
+            } else {
+                avgX = records[dataCount - 1].date.timeIntervalSince1970
+                avgY = records[dataCount - 1].electricity
+            }
+
+            let pointA = records[lastSelectedStep]
+            let pointAX = pointA.date.timeIntervalSince1970
+            let pointAY = pointA.electricity
+
+            var maxArea: Double = -1
+            var selectedIndex = bucketStart
+
+            for j in bucketStart..<min(bucketEnd, dataCount) {
+                let area = abs(
+                    (pointAX * (records[j].electricity - avgY) + records[j].date.timeIntervalSince1970 * (avgY - pointAY) + avgX * (pointAY - records[j].electricity))
+                )
+
+                if area > maxArea {
+                    maxArea = area
+                    selectedIndex = j
+                }
+            }
+
+            sampled.append(records[selectedIndex])
+            lastSelectedStep = selectedIndex
+        }
+
+        sampled.append(records[dataCount - 1])
+
+        return sampled
+    }
 }

@@ -5,6 +5,7 @@
 //  Created by Zachary Liu on 2026/3/21.
 //
 
+import Charts
 import SwiftUI
 
 struct DormDetailView: View {
@@ -19,6 +20,11 @@ struct DormDetailView: View {
             VStack(spacing: 20) {
                 electricityDashboardCard
                 quickActionsGrid
+
+                if !viewModel.sortedRecords.isEmpty {
+                    electricityTrendCard
+                }
+
                 dormInfoCard
                 historyEntryButton
 
@@ -186,6 +192,42 @@ struct DormDetailView: View {
                 infoRow(icon: "house.fill", color: .blue, title: "宿舍", value: viewModel.dorm.room)
                 infoRow(icon: "building.2.fill", color: .green, title: "楼栋", value: viewModel.dorm.buildingName)
                 infoRow(icon: "map.fill", color: .orange, title: "校区", value: viewModel.dorm.campusName)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var electricityTrendCard: some View {
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 16) {
+                Label("电量趋势", systemImage: "chart.xyaxis.line")
+                    .font(.headline)
+
+                Chart(viewModel.chartRecords) { record in
+                    LineMark(
+                        x: .value("日期", record.date),
+                        y: .value("电量", record.electricity)
+                    )
+                    .foregroundStyle(.blue)
+                    .interpolationMethod(.linear)
+                    .symbol {
+                        if viewModel.chartRecords.count < 15 {
+                            Circle()
+                                .fill(.blue)
+                                .frame(width: 8)
+                        }
+                    }
+                }
+                .chartYScale(domain: viewModel.chartYDomain)
+                .chartXAxis {
+                    AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                        AxisValueLabel(format: .dateTime.month().day())
+                    }
+                }
+                .frame(height: 220)
+                .transaction { transaction in
+                    transaction.animation = nil
+                }
             }
         }
     }
