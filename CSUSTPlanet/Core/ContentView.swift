@@ -77,6 +77,8 @@ struct ContentView: View {
     @Bindable var globalManager = GlobalManager.shared
     @Bindable var authManager = AuthManager.shared
 
+    @State private var isMigratingToGRDB: Bool = !MMKVHelper.SwiftData.hasMigratedToGRDB
+
     @Environment(\.horizontalSizeClass) var sizeClass
 
     var preferredColorScheme: ColorScheme? {
@@ -130,6 +132,21 @@ struct ContentView: View {
                     .buttonStyle(.borderedProminent)
                 }
                 .padding()
+            } else if isMigratingToGRDB {
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .controlSize(.large)
+                    Text("正在优化本地数据库...")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .task {
+                    await SwiftDataToGRDBMigrator.migrateIfNeeded()
+                    withAnimation {
+                        isMigratingToGRDB = false
+                    }
+                }
             } else {
                 if #available(iOS 18.0, macOS 15.0, *) {
                     TabView(selection: $globalManager.selectedTab) {
