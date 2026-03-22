@@ -35,57 +35,53 @@ private struct AssignmentListView: View {
 
     var body: some View {
         TrackLink(destination: TodoAssignmentsView()) {
-            VStack(spacing: 0) {
-                ForEach(assignments.indices, id: \.self) { index in
-                    let item = assignments[index]
+            CustomGroupBox {
+                VStack(spacing: 0) {
+                    ForEach(assignments.indices, id: \.self) { index in
+                        let item = assignments[index]
 
-                    HStack(spacing: 12) {
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.orange)
-                            .frame(width: 4, height: 40)
+                        HStack(spacing: 12) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Color.orange)
+                                .frame(width: 4, height: 40)
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(item.assignment.title)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.assignment.title)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
 
-                            Text(item.courseName)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
+                                Text(item.courseName)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+
+                            Spacer(minLength: 12)
+
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text("截止时间")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+
+                                Text(item.assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
+                                    .font(.caption2)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.orange.opacity(0.12))
+                                    .foregroundStyle(.orange)
+                                    .clipShape(Capsule())
+                            }
                         }
+                        .padding(.vertical, 12)
 
-                        Spacer(minLength: 12)
-
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text("截止时间")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-
-                            Text(item.assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
-                                .font(.caption2)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.orange.opacity(0.12))
-                                .foregroundStyle(.orange)
-                                .clipShape(Capsule())
+                        if index < assignments.count - 1 {
+                            Divider().padding(.leading, 16)
                         }
-                    }
-                    .padding(12)
-
-                    if index < assignments.count - 1 {
-                        Divider().padding(.leading, 28)
                     }
                 }
             }
-            #if os(iOS)
-            .background(Color(PlatformColor.secondarySystemGroupedBackground))
-            #else
-            .background(Color(PlatformColor.controlBackgroundColor))
-            #endif
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
     }

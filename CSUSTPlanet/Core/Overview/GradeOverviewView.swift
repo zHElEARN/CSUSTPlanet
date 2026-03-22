@@ -13,43 +13,39 @@ struct GradeOverviewView: View {
 
     var body: some View {
         TrackLink(destination: GradeQueryView()) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "chart.bar.fill")
-                        .foregroundStyle(.green)
+            CustomGroupBox {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundStyle(.green)
+                        Spacer()
+                        Text("GPA")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.secondary)
+                    }
                     Spacer()
-                    Text("GPA")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                if let gradeAnalysis = viewModel.gradeAnalysis {
-                    Text(String(format: "%.2f", gradeAnalysis.overallGPA))
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.overallGPA))
+                    if let gradeAnalysis = viewModel.gradeAnalysis {
+                        Text(String(format: "%.2f", gradeAnalysis.overallGPA))
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.overallGPA))
 
-                    Text("平均分: \(String(format: "%.1f", gradeAnalysis.overallAverageGrade))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("-.-")
-                        .font(.largeTitle)
-                        .foregroundStyle(.secondary)
-                    Text("暂无数据")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        Text("平均分: \(String(format: "%.1f", gradeAnalysis.overallAverageGrade))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("-.-")
+                            .font(.largeTitle)
+                            .foregroundStyle(.secondary)
+                        Text("暂无数据")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            .padding(16)
             .frame(height: 130)
             .frame(maxWidth: .infinity)
-            #if os(iOS)
-            .background(Color(PlatformColor.secondarySystemGroupedBackground))
-            #else
-            .background(Color(PlatformColor.controlBackgroundColor))
-            #endif
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         }
         .buttonStyle(.plain)
     }

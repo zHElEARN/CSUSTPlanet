@@ -55,9 +55,6 @@ struct OverviewView: View {
             }
         }
         .navigationTitle("概览")
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
         .onAppear(perform: viewModel.onAppear)
         .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
             DormListView().trackRoot("Widget")

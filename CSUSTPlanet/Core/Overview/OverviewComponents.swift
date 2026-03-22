@@ -42,22 +42,18 @@ struct OverviewEmptyStateView: View {
     let text: String
 
     var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(.secondary)
+        CustomGroupBox {
+            HStack {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
 
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                Text(text)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
-        #if os(iOS)
-        .background(Color(PlatformColor.secondarySystemGroupedBackground))
-        #else
-        .background(Color(PlatformColor.controlBackgroundColor))
-        #endif
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

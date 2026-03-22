@@ -157,33 +157,29 @@ struct EmptyCourseCard: View {
     var icon: String = "cup.and.saucer.fill"
 
     var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .font(.largeTitle)
-                .foregroundStyle(.secondary)
+        CustomGroupBox {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.largeTitle)
+                    .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(text)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(text)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
 
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .padding(.leading, 8)
             }
-            .padding(.leading, 8)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
-        .padding()
         .frame(height: 100)
         .frame(maxWidth: .infinity)
-        #if os(iOS)
-        .background(Color(PlatformColor.secondarySystemGroupedBackground))
-        #else
-        .background(Color(PlatformColor.controlBackgroundColor))
-        #endif
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
