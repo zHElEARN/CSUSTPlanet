@@ -30,6 +30,8 @@
 	<string>$(CSUSTPLANET_BACKGROUND_ID)</string>
 	<key>ConfigSentryDSN</key>
 	<string>$(CSUSTPLANET_SENTRY_DSN)</string>
+	<key>ConfigDBChangedNotification</key>
+    <string>$(CSUSTPLANET_DB_CHANGED_NOTIFICATION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

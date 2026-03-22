@@ -152,6 +152,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
         try await pool.write { db in
             try DormGRDB.updateElectricity(dormID: dormID, electricity: newElectricity, in: db)
         }
+        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), Constants.dbChangedCFNotificationName, nil, nil, true)
     }
 
     /// 统一构建最终的 Entry

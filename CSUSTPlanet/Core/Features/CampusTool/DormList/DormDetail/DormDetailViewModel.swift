@@ -24,8 +24,8 @@ final class DormDetailViewModel {
     var isQueryingElectricity: Bool = false
     var isDeleteAllRecordsAlertPresented: Bool = false
 
-    var dormObservationCancellable: (any DatabaseCancellable)?
-    var recordsObservationCancellable: (any DatabaseCancellable)?
+    private var dormObserver: AutoRefreshingObserver?
+    private var recordsObserver: AutoRefreshingObserver?
 
     init(dorm: DormGRDB) {
         self.dorm = dorm
@@ -89,29 +89,29 @@ final class DormDetailViewModel {
 
     private func observeDormDetail() {
         guard let dormID = dorm.id else { return }
-        guard dormObservationCancellable == nil else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
-        let observation = ValueObservation.tracking { db in
-            try DormGRDB.fetchOne(db, key: dormID)
-        }
-
-        dormObservationCancellable = observation.start(
-            in: pool,
-            scheduling: .immediate,
-            onError: { [weak self] (error: any Error) in
-                Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
-            },
-            onChange: { [weak self] (latestDorm: DormGRDB?) in
-                guard let latestDorm else { return }
-                Task { @MainActor in withAnimation { self?.dorm = latestDorm } }
+        dormObserver = AutoRefreshingObserver { [weak self] in
+            let observation = ValueObservation.tracking { db in
+                try DormGRDB.fetchOne(db, key: dormID)
             }
-        )
+
+            return observation.start(
+                in: pool,
+                scheduling: .immediate,
+                onError: { [weak self] error in
+                    Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
+                },
+                onChange: { [weak self] latestDorm in
+                    guard let latestDorm else { return }
+                    Task { @MainActor in withAnimation { self?.dorm = latestDorm } }
+                }
+            )
+        }
     }
 
     private func observeRecords() {
         guard let dormID = dorm.id else { return }
-        guard recordsObservationCancellable == nil else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
         struct ProcessedDetailData {
@@ -121,46 +121,48 @@ final class DormDetailViewModel {
             let exhaustionInfo: String?
         }
 
-        let observation = ValueObservation.tracking { db in
-            try ElectricityRecordGRDB
-                .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
-                .order(ElectricityRecordGRDB.Columns.date.desc)
-                .fetchAll(db)
-        }
-        .map { records -> ProcessedDetailData in
-            let sortedRecords = records
-            let recordsAscending = Array(records.reversed())
-            let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 150)
-            let minValue = chartRecords.map(\.electricity).min() ?? 0
-            let maxValue = chartRecords.map(\.electricity).max() ?? 0
-            let yMin = max(0, minValue - 2)
-            let yMax = max(yMin + 1, maxValue + 2)
-            let exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: recordsAscending)
+        recordsObserver = AutoRefreshingObserver { [weak self] in
+            let observation = ValueObservation.tracking { db in
+                try ElectricityRecordGRDB
+                    .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                    .order(ElectricityRecordGRDB.Columns.date.desc)
+                    .fetchAll(db)
+            }
+            .map { records -> ProcessedDetailData in
+                let sortedRecords = records
+                let recordsAscending = Array(records.reversed())
+                let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 150)
+                let minValue = chartRecords.map(\.electricity).min() ?? 0
+                let maxValue = chartRecords.map(\.electricity).max() ?? 0
+                let yMin = max(0, minValue - 2)
+                let yMax = max(yMin + 1, maxValue + 2)
+                let exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: recordsAscending)
 
-            return ProcessedDetailData(
-                sortedRecords: sortedRecords,
-                chartRecords: chartRecords,
-                chartYDomain: yMin...yMax,
-                exhaustionInfo: exhaustionInfo
-            )
-        }
+                return ProcessedDetailData(
+                    sortedRecords: sortedRecords,
+                    chartRecords: chartRecords,
+                    chartYDomain: yMin...yMax,
+                    exhaustionInfo: exhaustionInfo
+                )
+            }
 
-        recordsObservationCancellable = observation.start(
-            in: pool,
-            scheduling: .immediate,
-            onError: { [weak self] error in
-                Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
-            },
-            onChange: { [weak self] data in
-                Task { @MainActor in
-                    withAnimation(.snappy) {
-                        self?.sortedRecords = data.sortedRecords
-                        self?.chartRecords = data.chartRecords
-                        self?.chartYDomain = data.chartYDomain
-                        self?.exhaustionInfo = data.exhaustionInfo
+            return observation.start(
+                in: pool,
+                scheduling: .immediate,
+                onError: { [weak self] error in
+                    Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
+                },
+                onChange: { [weak self] data in
+                    Task { @MainActor in
+                        withAnimation(.snappy) {
+                            self?.sortedRecords = data.sortedRecords
+                            self?.chartRecords = data.chartRecords
+                            self?.chartYDomain = data.chartYDomain
+                            self?.exhaustionInfo = data.exhaustionInfo
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }
