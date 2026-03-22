@@ -10,8 +10,8 @@
 import BackgroundTasks
 import CSUSTKit
 import Foundation
+import GRDB
 import OSLog
-import SwiftData
 import UserNotifications
 
 struct ElectricityBackgroundTask: BackgroundTaskProvider {
@@ -24,20 +24,21 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
         Logger.electricityBackgroundTask.debug("开始后台获取电量任务: \(self.identifier)")
 
         do {
-            let modelContext = SharedModelUtil.context
+            guard let pool = DatabaseManager.shared.pool else {
+                Logger.electricityBackgroundTask.error("数据库不可用，跳过电量查询")
+                return false
+            }
 
-            var targetDorm: Dorm? = nil
+            let targetDorm: DormGRDB? = try await pool.read { db in
+                if let favoriteDorm = try DormGRDB
+                    .filter(DormGRDB.Columns.isFavorite == true)
+                    .fetchOne(db)
+                {
+                    return favoriteDorm
+                }
 
-            let favoritePredicate = #Predicate<Dorm> { $0.isFavorite == true }
-            var favoriteDescriptor = FetchDescriptor<Dorm>(predicate: favoritePredicate)
-            favoriteDescriptor.fetchLimit = 1
-            targetDorm = try modelContext.fetch(favoriteDescriptor).first
-
-            if targetDorm == nil {
                 Logger.electricityBackgroundTask.debug("未找到 Favorite 宿舍，尝试获取列表中的第一个宿舍")
-                var anyDormDescriptor = FetchDescriptor<Dorm>()
-                anyDormDescriptor.fetchLimit = 1
-                targetDorm = try modelContext.fetch(anyDormDescriptor).first
+                return try DormGRDB.fetchOne(db)
             }
 
             guard let dorm = targetDorm else {
@@ -71,24 +72,17 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
                 return false
             }
 
-            let dormID = dorm.id
-            let recordPredicate = #Predicate<ElectricityRecord> { $0.dorm?.id == dormID }
-            var recordDescriptor = FetchDescriptor<ElectricityRecord>(predicate: recordPredicate, sortBy: [SortDescriptor(\.date, order: .reverse)])
-            recordDescriptor.fetchLimit = 1
-            let lastElectricity = try modelContext.fetch(recordDescriptor).first?.electricity
-
-            let now = Date()
-
-            if let lastElectricity = lastElectricity, abs(lastElectricity - newElectricity) < 0.001 {
-                Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量未变化，仅更新 lastFetchDate")
-                dorm.lastFetchDate = now
-            } else {
-                Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量发生变化，更新数据库记录")
-                let record = ElectricityRecord(electricity: newElectricity, date: now, dorm: dorm)
-                modelContext.insert(record)
-                dorm.lastFetchDate = now
-                dorm.lastFetchElectricity = newElectricity
+            guard let dormID = dorm.id else {
+                Logger.electricityBackgroundTask.error("宿舍记录缺少主键，无法更新电量")
+                return false
             }
+
+            try await pool.write { db in
+                try DormGRDB.updateElectricity(dormID: dormID, electricity: newElectricity, in: db)
+            }
+            Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量写入数据库成功")
+
+            CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), Constants.dbChangedCFNotificationName, nil, nil, true)
 
             let content = UNMutableNotificationContent()
             content.title = "宿舍电量查询"
@@ -102,11 +96,6 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
                 Logger.electricityBackgroundTask.debug("当前电量推送调度成功")
             } catch {
                 Logger.electricityBackgroundTask.error("推送调度失败: \(error.localizedDescription)")
-            }
-
-            if modelContext.hasChanges {
-                try modelContext.save()
-                Logger.electricityBackgroundTask.debug("电量数据库保存成功")
             }
 
             return true
