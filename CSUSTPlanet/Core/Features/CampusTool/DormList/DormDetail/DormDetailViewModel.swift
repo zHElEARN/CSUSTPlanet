@@ -114,11 +114,35 @@ final class DormDetailViewModel {
         guard recordsObservationCancellable == nil else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
+        struct ProcessedDetailData {
+            let sortedRecords: [ElectricityRecordGRDB]
+            let chartRecords: [ElectricityRecordGRDB]
+            let chartYDomain: ClosedRange<Double>
+            let exhaustionInfo: String?
+        }
+
         let observation = ValueObservation.tracking { db in
             try ElectricityRecordGRDB
                 .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
                 .order(ElectricityRecordGRDB.Columns.date.desc)
                 .fetchAll(db)
+        }
+        .map { records -> ProcessedDetailData in
+            let sortedRecords = records
+            let recordsAscending = Array(records.reversed())
+            let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 150)
+            let minValue = chartRecords.map(\.electricity).min() ?? 0
+            let maxValue = chartRecords.map(\.electricity).max() ?? 0
+            let yMin = max(0, minValue - 2)
+            let yMax = max(yMin + 1, maxValue + 2)
+            let exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: recordsAscending)
+
+            return ProcessedDetailData(
+                sortedRecords: sortedRecords,
+                chartRecords: chartRecords,
+                chartYDomain: yMin...yMax,
+                exhaustionInfo: exhaustionInfo
+            )
         }
 
         recordsObservationCancellable = observation.start(
@@ -127,21 +151,13 @@ final class DormDetailViewModel {
             onError: { [weak self] error in
                 Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
             },
-            onChange: { [weak self] records in
+            onChange: { [weak self] data in
                 Task { @MainActor in
                     withAnimation(.snappy) {
-                        self?.sortedRecords = records
-
-                        let recordsAscending = Array(records.reversed())
-                        let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 120)
-                        let minValue = chartRecords.map(\.electricity).min() ?? 0
-                        let maxValue = chartRecords.map(\.electricity).max() ?? 0
-                        let yMin = max(0, minValue - 2)
-                        let yMax = max(yMin + 1, maxValue + 2)
-                        self?.chartRecords = chartRecords
-                        self?.chartYDomain = yMin...yMax
-
-                        self?.exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: Array(records.reversed()))
+                        self?.sortedRecords = data.sortedRecords
+                        self?.chartRecords = data.chartRecords
+                        self?.chartYDomain = data.chartYDomain
+                        self?.exhaustionInfo = data.exhaustionInfo
                     }
                 }
             }

@@ -10,9 +10,8 @@
 		00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 00011BEE2F4786B4003A88B0 /* Sentry */; };
 		000721EA2F5EF3FA00C1423E /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 000721E92F5EF3FA00C1423E /* AlertToast */; };
 		000721ED2F5EF94500C1423E /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 000721EC2F5EF94500C1423E /* AlertToast */; };
-		003FF0CE2F6E7947004CF00C /* GRDB-dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 003FF0CD2F6E7947004CF00C /* GRDB-dynamic */; };
-		003FF0CF2F6E7947004CF00C /* GRDB-dynamic in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 003FF0CD2F6E7947004CF00C /* GRDB-dynamic */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		003FF0D12F6E794F004CF00C /* GRDB-dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 003FF0D02F6E794F004CF00C /* GRDB-dynamic */; };
+		003FF8792F6FD031004CF00C /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 003FF8782F6FD031004CF00C /* GRDB */; };
+		003FF87B2F6FD037004CF00C /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 003FF87A2F6FD037004CF00C /* GRDB */; };
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
 		00D4CDC72F5D183D0028E21B /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 00D4CDC62F5D183D0028E21B /* MMKV */; };
 		00D4CDC92F5D183D0028E21B /* MMKVAppExtension in Frameworks */ = {isa = PBXBuildFile; productRef = 00D4CDC82F5D183D0028E21B /* MMKVAppExtension */; };
@@ -64,7 +63,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				003FF0CF2F6E7947004CF00C /* GRDB-dynamic in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -197,11 +195,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				003FF8792F6FD031004CF00C /* GRDB in Frameworks */,
 				00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */,
 				00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */,
 				000721ED2F5EF94500C1423E /* AlertToast in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
-				003FF0CE2F6E7947004CF00C /* GRDB-dynamic in Frameworks */,
 				00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */,
 				000721EA2F5EF3FA00C1423E /* AlertToast in Frameworks */,
 				00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */,
@@ -214,10 +212,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				00E89C652E2C88D800B43162 /* SwiftUI.framework in Frameworks */,
-				003FF0D12F6E794F004CF00C /* GRDB-dynamic in Frameworks */,
 				00D4CDC92F5D183D0028E21B /* MMKVAppExtension in Frameworks */,
 				00F1695E2F52C3C400E1DC4D /* MMKVAppExtension in Frameworks */,
 				00E89C632E2C88D800B43162 /* WidgetKit.framework in Frameworks */,
+				003FF87B2F6FD037004CF00C /* GRDB in Frameworks */,
 				00E5735B2F1F4E4C00440D8D /* CSUSTKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -286,7 +284,7 @@
 				00D4CDC62F5D183D0028E21B /* MMKV */,
 				000721E92F5EF3FA00C1423E /* AlertToast */,
 				000721EC2F5EF94500C1423E /* AlertToast */,
-				003FF0CD2F6E7947004CF00C /* GRDB-dynamic */,
+				003FF8782F6FD031004CF00C /* GRDB */,
 			);
 			productName = CSUSTPlanet;
 			productReference = 007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */;
@@ -888,15 +886,15 @@
 			package = 000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
 		};
-		003FF0CD2F6E7947004CF00C /* GRDB-dynamic */ = {
+		003FF8782F6FD031004CF00C /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
-			productName = "GRDB-dynamic";
+			productName = GRDB;
 		};
-		003FF0D02F6E794F004CF00C /* GRDB-dynamic */ = {
+		003FF87A2F6FD037004CF00C /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
-			productName = "GRDB-dynamic";
+			productName = GRDB;
 		};
 		0041FC6C2E2AA269007F383F /* MarkdownUI */ = {
 			isa = XCSwiftPackageProductDependency;
