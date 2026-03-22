@@ -7,7 +7,8 @@
 
 import CSUSTKit
 import Foundation
-import SwiftData
+import GRDB
+import SwiftUI
 
 @MainActor
 @Observable
@@ -17,7 +18,10 @@ class OverviewViewModel {
     private var examScheduleData: Cached<[EduHelper.Exam]>?
     private var courseScheduleData: Cached<CourseScheduleData>?
     private var urgentCoursesData: Cached<UrgentCoursesData>?
-    // var primaryDorm: Dorm?
+    var primaryDorm: DormGRDB?
+    var electricityExhaustionInfo: String?
+
+    private var dormObserver: AutoRefreshingObserver?
 
     // MARK: - 计算数据
 
@@ -49,12 +53,6 @@ class OverviewViewModel {
         guard let data = urgentCoursesData?.value else { return [] }
         return data.courses
     }
-
-    /// 预计电量耗尽时间
-    // var electricityExhaustionInfo: String? {
-    //     guard let dorm = primaryDorm else { return nil }
-    //     return ElectricityUtil.getExhaustionInfo(for: dorm)
-    // }
 
     enum CourseDisplayState {
         case loading  // No data available
@@ -93,22 +91,64 @@ class OverviewViewModel {
         courseScheduleData = MMKVHelper.shared.courseScheduleCache
         urgentCoursesData = MMKVHelper.shared.urgentCoursesCache
 
-        // primaryDorm = fetchPrimaryDorm()
+        observePrimaryDorm()
     }
 
-    // private func fetchPrimaryDorm() -> Dorm? {
-    //     let favoritePredicate = #Predicate<Dorm> { $0.isFavorite == true }
-    //     var favoriteDescriptor = FetchDescriptor<Dorm>(predicate: favoritePredicate)
-    //     favoriteDescriptor.fetchLimit = 1
+    private func observePrimaryDorm() {
+        guard let pool = DatabaseManager.shared.pool else {
+            primaryDorm = nil
+            electricityExhaustionInfo = nil
+            return
+        }
 
-    //     if let favoriteDorm = try? SharedModelUtil.mainContext.fetch(favoriteDescriptor).first {
-    //         return favoriteDorm
-    //     }
+        struct ProcessedDormOverviewData {
+            let dorm: DormGRDB?
+            let exhaustionInfo: String?
+        }
 
-    //     var anyDormDescriptor = FetchDescriptor<Dorm>()
-    //     anyDormDescriptor.fetchLimit = 1
-    //     return try? SharedModelUtil.mainContext.fetch(anyDormDescriptor).first
-    // }
+        dormObserver = AutoRefreshingObserver { [weak self] in
+            let observation = ValueObservation.tracking { db -> (DormGRDB?, [ElectricityRecordGRDB]) in
+                let favoriteDorm = try DormGRDB
+                    .filter(DormGRDB.Columns.isFavorite == true)
+                    .fetchOne(db)
+
+                let dorm = try favoriteDorm ?? DormGRDB.order(DormGRDB.Columns.id.asc).fetchOne(db)
+                guard let dormID = dorm?.id else { return (dorm, []) }
+
+                let records = try ElectricityRecordGRDB
+                    .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                    .order(ElectricityRecordGRDB.Columns.date.asc)
+                    .fetchAll(db)
+
+                return (dorm, records)
+            }
+            .map { dorm, records in
+                ProcessedDormOverviewData(
+                    dorm: dorm,
+                    exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: records)
+                )
+            }
+
+            return observation.start(
+                in: pool,
+                scheduling: .immediate,
+                onError: { _ in
+                    Task { @MainActor in
+                        self?.primaryDorm = nil
+                        self?.electricityExhaustionInfo = nil
+                    }
+                },
+                onChange: { [weak self] data in
+                    Task { @MainActor in
+                        withAnimation(.snappy) {
+                            self?.primaryDorm = data.dorm
+                            self?.electricityExhaustionInfo = data.exhaustionInfo
+                        }
+                    }
+                }
+            )
+        }
+    }
 
     func daysUntilExam(_ exam: EduHelper.Exam) -> Int {
         let calendar = Calendar.current

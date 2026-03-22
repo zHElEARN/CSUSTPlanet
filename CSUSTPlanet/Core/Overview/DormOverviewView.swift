@@ -6,14 +6,13 @@
 //
 
 import CSUSTKit
-import SwiftData
 import SwiftUI
 
 struct DormOverviewView: View {
     @Bindable var viewModel: OverviewViewModel
 
     var body: some View {
-        TrackLink(destination: ElectricityQueryView()) {
+        TrackLink(destination: DormListView()) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Image(systemName: "bolt.fill")

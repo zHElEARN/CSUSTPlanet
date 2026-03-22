@@ -41,7 +41,7 @@ struct OverviewView: View {
                 // 核心数据网格 (成绩 + 电量)
                 HStack(spacing: 16) {
                     GradeOverviewView(viewModel: viewModel)
-                    // DormOverviewView(viewModel: viewModel)
+                    DormOverviewView(viewModel: viewModel)
                 }
                 .padding(.horizontal)
 

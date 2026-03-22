@@ -121,7 +121,6 @@
 				Core/AnnualReview/ProfilePage.swift,
 				Core/AnnualReview/SpacePeoplePage.swift,
 				Core/AnnualReview/TimeSchedulePage.swift,
-				Core/Overview/DormOverviewView.swift,
 				Helpers/BackgroundTask/ElectricityBackgroundTask.swift,
 				Utils/ElectricityBindingUtil.swift,
 			);
