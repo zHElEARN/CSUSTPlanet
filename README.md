@@ -29,7 +29,7 @@
 
 2. 安装依赖
 
-   本项目使用 Bundler 管理 Ruby 依赖（包括 CocoaPods 和 Fastlane）
+   本项目使用 Bundler 管理 Ruby 依赖（包括 Fastlane）
 
    ```bash
    gem install bundler
@@ -39,7 +39,8 @@
 
    ```bash
    bundle install
-   bundle exec pod install
+   bundle exec fastlane ios sync_certs
+   bundle exec fastlane mac sync_certs
    ```
 
 3. 项目配置
@@ -82,7 +83,7 @@
 
 如果您在使用过程中遇到问题，或对 **长理星球** 有任何建议，也欢迎提交 Issue来告知我们！
 
-同时，也可以通过邮箱联系我们：[personal@zhelearn.com](mailto:personal@zhelearn.com)
+同时，也可以通过邮箱联系我们：[developer@zhelearn.com](mailto:developer@zhelearn.com)
 
 ---
 
