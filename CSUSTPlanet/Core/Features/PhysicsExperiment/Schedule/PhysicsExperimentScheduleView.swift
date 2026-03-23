@@ -10,9 +10,8 @@ import CSUSTKit
 import SwiftUI
 
 struct PhysicsExperimentScheduleView: View {
-    @StateObject var viewModel = PhysicsExperimentScheduleViewModel()
+    @State var viewModel = PhysicsExperimentScheduleViewModel()
     @State private var isLoginPresented: Bool = false
-    @State private var now = Date()
 
     var body: some View {
         Group {
@@ -26,7 +25,7 @@ struct PhysicsExperimentScheduleView: View {
                 List {
                     if let data = viewModel.data {
                         ForEach(data.value, id: \.id) { course in
-                            ExperimentCardView(course: course, now: now)
+                            ExperimentCardView(course: course)
                                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(Color.clear)
@@ -34,17 +33,13 @@ struct PhysicsExperimentScheduleView: View {
                     }
                 }
                 .listStyle(.plain)
-                .background(Color.appSystemGroupedBackground)
             }
         }
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
         .navigationTitle("大物实验安排")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共\(viewModel.data?.value.count ?? 0)个实验")
-            } else {
-                view
-            }
-        }
+        .navigationSubtitleCompat("共\(viewModel.data?.value.count ?? 0)个实验")
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 Button(action: { isLoginPresented = true }) {
@@ -52,10 +47,10 @@ struct PhysicsExperimentScheduleView: View {
                 }
             }
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Button(action: viewModel.loadSchedules) {
+                Button(asyncAction: viewModel.loadSchedules) {
+                    if viewModel.isLoadingSchedules {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
                         Label("刷新", systemImage: "arrow.clockwise")
                     }
                 }
@@ -64,28 +59,20 @@ struct PhysicsExperimentScheduleView: View {
         .sheet(isPresented: $isLoginPresented) {
             PhysicsExperimentLoginView(isPresented: $isLoginPresented)
         }
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingWarning) {
-            AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
-        }
+        .errorToast($viewModel.errorToast)
+        .warningToast($viewModel.warningToast)
         .onChange(of: isLoginPresented) { _, newValue in
-            if !newValue { viewModel.loadSchedules() }
+            if !newValue { Task { await viewModel.loadSchedules() } }
         }
-        .task {
-            now = Date()
-            guard !viewModel.isLoaded else { return }
-            viewModel.isLoaded = true
-            viewModel.loadSchedules()
-        }
+        .task { await viewModel.loadInitial() }
+        .safeRefreshable { await viewModel.loadSchedules() }
         .trackView("PhysicsExperimentSchedule")
     }
 }
 
 private struct ExperimentCardView: View {
     let course: PhysicsExperimentHelper.Course
-    let now: Date
+    let now: Date = .now
 
     private var isFinished: Bool {
         return now > course.endTime
@@ -100,82 +87,80 @@ private struct ExperimentCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack(alignment: .top, spacing: 12) {
-                Text(course.name)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(isFinished ? .secondary : .primary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .lineLimit(2)
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 0) {
+                // Header
+                HStack(alignment: .top, spacing: 12) {
+                    Text(course.name)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(isFinished ? .secondary : .primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(2)
 
-                Spacer()
+                    Spacer()
 
-                VStack(alignment: .trailing, spacing: 6) {
-                    if isFinished {
-                        Text("已结束")
+                    VStack(alignment: .trailing, spacing: 6) {
+                        if isFinished {
+                            Text("已结束")
+                                .font(.caption.bold())
+                                .foregroundColor(.gray)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.gray.opacity(0.15), in: Capsule())
+                        } else {
+                            if daysUntil == 0 {
+                                Text("今天")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.red, in: Capsule())
+                            } else if daysUntil == 1 {
+                                Text("明天")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.orange, in: Capsule())
+                            } else {
+                                Text("还有 \(daysUntil) 天")
+                                    .font(.caption.bold())
+                                    .foregroundColor(.blue)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.1), in: Capsule())
+                            }
+                        }
+
+                        Text("批次 \(course.batch)")
                             .font(.caption.bold())
-                            .foregroundColor(.gray)
+                            .foregroundStyle(isFinished ? .gray : .orange)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.gray.opacity(0.15), in: Capsule())
-                    } else {
-                        if daysUntil == 0 {
-                            Text("今天")
-                                .font(.caption.bold())
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.red, in: Capsule())
-                        } else if daysUntil == 1 {
-                            Text("明天")
-                                .font(.caption.bold())
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.orange, in: Capsule())
-                        } else {
-                            Text("还有 \(daysUntil) 天")
-                                .font(.caption.bold())
-                                .foregroundColor(.blue)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.1), in: Capsule())
-                        }
+                            .background(isFinished ? Color.gray.opacity(0.15) : Color.orange.opacity(0.15))
+                            .clipShape(Capsule())
                     }
-
-                    Text("批次 \(course.batch)")
-                        .font(.caption.bold())
-                        .foregroundStyle(isFinished ? .gray : .orange)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(isFinished ? Color.gray.opacity(0.15) : Color.orange.opacity(0.15))
-                        .clipShape(Capsule())
                 }
-            }
-            .padding(.bottom, 12)
-
-            Divider()
                 .padding(.bottom, 12)
 
-            // Info Rows
-            VStack(alignment: .leading, spacing: 10) {
-                detailRow(icon: "calendar", color: .blue, text: formatTime(course: course), finished: isFinished)
+                Divider()
+                    .padding(.bottom, 12)
 
-                detailRow(icon: "mappin.and.ellipse", color: .red, text: course.location, finished: isFinished)
+                // Info Rows
+                VStack(alignment: .leading, spacing: 10) {
+                    detailRow(icon: "calendar", color: .blue, text: formatTime(course: course), finished: isFinished)
 
-                HStack(spacing: 0) {
-                    detailRow(icon: "person.fill", color: .purple, text: course.teacher, finished: isFinished)
-                    Spacer()
-                    detailRow(icon: "clock", color: .orange, text: "\(course.classHours) 课时", finished: isFinished)
+                    detailRow(icon: "mappin.and.ellipse", color: .red, text: course.location, finished: isFinished)
+
+                    HStack(spacing: 0) {
+                        detailRow(icon: "person.fill", color: .purple, text: course.teacher, finished: isFinished)
+                        Spacer()
+                        detailRow(icon: "clock", color: .orange, text: "\(course.classHours) 课时", finished: isFinished)
+                    }
                 }
             }
         }
-        .padding(16)
-        .background(Color.appSecondarySystemGroupedBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         .opacity(isFinished ? 0.6 : 1.0)
         .saturation(isFinished ? 0.0 : 1.0)
     }

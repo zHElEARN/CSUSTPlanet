@@ -9,55 +9,56 @@ import CSUSTKit
 import Foundation
 
 @MainActor
-class PhysicsExperimentScheduleViewModel: ObservableObject {
-    @Published var errorMessage = ""
-    @Published var warningMessage = ""
-    @Published var data: Cached<[PhysicsExperimentHelper.Course]>? = nil
+@Observable
+class PhysicsExperimentScheduleViewModel {
+    var data: Cached<[PhysicsExperimentHelper.Course]>? = nil
 
-    @Published var isLoading = false
-    @Published var isShowingError = false
-    @Published var isShowingWarning = false
-    @Published var isLoaded = false
+    var isLoadingSchedules = false
+
+    var errorToast: ToastState = .errorTitle
+    var warningToast: ToastState = .warningTitle
+
+    var isInitial = true
 
     init() {
         guard let data = MMKVHelper.shared.physicsExperimentScheduleCache else { return }
         self.data = data
     }
 
-    func loadSchedules() {
-        isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
-            do {
-                let schedules = try await PhysicsExperimentManager.shared.getCourses()
-                let data = Cached(cachedAt: .now, value: schedules)
-                self.data = data
-                MMKVHelper.shared.physicsExperimentScheduleCache = data
-            } catch {
-                if case PhysicsExperimentHelper.PhysicsExperimentError.notLoggedIn = error {
-                    if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
-                        self.data = cachedData
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            self.warningMessage = String(format: "未登录大物实验，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: cachedData.cachedAt))
-                            self.isShowingWarning = true
-                        }
-                    } else {
-                        errorMessage = error.localizedDescription
-                        isShowingError = true
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        await loadSchedules()
+    }
+
+    func loadSchedules() async {
+        guard !isLoadingSchedules else { return }
+        isLoadingSchedules = true
+        defer { isLoadingSchedules = false }
+
+        do {
+            let schedules = try await PhysicsExperimentManager.shared.getCourses()
+            let data = Cached(cachedAt: .now, value: schedules)
+            self.data = data
+            MMKVHelper.shared.physicsExperimentScheduleCache = data
+        } catch {
+            if case PhysicsExperimentHelper.PhysicsExperimentError.notLoggedIn = error {
+                if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
+                    self.data = cachedData
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.warningToast.show(message: String(format: "未登录大物实验，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: cachedData.cachedAt)))
                     }
                 } else {
-                    if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
-                        self.data = cachedData
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            self.warningMessage = String(format: "错误：%@，\n已加载上次查询数据（%@）", error.localizedDescription, DateUtil.relativeTimeString(for: cachedData.cachedAt))
-                            self.isShowingWarning = true
-                        }
-                    } else {
-                        errorMessage = error.localizedDescription
-                        isShowingError = true
+                    self.errorToast.show(message: error.localizedDescription)
+                }
+            } else {
+                if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
+                    self.data = cachedData
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.warningToast.show(message: String(format: "错误：%@，\n已加载上次查询数据（%@）", error.localizedDescription, DateUtil.relativeTimeString(for: cachedData.cachedAt)))
                     }
+                } else {
+                    self.errorToast.show(message: error.localizedDescription)
                 }
             }
         }
