@@ -13,10 +13,9 @@ import SwiftUI
 @MainActor
 @Observable
 class SSOLoginViewModel {
-    var isShowingBrowser: Bool = false
-    var isShowingWebVPNAlert: Bool = false
-
-    var selectedTab = 0
+    var isBrowserPresented: Bool = false
+    var isWebVPNAlertPresented: Bool = false
+    var selectedTab: Int = 0
 
     var username: String = KeychainUtil.ssoUsername ?? ""
     var password: String = KeychainUtil.ssoPassword ?? ""
@@ -40,6 +39,32 @@ class SSOLoginViewModel {
 
     var isDynamicLoginDisabled: Bool {
         return username.isEmpty || captcha.isEmpty || smsCode.isEmpty || AuthManager.shared.isSSOLoggingIn
+    }
+
+    var isToolbarLoginDisabled: Bool {
+        switch selectedTab {
+        case 0:
+            isAccountLoginDisabled
+        case 1:
+            isDynamicLoginDisabled
+        case 2:
+            true
+        default:
+            true
+        }
+    }
+
+    func handleToolbarLogin(isLoginSheetPresented: Binding<Bool>) async {
+        switch selectedTab {
+        case 0:
+            await handleAccountLogin(isLoginSheetPresented: isLoginSheetPresented)
+        case 1:
+            await handleDynamicLogin(isLoginSheetPresented: isLoginSheetPresented)
+        case 2:
+            break
+        default:
+            break
+        }
     }
 
     func handleAccountLogin(isLoginSheetPresented: Binding<Bool>) async {
@@ -107,6 +132,7 @@ class SSOLoginViewModel {
         Task {
             do {
                 let ssoProfile = try await AuthManager.shared.ssoHelper.getLoginUser()
+                isLoginSheetPresented.wrappedValue = false
                 AuthManager.shared.ssoProfile = ssoProfile
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
@@ -115,7 +141,6 @@ class SSOLoginViewModel {
                 AuthManager.shared.isShowingSSOInfo = true
                 AuthManager.shared.allLogin()
                 TrackHelper.shared.event(category: "Auth", action: "Login", name: "Browser", value: 1)
-                isLoginSheetPresented.wrappedValue = false
                 if mode == .username {
                     KeychainUtil.ssoUsername = username
                     KeychainUtil.ssoPassword = password
