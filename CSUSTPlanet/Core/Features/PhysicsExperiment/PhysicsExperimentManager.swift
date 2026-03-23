@@ -20,14 +20,15 @@ enum PhysicsExperimentManagerError: Error, LocalizedError {
 }
 
 @MainActor
-class PhysicsExperimentManager: ObservableObject {
+@Observable
+final class PhysicsExperimentManager {
     static let shared = PhysicsExperimentManager()
 
     private init() {}
 
     private var physicsExperimentHelper: PhysicsExperimentHelper?
 
-    @Published var isLoggingIn: Bool = false
+    var isLoggingIn: Bool = false
 
     func login(username: String, password: String) async throws {
         isLoggingIn = true

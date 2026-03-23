@@ -15,7 +15,6 @@ struct FeaturesView: View {
 
     @State private var isPhysicsExperimentLoginPresented: Bool = false
     @State private var isAnnualReviewPresented: Bool = false
-    @StateObject var physicsExperimentManager = PhysicsExperimentManager.shared
 
     private let spacing: CGFloat = 12
 
@@ -63,7 +62,6 @@ struct FeaturesView: View {
         .background(Color.appSystemGroupedBackground)
         .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
             PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
-                .environmentObject(physicsExperimentManager)
         }
         // #if os(iOS)
         // .fullScreenCover(isPresented: $isAnnualReviewPresented) {
@@ -179,13 +177,13 @@ struct FeaturesView: View {
 
             VStack(spacing: 0) {
                 ToolRow(
-                    destination: PhysicsExperimentScheduleView().environmentObject(physicsExperimentManager),
+                    destination: PhysicsExperimentScheduleView(),
                     title: "实验安排", icon: "calendar", color: .purple)
 
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    destination: PhysicsExperimentGradeView().environmentObject(physicsExperimentManager),
+                    destination: PhysicsExperimentGradeView(),
                     title: "实验成绩", icon: "doc.text", color: .purple
                 )
             }

@@ -60,8 +60,8 @@ private let featureSections: [FeatureSection] = [
     FeatureSection(
         title: "大学物理实验",
         items: [
-            FeatureItem(id: .physicsExperimentSchedule, title: "实验安排", icon: "calendar", destination: { PhysicsExperimentScheduleView().environmentObject(PhysicsExperimentManager.shared) }),
-            FeatureItem(id: .physicsExperimentGrade, title: "实验成绩", icon: "doc.text", destination: { PhysicsExperimentGradeView().environmentObject(PhysicsExperimentManager.shared) }),
+            FeatureItem(id: .physicsExperimentSchedule, title: "实验安排", icon: "calendar", destination: { PhysicsExperimentScheduleView() }),
+            FeatureItem(id: .physicsExperimentGrade, title: "实验成绩", icon: "doc.text", destination: { PhysicsExperimentGradeView() }),
         ]
     ),
     FeatureSection(

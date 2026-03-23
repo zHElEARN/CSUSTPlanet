@@ -9,32 +9,28 @@ import Foundation
 import SwiftUI
 
 @MainActor
-class PhysicsExperimentLoginViewModel: ObservableObject {
-    @Published var username: String = KeychainUtil.physicsExperimentUsername ?? ""
-    @Published var password: String = KeychainUtil.physicsExperimentPassword ?? ""
-    @Published var isPasswordVisible: Bool = false
-    @Published var isShowingError: Bool = false
-    @Published var errorMessage: String = ""
+@Observable
+final class PhysicsExperimentLoginViewModel {
+    var username: String = KeychainUtil.physicsExperimentUsername ?? ""
+    var password: String = KeychainUtil.physicsExperimentPassword ?? ""
+    var isPasswordVisible: Bool = false
+    var errorToast: ToastState = .errorTitle
 
     var isLoginDisabled: Bool {
         username.isEmpty || password.isEmpty || PhysicsExperimentManager.shared.isLoggingIn
     }
 
-    func login(_ isPresented: Binding<Bool>) {
+    func login(_ isPresented: Binding<Bool>) async {
         guard !username.isEmpty, !password.isEmpty else {
-            errorMessage = "请输入用户名和密码"
-            isShowingError = true
+            errorToast.show(message: "请输入用户名和密码")
             return
         }
 
-        Task {
-            do {
-                try await PhysicsExperimentManager.shared.login(username: username, password: password)
-                isPresented.wrappedValue = false
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            try await PhysicsExperimentManager.shared.login(username: username, password: password)
+            isPresented.wrappedValue = false
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }
