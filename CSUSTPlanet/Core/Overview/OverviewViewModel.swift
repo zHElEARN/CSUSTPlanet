@@ -58,7 +58,8 @@ class OverviewViewModel {
     var submittableAssignments: [(courseName: String, assignment: MoocHelper.Assignment)] {
         guard let groups = todoAssignmentsData?.value else { return [] }
 
-        return groups
+        return
+            groups
             .flatMap { group in
                 group.assignments.compactMap { assignment in
                     guard assignment.canSubmit, !assignment.submitStatus else { return nil }
@@ -123,14 +124,16 @@ class OverviewViewModel {
 
         dormObserver = AutoRefreshingObserver { [weak self] in
             let observation = ValueObservation.tracking { db -> (DormGRDB?, [ElectricityRecordGRDB]) in
-                let favoriteDorm = try DormGRDB
+                let favoriteDorm =
+                    try DormGRDB
                     .filter(DormGRDB.Columns.isFavorite == true)
                     .fetchOne(db)
 
                 let dorm = try favoriteDorm ?? DormGRDB.order(DormGRDB.Columns.id.asc).fetchOne(db)
                 guard let dormID = dorm?.id else { return (dorm, []) }
 
-                let records = try ElectricityRecordGRDB
+                let records =
+                    try ElectricityRecordGRDB
                     .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
                     .order(ElectricityRecordGRDB.Columns.date.asc)
                     .fetchAll(db)

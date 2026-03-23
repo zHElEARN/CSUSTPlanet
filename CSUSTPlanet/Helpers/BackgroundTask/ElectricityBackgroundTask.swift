@@ -30,7 +30,8 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
             }
 
             let targetDorm: DormGRDB? = try await pool.read { db in
-                if let favoriteDorm = try DormGRDB
+                if let favoriteDorm =
+                    try DormGRDB
                     .filter(DormGRDB.Columns.isFavorite == true)
                     .fetchOne(db)
                 {

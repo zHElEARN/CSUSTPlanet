@@ -7,6 +7,12 @@
 
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 struct NotificationSettingsView: View {
     let isLiveActivityEnabled = Binding(
         get: { GlobalManager.shared.isLiveActivityEnabled },
@@ -61,8 +67,16 @@ struct NotificationSettingsView: View {
 
     private func openAppNotificationSettings() {
         #if os(iOS)
-        if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        if let url = URL(string: UIApplication.openNotificationSettingsURLString),
+            UIApplication.shared.canOpenURL(url)
+        {
+            UIApplication.shared.open(url)
+        }
+
+        #elseif os(macOS)
+        let settingsURL = "x-apple.systempreferences:com.apple.Notifications-Settings.extension"
+        if let url = URL(string: settingsURL) {
+            NSWorkspace.shared.open(url)
         }
         #endif
     }
