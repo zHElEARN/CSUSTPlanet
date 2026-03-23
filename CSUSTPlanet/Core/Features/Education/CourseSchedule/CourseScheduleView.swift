@@ -99,8 +99,8 @@ struct CourseScheduleView: View {
                 view
                     .inspector(isPresented: $viewModel.isCourseDetailPresented) {
                         sheetContent(isShowingToolbar: false)
+                            .inspectorColumnWidth(min: 350, ideal: 400, max: 450)
                     }
-                    .inspectorColumnWidth(min: 350, ideal: 400, max: 450)
             } else {
                 view.sheet(isPresented: $viewModel.isCourseDetailPresented) {
                     sheetContent(isShowingToolbar: true)
