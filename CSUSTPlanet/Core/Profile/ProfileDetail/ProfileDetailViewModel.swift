@@ -12,62 +12,66 @@ import Foundation
 @Observable
 class ProfileDetailViewModel {
     var ssoProfile: SSOHelper.Profile?
-    var isSSOProfileLoading: Bool = false
+    var isLoadingSSOProfile: Bool = false
 
     var eduProfile: EduHelper.Profile?
-    var isEduProfileLoading: Bool = false
+    var isLoadingEduProfile: Bool = false
 
     var moocProfile: MoocHelper.Profile?
-    var isMoocProfileLoading: Bool = false
+    var isLoadingMoocProfile: Bool = false
 
-    var isShowingError: Bool = false
-    var errorMessage: String = ""
+    var errorToast: ToastState = .errorTitle
 
-    func loadSSOProfile() {
-        isSSOProfileLoading = true
-        Task {
-            defer {
-                isSSOProfileLoading = false
-            }
+    var isInitial = true
 
-            do {
-                ssoProfile = try await AuthManager.shared.ssoHelper.getLoginUser()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+
+        await loadAll()
+    }
+
+    func loadAll() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.loadSSOProfile() }
+            group.addTask { await self.loadEduProfile() }
+            group.addTask { await self.loadMoocProfile() }
         }
     }
 
-    func loadEduProfile() {
-        isEduProfileLoading = true
-        Task {
-            defer {
-                isEduProfileLoading = false
-            }
+    func loadSSOProfile() async {
+        guard !isLoadingSSOProfile else { return }
+        isLoadingSSOProfile = true
+        defer { isLoadingSSOProfile = false }
 
-            do {
-                eduProfile = try await AuthManager.shared.eduHelper.profileService.getProfile()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            ssoProfile = try await AuthManager.shared.ssoHelper.getLoginUser()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func loadMoocProfile() {
-        isMoocProfileLoading = true
-        Task {
-            defer {
-                isMoocProfileLoading = false
-            }
+    func loadEduProfile() async {
+        guard !isLoadingEduProfile else { return }
+        isLoadingEduProfile = true
+        defer { isLoadingEduProfile = false }
 
-            do {
-                moocProfile = try await AuthManager.shared.moocHelper.getProfile()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            eduProfile = try await AuthManager.shared.eduHelper.profileService.getProfile()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    func loadMoocProfile() async {
+        guard !isLoadingMoocProfile else { return }
+        isLoadingMoocProfile = true
+        defer { isLoadingMoocProfile = false }
+
+        do {
+            moocProfile = try await AuthManager.shared.moocHelper.getProfile()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }

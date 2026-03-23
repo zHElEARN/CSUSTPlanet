@@ -23,16 +23,14 @@ struct ProfileDetailView: View {
                     FormRow(label: "所属院系", value: ssoProfile.deptName)
                 } else {
                     ContentUnavailableView(
-                        "加载失败",
-                        systemImage: "exclamationmark.triangle",
-                        description: Text("统一身份认证个人信息加载失败")
+                        "暂无数据",
+                        systemImage: "person.crop.circle.badge.questionmark",
+                        description: Text("暂无统一身份认证个人信息数据")
                     )
                     .frame(maxWidth: .infinity)
                 }
             } header: {
-                header(title: "统一身份认证个人信息", isLoading: viewModel.isSSOProfileLoading) {
-                    viewModel.loadSSOProfile()
-                }
+                header(title: "统一身份认证个人信息", isLoading: viewModel.isLoadingSSOProfile, onRefresh: viewModel.loadSSOProfile)
             }
 
             Section {
@@ -47,16 +45,14 @@ struct ProfileDetailView: View {
                     FormRow(label: "名族", value: eduProfile.ethnicity)
                 } else {
                     ContentUnavailableView(
-                        "加载失败",
-                        systemImage: "exclamationmark.triangle",
-                        description: Text("教务个人信息加载失败")
+                        "暂无数据",
+                        systemImage: "person.crop.circle.badge.questionmark",
+                        description: Text("暂无教务个人信息数据")
                     )
                     .frame(maxWidth: .infinity)
                 }
             } header: {
-                header(title: "教务个人信息", isLoading: viewModel.isEduProfileLoading) {
-                    viewModel.loadEduProfile()
-                }
+                header(title: "教务个人信息", isLoading: viewModel.isLoadingEduProfile, onRefresh: viewModel.loadEduProfile)
             }
 
             Section {
@@ -67,40 +63,33 @@ struct ProfileDetailView: View {
                     FormRow(label: "登录次数", value: "\(moocProfile.loginCount)")
                 } else {
                     ContentUnavailableView(
-                        "加载失败",
-                        systemImage: "exclamationmark.triangle",
-                        description: Text("网络课程中心个人信息加载失败")
+                        "暂无数据",
+                        systemImage: "person.crop.circle.badge.questionmark",
+                        description: Text("暂无网络课程中心个人信息数据")
                     )
                     .frame(maxWidth: .infinity)
                 }
             } header: {
-                header(title: "网络课程中心个人信息", isLoading: viewModel.isMoocProfileLoading) {
-                    viewModel.loadMoocProfile()
-                }
+                header(title: "网络课程中心个人信息", isLoading: viewModel.isLoadingMoocProfile, onRefresh: viewModel.loadMoocProfile)
             }
         }
         .formStyle(.grouped)
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
+        .errorToast($viewModel.errorToast)
         .navigationTitle("个人详情")
-        .onAppear {
-            viewModel.loadSSOProfile()
-            viewModel.loadEduProfile()
-            viewModel.loadMoocProfile()
-        }
+        .task { await viewModel.loadInitial() }
+        .safeRefreshable { await viewModel.loadAll() }
         .trackView("ProfileDetail")
     }
 
     @ViewBuilder
-    func header(title: String, isLoading: Bool, onRefresh: (() -> Void)? = nil) -> some View {
+    func header(title: String, isLoading: Bool, onRefresh: (() async -> Void)? = nil) -> some View {
         HStack {
             Text(title)
             Spacer()
             if isLoading {
                 ProgressView().smallControlSizeOnMac()
             } else if let onRefresh = onRefresh {
-                Button(action: onRefresh) {
+                Button(asyncAction: onRefresh) {
                     Image(systemName: "arrow.clockwise")
                         .font(.subheadline)
                         .foregroundColor(.accentColor)

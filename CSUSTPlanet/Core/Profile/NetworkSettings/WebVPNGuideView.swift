@@ -44,6 +44,7 @@ struct WebVPNGuideView: View {
                         .background(Color.orange)
                         .cornerRadius(12)
                 }
+                .buttonStyle(.plain)
 
                 Button(action: {
                     isPresented = false
@@ -53,9 +54,10 @@ struct WebVPNGuideView: View {
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.appSecondarySystemBackground)
+                        .background(Color.secondary.opacity(0.1))
                         .cornerRadius(12)
                 }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal)
             .padding(.bottom)

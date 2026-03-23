@@ -15,11 +15,18 @@ struct FeedbackView: View {
     private let emailURL = URL(string: "mailto:developer@zhelearn.com")!
 
     @State private var isShowingSurveySheet = false
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         Form {
             Section {
-                Button(action: { isShowingSurveySheet = true }) {
+                Button(action: {
+                    #if os(macOS)
+                    openURL(surveyURL)
+                    #else
+                    isShowingSurveySheet = true
+                    #endif
+                }) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("填写意见调研问卷")
@@ -35,6 +42,7 @@ struct FeedbackView: View {
                             .foregroundColor(.secondary)
                     }
                 }
+                .buttonStyle(.plain)
                 .padding(.vertical, 4)
             } header: {
                 Text("推荐方式")
@@ -75,21 +83,23 @@ struct FeedbackView: View {
             }
         }
         .formStyle(.grouped)
+        #if os(iOS)
         .sheet(isPresented: $isShowingSurveySheet) {
             NavigationStack {
                 WebView(url: surveyURL)
-                    .navigationTitle("填写意见调研问卷")
-                    .inlineToolbarTitle()
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("关闭") {
-                                isShowingSurveySheet = false
-                            }
+                .navigationTitle("填写意见调研问卷")
+                .inlineToolbarTitle()
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("关闭") {
+                            isShowingSurveySheet = false
                         }
                     }
+                }
             }
             .trackView("FeedbackSurvey")
         }
+        #endif
         .navigationTitle("意见反馈")
         .trackView("Feedback")
     }
