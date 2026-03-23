@@ -179,34 +179,21 @@ struct GradeDetailView: View {
     // MARK: - Course Info Section
 
     private var courseInfoSection: some View {
-        infoGroupBox(title: "课程信息") {
-            detailRow(label: "课程编号", value: courseGrade.courseID)
-            detailRow(label: "开课学期", value: courseGrade.semester)
-            if !courseGrade.groupName.isEmpty {
-                detailRow(label: "分组名", value: courseGrade.groupName)
-            }
-            detailRow(label: "修读方式", value: courseGrade.studyMode)
-            detailRow(label: "课程性质", value: courseGrade.courseNature.rawValue)
-            if !courseGrade.courseCategory.isEmpty {
-                detailRow(label: "课程类别", value: courseGrade.courseCategory)
-            }
-            detailRow(label: "课程属性", value: courseGrade.courseAttribute)
-            detailRow(label: "考核方式", value: courseGrade.assessmentMethod)
-            detailRow(label: "考试性质", value: courseGrade.examNature)
-        }
-    }
-
-    // MARK: - Info Group Box
-
-    private func infoGroupBox<Content: View>(title: String, @ViewBuilder content: @escaping () -> Content) -> some View {
         CustomGroupBox {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title)
-                    .font(.headline)
-                    .padding(.leading)
-                VStack(alignment: .leading, spacing: 12) {
-                    content()
+            VStack(alignment: .leading, spacing: 12) {
+                detailRow(label: "课程编号", value: courseGrade.courseID)
+                detailRow(label: "开课学期", value: courseGrade.semester)
+                if !courseGrade.groupName.isEmpty {
+                    detailRow(label: "分组名", value: courseGrade.groupName)
                 }
+                detailRow(label: "修读方式", value: courseGrade.studyMode)
+                detailRow(label: "课程性质", value: courseGrade.courseNature.rawValue)
+                if !courseGrade.courseCategory.isEmpty {
+                    detailRow(label: "课程类别", value: courseGrade.courseCategory)
+                }
+                detailRow(label: "课程属性", value: courseGrade.courseAttribute)
+                detailRow(label: "考核方式", value: courseGrade.assessmentMethod)
+                detailRow(label: "考试性质", value: courseGrade.examNature)
             }
         }
     }
