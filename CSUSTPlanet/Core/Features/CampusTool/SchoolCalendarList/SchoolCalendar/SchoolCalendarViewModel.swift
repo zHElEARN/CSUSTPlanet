@@ -8,8 +8,9 @@
 import Alamofire
 import SwiftUI
 
+@MainActor
 @Observable
-class SchoolCalendarViewModel {
+final class SchoolCalendarViewModel {
     var config: ConfigData?
     var weeks: [WeekRow] = []
     var weekSpans: [SpanData] = []
@@ -17,8 +18,7 @@ class SchoolCalendarViewModel {
     var notes: [String] = []
 
     var isLoading: Bool = false
-    var isShowingError: Bool = false
-    var errorMessage: String = ""
+    var errorToast: ToastState = .errorTitle
 
     // 固定尺寸
     let headerHeight: CGFloat = 36
@@ -33,23 +33,18 @@ class SchoolCalendarViewModel {
 
     private let circleNumbers = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"]
 
-    @MainActor
     func loadConfig(semester: String) async {
+        guard !isLoading else { return }
         isLoading = true
-        isShowingError = false
+        defer { isLoading = false }
 
         do {
-            let decodedConfig = try await AF.request("\(Constants.backendHost)/config/semester-calendars/\(semester)")
-                .serializingDecodable(ConfigData.self).value
+            let decodedConfig = try await AF.request("\(Constants.backendHost)/config/semester-calendars/\(semester)").serializingDecodable(ConfigData.self).value
             self.config = decodedConfig
             generateCalendar(from: decodedConfig)
         } catch {
-            debugPrint(error)
-            self.isShowingError = true
-            self.errorMessage = error.localizedDescription
+            errorToast.show(message: error.localizedDescription)
         }
-
-        isLoading = false
     }
 
     private func generateCalendar(from config: ConfigData) {

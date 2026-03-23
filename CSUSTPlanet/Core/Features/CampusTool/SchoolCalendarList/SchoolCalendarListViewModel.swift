@@ -21,23 +21,19 @@ struct SchoolCalendar: Codable, Identifiable {
 @Observable
 class SchoolCalendarListViewModel {
     var schoolCalendars: [SchoolCalendar] = []
-    var isShowingError: Bool = false
-    var errorMessage: String = ""
-    var isLoading: Bool = false
+    var errorToast: ToastState = .errorTitle
 
-    func loadSchoolCalendars() {
-        isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
+    var isLoadingCalendars: Bool = false
 
-            do {
-                schoolCalendars = try (await AF.request("\(Constants.backendHost)/config/semester-calendars").serializingDecodable([SchoolCalendar].self).value).sorted { $0.semesterCode > $1.semesterCode }
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+    func loadSchoolCalendars() async {
+        guard !isLoadingCalendars else { return }
+        isLoadingCalendars = true
+        defer { isLoadingCalendars = false }
+
+        do {
+            schoolCalendars = try (await AF.request("\(Constants.backendHost)/config/semester-calendars").serializingDecodable([SchoolCalendar].self).value).sorted { $0.semesterCode > $1.semesterCode }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }

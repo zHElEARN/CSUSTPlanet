@@ -32,16 +32,6 @@ struct SchoolCalendarView: View {
     let weekColRatio: CGFloat = 0.12
     let monthColRatio: CGFloat = 0.12
 
-    var pageBackground: Color {
-        #if os(iOS)
-        return Color(uiColor: .systemGroupedBackground)
-        #elseif os(macOS)
-        return Color(nsColor: .windowBackgroundColor)
-        #else
-        return Color(white: 0.95)
-        #endif
-    }
-
     var cardBackground: Color {
         #if os(iOS)
         return Color(uiColor: .secondarySystemGroupedBackground)
@@ -80,13 +70,11 @@ struct SchoolCalendarView: View {
         Color.accentColor.opacity(0.12)
     }
 
+    // MARK: - Body
+
     var body: some View {
         Group {
-            if viewModel.isLoading {
-                ProgressView()
-            } else if viewModel.isShowingError {
-                ContentUnavailableView("加载失败", systemImage: "exclamationmark.triangle", description: Text(viewModel.errorMessage))
-            } else if viewModel.config != nil {
+            if viewModel.config != nil {
                 GeometryReader { proxy in
                     let tableWidth = proxy.size.width - (horizontalPadding * 2)
                     let weekColWidth = tableWidth * weekColRatio
@@ -134,28 +122,25 @@ struct SchoolCalendarView: View {
                     }
                 }
             } else {
-                Color.clear
+                if viewModel.isLoading {
+                    ProgressView("加载中...")
+                        .smallControlSizeOnMac()
+                } else {
+                    ContentUnavailableView("无校历数据", systemImage: "calendar.badge.exclamationmark")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
         }
-        .background(pageBackground.ignoresSafeArea())
         .navigationTitle("\(schoolCalendar.semesterCode)学年度校历")
-        .apply { view in
-            if #available(iOS 26.0, macOS 15.0, *) {
-                view.navigationSubtitle(schoolCalendar.subtitle)
-            } else {
-                view
-            }
-        }
-        .task {
-            if viewModel.config == nil && !viewModel.isLoading && !viewModel.isShowingError {
-                await viewModel.loadConfig(semester: schoolCalendar.semesterCode)
-            }
-        }
+        .navigationSubtitleCompat(schoolCalendar.subtitle)
+        .task { await viewModel.loadConfig(semester: schoolCalendar.semesterCode) }
+        .errorToast($viewModel.errorToast)
+        .trackView("SchoolCalendar")
     }
 
     // MARK: - 学期概览静态卡片
     private var overviewCard: some View {
-        Group {
+        CustomGroupBox {
             if let conf = viewModel.config {
                 VStack(alignment: .leading, spacing: innerSpacing) {
                     HStack {
@@ -176,12 +161,9 @@ struct SchoolCalendarView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                .padding()
-                .background(cardBackground)
-                .cornerRadius(cornerRadius)
-                .padding(.horizontal, horizontalPadding)
             }
         }
+        .padding(.horizontal, horizontalPadding)
     }
 
     // MARK: - 表头
