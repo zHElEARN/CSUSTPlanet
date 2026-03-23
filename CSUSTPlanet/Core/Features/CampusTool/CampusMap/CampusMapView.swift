@@ -17,6 +17,7 @@ import UIKit
 
 struct CampusMapView: View {
     @StateObject private var viewModel = CampusMapViewModel()
+    @Environment(\.openURL) private var openURL
 
     @State private var stableSheetHeight: CGFloat = 0
     @State private var debounceTask: Task<Void, Never>? = nil
@@ -132,7 +133,13 @@ struct CampusMapView: View {
                     }
                 }
 
-                Button(action: viewModel.showOnlineMap) {
+                Button(action: {
+                    #if os(macOS)
+                    openURL(url)
+                    #else
+                    viewModel.showOnlineMap()
+                    #endif
+                }) {
                     Image(systemName: "globe")
                 }
                 // MARK: - 在线地图 Tip
