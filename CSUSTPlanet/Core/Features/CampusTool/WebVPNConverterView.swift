@@ -18,13 +18,14 @@ enum ConversionMode: String, CaseIterable, Identifiable {
 struct WebVPNConverterView: View {
     // MARK: - State Properties
 
+    @Environment(\.openURL) private var openURL
+
     @State private var selectedMode: ConversionMode = .convert
     @State private var originalUrl: String = ""
     @State private var resultUrl: String = ""
-    @State private var isShowingError: Bool = false
-    @State private var isShowingSafari: Bool = false
+    @State private var isErrorPresented: Bool = false
 
-    @State private var isShowingCopyToast: Bool = false
+    @State private var successToast: ToastState = .successTitle
 
     // MARK: - Computed Properties for UI
 
@@ -94,45 +95,41 @@ struct WebVPNConverterView: View {
                     .font(.headline)
                     .foregroundColor(.primary)
 
-                if resultUrl.isEmpty {
-                    Text(outputPlaceholder)
-                        .foregroundColor(.secondary)
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .background(Color.appSecondarySystemBackground)
-                        .cornerRadius(8)
-                } else {
-                    HStack {
-                        if isShowingError {
-                            Text(resultUrl)
-                                .foregroundColor(.red)
-                                .font(.subheadline)
-                                .textSelection(.enabled)
-                        } else {
-                            Button(action: {
-                                isShowingSafari = true
-                            }) {
+                CustomGroupBox {
+                    if resultUrl.isEmpty {
+                        Text(outputPlaceholder)
+                            .foregroundColor(.secondary)
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        HStack {
+                            if isErrorPresented {
                                 Text(resultUrl)
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.red)
                                     .font(.subheadline)
-                                    .multilineTextAlignment(.leading)
+                                    .textSelection(.enabled)
+                            } else {
+                                Button(action: openResultInBrowser) {
+                                    Text(resultUrl)
+                                        .foregroundColor(.blue)
+                                        .font(.subheadline)
+                                        .multilineTextAlignment(.leading)
+                                }
+                                .buttonStyle(.plain)
+                            }
+
+                            Spacer()
+
+                            if !isErrorPresented {
+                                Button(action: copyToClipboard) {
+                                    Image(systemName: "doc.on.doc")
+                                        .foregroundColor(.accentColor)
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
-
-                        Spacer()
-
-                        if !isShowingError {
-                            Button(action: copyToClipboard) {
-                                Image(systemName: "doc.on.doc")
-                                    .foregroundColor(.accentColor)
-                            }
-                        }
+                        .transition(.opacity.animation(.easeInOut))
                     }
-                    .padding()
-                    .background(Color.appSecondarySystemBackground)
-                    .cornerRadius(8)
-                    .transition(.opacity.animation(.easeInOut))
                 }
 
                 // MARK: - Explanation Section
@@ -192,16 +189,8 @@ struct WebVPNConverterView: View {
             }
         }
         .navigationTitle("WebVPN 转换")
-        .sheet(isPresented: $isShowingSafari) {
-            if let url = URL(string: resultUrl) {
-                SafariView(url: url)
-                    .trackView("WebVPNConverterSafari")
-            }
-        }
         .trackView("WebVPNConverter")
-        .toast(isPresenting: $isShowingCopyToast) {
-            AlertToast(type: .complete(.green), title: "已复制到剪贴板")
-        }
+        .successToast($successToast)
     }
 
     // MARK: - Private Methods
@@ -209,7 +198,7 @@ struct WebVPNConverterView: View {
     private func performConversion(from urlString: String) {
         guard !urlString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             resultUrl = ""
-            isShowingError = false
+            isErrorPresented = false
             return
         }
 
@@ -220,21 +209,26 @@ struct WebVPNConverterView: View {
             case .restore:
                 resultUrl = try WebVPNHelper.decryptURL(vpnURL: urlString)
             }
-            isShowingError = false
+            isErrorPresented = false
         } catch {
             resultUrl = "\(selectedMode.rawValue)失败: \(error.localizedDescription)"
-            isShowingError = true
+            isErrorPresented = true
         }
     }
 
     private func copyToClipboard() {
         #if os(iOS)
-        UIPasteboard.general.string = resultUrl
+        PlatformPasteboard.general.string = resultUrl
         #elseif os(macOS)
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(resultUrl, forType: .string)
+        PlatformPasteboard.general.clearContents()
+        PlatformPasteboard.general.setString(resultUrl, forType: .string)
         #endif
-        isShowingCopyToast = true
+        successToast.show(message: "已复制到剪贴板")
+    }
+
+    private func openResultInBrowser() {
+        guard let url = URL(string: resultUrl) else { return }
+        openURL(url)
     }
 }
 
