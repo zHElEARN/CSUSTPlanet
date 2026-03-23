@@ -17,7 +17,7 @@ struct GradeQueryView: View {
     var body: some View {
         Group {
             if !viewModel.filteredGrades.isEmpty {
-                List {
+                Form {
                     ForEach(viewModel.groupedFilteredGrades, id: \.semester) { group in
                         Section {
                             DisclosureGroup(isExpanded: viewModel.bindingForSemester(group.semester)) {
@@ -46,11 +46,7 @@ struct GradeQueryView: View {
                         }
                     }
                 }
-                #if os(iOS)
-                .listStyle(.insetGrouped)
-                #elseif os(macOS)
-                .listStyle(.inset)
-                #endif
+                .formStyle(.grouped)
             } else {
                 if viewModel.searchText.isEmpty {
                     ContentUnavailableView("暂无成绩记录", systemImage: "doc.text.magnifyingglass", description: Text("没有找到成绩记录"))
