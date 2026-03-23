@@ -27,7 +27,6 @@ class ProfileDetailViewModel {
     func loadInitial() async {
         guard isInitial else { return }
         isInitial = false
-
         await loadAll()
     }
 

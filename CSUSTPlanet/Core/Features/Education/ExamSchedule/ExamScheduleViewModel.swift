@@ -54,7 +54,7 @@ class ExamScheduleViewModel {
 
     func loadInitial() async {
         guard isInitial else { return }
-
+        isInitial = false
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await self.loadAvailableSemesters() }
             group.addTask { await self.loadExams() }
