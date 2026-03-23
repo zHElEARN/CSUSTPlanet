@@ -9,26 +9,30 @@ import CSUSTKit
 import Foundation
 
 @MainActor
-class PhysicsExperimentGradeViewModel: ObservableObject {
-    @Published var warningMessage = ""
-    @Published var data: [PhysicsExperimentHelper.CourseGrade] = []
+@Observable
+final class PhysicsExperimentGradeViewModel: Observable {
+    var data: [PhysicsExperimentHelper.CourseGrade] = []
 
-    @Published var isLoading = false
-    @Published var isShowingError = false
-    @Published var isLoaded = false
+    var isLoadingGrades = false
+    var errorToast: ToastState = .errorTitle
 
-    func loadGrades() {
-        isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
-            do {
-                self.data = try await PhysicsExperimentManager.shared.getCourseGrades()
-            } catch {
-                warningMessage = error.localizedDescription
-                isShowingError = true
-            }
+    var isInitial = true
+
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        await loadGrades()
+    }
+
+    func loadGrades() async {
+        guard !isLoadingGrades else { return }
+        isLoadingGrades = true
+        defer { isLoadingGrades = false }
+
+        do {
+            self.data = try await PhysicsExperimentManager.shared.getCourseGrades()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }

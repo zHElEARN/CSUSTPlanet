@@ -10,7 +10,7 @@ import CSUSTKit
 import SwiftUI
 
 struct PhysicsExperimentGradeView: View {
-    @StateObject var viewModel = PhysicsExperimentGradeViewModel()
+    @State var viewModel = PhysicsExperimentGradeViewModel()
     @State private var isLoginPresented: Bool = false
 
     var body: some View {
@@ -29,52 +29,35 @@ struct PhysicsExperimentGradeView: View {
                         }
                     }
                 }
+                .formStyle(.grouped)
             }
         }
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.warningMessage)
-        }
+        .errorToast($viewModel.errorToast)
         .sheet(isPresented: $isLoginPresented) {
             PhysicsExperimentLoginView(isPresented: $isLoginPresented)
         }
-        .onChange(
-            of: isLoginPresented,
-            { _, newValue in
-                if newValue == false {
-                    viewModel.loadGrades()
-                }
-            }
-        )
-        .task {
-            guard !viewModel.isLoaded else { return }
-            viewModel.isLoaded = true
-            viewModel.loadGrades()
+        .onChange(of: isLoginPresented) { _, newValue in
+            if !newValue { Task { await viewModel.loadGrades() } }
         }
+        .task { await viewModel.loadInitial() }
+        .safeRefreshable { await viewModel.loadGrades() }
         .navigationTitle("大物实验成绩")
-        .apply { view in
-            if #available(iOS 26.0, *) {
-                view.navigationSubtitle("共\(viewModel.data.count)项成绩")
-            } else {
-                view
-            }
-        }
+        .navigationSubtitleCompat("共\(viewModel.data.count)项成绩")
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                Button(action: {
-                    isLoginPresented = true
-                }) {
+                Button(action: { isLoginPresented = true }) {
                     Text("登录")
                 }
             }
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isLoading {
-                    ProgressView()
-                } else {
-                    Button(action: viewModel.loadGrades) {
+                Button(asyncAction: viewModel.loadGrades) {
+                    if viewModel.isLoadingGrades {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
                         Label("刷新", systemImage: "arrow.clockwise")
                     }
-                    .disabled(viewModel.isLoading)
                 }
+                .disabled(viewModel.isLoadingGrades)
             }
         }
         .trackView("PhysicsExperimentGrade")
