@@ -48,6 +48,10 @@ class AuthManager {
     private let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
     private let session: Session = CookieHelper.shared.session
 
+    private var ssoLoginTask: Task<Void, Error>?
+    private var eduLoginTask: Task<Void, Error>?
+    private var moocLoginTask: Task<Void, Error>?
+
     // MARK: - Initializer
 
     private init() {
@@ -64,18 +68,22 @@ class AuthManager {
         guard !isSSOLoggedIn else { return }
         isSSOLoggingIn = true
         defer { isSSOLoggingIn = false }
+
         CookieHelper.shared.clearCookies()
         try await ssoHelper.login(username: username, password: password)
         TrackHelper.shared.event(category: "Auth", action: "Login", name: "Account", value: 1)
         KeychainUtil.ssoUsername = username
         KeychainUtil.ssoPassword = password
+
         let profile = try await ssoHelper.getLoginUser()
         ssoProfile = profile
         MMKVHelper.shared.userId = profile.userAccount
         TrackHelper.shared.updateUserID(profile.userAccount)
         CookieHelper.shared.save()
+
         ssoInfo = "统一身份认证登录成功"
         isShowingSSOInfo = true
+
         allLogin()
     }
 
@@ -109,44 +117,59 @@ class AuthManager {
         guard !isSSOLoggedIn else { return }
         isSSOLoggingIn = true
         defer { isSSOLoggingIn = false }
+
         try await ssoHelper.dynamicLogin(username: username, dynamicCode: dynamicCode, captcha: captcha)
         TrackHelper.shared.event(category: "Auth", action: "Login", name: "Dynamic", value: 1)
+
         let profile = try await ssoHelper.getLoginUser()
         ssoProfile = profile
         MMKVHelper.shared.userId = profile.userAccount
         TrackHelper.shared.updateUserID(profile.userAccount)
         CookieHelper.shared.save()
+
         ssoInfo = "统一身份认证登录成功"
         isShowingSSOInfo = true
+
         allLogin()
     }
 
-    func ssoRelogin() {
-        Task {
+    // MARK: - SSO Relogin Async
+
+    func ssoReloginAsync() async throws {
+        if let task = ssoLoginTask {
+            return try await task.value
+        }
+
+        let task = Task { @MainActor in
             isSSOLoggingIn = true
             defer { isSSOLoggingIn = false }
+
             if let ssoProfile = try? await ssoHelper.getLoginUser() {
                 Logger.authManager.debug("ssoRelogin: 统一身份认证已登录，无需再登录")
                 self.ssoProfile = ssoProfile
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
+
                 ssoInfo = "统一身份认证已登录"
                 isShowingSSOInfo = true
-                allLogin()
                 return
             }
+
             guard let username = KeychainUtil.ssoUsername, let password = KeychainUtil.ssoPassword else {
-                Logger.authManager.debug("ssoRelogin: 统一身份认证未登录，密码未保存，不操作")
-                return
+                Logger.authManager.debug("ssoRelogin: 统一身份认证未登录，密码未保存")
+                throw SSOHelper.SSOHelperError.notLoggedIn
             }
+
             do {
                 try await ssoHelper.login(username: username, password: password)
             } catch {
                 Logger.authManager.error("ssoRelogin: 统一身份认证登录失败, \(error)")
                 TrackHelper.shared.event(category: "Auth", action: "Relogin", value: 0)
+
                 isShowingSSOError = true
-                return
+                throw error
             }
+
             if let ssoProfile = try? await ssoHelper.getLoginUser() {
                 Logger.authManager.debug("ssoRelogin: 验证统一身份认证登录成功")
                 TrackHelper.shared.event(category: "Auth", action: "Relogin", value: 1)
@@ -154,98 +177,172 @@ class AuthManager {
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
                 CookieHelper.shared.save()
+
                 ssoInfo = "统一身份认证登录成功"
                 isShowingSSOInfo = true
-                allLogin()
             } else {
                 Logger.authManager.debug("ssoRelogin: 验证统一身份认证登录失败")
+
                 isShowingSSOError = true
+                throw SSOHelper.SSOHelperError.notLoggedIn
             }
         }
+
+        ssoLoginTask = task
+        defer { ssoLoginTask = nil }
+        try await task.value
     }
 
-    // MARK: - Education & Mooc Login
+    // MARK: - Education Login Async
 
-    func educationLogin() {
-        // 这里假定统一身份认证已经登录
-        guard !isEducationLoggingIn else { return }
-        Task {
+    func educationLoginAsync() async throws {
+        if let task = eduLoginTask {
+            return try await task.value
+        }
+
+        let task = Task { @MainActor in
             isEducationLoggingIn = true
             defer { isEducationLoggingIn = false }
-            let eduHelper = EduHelper(mode: mode, session: session)
-            guard !(await eduHelper.isLoggedIn()) else {
-                Logger.authManager.debug("educationLogin: 教务系统已登录，无需再登录")
-                self.eduHelper = eduHelper
+
+            let tempEduHelper = EduHelper(mode: mode, session: session)
+            if await tempEduHelper.isLoggedIn() {
+                Logger.authManager.debug("educationLogin: 教务系统已登录")
+                self.eduHelper = tempEduHelper
+
                 educationInfo = "教务系统已登录"
                 isShowingEducationInfo = true
                 return
             }
+
             do {
                 _ = try await ssoHelper.loginToEducation()
             } catch {
-                Logger.authManager.error("educationLogin: 教务登录失败, \(error)")
+                Logger.authManager.error("educationLogin: 教务登录请求失败, \(error)")
                 TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Education", value: 0)
+
                 isShowingEducationError = true
-                return
+                throw error
             }
-            Logger.authManager.debug("educationLogin: 教务登录成功")
-            if await eduHelper.isLoggedIn() {
-                // 教务登录成功
+
+            if await tempEduHelper.isLoggedIn() {
                 Logger.authManager.debug("educationLogin: 验证教务登录成功")
                 TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Education", value: 1)
-                self.eduHelper = eduHelper
+                self.eduHelper = tempEduHelper
                 CookieHelper.shared.save()
+
                 educationInfo = "教务系统登录成功"
                 isShowingEducationInfo = true
             } else {
-                // 教务登录失败
                 Logger.authManager.debug("educationLogin: 验证教务登录失败")
+
                 isShowingEducationError = true
+                throw EduHelper.EduHelperError.notLoggedIn
+            }
+        }
+
+        eduLoginTask = task
+        defer { eduLoginTask = nil }
+        try await task.value
+    }
+
+    // MARK: - Mooc Login Async
+
+    func moocLoginAsync() async throws {
+        if let task = moocLoginTask {
+            return try await task.value
+        }
+
+        let task = Task { @MainActor in
+            isMoocLoggingIn = true
+            defer { isMoocLoggingIn = false }
+
+            let tempMoocHelper = MoocHelper(mode: mode, session: session)
+            if await tempMoocHelper.isLoggedIn() {
+                Logger.authManager.debug("moocLogin: 网络课程平台已登录")
+                self.moocHelper = tempMoocHelper
+
+                moocInfo = "网络课程平台已登录"
+                isShowingMoocInfo = true
+                return
+            }
+
+            do {
+                _ = try await ssoHelper.loginToMooc()
+            } catch {
+                Logger.authManager.error("moocLogin: 网络课程平台登录请求失败, \(error)")
+                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Mooc", value: 0)
+
+                isShowingMoocError = true
+                throw error
+            }
+
+            if await tempMoocHelper.isLoggedIn() {
+                Logger.authManager.debug("moocLogin: 验证网络课程平台登录成功")
+                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Mooc", value: 1)
+                self.moocHelper = tempMoocHelper
+                CookieHelper.shared.save()
+
+                moocInfo = "网络课程平台登录成功"
+                isShowingMoocInfo = true
+            } else {
+                Logger.authManager.debug("moocLogin: 验证网络课程平台登录失败")
+
+                isShowingMoocError = true
+                throw MoocHelper.MoocHelperError.notLoggedIn
+            }
+        }
+
+        moocLoginTask = task
+        defer { moocLoginTask = nil }
+        try await task.value
+    }
+}
+
+extension AuthManager {
+    func allLoginAsync() async throws {
+        async let edu: () = educationLoginAsync()
+        async let mooc: () = moocLoginAsync()
+        _ = try await (edu, mooc)
+    }
+
+    func allLogin() {
+        Task {
+            do {
+                try await allLoginAsync()
+            } catch {
+                Logger.authManager.warning("后台静默登录子系统失败: \(error)")
+            }
+        }
+    }
+
+    func ssoRelogin() {
+        Task {
+            do {
+                try await ssoReloginAsync()
+                allLogin()
+            } catch {
+                Logger.authManager.error("ssoRelogin 失败: \(error)")
+            }
+        }
+    }
+
+    func educationLogin() {
+        Task {
+            do {
+                try await educationLoginAsync()
+            } catch {
+                Logger.authManager.error("educationLogin 失败: \(error)")
             }
         }
     }
 
     func moocLogin() {
-        // 这里假定统一身份认证已经登录
-        guard !isMoocLoggingIn else { return }
         Task {
-            isMoocLoggingIn = true
-            defer { isMoocLoggingIn = false }
-            let moocHelper = MoocHelper(mode: mode, session: session)
-            guard !(await moocHelper.isLoggedIn()) else {
-                Logger.authManager.debug("moocLogin: 网络课程平台已登录，无需再登录")
-                self.moocHelper = moocHelper
-                moocInfo = "网络课程平台已登录"
-                isShowingMoocInfo = true
-                return
-            }
             do {
-                _ = try await ssoHelper.loginToMooc()
+                try await moocLoginAsync()
             } catch {
-                Logger.authManager.error("moocLogin: 网络课程平台登录失败, \(error)")
-                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Mooc", value: 0)
-                isShowingMoocError = true
-                return
-            }
-            Logger.authManager.debug("moocLogin: 网络课程平台登录成功")
-            if await moocHelper.isLoggedIn() {
-                // 网络课程平台登录成功
-                Logger.authManager.debug("moocLogin: 验证网络课程平台登录成功")
-                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Mooc", value: 1)
-                self.moocHelper = moocHelper
-                CookieHelper.shared.save()
-                moocInfo = "网络课程平台登录成功"
-                isShowingMoocInfo = true
-            } else {
-                // 网络课程平台登录失败
-                Logger.authManager.debug("moocLogin: 验证网络课程平台登录失败")
-                isShowingMoocError = true
+                Logger.authManager.error("moocLogin 失败: \(error)")
             }
         }
-    }
-
-    func allLogin() {
-        educationLogin()
-        moocLogin()
     }
 }
