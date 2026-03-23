@@ -9,9 +9,10 @@ import CSUSTKit
 import Foundation
 
 @MainActor
-final class AvailableClassroomViewModel: ObservableObject {
-    @Published var availableClassrooms: [String]? = nil
-    @Published var searchText: String = ""
+@Observable
+final class AvailableClassroomViewModel {
+    var availableClassrooms: [String]? = nil
+    var searchText: String = ""
 
     var filteredAvailableClassrooms: [String]? {
         guard let classrooms = availableClassrooms else { return nil }
@@ -22,31 +23,23 @@ final class AvailableClassroomViewModel: ObservableObject {
         }
     }
 
-    @Published var warningMessage = ""
-    @Published var errorMessage = ""
+    var errorToast: ToastState = .errorTitle
+    var isLoadingClassrooms = false
 
-    @Published var isShowingWarning = false
-    @Published var isShowingError = false
-    @Published var isLoading = false
+    var selectedCampus: CampusCardHelper.Campus = .jinpenling
+    var selectedWeek: Int = 1
+    var selectedDayOfWeek: EduHelper.DayOfWeek = .monday
+    var selectedSection: Int = 1
 
-    @Published var selectedCampus: CampusCardHelper.Campus = .jinpenling
-    @Published var selectedWeek: Int = 1
-    @Published var selectedDayOfWeek: EduHelper.DayOfWeek = .monday
-    @Published var selectedSection: Int = 1
+    func queryAvailableClassrooms() async {
+        guard !isLoadingClassrooms else { return }
+        isLoadingClassrooms = true
+        defer { isLoadingClassrooms = false }
 
-    func queryAvailableClassrooms() {
-        isLoading = true
-        Task {
-            defer {
-                isLoading = false
-            }
-
-            do {
-                availableClassrooms = try await AuthManager.shared.eduHelper.courseService.getAvailableClassrooms(campus: selectedCampus, week: selectedWeek, dayOfWeek: selectedDayOfWeek, section: selectedSection).sorted()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            availableClassrooms = try await AuthManager.shared.eduHelper.courseService.getAvailableClassrooms(campus: selectedCampus, week: selectedWeek, dayOfWeek: selectedDayOfWeek, section: selectedSection).sorted()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }

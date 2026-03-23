@@ -10,17 +10,13 @@ import CSUSTKit
 import SwiftUI
 
 struct AvailableClassroomView: View {
-    @StateObject var viewModel = AvailableClassroomViewModel()
-    @Environment(\.colorScheme) var colorScheme
+    @State var viewModel = AvailableClassroomViewModel()
 
     var body: some View {
-        ZStack {
-            Color.appSystemGroupedBackground
-                .ignoresSafeArea()
-
-            ScrollView {
-                VStack(spacing: 20) {
-                    // MARK: - Filter Section
+        ScrollView {
+            VStack(spacing: 20) {
+                // MARK: - Filter Section
+                CustomGroupBox {
                     VStack(spacing: 16) {
                         HStack {
                             Image(systemName: "slider.horizontal.3")
@@ -32,171 +28,156 @@ struct AvailableClassroomView: View {
                         .padding(.bottom, 4)
 
                         // Campus Picker
-                        LabeledContent {
-                            Picker("校区", selection: $viewModel.selectedCampus) {
+                        filterRow(title: "校区", systemImage: "building.2") {
+                            Picker("", selection: $viewModel.selectedCampus) {
                                 Text("金盆岭校区").tag(CampusCardHelper.Campus.jinpenling)
                                 Text("云塘校区").tag(CampusCardHelper.Campus.yuntang)
                             }
+                            .labelsHidden()
                             .pickerStyle(.segmented)
-                            .frame(width: 200)
-                        } label: {
-                            Label("校区", systemImage: "building.2")
-                                .foregroundColor(.secondary)
+                            .fixedSize()
                         }
 
                         Divider()
 
                         // Week Picker
-                        LabeledContent {
-                            Picker("周数", selection: $viewModel.selectedWeek) {
+                        filterRow(title: "周数", systemImage: "calendar") {
+                            Picker("", selection: $viewModel.selectedWeek) {
                                 ForEach(1...20, id: \.self) { week in
                                     Text("第 \(week) 周").tag(week)
                                 }
                             }
+                            .labelsHidden()
                             .tint(.secondary)
-                        } label: {
-                            Label("周数", systemImage: "calendar")
-                                .foregroundColor(.secondary)
+                            .fixedSize()
                         }
 
                         Divider()
 
                         // Day Picker
-                        LabeledContent {
-                            Picker("星期", selection: $viewModel.selectedDayOfWeek) {
+                        filterRow(title: "星期", systemImage: "sun.max") {
+                            Picker("", selection: $viewModel.selectedDayOfWeek) {
                                 ForEach(EduHelper.DayOfWeek.allCases, id: \.self) { dayOfWeek in
                                     Text(dayOfWeek.chineseLongString).tag(dayOfWeek)
                                 }
                             }
+                            .labelsHidden()
                             .tint(.secondary)
-                        } label: {
-                            Label("星期", systemImage: "sun.max")
-                                .foregroundColor(.secondary)
+                            .fixedSize()
                         }
 
                         Divider()
 
                         // Section Picker
-                        LabeledContent {
-                            Picker("节次", selection: $viewModel.selectedSection) {
+                        filterRow(title: "节次", systemImage: "clock") {
+                            Picker("", selection: $viewModel.selectedSection) {
                                 ForEach(1...5, id: \.self) { section in
                                     Text("第\(section)大节 (\(section * 2 - 1)-\(section * 2))").tag(section)
                                 }
                             }
+                            .labelsHidden()
                             .tint(.secondary)
-                        } label: {
-                            Label("节次", systemImage: "clock")
-                                .foregroundColor(.secondary)
+                            .fixedSize()
                         }
 
                         // Query Button
-                        Button(action: viewModel.queryAvailableClassrooms) {
+                        Button(asyncAction: viewModel.queryAvailableClassrooms) {
                             HStack {
-                                if viewModel.isLoading {
+                                if viewModel.isLoadingClassrooms {
                                     ProgressView()
+                                        .smallControlSizeOnMac()
                                         .tint(.white)
                                         .padding(.trailing, 5)
                                 } else {
                                     Image(systemName: "magnifyingglass")
                                 }
-                                Text(viewModel.isLoading ? "查询中..." : "查询空教室")
+                                Text(viewModel.isLoadingClassrooms ? "查询中..." : "查询空教室")
                                     .fontWeight(.bold)
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
                             .background(Color.blue)
                             .foregroundColor(.white)
-                            .clipShape(Capsule())
+                            .clipShape(.capsule)
                         }
+                        .buttonStyle(.plain)
                         .padding(.top, 8)
-                        .disabled(viewModel.isLoading)
+                        .disabled(viewModel.isLoadingClassrooms)
                     }
-                    .padding(16)
-                    .background(Color.appSecondarySystemGroupedBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                }
 
-                    // MARK: - Results Section
-                    if let availableClassrooms = viewModel.filteredAvailableClassrooms {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Label("查询结果", systemImage: "list.bullet.rectangle.portrait")
-                                    .font(.headline)
-                                Spacer()
-                                Text("共 \(availableClassrooms.count) 间")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal, 4)
+                // MARK: - Results Section
+                if let availableClassrooms = viewModel.filteredAvailableClassrooms {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Label("查询结果", systemImage: "list.bullet.rectangle.portrait")
+                                .font(.headline)
+                            Spacer()
+                            Text("共 \(availableClassrooms.count) 间")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 4)
 
-                            if availableClassrooms.isEmpty {
-                                if viewModel.searchText.isEmpty {
-                                    emptyStateView
-                                } else {
-                                    ContentUnavailableView.search(text: viewModel.searchText)
-                                }
+                        if availableClassrooms.isEmpty {
+                            if viewModel.searchText.isEmpty {
+                                ContentUnavailableView("该时间段无空闲教室", systemImage: "deskclock")
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                             } else {
-                                LazyVGrid(
-                                    columns: [
-                                        GridItem(.flexible(), spacing: 12),
-                                        GridItem(.flexible(), spacing: 12),
-                                    ], spacing: 12
-                                ) {
-                                    ForEach(availableClassrooms, id: \.self) { classroom in
+                                ContentUnavailableView.search(text: viewModel.searchText)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }
+                        } else {
+                            LazyVGrid(
+                                columns: [
+                                    GridItem(.flexible(), spacing: 12),
+                                    GridItem(.flexible(), spacing: 12),
+                                ], spacing: 12
+                            ) {
+                                ForEach(availableClassrooms, id: \.self) { classroom in
+                                    CustomGroupBox {
                                         Text(classroom)
                                             .font(.callout)
                                             .fontWeight(.medium)
                                             .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 12)
-                                            .background(Color.appSecondarySystemGroupedBackground)
-                                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .strokeBorder(Color.secondary.opacity(0.1), lineWidth: 1)
-                                            )
                                     }
                                 }
                             }
                         }
-                    } else {
-                        // Initial State Hint
-                        VStack(spacing: 12) {
-                            Image(systemName: "magnifyingglass.circle")
-                                .font(.system(size: 48))
-                                .foregroundColor(.secondary.opacity(0.5))
-                            Text("点击上方按钮开始查询")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.top, 40)
                     }
+                } else {
+                    ContentUnavailableView("请点击上方按钮开始查询", systemImage: "magnifyingglass.circle")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .padding()
             }
+            .padding()
         }
+
+        #if os(iOS)
+        .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索查询结果")
+        #elseif os(macOS)
+        .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "搜索查询结果")
+        #endif
         .navigationTitle("空教室查询")
         .inlineToolbarTitle()
-        .searchable(text: $viewModel.searchText, prompt: "搜索查询结果")
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
-        .toast(isPresenting: $viewModel.isShowingWarning) {
-            AlertToast(displayMode: .banner(.slide), type: .systemImage("exclamationmark.triangle", .yellow), title: "警告", subTitle: viewModel.warningMessage)
-        }
+        .errorToast($viewModel.errorToast)
         .trackView("AvailableClassroom")
     }
 
-    private var emptyStateView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "deskclock")
-                .font(.system(size: 40))
+    @ViewBuilder
+    private func filterRow<Content: View>(
+        title: String,
+        systemImage: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        HStack(spacing: 12) {
+            Label(title, systemImage: systemImage)
                 .foregroundColor(.secondary)
-            Text("该时间段无空闲教室")
-                .foregroundColor(.secondary)
+
+            Spacer()
+
+            content()
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
-        .background(Color.appSecondarySystemGroupedBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
