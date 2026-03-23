@@ -11,32 +11,24 @@ import Foundation
 import SwiftUI
 
 @MainActor
-class SSOLoginViewModel: ObservableObject {
-    @Published var isShowingLoginSheet: Bool {
-        didSet {
-            isShowingLoginSheetBinding.wrappedValue = isShowingLoginSheet
-        }
-    }
+@Observable
+class SSOLoginViewModel {
+    var isShowingBrowser: Bool = false
+    var isShowingWebVPNAlert: Bool = false
 
-    private var isShowingLoginSheetBinding: Binding<Bool>
+    var selectedTab = 0
 
-    @Published var isShowingBrowser: Bool = false
-    @Published var isShowingWebVPNAlert: Bool = false
+    var username: String = KeychainUtil.ssoUsername ?? ""
+    var password: String = KeychainUtil.ssoPassword ?? ""
+    var isPasswordVisible: Bool = false
 
-    @Published var selectedTab = 0
+    var captchaImageData: Data? = nil
+    var captcha: String = ""
+    var smsCode: String = ""
 
-    @Published var username: String = KeychainUtil.ssoUsername ?? ""
-    @Published var password: String = KeychainUtil.ssoPassword ?? ""
-    @Published var isPasswordVisible: Bool = false
+    var errorToast: ToastState = .errorTitle
 
-    @Published var captchaImageData: Data? = nil
-    @Published var captcha: String = ""
-    @Published var smsCode: String = ""
-
-    @Published var isShowingError: Bool = false
-    @Published var errorMessage: String = ""
-
-    @Published var countdown = 0
+    var countdown = 0
 
     var isAccountLoginDisabled: Bool {
         return username.isEmpty || password.isEmpty || AuthManager.shared.isSSOLoggingIn
@@ -50,88 +42,67 @@ class SSOLoginViewModel: ObservableObject {
         return username.isEmpty || captcha.isEmpty || smsCode.isEmpty || AuthManager.shared.isSSOLoggingIn
     }
 
-    init(isShowingLoginSheet: Binding<Bool>) {
-        self.isShowingLoginSheet = isShowingLoginSheet.wrappedValue
-        self.isShowingLoginSheetBinding = isShowingLoginSheet
-    }
-
-    func handleAccountLogin() {
+    func handleAccountLogin(isLoginSheetPresented: Binding<Bool>) async {
         guard !username.isEmpty, !password.isEmpty else {
-            errorMessage = "请输入用户名或密码"
-            isShowingError = true
+            errorToast.show(message: "请输入用户名或密码")
             return
         }
 
-        Task {
-            do {
-                try await AuthManager.shared.ssoLogin(username: username, password: password)
-                isShowingLoginSheet = false
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+        do {
+            try await AuthManager.shared.ssoLogin(username: username, password: password)
+            isLoginSheetPresented.wrappedValue = false
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func handleGetDynamicCode() {
+    func handleGetDynamicCode() async {
         guard !username.isEmpty, !captcha.isEmpty else {
-            errorMessage = "请输入用户名和验证码"
-            isShowingError = true
+            errorToast.show(message: "请输入用户名和验证码")
             return
         }
 
-        Task {
-            do {
-                try await AuthManager.shared.ssoGetDynamicCode(username: username, captcha: captcha)
+        do {
+            try await AuthManager.shared.ssoGetDynamicCode(username: username, captcha: captcha)
 
-                countdown = 120
-                Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
-                    Task { @MainActor in
-                        guard let self = self else {
-                            timer.invalidate()
-                            return
-                        }
-                        if self.countdown > 1 {
-                            self.countdown -= 1
-                        } else {
-                            timer.invalidate()
-                            self.countdown = 0
-                        }
+            countdown = 120
+            Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+                Task { @MainActor in
+                    guard let self = self else {
+                        timer.invalidate()
+                        return
+                    }
+                    if self.countdown > 1 {
+                        self.countdown -= 1
+                    } else {
+                        timer.invalidate()
+                        self.countdown = 0
                     }
                 }
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
             }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func handleRefreshCaptcha() {
-        Task {
-            do {
-                captchaImageData = try await AuthManager.shared.ssoGetCaptcha()
-            } catch {
-                errorMessage = error.localizedDescription
-                isShowingError = true
-            }
+    func handleRefreshCaptcha() async {
+        do {
+            captchaImageData = try await AuthManager.shared.ssoGetCaptcha()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func handleDynamicLogin() {
-        Task {
-            do {
-                try await AuthManager.shared.ssoDynamicLogin(username: username, captcha: captcha, dynamicCode: smsCode)
-                isShowingLoginSheet = false
-            }
+    func handleDynamicLogin(isLoginSheetPresented: Binding<Bool>) async {
+        do {
+            try await AuthManager.shared.ssoDynamicLogin(username: username, captcha: captcha, dynamicCode: smsCode)
+            isLoginSheetPresented.wrappedValue = false
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func closeLoginSheet() {
-        isShowingLoginSheet = false
-    }
-
-    #if os(iOS)
-    func onBrowserLoginSuccess(_ username: String, _ password: String, _ mode: SSOBrowserView.LoginMode, _ cookies: [HTTPCookie]) {
+    func onBrowserLoginSuccess(_ username: String, _ password: String, _ mode: SSOBrowserView.LoginMode, _ cookies: [HTTPCookie], _ isLoginSheetPresented: Binding<Bool>) {
         CookieHelper.shared.updateCookies(cookies)
         Task {
             do {
@@ -144,18 +115,15 @@ class SSOLoginViewModel: ObservableObject {
                 AuthManager.shared.isShowingSSOInfo = true
                 AuthManager.shared.allLogin()
                 TrackHelper.shared.event(category: "Auth", action: "Login", name: "Browser", value: 1)
-                isShowingBrowser = false
-                isShowingLoginSheet = false
+                isLoginSheetPresented.wrappedValue = false
                 if mode == .username {
                     KeychainUtil.ssoUsername = username
                     KeychainUtil.ssoPassword = password
                 }
             } catch {
-                isShowingError = true
-                errorMessage = "通过网页登录失败: \(error.localizedDescription)"
+                errorToast.show(message: "通过网页登录失败: \(error.localizedDescription)")
                 TrackHelper.shared.event(category: "Auth", action: "Login", name: "Browser", value: 0)
             }
         }
     }
-    #endif
 }

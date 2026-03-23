@@ -8,56 +8,41 @@
 import SwiftUI
 
 struct SSOLoginView: View {
-    @StateObject private var viewModel: SSOLoginViewModel
-    @Bindable var authManager = AuthManager.shared
+    @Binding var isPresented: Bool
 
-    init(isShowingLoginSheet: Binding<Bool>) {
-        _viewModel = StateObject(wrappedValue: SSOLoginViewModel(isShowingLoginSheet: isShowingLoginSheet))
-    }
+    @State var viewModel = SSOLoginViewModel()
+    @Bindable var authManager = AuthManager.shared
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 30) {
-                Picker("登录方式", selection: $viewModel.selectedTab) {
-                    Text("账号登录").tag(0)
-                    Text("验证码登录").tag(1)
+            Form {
+                Section {
+                    Picker("登录方式", selection: $viewModel.selectedTab.withAnimation(.snappy)) {
+                        Text("账号登录").tag(0)
+                        Text("验证码登录").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                } footer: {
+                    Label {
+                        Text("推荐使用账号密码登录方式，当登录状态丢失后，应用会自动尝试重新使用账号密码来登录。验证码登录方式在登录状态丢失后需要重新登录。")
+                    } icon: {
+                        Image(systemName: "info.circle.fill")
+                    }
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(alignment: .top, spacing: 5) {
-                            Image(systemName: "info.circle.fill")
-                                .foregroundColor(.blue)
-                                .font(.system(size: 16))
-
-                            Text("推荐使用账号密码登录方式，当登录状态丢失后，应用会自动尝试重新使用账号密码来登录。\n而验证码登录方式当登录状态丢失后则需要重新登录。")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding()
-                        .background(Color.accent.opacity(0.1))
-                        .cornerRadius(10)
-                    }
-                    .padding(.horizontal)
-
-                    TabView(selection: $viewModel.selectedTab) {
-                        accountLoginView.tag(0)
-                        verificationCodeLoginView.tag(1)
-                    }
-                    #if os(iOS)
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    #endif
-                    .frame(height: 300)
+                if viewModel.selectedTab == 0 {
+                    accountLoginSection
+                } else {
+                    verificationCodeLoginSection
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("统一认证登录")
             .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        viewModel.closeLoginSheet()
+                        isPresented = false
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
@@ -70,35 +55,16 @@ struct SSOLoginView: View {
                     }
                 }
             }
-            .alert("错误", isPresented: $viewModel.isShowingError) {
-                Button("确定", role: .cancel) {}
-            } message: {
-                Text(viewModel.errorMessage)
-            }
-            .task {
-                viewModel.handleRefreshCaptcha()
-            }
+            .errorToast($viewModel.errorToast)
+            .task { await viewModel.handleRefreshCaptcha() }
             .alert("警告", isPresented: $viewModel.isShowingWebVPNAlert) {
                 Button("确定", role: .cancel) {}
             } message: {
                 Text("WebVPN模式下无法使用网页登录，请关闭WebVPN模式后重试。")
             }
             .sheet(isPresented: $viewModel.isShowingBrowser) {
-                NavigationStack {
-                    #if os(iOS)
-                    SSOBrowserView(onLoginSuccess: viewModel.onBrowserLoginSuccess)
-                        .navigationTitle("网页登录")
-                        .inlineToolbarTitle()
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("关闭") {
-                                    viewModel.isShowingBrowser = false
-                                }
-                            }
-                        }
-                    #else
-                    Text("网页登录功能暂不支持macOS平台")
-                    #endif
+                SSOBrowserView(isPresented: $viewModel.isShowingBrowser) { username, password, loginMode, cookies in
+                    viewModel.onBrowserLoginSuccess(username, password, loginMode, cookies, $isPresented)
                 }
                 .trackView("SSOBrowser")
             }
@@ -108,132 +74,70 @@ struct SSOLoginView: View {
 
     // MARK: - Account Login View
 
-    private var accountLoginView: some View {
-        VStack(spacing: 20) {
-            HStack(spacing: 12) {
-                Image(systemName: "person.circle.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 20, height: 20)
-                    .foregroundColor(.gray)
+    private var accountLoginSection: some View {
+        Group {
+            Section("账号信息") {
                 TextField("请输入账号", text: $viewModel.username)
-                    .textFieldStyle(.plain)
                     .textContentType(.username)
                     #if os(iOS)
                 .textInputAutocapitalization(.never)
                     #endif
                     .autocorrectionDisabled(true)
-                    .frame(height: 20)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.appSystemGray6)
-            .cornerRadius(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.appSystemGray4, lineWidth: 1)
-            )
-            .padding(.horizontal)
-            .padding(.top, 5)
 
-            HStack(spacing: 12) {
-                Image(systemName: "lock.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 20, height: 20)
-                    .foregroundColor(.gray)
+                HStack {
+                    Group {
+                        if viewModel.isPasswordVisible {
+                            TextField("请输入密码", text: $viewModel.password)
+                        } else {
+                            SecureField("请输入密码", text: $viewModel.password)
+                                .autocorrectionDisabled(true)
+                        }
+                    }
+                    .textContentType(.password)
 
-                if viewModel.isPasswordVisible {
-                    TextField("请输入密码", text: $viewModel.password)
-                        .textFieldStyle(.plain)
-                        .textContentType(.password)
-                        .frame(height: 20)
-                } else {
-                    SecureField("请输入密码", text: $viewModel.password)
-                        .textFieldStyle(.plain)
-                        .textContentType(.password)
-                        .frame(height: 20)
-                        .autocorrectionDisabled(true)
-                }
-
-                Button(action: {
-                    viewModel.isPasswordVisible.toggle()
-                }) {
-                    Image(systemName: viewModel.isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                        .foregroundColor(.gray)
+                    Button(action: { viewModel.isPasswordVisible.toggle() }) {
+                        Image(systemName: viewModel.isPasswordVisible ? "eye.slash.fill" : "eye.fill")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.appSystemGray6)
-            .cornerRadius(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.appSystemGray4, lineWidth: 1)
-            )
-            .padding(.horizontal)
 
-            Button(action: viewModel.handleAccountLogin) {
-                Text("登录")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 5)
-                if authManager.isSSOLoggingIn {
-                    ProgressView()
+            Section {
+                Button(asyncAction: { await viewModel.handleAccountLogin(isLoginSheetPresented: $isPresented) }) {
+                    HStack {
+                        Text("登录")
+                            .frame(maxWidth: .infinity)
+                        if authManager.isSSOLoggingIn {
+                            ProgressView()
+                                .smallControlSizeOnMac()
+                        }
+                    }
                 }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isAccountLoginDisabled)
             }
-            .disabled(viewModel.isAccountLoginDisabled)
-            .padding(.horizontal)
-            .padding(.top, 5)
-            .buttonStyle(.borderedProminent)
-
-            Spacer()
         }
     }
 
     // MARK: - Verification Code Login View
 
-    private var verificationCodeLoginView: some View {
-        VStack(spacing: 20) {
-            HStack(spacing: 12) {
-                Image(systemName: "person.circle.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 20, height: 20)
-                    .foregroundColor(.gray)
+    private var verificationCodeLoginSection: some View {
+        Group {
+            Section {
                 TextField("请输入账号", text: $viewModel.username)
-                    .textFieldStyle(.plain)
                     .textContentType(.username)
                     #if os(iOS)
                 .textInputAutocapitalization(.never)
                     #endif
                     .autocorrectionDisabled(true)
-                    .frame(height: 20)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.appSystemGray6)
-            .cornerRadius(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.appSystemGray4, lineWidth: 1)
-            )
-            .padding(.horizontal)
-            .padding(.top, 5)
 
-            HStack(spacing: 12) {
-                HStack(spacing: 12) {
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(.gray)
+                HStack {
                     TextField("请输入图片验证码", text: $viewModel.captcha)
-                        .textFieldStyle(.plain)
                         #if os(iOS)
                     .textInputAutocapitalization(.never)
                         #endif
                         .autocorrectionDisabled(true)
-                        .frame(height: 20)
 
                     if let data = viewModel.captchaImageData {
                         #if os(macOS)
@@ -241,84 +145,60 @@ struct SSOLoginView: View {
                             Image(nsImage: nsImage)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 20)
-                                .onTapGesture { viewModel.handleRefreshCaptcha() }
+                                .frame(width: 100, height: 28)
+                                .contentShape(.rect)
+                                .onTapGesture { Task { await viewModel.handleRefreshCaptcha() } }
                         }
                         #else
                         if let uiImage = UIImage(data: data) {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 20)
-                                .onTapGesture { viewModel.handleRefreshCaptcha() }
+                                .frame(width: 100, height: 28)
+                                .contentShape(.rect)
+                                .onTapGesture { Task { await viewModel.handleRefreshCaptcha() } }
                         }
                         #endif
                     } else {
                         ProgressView()
-                            .frame(height: 20)
+                            .smallControlSizeOnMac()
+                            .frame(width: 100)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color.appSystemGray6)
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.appSystemGray4, lineWidth: 1)
-                )
-            }
-            .padding(.horizontal)
 
-            HStack(spacing: 12) {
-                HStack(spacing: 12) {
-                    Image(systemName: "message.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 20, height: 20)
-                        .foregroundColor(.gray)
+                HStack {
                     TextField("请输入短信验证码", text: $viewModel.smsCode)
                         .textContentType(.oneTimeCode)
                         #if os(iOS)
                     .textInputAutocapitalization(.never)
                         #endif
                         .autocorrectionDisabled(true)
-                        .frame(height: 20)
-                    Button(action: viewModel.handleGetDynamicCode) {
+
+                    Button(asyncAction: viewModel.handleGetDynamicCode) {
                         Text(viewModel.countdown > 0 ? "\(viewModel.countdown)秒后重新获取" : "获取验证码")
                     }
                     .disabled(viewModel.isGetDynamicCodeDisabled)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(Color.appSystemGray6)
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.appSystemGray4, lineWidth: 1)
-                )
+            } header: {
+                Text("验证码登录")
+            } footer: {
+                Text("点击图片验证码可刷新。")
             }
-            .padding(.horizontal)
 
-            Button(action: viewModel.handleDynamicLogin) {
-                Text("登录")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 5)
-                if authManager.isSSOLoggingIn {
-                    ProgressView()
+            Section {
+                Button(asyncAction: { await viewModel.handleDynamicLogin(isLoginSheetPresented: $isPresented) }) {
+                    HStack {
+                        Text("登录")
+                            .frame(maxWidth: .infinity)
+                        if authManager.isSSOLoggingIn {
+                            ProgressView()
+                                .smallControlSizeOnMac()
+                        }
+                    }
                 }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isDynamicLoginDisabled)
             }
-            .disabled(viewModel.isDynamicLoginDisabled)
-            .padding(.horizontal)
-            .padding(.top, 5)
-            .buttonStyle(.borderedProminent)
-
-            Spacer()
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        SSOLoginView(isShowingLoginSheet: .constant(true))
     }
 }

@@ -145,7 +145,7 @@ struct ProfileView: View {
         .formStyle(.grouped)
         .navigationTitle("我的")
         .sheet(isPresented: $isLoginSheetPresented) {
-            SSOLoginView(isShowingLoginSheet: $isLoginSheetPresented)
+            SSOLoginView(isPresented: $isLoginSheetPresented)
         }
         .alert("退出登录", isPresented: $isLogoutAlertPresented) {
             Button("取消", role: .cancel) {}
