@@ -21,6 +21,7 @@ struct CampusMapView: View {
     @State private var stableSheetHeight: CGFloat = 0
     @State private var debounceTask: Task<Void, Never>? = nil
     @FocusState private var isSearchFocused: Bool
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     private var campusTip = CampusTip()
     private var buildingInfoTip = BuildingInfoTip()
@@ -30,46 +31,45 @@ struct CampusMapView: View {
         URL(string: "https://gis.csust.edu.cn/cmipsh5/#/")!
     }
 
+    private var usesInspectorForBuildingsList: Bool {
+        #if os(macOS)
+        true
+        #elseif os(iOS)
+        sizeClass != .compact
+        #else
+        false
+        #endif
+    }
+
+    private var usesSheetForBuildingsList: Bool {
+        !usesInspectorForBuildingsList
+    }
+
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Map(position: $viewModel.mapPosition, selection: $viewModel.selectedBuilding) {
-                ForEach(viewModel.filteredBuildings) { building in
-                    MapPolygon(coordinates: viewModel.getPolygonCoordinates(for: building))
-                        .foregroundStyle(viewModel.color(for: building.properties.category).opacity(viewModel.selectedBuilding == building ? 0.8 : 0.5))
-                        .stroke(viewModel.selectedBuilding == building ? Color.primary : viewModel.color(for: building.properties.category), lineWidth: viewModel.selectedBuilding == building ? 2 : 1)
-                        .tag(building)
-
-                    Annotation(building.properties.name, coordinate: viewModel.getCenter(for: building)) {
-                        EmptyView()
-                    }
+        Map(position: $viewModel.mapPosition, selection: $viewModel.selectedBuilding) {
+            ForEach(viewModel.filteredBuildings) { building in
+                MapPolygon(coordinates: viewModel.getPolygonCoordinates(for: building))
+                    .foregroundStyle(viewModel.color(for: building.properties.category).opacity(viewModel.selectedBuilding == building ? 0.8 : 0.5))
+                    .stroke(viewModel.selectedBuilding == building ? Color.primary : viewModel.color(for: building.properties.category), lineWidth: viewModel.selectedBuilding == building ? 2 : 1)
                     .tag(building)
-                }
-                UserAnnotation()
-            }
-            .contentMargins(.bottom, stableSheetHeight, for: .scrollContent)
-            .mapControls {
-                MapUserLocationButton()
-                MapCompass()
-                MapScaleView()
-                MapPitchToggle()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            Button(action: viewModel.toggleBuildingsList) {
-                Image(systemName: "building.columns")
-                    .font(.title2)
-                    .padding(12)
-                    .background(.thickMaterial)
-                    .clipShape(Circle())
-            }
-            // MARK: - 建筑物列表开关 Tip
-            .popoverTip(buildingInfoTip) { action in
-                if action.index == 0 {
-                    buildingInfoTip.invalidate(reason: .actionPerformed)
+                Annotation(building.properties.name, coordinate: viewModel.getCenter(for: building)) {
+                    EmptyView()
                 }
+                .tag(building)
             }
-            .padding()
+            UserAnnotation()
         }
+        .applyIf(usesSheetForBuildingsList) { view in
+            view.contentMargins(.bottom, stableSheetHeight, for: .scrollContent)
+        }
+        .mapControls {
+            MapUserLocationButton()
+            MapCompass()
+            MapScaleView()
+            MapPitchToggle()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         #if os(iOS)
         .toolbar(.hidden, for: .tabBar)
         .background(
@@ -78,29 +78,35 @@ struct CampusMapView: View {
             }
         )
         #endif
-        .onChange(of: viewModel.isBuildingsListShown) { _, isShown in
-            if !isShown {
-                debounceTask?.cancel()
-                stableSheetHeight = 0
+        .apply { view in
+            if usesInspectorForBuildingsList {
+                view
+                    .inspector(isPresented: $viewModel.isBuildingsListShown) {
+                        inspectorContent
+                            .inspectorColumnWidth(min: 320, ideal: 360, max: 420)
+                    }
+            } else {
+                view
+                    .onChange(of: viewModel.isBuildingsListShown) { _, isShown in
+                        if !isShown {
+                            debounceTask?.cancel()
+                            stableSheetHeight = 0
+                        }
+                    }
+                    .sheet(isPresented: $viewModel.isBuildingsListShown) {
+                        phoneSheetContent
+                    }
             }
-        }
-        .sheet(isPresented: $viewModel.isBuildingsListShown) {
-            sheetContent
-                .presentationContentInteraction(.scrolls)
-                .presentationBackgroundInteraction(.enabled)
-                .presentationDetents([.fraction(0.3), .fraction(0.5), .fraction(0.7)], selection: $viewModel.settingsDetent)
         }
         .navigationTitle("校园地图")
         .inlineToolbarTitle()
         .sheet(isPresented: $viewModel.isOnlineMapShown) {
             SafariView(url: url).trackView("CampusMapOnline")
         }
-        .toast(isPresenting: $viewModel.isShowingError) {
-            AlertToast(type: .error(.red), title: "错误", subTitle: viewModel.errorMessage)
-        }
         .toast(isPresenting: $viewModel.isLoading) {
-            AlertToast(type: .loading, title: "加载中", subTitle: "正在加载地图数据")
+            AlertToast(type: .loading, title: "加载中", subTitle: "")
         }
+        .errorToast($viewModel.errorToast)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Menu {
@@ -131,20 +137,60 @@ struct CampusMapView: View {
                     }
                 }
             }
+
+            ToolbarItem(placement: .navigation) {
+                Button(action: viewModel.toggleBuildingsList) {
+                    Image(systemName: "building.columns")
+                }
+                // MARK: - 建筑物列表开关 Tip
+                .popoverTip(buildingInfoTip) { action in
+                    if action.index == 0 {
+                        buildingInfoTip.invalidate(reason: .actionPerformed)
+                    }
+                }
+            }
         }
-        .task {
-            viewModel.loadBuildings()
-        }
+        .task { await viewModel.loadInitial() }
         .trackView("CampusMap")
     }
 
-    private var sheetContent: some View {
+    private var phoneSheetContent: some View {
+        buildingsListContent
+            .presentationContentInteraction(.scrolls)
+            .presentationBackgroundInteraction(.enabled)
+            .presentationDetents([.fraction(0.3), .fraction(0.5), .fraction(0.7)], selection: $viewModel.settingsDetent)
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear {
+                            let h = proxy.size.height
+                            if h > 0 { stableSheetHeight = h }
+                        }
+                        .onChange(of: proxy.size.height) { _, newHeight in
+                            debounceTask?.cancel()
+                            debounceTask = Task {
+                                try? await Task.sleep(nanoseconds: 200_000_000)
+                                if !Task.isCancelled && viewModel.isBuildingsListShown {
+                                    stableSheetHeight = newHeight
+                                }
+                            }
+                        }
+                }
+            }
+    }
+
+    private var inspectorContent: some View {
+        buildingsListContent
+    }
+
+    private var buildingsListContent: some View {
         VStack(spacing: 0) {
             HStack {
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
                     TextField("搜索建筑、地点...", text: $viewModel.searchText)
+                        .textFieldStyle(.plain)
                         .focused($isSearchFocused)
                         .submitLabel(.search)
                         .overlay(alignment: .trailing) {
@@ -158,7 +204,7 @@ struct CampusMapView: View {
                         }
                 }
                 .padding(8)
-                .background(Color.appTertiarySystemFill)
+                .background(Color.secondary.opacity(0.1))
                 .cornerRadius(24)
 
                 if isSearchFocused {
@@ -183,10 +229,11 @@ struct CampusMapView: View {
                                 .font(.subheadline)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 8)
-                                .background(viewModel.selectedCategory == category ? Color.accentColor : Color.appSecondarySystemBackground)
+                                .background(viewModel.selectedCategory == category ? Color.accentColor : Color.secondary.opacity(0.1))
                                 .foregroundColor(viewModel.selectedCategory == category ? .white : .primary)
                                 .cornerRadius(20)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal)
@@ -195,55 +242,55 @@ struct CampusMapView: View {
 
             // Building List
             ScrollViewReader { proxy in
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     if viewModel.filteredBuildings.isEmpty && !viewModel.searchText.isEmpty {
                         ContentUnavailableView.search(text: viewModel.searchText)
                             .padding(.top, 40)
                     } else {
                         LazyVStack(spacing: 8) {
                             ForEach(viewModel.filteredBuildings) { building in
-                                HStack(spacing: 0) {
-                                    Button(action: { viewModel.selectBuilding(building) }) {
-                                        HStack(spacing: 12) {
-                                            // Icon
-                                            ZStack {
-                                                Circle()
-                                                    .fill(viewModel.color(for: building.properties.category).opacity(0.1))
-                                                    .frame(width: 40, height: 40)
-                                                Image(systemName: viewModel.icon(for: building.properties.category))
-                                                    .font(.title2)
-                                                    .foregroundColor(viewModel.color(for: building.properties.category))
+                                CustomGroupBox {
+                                    HStack(spacing: 0) {
+                                        Button(action: { viewModel.selectBuilding(building) }) {
+                                            HStack(spacing: 12) {
+                                                // Icon
+                                                ZStack {
+                                                    Circle()
+                                                        .fill(viewModel.color(for: building.properties.category).opacity(0.1))
+                                                        .frame(width: 40, height: 40)
+                                                    Image(systemName: viewModel.icon(for: building.properties.category))
+                                                        .font(.title2)
+                                                        .foregroundColor(viewModel.color(for: building.properties.category))
+                                                }
+
+                                                VStack(alignment: .leading, spacing: 4) {
+                                                    Text(building.properties.name)
+                                                        .font(.headline)
+                                                        .foregroundColor(.primary)
+
+                                                    Text(building.properties.campus + "校区 · " + building.properties.category)
+                                                        .font(.caption)
+                                                        .foregroundColor(.secondary)
+                                                }
+
+                                                Spacer()
                                             }
-
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text(building.properties.name)
-                                                    .font(.headline)
-                                                    .foregroundColor(.primary)
-
-                                                Text(building.properties.campus + "校区 · " + building.properties.category)
-                                                    .font(.caption)
-                                                    .foregroundColor(.secondary)
-                                            }
-
-                                            Spacer()
+                                            .contentShape(.rect)
                                         }
-                                        .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
+                                        .buttonStyle(.plain)
 
-                                    Button(action: { viewModel.openNavigation(for: building) }) {
-                                        Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
-                                            .font(.largeTitle)
-                                            .symbolRenderingMode(.hierarchical)
-                                            .foregroundColor(.accentColor)
-                                            .frame(width: 50, height: 50)
+                                        Button(action: { viewModel.openNavigation(for: building) }) {
+                                            Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
+                                                .font(.largeTitle)
+                                                .symbolRenderingMode(.hierarchical)
+                                                .foregroundColor(.accentColor)
+                                                .frame(width: 50, height: 50)
+                                        }
+                                        .buttonStyle(.plain)
                                     }
                                 }
-                                .padding(12)
-                                .background(Color.appSecondarySystemBackground)
-                                .cornerRadius(12)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
+                                    RoundedRectangle(cornerRadius: 15)
                                         .stroke(viewModel.selectedBuilding == building ? Color.accentColor : Color.clear, lineWidth: 2)
                                 )
                                 .padding(.horizontal)
@@ -267,24 +314,6 @@ struct CampusMapView: View {
                 withAnimation(.spring()) {
                     viewModel.settingsDetent = .fraction(0.7)
                 }
-            }
-        }
-        .background {
-            GeometryReader { proxy in
-                Color.clear
-                    .onAppear {
-                        let h = proxy.size.height
-                        if h > 0 { stableSheetHeight = h }
-                    }
-                    .onChange(of: proxy.size.height) { _, newHeight in
-                        debounceTask?.cancel()
-                        debounceTask = Task {
-                            try? await Task.sleep(nanoseconds: 200_000_000)
-                            if !Task.isCancelled && viewModel.isBuildingsListShown {
-                                stableSheetHeight = newHeight
-                            }
-                        }
-                    }
             }
         }
     }

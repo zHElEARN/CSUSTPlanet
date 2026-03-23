@@ -64,8 +64,7 @@ final class CampusMapViewModel: ObservableObject {
     }
     @Published var mapPosition: MapCameraPosition = .region(MKCoordinateRegion(center: CampusMapViewModel.defaultLocation, span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)))
     @Published var isLoading: Bool = false
-    @Published var isShowingError: Bool = false
-    @Published var errorMessage: String = ""
+    @Published var errorToast: ToastState = .errorTitle
 
     static let defaultLocation = CLLocationCoordinate2D(latitude: 28.160, longitude: 112.972)
 
@@ -117,8 +116,15 @@ final class CampusMapViewModel: ObservableObject {
     private var buildingPolygons: [String: [CLLocationCoordinate2D]] = [:]
     private let locationManager = CLLocationManager()
 
+    var isInitial = true
+
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        await loadBuildings()
+    }
+
     init() {
-        loadBuildings()
         requestLocationPermission()
     }
 
@@ -152,33 +158,29 @@ final class CampusMapViewModel: ObservableObject {
         try? data.write(to: url)
     }
 
-    func loadBuildings() {
+    func loadBuildings() async {
         loadFromCache()
 
-        let urlString = "\(Constants.backendHost)/static/campus_map/map.json"
+        let urlString = "\(Constants.backendHost)/config/campus-map"
         guard let url = URL(string: urlString) else { return }
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
-        Task {
-            isLoading = true
-            defer {
-                isLoading = false
+        guard !isLoading else { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let geoJSON = try (await AF.request(request).serializingDecodable(GeoJSON.self).value)
+
+            if self.allBuildings != geoJSON.features {
+                self.allBuildings = geoJSON.features
+                centerMapOnCampus()
+                saveToCache(geoJSON)
             }
-
-            do {
-                let geoJSON = try (await AF.request(request).serializingDecodable(GeoJSON.self).value)
-
-                if self.allBuildings != geoJSON.features {
-                    self.allBuildings = geoJSON.features
-                    centerMapOnCampus()
-                    saveToCache(geoJSON)
-                }
-            } catch {
-                if allBuildings.isEmpty {
-                    errorMessage = error.localizedDescription
-                    isShowingError = true
-                }
+        } catch {
+            if allBuildings.isEmpty {
+                errorToast.show(message: error.localizedDescription)
             }
         }
     }
