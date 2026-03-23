@@ -66,7 +66,9 @@ class GradeQueryViewModel {
         defer { isLoadingGrades = false }
 
         do {
-            let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
+            let courseGrades = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
+            }
             let data = Cached(cachedAt: .now, value: courseGrades)
             applyData(data)
             MMKVHelper.shared.courseGradesCache = data

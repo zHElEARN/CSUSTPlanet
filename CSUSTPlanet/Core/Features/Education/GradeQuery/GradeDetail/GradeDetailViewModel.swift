@@ -32,13 +32,19 @@ class GradeDetailViewModel {
         defer { isLoadingDetail = false }
 
         let maxRetryCount = 5
+
         for _ in 1...maxRetryCount {
-            if let gradeDetail = try? await AuthManager.shared.eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl) {
+            do {
+                let gradeDetail = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                    try await AuthManager.shared.eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
+                }
+
                 self.detail = gradeDetail
                 return
-            }
+            } catch {}
         }
 
-        errorToast.show(message: "获取成绩详情失败，请刷新重试")
+        let errorMessage = "获取成绩详情失败，请刷新重试"
+        errorToast.show(message: errorMessage)
     }
 }

@@ -126,7 +126,9 @@ class CourseScheduleViewModel {
         defer { isSemestersLoading = false }
 
         do {
-            (availableSemesters, selectedSemester) = try await AuthManager.shared.eduHelper.courseService.getAvailableSemestersForCourseSchedule()
+            (availableSemesters, selectedSemester) = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.courseService.getAvailableSemestersForCourseSchedule()
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -138,8 +140,12 @@ class CourseScheduleViewModel {
         defer { isCourseScheduleLoading = false }
 
         do {
-            let courses = try await AuthManager.shared.eduHelper.courseService.getCourseSchedule(academicYearSemester: selectedSemester)
-            let semesterStartDate = try await AuthManager.shared.eduHelper.semesterService.getSemesterStartDate(academicYearSemester: selectedSemester)
+            let courses = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.courseService.getCourseSchedule(academicYearSemester: self.selectedSemester)
+            }
+            let semesterStartDate = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.semesterService.getSemesterStartDate(academicYearSemester: self.selectedSemester)
+            }
             let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
             self.courseScheduleData = data
             MMKVHelper.shared.courseScheduleCache = data

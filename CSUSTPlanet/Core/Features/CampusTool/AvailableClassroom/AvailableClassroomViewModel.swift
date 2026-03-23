@@ -37,7 +37,15 @@ final class AvailableClassroomViewModel {
         defer { isLoadingClassrooms = false }
 
         do {
-            availableClassrooms = try await AuthManager.shared.eduHelper.courseService.getAvailableClassrooms(campus: selectedCampus, week: selectedWeek, dayOfWeek: selectedDayOfWeek, section: selectedSection).sorted()
+            availableClassrooms = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.courseService.getAvailableClassrooms(
+                    campus: self.selectedCampus,
+                    week: self.selectedWeek,
+                    dayOfWeek: self.selectedDayOfWeek,
+                    section: self.selectedSection
+                )
+            }
+            .sorted()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

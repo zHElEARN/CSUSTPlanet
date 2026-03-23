@@ -14,7 +14,11 @@ enum CampusSystem {
 }
 
 extension AuthManager {
-    func withAuthRetry<T>(system: CampusSystem, maxRetries: Int = 2, operation: @escaping () async throws -> T) async throws -> T {
+    func withAuthRetry<T>(
+        system: CampusSystem,
+        maxRetries: Int = 2,
+        operation: @MainActor @escaping () async throws -> T
+    ) async throws -> T {
         var attempts = 0
 
         while true {

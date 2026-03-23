@@ -57,7 +57,9 @@ class ProfileDetailViewModel {
         defer { isLoadingEduProfile = false }
 
         do {
-            eduProfile = try await AuthManager.shared.eduHelper.profileService.getProfile()
+            eduProfile = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.profileService.getProfile()
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -69,7 +71,9 @@ class ProfileDetailViewModel {
         defer { isLoadingMoocProfile = false }
 
         do {
-            moocProfile = try await AuthManager.shared.moocHelper.getProfile()
+            moocProfile = try await AuthManager.shared.withAuthRetry(system: .mooc) {
+                try await AuthManager.shared.moocHelper.getProfile()
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

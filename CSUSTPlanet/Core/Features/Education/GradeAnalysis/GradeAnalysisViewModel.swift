@@ -71,7 +71,9 @@ class GradeAnalysisViewModel: NSObject {
         defer { isLoadingAnalysis = false }
 
         do {
-            let courseGrades = try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
+            let courseGrades = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
+            }
             let data = Cached(cachedAt: .now, value: courseGrades)
             self.courseGradesData = data
             MMKVHelper.shared.courseGradesCache = data

@@ -42,7 +42,9 @@ class CoursesViewModel {
         defer { isLoadingCourses = false }
 
         do {
-            courses = try await AuthManager.shared.moocHelper.getCourses()
+            courses = try await AuthManager.shared.withAuthRetry(system: .mooc) {
+                try await AuthManager.shared.moocHelper.getCourses()
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

@@ -42,11 +42,15 @@ final class TodoAssignmentsViewModel {
         defer { isLoadingAssignments = false }
 
         do {
-            let courses = try await AuthManager.shared.moocHelper.getCoursesWithPendingAssignments()
+            let courses = try await AuthManager.shared.withAuthRetry(system: .mooc) {
+                try await AuthManager.shared.moocHelper.getCoursesWithPendingAssignments()
+            }
             var newGroups: [TodoAssignmentsData] = []
 
             for course in courses {
-                let assignments = try await AuthManager.shared.moocHelper.getCourseAssignments(course: course)
+                let assignments = try await AuthManager.shared.withAuthRetry(system: .mooc) {
+                    try await AuthManager.shared.moocHelper.getCourseAssignments(course: course)
+                }
                 newGroups.append(.init(course: course, assignments: assignments))
             }
 

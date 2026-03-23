@@ -50,7 +50,9 @@ class CourseDetailViewModel {
         defer { isLoadingAssignments = false }
 
         do {
-            assignments = try await AuthManager.shared.moocHelper.getCourseAssignments(course: course)
+            assignments = try await AuthManager.shared.withAuthRetry(system: .mooc) {
+                try await AuthManager.shared.moocHelper.getCourseAssignments(course: course)
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -62,7 +64,9 @@ class CourseDetailViewModel {
         defer { isLoadingExams = false }
 
         do {
-            exams = try await AuthManager.shared.moocHelper.getCourseExams(course: course)
+            exams = try await AuthManager.shared.withAuthRetry(system: .mooc) {
+                try await AuthManager.shared.moocHelper.getCourseExams(course: course)
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

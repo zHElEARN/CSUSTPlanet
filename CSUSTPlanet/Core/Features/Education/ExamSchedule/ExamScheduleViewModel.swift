@@ -67,7 +67,9 @@ class ExamScheduleViewModel {
         defer { isLoadingSemesters = false }
 
         do {
-            (availableSemesters, selectedSemester) = try await AuthManager.shared.eduHelper.examService.getAvailableSemestersForExamSchedule()
+            (availableSemesters, selectedSemester) = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.examService.getAvailableSemestersForExamSchedule()
+            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -79,7 +81,9 @@ class ExamScheduleViewModel {
         defer { isLoadingExams = false }
 
         do {
-            let exams = try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: selectedSemester, semesterType: selectedSemesterType)
+            let exams = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: self.selectedSemester, semesterType: self.selectedSemesterType)
+            }
             let sortedExams = exams.sorted {
                 return $0.examStartTime < $1.examStartTime
             }
