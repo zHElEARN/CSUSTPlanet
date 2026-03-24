@@ -37,10 +37,22 @@ class NotificationManager {
     var token: Data?
     private var tokenContinuation: CheckedContinuation<Data, Error>? = nil
 
-    var isShowingError: Bool = false
-    var errorDescription: String = ""
+    var isNotificationEnabled: Bool {
+        didSet { MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled }
+    }
 
-    private init() {}
+    var isLiveActivityEnabled: Bool {
+        didSet {
+            MMKVHelper.shared.isLiveActivityEnabled = isLiveActivityEnabled
+            TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
+        }
+    }
+
+    private init() {
+        isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
+        isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
+        TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
+    }
 
     func setup() {
         // 静默获取设备令牌
@@ -48,14 +60,14 @@ class NotificationManager {
             Logger.notificationManager.debug("开始静默获取设备令牌")
             guard await hasAuthorization() else {
                 Logger.notificationManager.debug("无通知权限，关闭通知开关")
-                GlobalManager.shared.isNotificationEnabled = false
+                isNotificationEnabled = false
                 return
             }
             do {
                 self.token = try await getToken()
             } catch NotificationManagerError.authorizationDenied {
                 Logger.notificationManager.debug("无通知令牌权限，关闭通知开关")
-                GlobalManager.shared.isNotificationEnabled = false
+                isNotificationEnabled = false
                 return
             } catch {
                 Logger.notificationManager.debug("其他原因无法获取到通知令牌，结束操作: \(error)")
@@ -72,11 +84,9 @@ class NotificationManager {
 
     func toggle() {
         Task {
-            if GlobalManager.shared.isNotificationEnabled {
+            if isNotificationEnabled {
                 guard await hasAuthorization() else {
-                    GlobalManager.shared.isNotificationEnabled = false
-                    self.errorDescription = "未开启系统通知权限，无法开启通知功能"
-                    self.isShowingError = true
+                    isNotificationEnabled = false
                     return
                 }
                 syncAll()

@@ -15,9 +15,9 @@ import AppKit
 
 struct NotificationSettingsView: View {
     let isLiveActivityEnabled = Binding(
-        get: { GlobalManager.shared.isLiveActivityEnabled },
+        get: { NotificationManager.shared.isLiveActivityEnabled },
         set: { newValue in
-            GlobalManager.shared.isLiveActivityEnabled = newValue
+            NotificationManager.shared.isLiveActivityEnabled = newValue
             #if os(iOS)
             ActivityHelper.shared.autoUpdateActivity()
             #endif
@@ -25,9 +25,9 @@ struct NotificationSettingsView: View {
     )
 
     let isNotificationEnabled = Binding(
-        get: { GlobalManager.shared.isNotificationEnabled },
+        get: { NotificationManager.shared.isNotificationEnabled },
         set: { newValue in
-            GlobalManager.shared.isNotificationEnabled = newValue
+            NotificationManager.shared.isNotificationEnabled = newValue
             #if os(iOS)
             NotificationManager.shared.toggle()
             #endif

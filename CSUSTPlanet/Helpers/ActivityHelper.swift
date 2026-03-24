@@ -30,7 +30,7 @@ class ActivityHelper {
 
     @MainActor
     func autoUpdateActivity() {
-        guard GlobalManager.shared.isLiveActivityEnabled else {
+        guard NotificationManager.shared.isLiveActivityEnabled else {
             Logger.activityHelper.info("实时活动已禁用。正在停止所有活跃活动")
             stopActivity()
             return

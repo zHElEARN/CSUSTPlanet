@@ -57,9 +57,7 @@ struct CSUSTPlanetApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                #if os(iOS)
-            .environment(NotificationManager.shared)
-                #elseif os(macOS)
+                #if os(macOS)
             .frame(
                 minWidth: 400, idealWidth: 800, maxWidth: 1200,
                 minHeight: 600, idealHeight: 800, maxHeight: 1000

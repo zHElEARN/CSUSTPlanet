@@ -13,10 +13,6 @@ struct ProfileView: View {
     @Bindable var authManager = AuthManager.shared
     @Bindable var globalManager = GlobalManager.shared
 
-    #if os(iOS)
-    @Environment(NotificationManager.self) var notificationManager
-    #endif
-
     @State var isLoginSheetPresented = false
     @State var isLogoutAlertPresented = false
 
@@ -153,13 +149,6 @@ struct ProfileView: View {
         } message: {
             Text("确定要退出登录吗？")
         }
-        #if os(iOS)
-        .alert("错误", isPresented: Bindable(notificationManager).isShowingError) {
-            Button("确定", role: .cancel) {}
-        } message: {
-            Text(notificationManager.errorDescription)
-        }
-        #endif
         .trackView("Profile")
     }
 }

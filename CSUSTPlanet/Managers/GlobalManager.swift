@@ -50,12 +50,9 @@ final class GlobalManager {
     private init() {
         appearance = MMKVHelper.shared.appearance
         isUserAgreementAccepted = MMKVHelper.shared.isUserAgreementAccepted
-        isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
         isWebVPNModeEnabled = MMKVHelper.shared.isWebVPNModeEnabled
-        isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
-        TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
         TrackHelper.shared.event(category: "WebVPN", action: "Status", name: isWebVPNModeEnabled ? "Enabled" : "Disabled")
     }
 
@@ -72,20 +69,11 @@ final class GlobalManager {
     var isUserAgreementShowing: Binding<Bool> {
         Binding(get: { !self.isUserAgreementAccepted }, set: { self.isUserAgreementAccepted = !$0 })
     }
-    var isLiveActivityEnabled: Bool {
-        didSet {
-            MMKVHelper.shared.isLiveActivityEnabled = isLiveActivityEnabled
-            TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
-        }
-    }
     var isWebVPNModeEnabled: Bool {
         didSet {
             MMKVHelper.shared.isWebVPNModeEnabled = isWebVPNModeEnabled
             TrackHelper.shared.event(category: "WebVPN", action: "Status", name: isWebVPNModeEnabled ? "Enabled" : "Disabled")
         }
-    }
-    var isNotificationEnabled: Bool {
-        didSet { MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled }
     }
 
     var hasDatabaseFatalError = false
