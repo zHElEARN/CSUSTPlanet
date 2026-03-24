@@ -118,6 +118,12 @@ struct ProfileView: View {
                 TrackLink(destination: NotificationSettingsView()) {
                     Label("通知设置", systemImage: "bell.badge")
                 }
+
+                #if DEBUG
+                TrackLink(destination: DebugToolsView()) {
+                    Label("调试工具", systemImage: "ladybug")
+                }
+                #endif
             } header: {
                 Text("设置")
             }
