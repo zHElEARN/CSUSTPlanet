@@ -15,7 +15,9 @@ import TipKit
 @main
 struct CSUSTPlanetApp: App {
     #if os(iOS)
-    @UIApplicationDelegateAdaptor(UIAppDelegate.self) var appDelegate
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #elseif os(macOS)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     #endif
 
     @Environment(\.scenePhase) private var scenePhase
@@ -49,8 +51,7 @@ struct CSUSTPlanetApp: App {
 
         #if os(iOS)
         BackgroundTaskHelper.shared.register()
-        ActivityHelper.shared.setup()
-        NotificationManager.shared.setup()
+        _ = ActivityManager.shared
         #endif
     }
 
@@ -85,7 +86,7 @@ struct CSUSTPlanetApp: App {
 
             checkAndRelogin()
             #if os(iOS)
-            ActivityHelper.shared.autoUpdateActivity()
+            ActivityManager.shared.autoUpdateActivity()
             BackgroundTaskHelper.shared.cancel()
             #endif
         case .inactive:
@@ -94,7 +95,7 @@ struct CSUSTPlanetApp: App {
 
             Self.lastBackgroundDate = .now
             #if os(iOS)
-            ActivityHelper.shared.autoUpdateActivity()
+            ActivityManager.shared.autoUpdateActivity()
             #endif
         case .background:
             Logger.app.debug("App进入后台状态: scenePhase .background")

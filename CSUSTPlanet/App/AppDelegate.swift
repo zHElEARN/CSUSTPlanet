@@ -1,26 +1,23 @@
 //
-//  UIAppDelegate.swift
+//  AppDelegate.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/7/15.
 //
 
-#if os(iOS)
 import Foundation
 import OSLog
+import UserNotifications
+
+#if os(iOS)
 import UIKit
 
-class UIAppDelegate: NSObject, UIApplicationDelegate {
+class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
-
         return true
     }
-}
 
-// MARK: - Remote Notification
-
-extension UIAppDelegate {
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         NotificationManager.shared.handleNotificationRegistration(token: deviceToken, error: nil)
     }
@@ -30,11 +27,26 @@ extension UIAppDelegate {
     }
 }
 
-// MARK: - UNUserNotificationCenterDelegate
+#elseif os(macOS)
+import AppKit
 
-extension UIAppDelegate: UNUserNotificationCenterDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        UNUserNotificationCenter.current().delegate = self
+    }
+
+    func application(_ application: NSApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        NotificationManager.shared.handleNotificationRegistration(token: deviceToken, error: nil)
+    }
+
+    func application(_ application: NSApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
+        NotificationManager.shared.handleNotificationRegistration(token: nil, error: error)
+    }
+}
+#endif
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound, .badge])
     }
 }
-#endif

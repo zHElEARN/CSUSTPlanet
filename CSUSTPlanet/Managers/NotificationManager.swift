@@ -5,123 +5,106 @@
 //  Created by Zhe_Learn on 2025/7/15.
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 import Foundation
 import OSLog
-import UIKit
+import SwiftUI
 import UserNotifications
-
-enum NotificationManagerError: Error, LocalizedError {
-    case deviceTokenTimeout
-    case failedToRegister(Error?)
-    case authorizationDenied
-
-    var errorDescription: String? {
-        switch self {
-        case .deviceTokenTimeout:
-            return "获取设备令牌超时"
-        case .failedToRegister(let error):
-            return "注册远程通知失败: \(error?.localizedDescription ?? "未知错误")"
-        case .authorizationDenied:
-            return "用户拒绝了通知权限"
-        }
-    }
-}
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 @MainActor
 @Observable
-class NotificationManager {
+final class NotificationManager {
     static let shared = NotificationManager()
 
-    var token: Data?
-    private var tokenContinuation: CheckedContinuation<Data, Error>? = nil
+    private var token: Data?
+    private var tokenContinuation: CheckedContinuation<Data?, Never>? = nil
+
+    private var isUpdatingNotification = false
+
+    // MARK: - State
+
+    var hasNotificationAuthorization = false
 
     var isNotificationEnabled: Bool {
-        didSet { MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled }
-    }
-
-    var isLiveActivityEnabled: Bool {
         didSet {
-            MMKVHelper.shared.isLiveActivityEnabled = isLiveActivityEnabled
-            TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
+            if !hasNotificationAuthorization && isNotificationEnabled {
+                isNotificationEnabled = false
+                return
+            }
+            MMKVHelper.shared.isNotificationEnabled = isNotificationEnabled
+            updateNotification()
         }
     }
 
     private init() {
         isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
-        isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
-        TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
     }
 
-    func setup() {
-        // 静默获取设备令牌
-        Task {
-            Logger.notificationManager.debug("开始静默获取设备令牌")
-            guard await hasAuthorization() else {
-                Logger.notificationManager.debug("无通知权限，关闭通知开关")
+    func refreshAuthorizationStatus() async {
+        let result = await hasAuthorization()
+        withAnimation {
+            hasNotificationAuthorization = result
+            if !result {
                 isNotificationEnabled = false
-                return
-            }
-            do {
-                self.token = try await getToken()
-            } catch NotificationManagerError.authorizationDenied {
-                Logger.notificationManager.debug("无通知令牌权限，关闭通知开关")
-                isNotificationEnabled = false
-                return
-            } catch {
-                Logger.notificationManager.debug("其他原因无法获取到通知令牌，结束操作: \(error)")
-                return
-            }
-            Logger.notificationManager.debug("静默获取设备令牌成功，开始同步")
-            syncAll()
-        }
-    }
-
-    func syncAll() {
-        // Task { await ElectricityBindingUtil.sync() }
-    }
-
-    func toggle() {
-        Task {
-            if isNotificationEnabled {
-                guard await hasAuthorization() else {
-                    isNotificationEnabled = false
-                    return
-                }
-                syncAll()
-            } else {
-                syncAll()
             }
         }
     }
 
-    func getToken() async throws -> Data {
+    private func updateNotification() {
+        guard !isUpdatingNotification else { return }
+        guard isNotificationEnabled else { return }
+
+        Task {
+            isUpdatingNotification = true
+            defer { isUpdatingNotification = false }
+
+            guard await getToken() != nil else {
+                return
+            }
+        }
+    }
+
+    func getToken() async -> Data? {
         if let token = token { return token }
 
         Logger.notificationManager.debug("开始向系统请求设备令牌")
         let options: UNAuthorizationOptions = [.alert, .badge, .sound]
-        guard try await UNUserNotificationCenter.current().requestAuthorization(options: options) else {
-            throw NotificationManagerError.authorizationDenied
+        do {
+            guard try await UNUserNotificationCenter.current().requestAuthorization(options: options) else {
+                Logger.notificationManager.error("用户拒绝了通知权限")
+                return nil
+            }
+        } catch {
+            Logger.notificationManager.error("请求通知权限失败: \(error.localizedDescription)")
+            return nil
         }
 
-        DispatchQueue.main.async {
-            UIApplication.shared.registerForRemoteNotifications()
-        }
+        #if os(iOS)
+        UIApplication.shared.registerForRemoteNotifications()
+        #elseif os(macOS)
+        NSApplication.shared.registerForRemoteNotifications()
+        #endif
 
-        return try await withCheckedThrowingContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             self.tokenContinuation = continuation
             Task {
-                try await Task.sleep(nanoseconds: 10 * 1_000_000_000)  // 10 seconds timeout
+                try? await Task.sleep(for: .seconds(10))
                 if let continuation = self.tokenContinuation {
                     Logger.notificationManager.error("获取设备令牌超时")
-                    continuation.resume(throwing: NotificationManagerError.deviceTokenTimeout)
+                    self.tokenContinuation = nil
+                    continuation.resume(returning: nil)
                 }
             }
         }
     }
 
-    func hasAuthorization() async -> Bool {
+    private func hasAuthorization() async -> Bool {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         return settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional
     }
@@ -130,12 +113,13 @@ class NotificationManager {
         guard let tokenContinuation = tokenContinuation else { return }
         guard let token = token else {
             Logger.notificationManager.error("无法获取到通知令牌")
-            tokenContinuation.resume(throwing: NotificationManagerError.failedToRegister(error))
+            self.tokenContinuation = nil
+            tokenContinuation.resume(returning: nil)
             return
         }
         Logger.notificationManager.debug("获取到通知令牌: \(token.hexString)")
-        tokenContinuation.resume(returning: token)
         self.tokenContinuation = nil
+        tokenContinuation.resume(returning: token)
         self.token = token
     }
 }

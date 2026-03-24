@@ -1,5 +1,5 @@
 //
-//  ActivityHelper.swift
+//  ActivityManager.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/10/15.
@@ -11,27 +11,36 @@ import ActivityKit
 import Foundation
 import OSLog
 
-class ActivityHelper {
-    static let shared = ActivityHelper()
+@MainActor
+@Observable
+final class ActivityManager {
+    static let shared = ActivityManager()
 
     var activity: Activity<CourseStatusWidgetAttributes>? = nil
 
-    private init() {}
+    var isLiveActivityEnabled: Bool {
+        didSet {
+            MMKVHelper.shared.isLiveActivityEnabled = isLiveActivityEnabled
+            TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
+            autoUpdateActivity()
+        }
+    }
 
-    func setup() {
+    private init() {
+        isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
+        TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
+
         guard activity == nil, let existingActivity = Activity<CourseStatusWidgetAttributes>.activities.first else { return }
         self.activity = existingActivity
 
-        Logger.activityHelper.info("已恢复现有的实时活动")
-        Task {
-            await autoUpdateActivity()
-        }
+        Logger.activityManager.info("已恢复现有的实时活动")
+        autoUpdateActivity()
     }
 
     @MainActor
     func autoUpdateActivity() {
-        guard NotificationManager.shared.isLiveActivityEnabled else {
-            Logger.activityHelper.info("实时活动已禁用。正在停止所有活跃活动")
+        guard isLiveActivityEnabled else {
+            Logger.activityManager.info("实时活动已禁用。正在停止所有活跃活动")
             stopActivity()
             return
         }
@@ -58,22 +67,22 @@ class ActivityHelper {
 
             if let existingActivity = self.activity, existingActivity.activityState == .active {
                 if existingActivity.attributes == attributes {
-                    Logger.activityHelper.info("实时活动状态正确。正在强制刷新 UI")
+                    Logger.activityManager.info("实时活动状态正确。正在强制刷新 UI")
                     Task {
                         let content = ActivityContent(state: CourseStatusWidgetAttributes.ContentState(now: .now), staleDate: nil)
                         await existingActivity.update(content)
                         TrackHelper.shared.event(category: "LiveActivity", action: "Update")
                     }
                 } else {
-                    Logger.activityHelper.info("发现过期的活动。正在替换为新活动")
+                    Logger.activityManager.info("发现过期的活动。正在替换为新活动")
                     try? startActivity(attributes)
                 }
             } else {
-                Logger.activityHelper.info("未找到活跃活动。正在启动新活动")
+                Logger.activityManager.info("未找到活跃活动。正在启动新活动")
                 try? startActivity(attributes)
             }
         } else {
-            Logger.activityHelper.info("未找到相关课程。正在停止所有活跃活动")
+            Logger.activityManager.info("未找到相关课程。正在停止所有活跃活动")
             stopActivity()
         }
     }
@@ -89,10 +98,10 @@ class ActivityHelper {
                 content: content
             )
             self.activity = newActivity
-            Logger.activityHelper.info("已为课程启动实时活动：\(attributes.courseName)")
+            Logger.activityManager.info("已为课程启动实时活动：\(attributes.courseName)")
             TrackHelper.shared.event(category: "LiveActivity", action: "Start", value: 1)
         } catch {
-            Logger.activityHelper.error("启动实时活动失败: \(error.localizedDescription)")
+            Logger.activityManager.error("启动实时活动失败: \(error.localizedDescription)")
             TrackHelper.shared.event(category: "LiveActivity", action: "Start", value: 0)
             throw error
         }
@@ -105,7 +114,7 @@ class ActivityHelper {
             await activityToStop.end(nil, dismissalPolicy: .immediate)
             if self.activity?.id == activityToStop.id {
                 self.activity = nil
-                Logger.activityHelper.info("实时活动已停止")
+                Logger.activityManager.info("实时活动已停止")
                 TrackHelper.shared.event(category: "LiveActivity", action: "Stop")
             }
         }
