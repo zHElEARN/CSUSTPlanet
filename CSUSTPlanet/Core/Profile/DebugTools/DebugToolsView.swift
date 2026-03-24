@@ -18,6 +18,12 @@ struct DebugToolsView: View {
                 NavigationLink(destination: KeychainDebugViewerView()) {
                     Label("Keychain查看器", systemImage: "key")
                 }
+                NavigationLink(destination: AppGroupsFileBrowserView()) {
+                    Label("App Groups文件", systemImage: "folder")
+                }
+                NavigationLink(destination: AppSandboxFileBrowserView()) {
+                    Label("App沙箱文件", systemImage: "externaldrive")
+                }
             }
         }
         .formStyle(.grouped)
