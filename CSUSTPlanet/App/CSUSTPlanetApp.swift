@@ -53,6 +53,8 @@ struct CSUSTPlanetApp: App {
         BackgroundTaskHelper.shared.register()
         _ = ActivityManager.shared
         #endif
+
+        Task { await NotificationManager.shared.handleAppLaunch() }
     }
 
     var body: some Scene {
@@ -85,6 +87,7 @@ struct CSUSTPlanetApp: App {
             TrackHelper.shared.event(category: "Lifecycle", action: "Active")
 
             checkAndRelogin()
+            Task { await NotificationManager.shared.handleAppDidBecomeActive() }
             #if os(iOS)
             ActivityManager.shared.autoUpdateActivity()
             BackgroundTaskHelper.shared.cancel()
