@@ -80,6 +80,7 @@ class AuthManager {
         MMKVHelper.shared.userId = profile.userAccount
         TrackHelper.shared.updateUserID(profile.userAccount)
         CookieHelper.shared.save()
+        await PlanetService.auth.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
 
         ssoInfo = "统一身份认证登录成功"
         isShowingSSOInfo = true
@@ -100,6 +101,7 @@ class AuthManager {
             KeychainUtil.ssoUsername = nil
             KeychainUtil.ssoPassword = nil
             MMKVHelper.shared.userId = nil
+            PlanetService.auth.clearToken()
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
         }
@@ -126,6 +128,7 @@ class AuthManager {
         MMKVHelper.shared.userId = profile.userAccount
         TrackHelper.shared.updateUserID(profile.userAccount)
         CookieHelper.shared.save()
+        await PlanetService.auth.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
 
         ssoInfo = "统一身份认证登录成功"
         isShowingSSOInfo = true
@@ -149,6 +152,7 @@ class AuthManager {
                 self.ssoProfile = ssoProfile
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
+                await PlanetService.auth.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
 
                 ssoInfo = "统一身份认证已登录"
                 isShowingSSOInfo = true
@@ -177,6 +181,7 @@ class AuthManager {
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
                 CookieHelper.shared.save()
+                await PlanetService.auth.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
 
                 ssoInfo = "统一身份认证登录成功"
                 isShowingSSOInfo = true
@@ -321,6 +326,7 @@ extension AuthManager {
                 try await ssoReloginAsync()
                 allLogin()
             } catch {
+                PlanetService.auth.clearToken()
                 Logger.authManager.error("ssoRelogin 失败: \(error)")
             }
         }
