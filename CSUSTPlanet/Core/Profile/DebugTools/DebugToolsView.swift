@@ -12,8 +12,11 @@ struct DebugToolsView: View {
     var body: some View {
         Form {
             Section("存储") {
-                TrackLink(destination: MMKVDebugViewerView()) {
+                NavigationLink(destination: MMKVDebugViewerView()) {
                     Label("MMKV查看器", systemImage: "internaldrive")
+                }
+                NavigationLink(destination: KeychainDebugViewerView()) {
+                    Label("Keychain查看器", systemImage: "key")
                 }
             }
         }

@@ -20,41 +20,12 @@ struct AboutView: View {
             }
 
             Section("应用信息") {
-                InfoRow(label: "版本号", value: viewModel.appVersion)
-                InfoRow(label: "构建号", value: viewModel.buildNumber)
-                InfoRow(label: "运行环境", value: viewModel.environment)
+                FormRow(label: "版本号", value: viewModel.appVersion)
+                FormRow(label: "构建号", value: viewModel.buildNumber)
+                FormRow(label: "运行环境", value: viewModel.environment)
             }
-
-            #if DEBUG
-            Section("Debug") {
-                Button(action: { viewModel.generateMockData() }) {
-                    Label("生成模拟数据", systemImage: "plus.circle.fill").foregroundColor(.green)
-                }
-
-                Button(action: { viewModel.clearAllSwiftData() }) {
-                    Label("清除所有SwiftData数据", systemImage: "trash").foregroundColor(.red)
-                }
-
-                Button(action: { viewModel.clearAllMMKVData() }) {
-                    Label("清除所有MMKV数据", systemImage: "trash").foregroundColor(.red)
-                }
-
-                Button(action: { viewModel.clearAllKeychainData() }) {
-                    Label("清除所有Keychain数据", systemImage: "trash").foregroundColor(.red)
-                }
-
-                // Button(action: { viewModel.showFlexExplorer() }) {
-                //     Label("Flipboard Explorer", systemImage: "ladybug.fill").foregroundColor(.blue)
-                // }
-
-                Button(action: { viewModel.captureTestError() }) {
-                    Label("发送测试错误到Sentry", systemImage: "exclamationmark.triangle.fill").foregroundColor(.orange)
-                }
-            }
-            #endif
         }
         .formStyle(.grouped)
-        .background(Color.appSystemBackground)
         .navigationTitle("关于")
         .trackView("About")
     }
