@@ -5,17 +5,10 @@
 //  Created by Zhe_Learn on 2025/7/23.
 //
 
-import Alamofire
 import Foundation
 import Observation
 
-struct SchoolCalendar: Codable, Identifiable {
-    var id: String { semesterCode }
-
-    let semesterCode: String
-    let title: String
-    let subtitle: String
-}
+typealias SchoolCalendar = PlanetService.Config.SchoolCalendar
 
 @MainActor
 @Observable
@@ -31,7 +24,7 @@ class SchoolCalendarListViewModel {
         defer { isLoadingCalendars = false }
 
         do {
-            schoolCalendars = try (await AF.request("\(Constants.backendHost)/config/semester-calendars").serializingDecodable([SchoolCalendar].self).value).sorted { $0.semesterCode > $1.semesterCode }
+            schoolCalendars = try await PlanetService.Config.semesterCalendars().sorted { $0.semesterCode > $1.semesterCode }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

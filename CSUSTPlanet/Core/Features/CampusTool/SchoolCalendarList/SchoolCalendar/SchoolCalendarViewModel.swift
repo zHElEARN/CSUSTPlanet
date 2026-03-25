@@ -5,13 +5,14 @@
 //  Created by Zhe_Learn on 2025/7/11.
 //
 
-import Alamofire
 import SwiftUI
+
+typealias SemesterCalendarConfig = PlanetService.Config.SemesterCalendarConfig
 
 @MainActor
 @Observable
 final class SchoolCalendarViewModel {
-    var config: ConfigData?
+    var config: SemesterCalendarConfig?
     var weeks: [WeekRow] = []
     var weekSpans: [SpanData] = []
     var monthSpans: [SpanData] = []
@@ -39,7 +40,7 @@ final class SchoolCalendarViewModel {
         defer { isLoading = false }
 
         do {
-            let decodedConfig = try await AF.request("\(Constants.backendHost)/config/semester-calendars/\(semester)").serializingDecodable(ConfigData.self).value
+            let decodedConfig = try await PlanetService.Config.semesterCalendar(semester: semester)
             self.config = decodedConfig
             generateCalendar(from: decodedConfig)
         } catch {
@@ -47,7 +48,7 @@ final class SchoolCalendarViewModel {
         }
     }
 
-    private func generateCalendar(from config: ConfigData) {
+    private func generateCalendar(from config: SemesterCalendarConfig) {
         let fmt = ISO8601DateFormatter()
 
         guard let startDate = fmt.date(from: config.calendarStart),
@@ -151,32 +152,6 @@ final class SchoolCalendarViewModel {
 }
 
 extension SchoolCalendarViewModel {
-    // MARK: - 配置文件模型
-
-    struct ConfigData: Codable {
-        let semesterCode: String
-        let title: String
-        let subtitle: String
-        let calendarStart: String
-        let calendarEnd: String
-        let semesterStart: String
-        let semesterEnd: String
-        let notes: [NoteConfig]
-        let customWeekRanges: [CustomWeekRange]
-    }
-
-    struct NoteConfig: Codable {
-        let row: Int
-        let content: String
-        let needNumber: Bool?
-    }
-
-    struct CustomWeekRange: Codable {
-        let startRow: Int
-        let endRow: Int
-        let content: String
-    }
-
     // MARK: - 视图渲染用到的数据模型
 
     struct DayData: Identifiable {

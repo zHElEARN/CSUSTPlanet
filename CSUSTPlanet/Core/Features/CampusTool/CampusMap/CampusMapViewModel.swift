@@ -5,36 +5,13 @@
 //  Created by Zhe_Learn on 2026/1/9.
 //
 
-import Alamofire
 import CSUSTKit
 import CoreLocation
 import MapKit
 import SwiftUI
 
-// GeoJSON Data Models
-struct GeoJSON: Codable, Equatable {
-    let type: String
-    let features: [Feature]
-}
-
-struct Feature: Codable, Identifiable, Equatable, Hashable {
-    let type: String
-    let properties: FeatureProperties
-    let geometry: FeatureGeometry
-
-    var id: String { properties.name + properties.campus }
-}
-
-struct FeatureProperties: Codable, Hashable {
-    let name: String
-    let category: String
-    let campus: String
-}
-
-struct FeatureGeometry: Codable, Hashable {
-    let type: String
-    let coordinates: [[[Double]]]
-}
+typealias GeoJSON = PlanetService.Config.GeoJSON
+typealias Feature = PlanetService.Config.Feature
 
 @MainActor
 final class CampusMapViewModel: ObservableObject {
@@ -161,17 +138,12 @@ final class CampusMapViewModel: ObservableObject {
     func loadBuildings() async {
         loadFromCache()
 
-        let urlString = "\(Constants.backendHost)/config/campus-map"
-        guard let url = URL(string: urlString) else { return }
-        var request = URLRequest(url: url)
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-
         guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let geoJSON = try (await AF.request(request).serializingDecodable(GeoJSON.self).value)
+            let geoJSON = try await PlanetService.Config.campusMap()
 
             if self.allBuildings != geoJSON.features {
                 self.allBuildings = geoJSON.features
