@@ -77,7 +77,6 @@ class GradeAnalysisViewModel: NSObject {
             let data = Cached(cachedAt: .now, value: courseGrades)
             self.courseGradesData = data
             MMKVHelper.shared.courseGradesCache = data
-            WidgetCenter.shared.reloadTimelines(ofKind: "GradeAnalysisWidget")
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
