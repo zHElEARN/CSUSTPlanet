@@ -31,6 +31,7 @@ struct CSUSTPlanetApp: App {
         }
 
         _ = DatabaseManager.shared
+        _ = TrackHelper.shared
 
         #if os(iOS)
         _ = BackgroundTaskHelper.shared
@@ -58,6 +59,8 @@ struct CSUSTPlanetApp: App {
     }
 
     private func handleScenePhaseChange(to phase: ScenePhase) {
+        LifecycleManager.shared.publishScenePhaseChange(to: phase)
+
         switch phase {
         case .active:
             // 首次启动时不处理
@@ -66,9 +69,6 @@ struct CSUSTPlanetApp: App {
                 break
             }
 
-            Logger.app.debug("App进入活跃状态: scenePhase .active")
-            TrackHelper.shared.event(category: "Lifecycle", action: "Active")
-
             checkAndRelogin()
             Task { await NotificationManager.shared.handleAppDidBecomeActive() }
             #if os(iOS)
@@ -76,17 +76,11 @@ struct CSUSTPlanetApp: App {
             BackgroundTaskHelper.shared.cancel()
             #endif
         case .inactive:
-            Logger.app.debug("App进入非活跃状态: scenePhase .inactive")
-            TrackHelper.shared.event(category: "Lifecycle", action: "Inactive")
-
             Self.lastBackgroundDate = .now
             #if os(iOS)
             ActivityManager.shared.autoUpdateActivity()
             #endif
         case .background:
-            Logger.app.debug("App进入后台状态: scenePhase .background")
-            TrackHelper.shared.event(category: "Lifecycle", action: "Background")
-
             #if os(iOS)
             BackgroundTaskHelper.shared.schedule()
             #endif
