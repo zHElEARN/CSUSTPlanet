@@ -21,14 +21,12 @@ final class ActivityManager {
     var isLiveActivityEnabled: Bool {
         didSet {
             MMKVHelper.shared.isLiveActivityEnabled = isLiveActivityEnabled
-            TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
             autoUpdateActivity()
         }
     }
 
     private init() {
         isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
-        TrackHelper.shared.event(category: "LiveActivity", action: "Status", name: isLiveActivityEnabled ? "Enabled" : "Disabled")
 
         guard activity == nil, let existingActivity = Activity<CourseStatusWidgetAttributes>.activities.first else { return }
         self.activity = existingActivity
@@ -71,7 +69,6 @@ final class ActivityManager {
                     Task {
                         let content = ActivityContent(state: CourseStatusWidgetAttributes.ContentState(now: .now), staleDate: nil)
                         await existingActivity.update(content)
-                        TrackHelper.shared.event(category: "LiveActivity", action: "Update")
                     }
                 } else {
                     Logger.activityManager.info("发现过期的活动。正在替换为新活动")
@@ -99,10 +96,8 @@ final class ActivityManager {
             )
             self.activity = newActivity
             Logger.activityManager.info("已为课程启动实时活动：\(attributes.courseName)")
-            TrackHelper.shared.event(category: "LiveActivity", action: "Start", value: 1)
         } catch {
             Logger.activityManager.error("启动实时活动失败: \(error.localizedDescription)")
-            TrackHelper.shared.event(category: "LiveActivity", action: "Start", value: 0)
             throw error
         }
     }
@@ -115,7 +110,6 @@ final class ActivityManager {
             if self.activity?.id == activityToStop.id {
                 self.activity = nil
                 Logger.activityManager.info("实时活动已停止")
-                TrackHelper.shared.event(category: "LiveActivity", action: "Stop")
             }
         }
     }

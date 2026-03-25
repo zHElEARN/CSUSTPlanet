@@ -53,7 +53,6 @@ final class GlobalManager {
         isWebVPNModeEnabled = MMKVHelper.shared.isWebVPNModeEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
-        TrackHelper.shared.event(category: "WebVPN", action: "Status", name: isWebVPNModeEnabled ? "Enabled" : "Disabled")
     }
 
     var selectedTab: TabItem? = .overview
@@ -72,7 +71,6 @@ final class GlobalManager {
     var isWebVPNModeEnabled: Bool {
         didSet {
             MMKVHelper.shared.isWebVPNModeEnabled = isWebVPNModeEnabled
-            TrackHelper.shared.event(category: "WebVPN", action: "Status", name: isWebVPNModeEnabled ? "Enabled" : "Disabled")
         }
     }
 

@@ -140,14 +140,12 @@ class SSOLoginViewModel {
                 AuthManager.shared.ssoInfo = "统一身份认证登录成功"
                 AuthManager.shared.isShowingSSOInfo = true
                 AuthManager.shared.allLogin()
-                TrackHelper.shared.event(category: "Auth", action: "Login", name: "Browser", value: 1)
                 if mode == .username {
                     KeychainUtil.ssoUsername = username
                     KeychainUtil.ssoPassword = password
                 }
             } catch {
                 errorToast.show(message: "通过网页登录失败: \(error.localizedDescription)")
-                TrackHelper.shared.event(category: "Auth", action: "Login", name: "Browser", value: 0)
             }
         }
     }

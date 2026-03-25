@@ -71,7 +71,6 @@ class AuthManager {
 
         CookieHelper.shared.clearCookies()
         try await ssoHelper.login(username: username, password: password)
-        TrackHelper.shared.event(category: "Auth", action: "Login", name: "Account", value: 1)
         KeychainUtil.ssoUsername = username
         KeychainUtil.ssoPassword = password
 
@@ -92,7 +91,6 @@ class AuthManager {
         guard isSSOLoggedIn else { return }
         Task {
             isSSOLoggingOut = true
-            TrackHelper.shared.event(category: "Auth", action: "Logout")
             defer { isSSOLoggingOut = false }
             try? await eduHelper.authService.logout()
             try? await moocHelper.logout()
@@ -121,7 +119,6 @@ class AuthManager {
         defer { isSSOLoggingIn = false }
 
         try await ssoHelper.dynamicLogin(username: username, dynamicCode: dynamicCode, captcha: captcha)
-        TrackHelper.shared.event(category: "Auth", action: "Login", name: "Dynamic", value: 1)
 
         let profile = try await ssoHelper.getLoginUser()
         ssoProfile = profile
@@ -168,7 +165,6 @@ class AuthManager {
                 try await ssoHelper.login(username: username, password: password)
             } catch {
                 Logger.authManager.error("ssoRelogin: 统一身份认证登录失败, \(error)")
-                TrackHelper.shared.event(category: "Auth", action: "Relogin", value: 0)
 
                 isShowingSSOError = true
                 throw error
@@ -176,7 +172,6 @@ class AuthManager {
 
             if let ssoProfile = try? await ssoHelper.getLoginUser() {
                 Logger.authManager.debug("ssoRelogin: 验证统一身份认证登录成功")
-                TrackHelper.shared.event(category: "Auth", action: "Relogin", value: 1)
                 self.ssoProfile = ssoProfile
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
@@ -223,7 +218,6 @@ class AuthManager {
                 _ = try await ssoHelper.loginToEducation()
             } catch {
                 Logger.authManager.error("educationLogin: 教务登录请求失败, \(error)")
-                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Education", value: 0)
 
                 isShowingEducationError = true
                 throw error
@@ -231,7 +225,6 @@ class AuthManager {
 
             if await tempEduHelper.isLoggedIn() {
                 Logger.authManager.debug("educationLogin: 验证教务登录成功")
-                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Education", value: 1)
                 self.eduHelper = tempEduHelper
                 CookieHelper.shared.save()
 
@@ -275,7 +268,6 @@ class AuthManager {
                 _ = try await ssoHelper.loginToMooc()
             } catch {
                 Logger.authManager.error("moocLogin: 网络课程平台登录请求失败, \(error)")
-                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Mooc", value: 0)
 
                 isShowingMoocError = true
                 throw error
@@ -283,7 +275,6 @@ class AuthManager {
 
             if await tempMoocHelper.isLoggedIn() {
                 Logger.authManager.debug("moocLogin: 验证网络课程平台登录成功")
-                TrackHelper.shared.event(category: "Auth", action: "Sublogin", name: "Mooc", value: 1)
                 self.moocHelper = tempMoocHelper
                 CookieHelper.shared.save()
 
