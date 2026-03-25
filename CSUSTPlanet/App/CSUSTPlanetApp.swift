@@ -10,7 +10,6 @@ import OSLog
 import Sentry
 import SwiftData
 import SwiftUI
-import TipKit
 
 @main
 struct CSUSTPlanetApp: App {
@@ -26,26 +25,12 @@ struct CSUSTPlanetApp: App {
     private static var lastBackgroundDate: Date?
 
     init() {
-        _ = DatabaseManager.shared
-        GlobalManager.shared.hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
-        GlobalManager.shared.databaseFatalErrorMessage = DatabaseManager.shared.fatalErrorMessage
-
         SentrySDK.start { options in
             options.dsn = Constants.sentryDSN
-            // #if DEBUG
-            // options.debug = true
-            // #endif
             options.environment = EnvironmentUtil.environment.rawValue
         }
 
-        #if DEBUG
-        try? Tips.resetDatastore()
-        #endif
-
-        try? Tips.configure([
-            .displayFrequency(.immediate),
-            .datastoreLocation(.applicationDefault),
-        ])
+        _ = DatabaseManager.shared
 
         #if os(iOS)
         _ = BackgroundTaskHelper.shared

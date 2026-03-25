@@ -74,8 +74,8 @@ final class GlobalManager {
         }
     }
 
-    var hasDatabaseFatalError = false
-    var databaseFatalErrorMessage: String = ""
+    var hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
+    var databaseFatalErrorMessage: String = DatabaseManager.shared.fatalErrorMessage
 
     var isFromElectricityWidget: Bool = false
     var isFromGradeAnalysisWidget: Bool = false
