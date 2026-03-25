@@ -333,7 +333,7 @@ struct DebugLogViewerView: View {
         }
         .navigationTitle("日志查看器")
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     if center.isRecording {
                         center.stop()
