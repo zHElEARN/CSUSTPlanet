@@ -46,6 +46,23 @@ struct DormDetailView: View {
         } message: {
             Text("此操作将删除该宿舍所有的历史电量记录且无法恢复，确定要继续吗？")
         }
+        .alert("取消定时任务", isPresented: $viewModel.isCancelScheduleAlertPresented) {
+            Button("保留", role: .cancel) {}
+            Button("取消定时任务", role: .destructive) {
+                viewModel.cancelSchedule()
+            }
+        } message: {
+            Text("确认取消每天 \(scheduleTimeText) 的宿舍电量提醒吗？")
+        }
+        .sheet(isPresented: $viewModel.isScheduleConfigSheetPresented) {
+            DormScheduleConfigView(
+                initialHour: viewModel.dorm.scheduleHour ?? 20,
+                initialMinute: viewModel.dorm.scheduleMinute ?? 0,
+                onConfirm: { hour, minute in
+                    viewModel.configureSchedule(hour: hour, minute: minute)
+                }
+            )
+        }
         .errorToast($viewModel.errorToast)
         .trackView("DormDetail")
     }
@@ -129,13 +146,18 @@ struct DormDetailView: View {
             .symbolEffect(.bounce.byLayer, value: viewModel.dorm.isFavorite)
 
             actionButton(
-                icon: "bell",
-                title: "定时查询",
-                titleColor: .secondary,
-                iconColor: .secondary,
-                asyncAction: {}
+                icon: viewModel.dorm.scheduleEnabled ? "bell.badge.fill" : "bell",
+                title: viewModel.dorm.scheduleEnabled ? "定时 \(scheduleTimeText)" : "定时查询",
+                titleColor: .primary,
+                iconColor: viewModel.dorm.scheduleEnabled ? .purple : .primary,
+                asyncAction: {
+                    if viewModel.dorm.scheduleEnabled {
+                        viewModel.isCancelScheduleAlertPresented = true
+                    } else {
+                        viewModel.isScheduleConfigSheetPresented = true
+                    }
+                }
             )
-            .disabled(true)
         }
     }
 
@@ -276,5 +298,12 @@ struct DormDetailView: View {
             Text(value)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private var scheduleTimeText: String {
+        guard let hour = viewModel.dorm.scheduleHour, let minute = viewModel.dorm.scheduleMinute else {
+            return "--:--"
+        }
+        return String(format: "%02d:%02d", hour, minute)
     }
 }

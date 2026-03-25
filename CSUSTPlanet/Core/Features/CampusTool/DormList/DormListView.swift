@@ -10,6 +10,7 @@ import SwiftUI
 struct DormListView: View {
     @State var viewModel = DormListViewModel()
     @State private var dormRefreshMap: [AnyHashable: Int] = [:]
+    @State private var scheduleConfigTargetDorm: DormGRDB?
 
     @Namespace var namespace
 
@@ -55,6 +56,17 @@ struct DormListView: View {
         .sheet(isPresented: $viewModel.isAddDormSheetPresented) {
             AddDormView(isPresented: $viewModel.isAddDormSheetPresented) { building, room in
                 viewModel.addDorm(building: building, room: room)
+            }
+        }
+        .sheet(isPresented: scheduleConfigPresentedBinding) {
+            if let dorm = scheduleConfigTargetDorm {
+                DormScheduleConfigView(
+                    initialHour: dorm.scheduleHour ?? 20,
+                    initialMinute: dorm.scheduleMinute ?? 0,
+                    onConfirm: { hour, minute in
+                        viewModel.configureSchedule(for: dorm, hour: hour, minute: minute)
+                    }
+                )
             }
         }
         .alert(
@@ -154,6 +166,19 @@ struct DormListView: View {
             }
             .disabled(viewModel.isQuerying(dorm))
 
+            Menu {
+                Button(action: { scheduleConfigTargetDorm = dorm }) {
+                    Label("配置定时通知任务", systemImage: "clock.badge")
+                }
+
+                Button(role: .destructive, action: { viewModel.cancelSchedule(for: dorm) }) {
+                    Label("取消定时通知任务", systemImage: "bell.slash")
+                }
+                .disabled(!dorm.scheduleEnabled)
+            } label: {
+                Label("定时查询", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+            }
+
             Button(role: .destructive, action: { viewModel.targetDeleteDorm = dorm }) {
                 Label("删除宿舍", systemImage: "trash")
             }
@@ -176,6 +201,12 @@ struct DormListView: View {
                         Image(systemName: "star.fill")
                             .font(.caption)
                             .foregroundStyle(.yellow)
+                    }
+
+                    if dorm.scheduleEnabled {
+                        Image(systemName: "bell.badge.fill")
+                            .font(.caption)
+                            .foregroundStyle(.purple)
                     }
                 }
 
@@ -246,5 +277,14 @@ struct DormListView: View {
                 }
             }
         }
+    }
+
+    private var scheduleConfigPresentedBinding: Binding<Bool> {
+        .init(
+            get: { scheduleConfigTargetDorm != nil },
+            set: { newValue in
+                if !newValue { scheduleConfigTargetDorm = nil }
+            }
+        )
     }
 }

@@ -92,4 +92,26 @@ extension DormGRDB {
         try DormGRDB.filter(id: dormID)
             .updateAll(db, [Columns.lastFetchDate.set(to: nil), Columns.lastFetchElectricity.set(to: nil)])
     }
+
+    static func updateSchedule(dormID: Int64, hour: Int, minute: Int, in db: Database) throws {
+        try DormGRDB.filter(Columns.id == dormID)
+            .updateAll(
+                db,
+                [
+                    Columns.scheduleHour.set(to: hour),
+                    Columns.scheduleMinute.set(to: minute),
+                ]
+            )
+    }
+
+    static func clearSchedule(dormID: Int64, in db: Database) throws {
+        try DormGRDB.filter(Columns.id == dormID)
+            .updateAll(
+                db,
+                [
+                    Columns.scheduleHour.set(to: nil),
+                    Columns.scheduleMinute.set(to: nil),
+                ]
+            )
+    }
 }

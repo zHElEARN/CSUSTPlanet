@@ -23,6 +23,8 @@ final class DormDetailViewModel {
     var errorToast: ToastState = .errorTitle
     var isQueryingElectricity: Bool = false
     var isDeleteAllRecordsAlertPresented: Bool = false
+    var isScheduleConfigSheetPresented: Bool = false
+    var isCancelScheduleAlertPresented: Bool = false
 
     private var dormObserver: AutoRefreshingObserver?
     private var recordsObserver: AutoRefreshingObserver?
@@ -82,6 +84,30 @@ final class DormDetailViewModel {
 
         do {
             try pool.write { db in try DormGRDB.deleteAllElectricityRecords(dormID: dormID, in: db) }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    func configureSchedule(hour: Int, minute: Int, onConfigured: (() -> Void)? = nil) {
+        guard let dormID = dorm.id else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in try DormGRDB.updateSchedule(dormID: dormID, hour: hour, minute: minute, in: db) }
+            onConfigured?()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    func cancelSchedule(onCanceled: (() -> Void)? = nil) {
+        guard let dormID = dorm.id else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in try DormGRDB.clearSchedule(dormID: dormID, in: db) }
+            onCanceled?()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
