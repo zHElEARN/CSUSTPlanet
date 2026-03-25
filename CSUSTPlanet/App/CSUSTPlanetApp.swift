@@ -41,6 +41,7 @@ struct CSUSTPlanetApp: App {
         }
 
         #if DEBUG
+        DebugLogCenter.shared.start()
         try? Tips.resetDatastore()
         #endif
 

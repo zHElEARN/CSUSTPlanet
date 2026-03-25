@@ -94,7 +94,7 @@ private struct AppGroupsEntryRow: View {
     let entry: AppGroupsFileEntry
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             Image(systemName: entry.isDirectory ? "folder.fill" : "doc.fill")
                 .foregroundStyle(entry.isDirectory ? .blue : .secondary)
 
