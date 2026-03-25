@@ -5,12 +5,12 @@
 //  Created by Zhe_Learn on 2025/7/15.
 //
 
-#if os(iOS) || os(macOS)
-
+import Combine
 import Foundation
 import OSLog
 import SwiftUI
 import UserNotifications
+
 #if os(iOS)
 import UIKit
 #elseif os(macOS)
@@ -28,6 +28,7 @@ final class NotificationManager {
 
     static let shared = NotificationManager()
 
+    private var cancellables = Set<AnyCancellable>()
     private var token: Data?
     private var tokenContinuation: CheckedContinuation<Data?, Never>? = nil
     private var tokenRequestTask: Task<Data?, Never>?
@@ -40,9 +41,29 @@ final class NotificationManager {
 
     private init() {
         isNotificationEnabled = MMKVHelper.shared.isNotificationEnabled
+        startObservingLifecycle()
+
+        Task { [weak self] in
+            await self?.handleAppLaunch()
+        }
     }
 
-    func refreshAuthorizationStatus() async {
+    private func startObservingLifecycle() {
+        LifecycleManager.shared.events
+            .sink { [weak self] event in
+                guard let self else { return }
+
+                switch event {
+                case .didBecomeActive:
+                    Task { await self.handleAppDidBecomeActive() }
+                case .didBecomeInactive, .didEnterBackground:
+                    break
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func refreshAuthorizationStatus() async {
         let status = await currentAuthorizationStatus()
         Logger.notificationManager.debug("刷新通知权限状态: \(status.rawValue)")
         authorizationStatus = status
@@ -52,13 +73,13 @@ final class NotificationManager {
         }
     }
 
-    func handleAppLaunch() async {
+    private func handleAppLaunch() async {
         Logger.notificationManager.debug("处理应用启动时的通知状态同步")
         await refreshAuthorizationStatus()
         await ensureTokenForEnabledNotifications()
     }
 
-    func handleAppDidBecomeActive() async {
+    private func handleAppDidBecomeActive() async {
         Logger.notificationManager.debug("处理应用恢复活跃时的通知状态同步")
         await refreshAuthorizationStatus()
         await ensureTokenForEnabledNotifications()
@@ -231,4 +252,3 @@ extension Data {
         self.map { String(format: "%02.2hhx", $0) }.joined()
     }
 }
-#endif

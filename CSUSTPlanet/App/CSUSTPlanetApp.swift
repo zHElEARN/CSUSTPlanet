@@ -21,8 +21,6 @@ struct CSUSTPlanetApp: App {
 
     @Environment(\.scenePhase) private var scenePhase
 
-    private static var isFirstAppear = true
-
     init() {
         SentrySDK.start { options in
             options.dsn = Constants.sentryDSN
@@ -31,13 +29,12 @@ struct CSUSTPlanetApp: App {
 
         _ = DatabaseManager.shared
         _ = TrackHelper.shared
+        _ = NotificationManager.shared
 
         #if os(iOS)
         _ = BackgroundTaskHelper.shared
         _ = ActivityManager.shared
         #endif
-
-        Task { await NotificationManager.shared.handleAppLaunch() }
     }
 
     var body: some Scene {
@@ -53,27 +50,6 @@ struct CSUSTPlanetApp: App {
         #if os(macOS)
         .windowResizability(.contentSize)
         #endif
-        .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }
-    }
-
-    private func handleScenePhaseChange(to phase: ScenePhase) {
-        LifecycleManager.shared.publishScenePhaseChange(to: phase)
-
-        switch phase {
-        case .active:
-            // 首次启动时不处理
-            if Self.isFirstAppear {
-                Self.isFirstAppear = false
-                break
-            }
-
-            Task { await NotificationManager.shared.handleAppDidBecomeActive() }
-        case .inactive:
-            break
-        case .background:
-            break
-        default:
-            break
-        }
+        .onChange(of: scenePhase) { _, newPhase in LifecycleManager.shared.publishScenePhaseChange(to: newPhase) }
     }
 }
