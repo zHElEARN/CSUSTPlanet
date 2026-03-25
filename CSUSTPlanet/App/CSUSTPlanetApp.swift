@@ -48,7 +48,7 @@ struct CSUSTPlanetApp: App {
         ])
 
         #if os(iOS)
-        BackgroundTaskHelper.shared.register()
+        _ = BackgroundTaskHelper.shared
         _ = ActivityManager.shared
         #endif
 

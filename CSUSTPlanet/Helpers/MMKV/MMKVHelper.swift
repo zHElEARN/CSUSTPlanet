@@ -119,20 +119,9 @@ class MMKVHelper {
 
     @MMKVOptionalStorage(key: "CampusMap.selectedCampus")
     var selectedCampus: CampusCardHelper.Campus?
-
-    // MARK: - BackgroundTask
-
-    @MMKVStorage(key: "BackgroundTask.enabledTaskIdentifiers", defaultValue: [])
-    var backgroundTaskEnabledTaskIdentifiers: [String]
-
-    @MMKVStorage(key: "BackgroundTask.isEnabled", defaultValue: false)
-    var backgroundTaskIsEnabled: Bool
-
-    @MMKVStorage(key: "BackgroundTask.interval", defaultValue: 6 * 60 * 60)
-    var backgroundTaskInterval: TimeInterval
 }
 
-// MARK: - Calendar Sync Properties
+// MARK: - Calendar Sync
 
 extension MMKVHelper {
     enum CourseSchedule {
@@ -147,7 +136,11 @@ extension MMKVHelper {
             static var secondReminderOffset: Double?
         }
     }
+}
 
+// MARK: - Todo Assignments
+
+extension MMKVHelper {
     enum TodoAssignments {
         @MMKVOptionalStorage(key: "TodoAssignments.cache")
         static var cache: Cached<[TodoAssignmentsData]>?

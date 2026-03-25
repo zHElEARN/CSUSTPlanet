@@ -31,7 +31,9 @@ final class BackgroundTaskHelper {
     let identifier: String = Constants.backgroundID
 
     var enabledTaskIdentifiers: Set<String>
-    var interval: TimeInterval
+    var interval: TimeInterval {
+        didSet { MMKVHelper.BackgroundTask.interval = interval }
+    }
     let availableIntervals: [TimeInterval] = [
         3 * 60 * 60,
         6 * 60 * 60,
@@ -40,16 +42,15 @@ final class BackgroundTaskHelper {
     ]
 
     var isEnabled: Bool {
-        didSet {
-            MMKVHelper.shared.backgroundTaskIsEnabled = isEnabled
-        }
+        didSet { MMKVHelper.BackgroundTask.isEnabled = isEnabled }
     }
 
     private init() {
-        enabledTaskIdentifiers = Set(MMKVHelper.shared.backgroundTaskEnabledTaskIdentifiers)
-        interval = MMKVHelper.shared.backgroundTaskInterval
+        enabledTaskIdentifiers = Set(MMKVHelper.BackgroundTask.enabledTaskIdentifiers)
+        interval = MMKVHelper.BackgroundTask.interval
+        isEnabled = MMKVHelper.BackgroundTask.isEnabled
 
-        isEnabled = MMKVHelper.shared.backgroundTaskIsEnabled
+        register()
     }
 
     let tasks: [BackgroundTaskProvider] = [
@@ -61,7 +62,7 @@ final class BackgroundTaskHelper {
         tasks.filter { enabledTaskIdentifiers.contains($0.identifier) }
     }
 
-    func register() {
+    private func register() {
         BGTaskScheduler.shared.register(forTaskWithIdentifier: identifier, using: nil) { task in
             guard let task = task as? BGAppRefreshTask else { return }
             Logger.backgroundTaskHelper.debug("开始执行后台任务")
@@ -105,7 +106,7 @@ final class BackgroundTaskHelper {
     }
 
     func schedule() {
-        guard MMKVHelper.shared.backgroundTaskIsEnabled else {
+        guard MMKVHelper.BackgroundTask.isEnabled else {
             Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过后台任务调度")
             return
         }
@@ -132,7 +133,20 @@ final class BackgroundTaskHelper {
         } else {
             enabledTaskIdentifiers.insert(provider.identifier)
         }
-        MMKVHelper.shared.backgroundTaskEnabledTaskIdentifiers = Array(enabledTaskIdentifiers)
+        MMKVHelper.BackgroundTask.enabledTaskIdentifiers = Array(enabledTaskIdentifiers)
     }
 }
 #endif
+
+extension MMKVHelper {
+    enum BackgroundTask {
+        @MMKVStorage(key: "BackgroundTask.enabledTaskIdentifiers", defaultValue: [])
+        static var enabledTaskIdentifiers: [String]
+
+        @MMKVStorage(key: "BackgroundTask.isEnabled", defaultValue: false)
+        static var isEnabled: Bool
+
+        @MMKVStorage(key: "BackgroundTask.interval", defaultValue: 6 * 60 * 60)
+        static var interval: TimeInterval
+    }
+}
