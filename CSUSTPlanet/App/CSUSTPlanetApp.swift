@@ -70,14 +70,8 @@ struct CSUSTPlanetApp: App {
 
             checkAndRelogin()
             Task { await NotificationManager.shared.handleAppDidBecomeActive() }
-            #if os(iOS)
-            ActivityManager.shared.autoUpdateActivity()
-            #endif
         case .inactive:
             Self.lastBackgroundDate = .now
-            #if os(iOS)
-            ActivityManager.shared.autoUpdateActivity()
-            #endif
         case .background:
             break
         default:

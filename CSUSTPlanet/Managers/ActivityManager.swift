@@ -8,6 +8,7 @@
 #if os(iOS)
 
 import ActivityKit
+import Combine
 import Foundation
 import OSLog
 
@@ -15,6 +16,8 @@ import OSLog
 @Observable
 final class ActivityManager {
     static let shared = ActivityManager()
+
+    private var cancellables = Set<AnyCancellable>()
 
     var activity: Activity<CourseStatusWidgetAttributes>? = nil
 
@@ -27,6 +30,7 @@ final class ActivityManager {
 
     private init() {
         isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
+        startObservingLifecycle()
 
         guard activity == nil, let existingActivity = Activity<CourseStatusWidgetAttributes>.activities.first else { return }
         self.activity = existingActivity
@@ -35,7 +39,20 @@ final class ActivityManager {
         autoUpdateActivity()
     }
 
-    @MainActor
+    private func startObservingLifecycle() {
+        LifecycleManager.shared.events
+            .sink { [weak self] event in
+                guard let self else { return }
+                switch event {
+                case .didBecomeActive, .didBecomeInactive:
+                    self.autoUpdateActivity()
+                case .didEnterBackground:
+                    break
+                }
+            }
+            .store(in: &cancellables)
+    }
+
     func autoUpdateActivity() {
         guard isLiveActivityEnabled else {
             Logger.activityManager.info("实时活动已禁用。正在停止所有活跃活动")
