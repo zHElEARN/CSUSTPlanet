@@ -9,7 +9,7 @@ import Alamofire
 import Foundation
 
 extension PlanetService {
-    final class Task {
+    enum Task {
         enum TaskError: Error {
             case invalidBackendURL
             case missingBackendToken
@@ -30,7 +30,7 @@ extension PlanetService {
 }
 
 extension PlanetService.Task {
-    func syncElectricity(
+    static func syncElectricity(
         deviceToken: String,
         tasks: [ElectricityTask]
     ) async throws {

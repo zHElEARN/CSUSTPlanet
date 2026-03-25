@@ -11,10 +11,10 @@ import JWTDecode
 import OSLog
 
 extension PlanetService {
-    final class Auth {
-        private let refreshLeadTime: TimeInterval = 8 * 60 * 60
-        private let targetCookieName = "WISCPSID"
-        private let targetCookieDomain = "ehall.csust.edu.cn"
+    enum Auth {
+        private static let refreshLeadTime: TimeInterval = 8 * 60 * 60
+        private static let targetCookieName = "WISCPSID"
+        private static let targetCookieDomain = "ehall.csust.edu.cn"
 
         private enum SyncTrigger: String {
             case manual = "manual"
@@ -51,11 +51,11 @@ extension PlanetService {
 }
 
 extension PlanetService.Auth {
-    func syncTokenAfterManualLogin(ssoUserName: String, session: Session) async {
+    static func syncTokenAfterManualLogin(ssoUserName: String, session: Session) async {
         await syncToken(trigger: .manual, ssoUserName: ssoUserName, session: session)
     }
 
-    func syncTokenAfterAutoLoginIfNeeded(ssoUserName: String, session: Session) async {
+    static func syncTokenAfterAutoLoginIfNeeded(ssoUserName: String, session: Session) async {
         guard let reason = refreshReasonForCurrentToken() else {
             Logger.authManager.debug("后端 Token 刷新跳过：当前 Token 仍有效且不在最后 8 小时内")
             return
@@ -64,13 +64,13 @@ extension PlanetService.Auth {
         await syncToken(trigger: .automatic, ssoUserName: ssoUserName, session: session, refreshReason: reason)
     }
 
-    func clearToken() {
+    static func clearToken() {
         PlanetService.authToken = nil
     }
 }
 
 extension PlanetService.Auth {
-    private func syncToken(
+    private static func syncToken(
         trigger: SyncTrigger,
         ssoUserName: String,
         session: Session,
@@ -99,7 +99,7 @@ extension PlanetService.Auth {
         }
     }
 
-    private func handleSyncFailure(trigger: SyncTrigger, refreshReason: RefreshReason?) {
+    private static func handleSyncFailure(trigger: SyncTrigger, refreshReason: RefreshReason?) {
         if trigger == .manual {
             clearToken()
             return
@@ -110,7 +110,7 @@ extension PlanetService.Auth {
         }
     }
 
-    private func refreshReasonForCurrentToken() -> RefreshReason? {
+    private static func refreshReasonForCurrentToken() -> RefreshReason? {
         guard let backendToken = PlanetService.authToken?.trimmingCharacters(in: .whitespacesAndNewlines),
             !backendToken.isEmpty
         else {
@@ -134,7 +134,7 @@ extension PlanetService.Auth {
         return nil
     }
 
-    private func requestBackendToken(wiscpsid: String) async throws -> BackendLoginResponse {
+    private static func requestBackendToken(wiscpsid: String) async throws -> BackendLoginResponse {
         let loginURLString = "\(Constants.backendHost)/auth/login"
         guard let loginURL = URL(string: loginURLString) else {
             throw BackendTokenError.invalidBackendURL
@@ -150,7 +150,7 @@ extension PlanetService.Auth {
         .value
     }
 
-    fileprivate func readWISCPSIDCookieValue(session: Session) throws -> String {
+    fileprivate static func readWISCPSIDCookieValue(session: Session) throws -> String {
         guard let cookies = session.sessionConfiguration.httpCookieStorage?.cookies else {
             throw BackendTokenError.missingWISCPSIDCookie
         }
@@ -162,12 +162,12 @@ extension PlanetService.Auth {
         return cookie.value
     }
 
-    fileprivate func isTargetWISCPSIDCookie(_ cookie: HTTPCookie) -> Bool {
+    fileprivate static func isTargetWISCPSIDCookie(_ cookie: HTTPCookie) -> Bool {
         let normalizedDomain = cookie.domain.hasPrefix(".") ? String(cookie.domain.dropFirst()) : cookie.domain
         return cookie.name == targetCookieName && normalizedDomain == targetCookieDomain
     }
 
-    fileprivate func jwtExpirationDate(token: String) -> Date? {
+    fileprivate static func jwtExpirationDate(token: String) -> Date? {
         do {
             let jwt = try decode(jwt: token)
             return jwt.expiresAt
