@@ -9,7 +9,6 @@ import AlertToast
 import CSUSTKit
 import MapKit
 import SwiftUI
-import TipKit
 
 #if os(iOS)
 import UIKit
@@ -23,10 +22,6 @@ struct CampusMapView: View {
     @State private var debounceTask: Task<Void, Never>? = nil
     @FocusState private var isSearchFocused: Bool
     @Environment(\.horizontalSizeClass) private var sizeClass
-
-    private var campusTip = CampusTip()
-    private var buildingInfoTip = BuildingInfoTip()
-    private var onlineMapTip = OnlineMapTip()
 
     var url: URL {
         URL(string: "https://gis.csust.edu.cn/cmipsh5/#/")!
@@ -125,13 +120,6 @@ struct CampusMapView: View {
                 } label: {
                     Image(systemName: "building.2")
                 }
-                // MARK: - 校区选择 Tip
-                .popoverTip(campusTip) { action in
-                    if action.index == 0 {
-                        campusTip.invalidate(reason: .actionPerformed)
-                        OnlineMapTip.shouldShown = true
-                    }
-                }
 
                 Button(action: {
                     #if os(macOS)
@@ -142,24 +130,11 @@ struct CampusMapView: View {
                 }) {
                     Image(systemName: "globe")
                 }
-                // MARK: - 在线地图 Tip
-                .popoverTip(onlineMapTip) { action in
-                    if action.index == 0 {
-                        onlineMapTip.invalidate(reason: .actionPerformed)
-                        BuildingInfoTip.shouldShown = true
-                    }
-                }
             }
 
             ToolbarItem(placement: .navigation) {
                 Button(action: viewModel.toggleBuildingsList) {
                     Image(systemName: "building.columns")
-                }
-                // MARK: - 建筑物列表开关 Tip
-                .popoverTip(buildingInfoTip) { action in
-                    if action.index == 0 {
-                        buildingInfoTip.invalidate(reason: .actionPerformed)
-                    }
                 }
             }
         }
@@ -329,65 +304,6 @@ struct CampusMapView: View {
                 }
             }
         }
-    }
-}
-
-extension CampusMapView {
-    // MARK: - 校区切换 Tip
-    struct CampusTip: Tip {
-        var title: Text { Text("切换校区") }
-        var message: Text? { Text("点击此处可以切换金盆岭和云塘校区") }
-        var image: Image? { Image(systemName: "building.2") }
-        var actions: [Action] {
-            [Tip.Action(title: "下一步 (1/3)")]
-        }
-        var options: [TipOption] {
-            [Tip.IgnoresDisplayFrequency(true)]
-        }
-        var rules: [Rule] {
-            #Rule(Self.$shouldShown) { $0 == true }
-        }
-
-        @Parameter
-        static var shouldShown: Bool = true
-    }
-
-    // MARK: - 在线地图 Tip
-    struct OnlineMapTip: Tip {
-        var title: Text { Text("在线地图") }
-        var message: Text? { Text("点击此处打开在线地图") }
-        var image: Image? { Image(systemName: "globe") }
-        var actions: [Action] {
-            [Tip.Action(title: "下一步 (2/3)")]
-        }
-        var rules: [Rule] {
-            #Rule(Self.$shouldShown) { $0 == true }
-        }
-        var options: [TipOption] {
-            [Tip.IgnoresDisplayFrequency(true)]
-        }
-
-        @Parameter
-        static var shouldShown: Bool = false
-    }
-
-    // MARK: - 列表开关 Tip
-    struct BuildingInfoTip: Tip {
-        var title: Text { Text("查看建筑物列表") }
-        var message: Text? { Text("点击此处可以开启/关闭建筑物列表") }
-        var image: Image? { Image(systemName: "building.columns") }
-        var actions: [Action] {
-            [Tip.Action(title: "明白了 (3/3)")]
-        }
-        var options: [TipOption] {
-            [Tip.IgnoresDisplayFrequency(true)]
-        }
-        var rules: [Rule] {
-            #Rule(Self.$shouldShown) { $0 == true }
-        }
-
-        @Parameter
-        static var shouldShown: Bool = false
     }
 }
 
