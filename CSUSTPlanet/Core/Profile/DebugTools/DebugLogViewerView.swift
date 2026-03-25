@@ -34,12 +34,12 @@ final class DebugLogCenter {
 
     // 仅暴露这个属性供 SwiftUI 追踪更新
     private(set) var entries: [DebugLogEntry] = []
+    private(set) var isRecording = false
 
     @ObservationIgnored private let maxEntryCount = 3000
     // 注意：这里的 Constants 请确保你的项目中已定义
     @ObservationIgnored private let monitoredSubsystems = [Constants.appBundleID, Constants.widgetBundleID]
 
-    @ObservationIgnored private var hasStarted = false
     @ObservationIgnored private var processStartDate = Date()
 
     @ObservationIgnored private var stdoutOriginalFD: Int32 = -1
@@ -63,8 +63,9 @@ final class DebugLogCenter {
     private init() {}
 
     func start() {
-        guard !hasStarted else { return }
-        hasStarted = true
+        guard !isRecording else { return }
+
+        isRecording = true
         processStartDate = Date()
 
         // 获取初始的 OSLog 锚点
@@ -76,7 +77,37 @@ final class DebugLogCenter {
         refreshOSLogs()
     }
 
+    func stop() {
+        guard isRecording else { return }
+        isRecording = false
+
+        stdoutPipe?.fileHandleForReading.readabilityHandler = nil
+        stderrPipe?.fileHandleForReading.readabilityHandler = nil
+
+        if stdoutOriginalFD != -1 {
+            dup2(stdoutOriginalFD, STDOUT_FILENO)
+            close(stdoutOriginalFD)
+            stdoutOriginalFD = -1
+        }
+
+        if stderrOriginalFD != -1 {
+            dup2(stderrOriginalFD, STDERR_FILENO)
+            close(stderrOriginalFD)
+            stderrOriginalFD = -1
+        }
+
+        try? stdoutPipe?.fileHandleForReading.close()
+        try? stdoutPipe?.fileHandleForWriting.close()
+        try? stderrPipe?.fileHandleForReading.close()
+        try? stderrPipe?.fileHandleForWriting.close()
+
+        stdoutPipe = nil
+        stderrPipe = nil
+    }
+
     func refreshOSLogs() {
+        guard isRecording else { return }
+
         let currentPosition = osLogPosition
         let startDate = processStartDate
         let subsystems = monitoredSubsystems
@@ -118,6 +149,7 @@ final class DebugLogCenter {
 
                 await MainActor.run { [weak self, tempEntries, hashesToInsert, latestDate] in
                     guard let self else { return }
+                    guard self.isRecording else { return }
 
                     for (index, entry) in tempEntries.enumerated() {
                         let hash = hashesToInsert[index]
@@ -302,6 +334,15 @@ struct DebugLogViewerView: View {
         .navigationTitle("日志查看器")
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    if center.isRecording {
+                        center.stop()
+                    } else {
+                        center.start()
+                    }
+                } label: {
+                    Label(center.isRecording ? "停止记录" : "开始记录", systemImage: center.isRecording ? "stop.circle" : "play.circle")
+                }
                 ShareLink(item: center.exportText()) {
                     Label("导出", systemImage: "square.and.arrow.up")
                 }
@@ -310,12 +351,14 @@ struct DebugLogViewerView: View {
                 } label: {
                     Label("刷新", systemImage: "arrow.clockwise")
                 }
+                .disabled(!center.isRecording)
             }
         }
         .task {
-            center.start()
             while !Task.isCancelled {
-                center.refreshOSLogs()
+                if center.isRecording {
+                    center.refreshOSLogs()
+                }
                 try? await Task.sleep(for: .seconds(1.0))
             }
         }
