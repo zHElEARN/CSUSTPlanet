@@ -95,9 +95,6 @@ class MMKVHelper {
     @MMKVOptionalStorage(key: "GlobalVars.userId")
     var userId: String?
 
-    @MMKVOptionalStorage(key: "Auth.backendToken")
-    var backendToken: String?
-
     @MMKVStorage(key: "GlobalVars.hasCleanedUpDuplicateElectricityRecords", defaultValue: false)
     var hasCleanedUpDuplicateElectricityRecords: Bool
 
@@ -166,6 +163,15 @@ extension MMKVHelper {
 
         @MMKVStorage(key: "SwiftData.hasMigratedToGRDB", defaultValue: false)
         static var hasMigratedToGRDB: Bool
+    }
+}
+
+// MARK: - Planet Service
+
+extension MMKVHelper {
+    enum PlanetService {
+        @MMKVOptionalStorage(key: "PlanetService.authToken")
+        static var authToken: String?
     }
 }
 

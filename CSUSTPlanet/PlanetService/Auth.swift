@@ -65,7 +65,7 @@ extension PlanetService.Auth {
     }
 
     func clearToken() {
-        MMKVHelper.shared.backendToken = nil
+        PlanetService.authToken = nil
     }
 }
 
@@ -91,7 +91,7 @@ extension PlanetService.Auth {
                 throw BackendTokenError.invalidResponseToken
             }
 
-            MMKVHelper.shared.backendToken = backendToken
+            PlanetService.authToken = backendToken
             Logger.authManager.debug("后端 Token 刷新成功，触发方式: \(trigger.rawValue)")
         } catch {
             Logger.authManager.error("后端 Token 刷新失败，触发方式: \(trigger.rawValue), 原因: \(String(describing: refreshReason?.rawValue)), 错误: \(error)")
@@ -111,7 +111,7 @@ extension PlanetService.Auth {
     }
 
     private func refreshReasonForCurrentToken() -> RefreshReason? {
-        guard let backendToken = MMKVHelper.shared.backendToken?.trimmingCharacters(in: .whitespacesAndNewlines),
+        guard let backendToken = PlanetService.authToken?.trimmingCharacters(in: .whitespacesAndNewlines),
             !backendToken.isEmpty
         else {
             return .missingToken
