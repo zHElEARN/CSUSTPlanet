@@ -7,6 +7,7 @@
 
 import Alamofire
 import CSUSTKit
+import Combine
 import Foundation
 import OSLog
 
@@ -14,6 +15,8 @@ import OSLog
 @Observable
 class AuthManager {
     static let shared = AuthManager()
+
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - SSO Properties
 
@@ -58,7 +61,29 @@ class AuthManager {
         ssoHelper = SSOHelper(mode: mode, session: session)
         eduHelper = EduHelper(mode: mode, session: session)
         moocHelper = MoocHelper(mode: mode, session: session)
+        startObservingLifecycle()
         ssoRelogin()
+    }
+
+    private func startObservingLifecycle() {
+        LifecycleManager.shared.events
+            .sink { [weak self] event in
+                guard let self else { return }
+                switch event {
+                case .didBecomeActive(let resumeAfter):
+                    let threshold: TimeInterval = 20 * 60
+                    guard let resumeAfter else { return }
+                    if resumeAfter > threshold {
+                        Logger.authManager.debug("App后台停留时间 (\(resumeAfter)s) 超过阈值，执行重新登录")
+                        ssoRelogin()
+                    } else {
+                        Logger.authManager.debug("App后台停留时间 (\(resumeAfter)s) 不足 \(threshold)s，跳过")
+                    }
+                case .didBecomeInactive, .didEnterBackground:
+                    break
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - SSO Login

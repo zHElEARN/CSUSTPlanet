@@ -22,7 +22,6 @@ struct CSUSTPlanetApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     private static var isFirstAppear = true
-    private static var lastBackgroundDate: Date?
 
     init() {
         SentrySDK.start { options in
@@ -68,27 +67,13 @@ struct CSUSTPlanetApp: App {
                 break
             }
 
-            checkAndRelogin()
             Task { await NotificationManager.shared.handleAppDidBecomeActive() }
         case .inactive:
-            Self.lastBackgroundDate = .now
+            break
         case .background:
             break
         default:
             break
-        }
-    }
-
-    /// 当App长时间不活跃会到前台后，检查当前学校系统登录状态
-    private func checkAndRelogin() {
-        let threshold: TimeInterval = 20 * 60
-        guard let backgroundDate = Self.lastBackgroundDate else { return }
-        let timeInterval = Date().timeIntervalSince(backgroundDate)
-        if timeInterval > threshold {
-            Logger.app.debug("App后台停留时间 (\(timeInterval)s) 超过阈值，执行 SSO Relogin")
-            AuthManager.shared.ssoRelogin()
-        } else {
-            Logger.app.debug("App后台停留时间 (\(timeInterval)s) 不足 20 分钟，跳过 Relogin")
         }
     }
 }
