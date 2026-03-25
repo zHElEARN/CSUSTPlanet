@@ -8,6 +8,7 @@
 #if os(iOS)
 
 import BackgroundTasks
+import Combine
 import Foundation
 import OSLog
 
@@ -28,6 +29,8 @@ protocol BackgroundTaskProvider {
 final class BackgroundTaskHelper {
     static let shared = BackgroundTaskHelper()
 
+    private var cancellables = Set<AnyCancellable>()
+
     let identifier: String = Constants.backgroundID
 
     var enabledTaskIdentifiers: Set<String>
@@ -45,14 +48,6 @@ final class BackgroundTaskHelper {
         didSet { MMKVHelper.BackgroundTask.isEnabled = isEnabled }
     }
 
-    private init() {
-        enabledTaskIdentifiers = Set(MMKVHelper.BackgroundTask.enabledTaskIdentifiers)
-        interval = MMKVHelper.BackgroundTask.interval
-        isEnabled = MMKVHelper.BackgroundTask.isEnabled
-
-        register()
-    }
-
     let tasks: [BackgroundTaskProvider] = [
         GradeBackgroundTask(),
         ElectricityBackgroundTask(),
@@ -60,6 +55,15 @@ final class BackgroundTaskHelper {
 
     var enabledTasks: [BackgroundTaskProvider] {
         tasks.filter { enabledTaskIdentifiers.contains($0.identifier) }
+    }
+
+    private init() {
+        enabledTaskIdentifiers = Set(MMKVHelper.BackgroundTask.enabledTaskIdentifiers)
+        interval = MMKVHelper.BackgroundTask.interval
+        isEnabled = MMKVHelper.BackgroundTask.isEnabled
+
+        register()
+        startObservingLifecycle()
     }
 
     private func register() {
@@ -103,6 +107,22 @@ final class BackgroundTaskHelper {
             }
         }
         Logger.backgroundTaskHelper.debug("注册后台任务成功")
+    }
+
+    private func startObservingLifecycle() {
+        LifecycleManager.shared.events
+            .sink { [weak self] event in
+                guard let self else { return }
+                switch event {
+                case .didBecomeActive:
+                    self.cancel()
+                case .didEnterBackground:
+                    self.schedule()
+                case .didBecomeInactive:
+                    break
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func schedule() {

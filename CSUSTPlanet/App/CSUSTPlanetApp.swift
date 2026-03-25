@@ -54,7 +54,6 @@ struct CSUSTPlanetApp: App {
         #if os(macOS)
         .windowResizability(.contentSize)
         #endif
-        // .modelContainer(SharedModelUtil.container)
         .onChange(of: scenePhase) { _, newPhase in handleScenePhaseChange(to: newPhase) }
     }
 
@@ -73,7 +72,6 @@ struct CSUSTPlanetApp: App {
             Task { await NotificationManager.shared.handleAppDidBecomeActive() }
             #if os(iOS)
             ActivityManager.shared.autoUpdateActivity()
-            BackgroundTaskHelper.shared.cancel()
             #endif
         case .inactive:
             Self.lastBackgroundDate = .now
@@ -81,9 +79,7 @@ struct CSUSTPlanetApp: App {
             ActivityManager.shared.autoUpdateActivity()
             #endif
         case .background:
-            #if os(iOS)
-            BackgroundTaskHelper.shared.schedule()
-            #endif
+            break
         default:
             break
         }

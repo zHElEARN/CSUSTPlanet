@@ -50,15 +50,13 @@ final class LifecycleManager {
             if isFirstAppearance {
                 resumeAfter = nil
                 isFirstAppearance = false
+                Logger.appLifecycleManager.debug("App首次进入.active状态，跳过didBecomeActive事件派发")
+                return
             } else if let lastBackgroundDate {
                 resumeAfter = now.timeIntervalSince(lastBackgroundDate)
+                Logger.appLifecycleManager.debug("App进入.active状态, 距离上次非活跃 \(resumeAfter ?? -1)s")
             } else {
                 resumeAfter = nil
-            }
-
-            if let resumeAfter {
-                Logger.appLifecycleManager.debug("App进入.active状态, 距离上次非活跃 \(resumeAfter)s")
-            } else {
                 Logger.appLifecycleManager.debug("App进入.active状态")
             }
             eventSubject.send(.didBecomeActive(resumeAfter: resumeAfter))
