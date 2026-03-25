@@ -89,9 +89,6 @@ class MMKVHelper {
     @MMKVStorage(key: "GlobalVars.isWebVPNModeEnabled", defaultValue: false)
     var isWebVPNModeEnabled: Bool
 
-    @MMKVStorage(key: "GlobalVars.isNotificationEnabled", defaultValue: false)
-    var isNotificationEnabled: Bool
-
     @MMKVOptionalStorage(key: "GlobalVars.userId")
     var userId: String?
 

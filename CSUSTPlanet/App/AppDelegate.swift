@@ -19,11 +19,11 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        NotificationManager.shared.handleNotificationRegistration(token: deviceToken, error: nil)
+        NotificationManager.shared.didRegisterForRemoteNotifications(with: deviceToken)
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
-        NotificationManager.shared.handleNotificationRegistration(token: nil, error: error)
+        NotificationManager.shared.didFailToRegisterForRemoteNotifications(with: error)
     }
 }
 
@@ -36,11 +36,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func application(_ application: NSApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        NotificationManager.shared.handleNotificationRegistration(token: deviceToken, error: nil)
+        NotificationManager.shared.didRegisterForRemoteNotifications(with: deviceToken)
     }
 
     func application(_ application: NSApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {
-        NotificationManager.shared.handleNotificationRegistration(token: nil, error: error)
+        NotificationManager.shared.didFailToRegisterForRemoteNotifications(with: error)
     }
 }
 #endif
