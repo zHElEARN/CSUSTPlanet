@@ -1,8 +1,8 @@
 //
-//  Auth.swift
+//  PlanetAuthService.swift
 //  CSUSTPlanet
 //
-//  Created by Codex on 2026/3/24.
+//  Created by Zachary Liu on 2026/3/24.
 //
 
 import Alamofire
@@ -10,47 +10,48 @@ import Foundation
 import JWTDecode
 import OSLog
 
-extension PlanetService {
-    enum Auth {
-        private static let refreshLeadTime: TimeInterval = 8 * 60 * 60
-        private static let targetCookieName = "WISCPSID"
-        private static let targetCookieDomain = "ehall.csust.edu.cn"
-
-        private enum SyncTrigger: String {
-            case manual = "manual"
-            case automatic = "automatic"
-        }
-
-        private enum RefreshReason: String {
-            case missingToken = "missing_token"
-            case invalidJWT = "invalid_jwt"
-            case expired = "expired"
-            case expiringSoon = "expiring_soon"
-        }
-
-        private enum BackendTokenError: Error {
-            case invalidBackendURL
-            case missingWISCPSIDCookie
-            case invalidResponseToken
-            case userNameMismatch(expected: String, actual: String)
-        }
-
-        private struct BackendLoginRequest: Encodable {
-            let token: String
-        }
-
-        private struct BackendLoginResponse: Decodable {
-            struct Profile: Decodable {
-                let userName: String
-            }
-
-            let profile: Profile
-            let token: String
-        }
+enum PlanetAuthService {
+    static var authToken: String? {
+        get { MMKVHelper.PlanetService.authToken }
+        set { MMKVHelper.PlanetService.authToken = newValue }
     }
-}
 
-extension PlanetService.Auth {
+    private static let refreshLeadTime: TimeInterval = 8 * 60 * 60
+    private static let targetCookieName = "WISCPSID"
+    private static let targetCookieDomain = "ehall.csust.edu.cn"
+
+    private enum SyncTrigger: String {
+        case manual = "manual"
+        case automatic = "automatic"
+    }
+
+    private enum RefreshReason: String {
+        case missingToken = "missing_token"
+        case invalidJWT = "invalid_jwt"
+        case expired = "expired"
+        case expiringSoon = "expiring_soon"
+    }
+
+    private enum BackendTokenError: Error {
+        case invalidBackendURL
+        case missingWISCPSIDCookie
+        case invalidResponseToken
+        case userNameMismatch(expected: String, actual: String)
+    }
+
+    private struct BackendLoginRequest: Encodable {
+        let token: String
+    }
+
+    private struct BackendLoginResponse: Decodable {
+        struct Profile: Decodable {
+            let userName: String
+        }
+
+        let profile: Profile
+        let token: String
+    }
+
     static func syncTokenAfterManualLogin(ssoUserName: String, session: Session) async {
         await syncToken(trigger: .manual, ssoUserName: ssoUserName, session: session)
     }
@@ -65,11 +66,9 @@ extension PlanetService.Auth {
     }
 
     static func clearToken() {
-        PlanetService.authToken = nil
+        Self.authToken = nil
     }
-}
 
-extension PlanetService.Auth {
     private static func syncToken(
         trigger: SyncTrigger,
         ssoUserName: String,
@@ -91,7 +90,7 @@ extension PlanetService.Auth {
                 throw BackendTokenError.invalidResponseToken
             }
 
-            PlanetService.authToken = backendToken
+            Self.authToken = backendToken
             Logger.authManager.debug("后端 Token 刷新成功，触发方式: \(trigger.rawValue)")
         } catch {
             Logger.authManager.error("后端 Token 刷新失败，触发方式: \(trigger.rawValue), 原因: \(String(describing: refreshReason?.rawValue)), 错误: \(error)")
@@ -111,7 +110,7 @@ extension PlanetService.Auth {
     }
 
     private static func refreshReasonForCurrentToken() -> RefreshReason? {
-        guard let backendToken = PlanetService.authToken?.trimmingCharacters(in: .whitespacesAndNewlines),
+        guard let backendToken = Self.authToken?.trimmingCharacters(in: .whitespacesAndNewlines),
             !backendToken.isEmpty
         else {
             return .missingToken
@@ -174,5 +173,12 @@ extension PlanetService.Auth {
         } catch {
             return nil
         }
+    }
+}
+
+extension MMKVHelper {
+    enum PlanetService {
+        @MMKVOptionalStorage(key: "PlanetService.authToken")
+        static var authToken: String?
     }
 }

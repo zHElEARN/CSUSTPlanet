@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-typealias SemesterCalendarConfig = PlanetService.Config.SemesterCalendarConfig
+typealias SemesterCalendarConfig = PlanetConfigService.SemesterCalendarConfig
 
 @MainActor
 @Observable
@@ -40,7 +40,7 @@ final class SchoolCalendarViewModel {
         defer { isLoading = false }
 
         do {
-            let decodedConfig = try await PlanetService.Config.semesterCalendar(semester: semester)
+            let decodedConfig = try await PlanetConfigService.semesterCalendar(semester: semester)
             self.config = decodedConfig
             generateCalendar(from: decodedConfig)
         } catch {

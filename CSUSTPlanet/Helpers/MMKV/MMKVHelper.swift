@@ -156,15 +156,6 @@ extension MMKVHelper {
     }
 }
 
-// MARK: - Planet Service
-
-extension MMKVHelper {
-    enum PlanetService {
-        @MMKVOptionalStorage(key: "PlanetService.authToken")
-        static var authToken: String?
-    }
-}
-
 // MARK: - Methods
 
 extension MMKVHelper {

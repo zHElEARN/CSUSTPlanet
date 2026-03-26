@@ -8,7 +8,7 @@
 import Foundation
 import Observation
 
-typealias SchoolCalendar = PlanetService.Config.SchoolCalendar
+typealias SchoolCalendar = PlanetConfigService.SchoolCalendar
 
 @MainActor
 @Observable
@@ -24,7 +24,7 @@ class SchoolCalendarListViewModel {
         defer { isLoadingCalendars = false }
 
         do {
-            schoolCalendars = try await PlanetService.Config.semesterCalendars().sorted { $0.semesterCode > $1.semesterCode }
+            schoolCalendars = try await PlanetConfigService.semesterCalendars().sorted { $0.semesterCode > $1.semesterCode }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

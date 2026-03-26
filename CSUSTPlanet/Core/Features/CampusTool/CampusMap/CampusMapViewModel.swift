@@ -10,8 +10,8 @@ import CoreLocation
 import MapKit
 import SwiftUI
 
-typealias GeoJSON = PlanetService.Config.GeoJSON
-typealias Feature = PlanetService.Config.Feature
+typealias GeoJSON = PlanetConfigService.GeoJSON
+typealias Feature = PlanetConfigService.Feature
 
 @MainActor
 final class CampusMapViewModel: ObservableObject {
@@ -143,7 +143,7 @@ final class CampusMapViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let geoJSON = try await PlanetService.Config.campusMap()
+            let geoJSON = try await PlanetConfigService.campusMap()
 
             if self.allBuildings != geoJSON.features {
                 self.allBuildings = geoJSON.features

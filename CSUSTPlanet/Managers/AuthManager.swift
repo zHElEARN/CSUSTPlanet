@@ -107,7 +107,7 @@ class AuthManager {
         MMKVHelper.shared.userId = profile.userAccount
         TrackHelper.shared.updateUserID(profile.userAccount)
         CookieHelper.shared.save()
-        await PlanetService.Auth.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
+        await PlanetAuthService.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
 
         ssoInfo = "统一身份认证登录成功"
         isSSOInfoPresented = true
@@ -127,7 +127,7 @@ class AuthManager {
             KeychainUtil.ssoUsername = nil
             KeychainUtil.ssoPassword = nil
             MMKVHelper.shared.userId = nil
-            PlanetService.Auth.clearToken()
+            PlanetAuthService.clearToken()
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
         }
@@ -153,7 +153,7 @@ class AuthManager {
         MMKVHelper.shared.userId = profile.userAccount
         TrackHelper.shared.updateUserID(profile.userAccount)
         CookieHelper.shared.save()
-        await PlanetService.Auth.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
+        await PlanetAuthService.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
 
         ssoInfo = "统一身份认证登录成功"
         isSSOInfoPresented = true
@@ -196,7 +196,7 @@ class AuthManager {
                 self.ssoProfile = ssoProfile
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
-                await PlanetService.Auth.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
+                await PlanetAuthService.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
 
                 if !isSilent {
                     ssoInfo = "统一身份认证已登录"
@@ -228,7 +228,7 @@ class AuthManager {
                 MMKVHelper.shared.userId = ssoProfile.userAccount
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
                 CookieHelper.shared.save()
-                await PlanetService.Auth.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
+                await PlanetAuthService.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
 
                 if !isSilent {
                     ssoInfo = "统一身份认证登录成功"
@@ -394,7 +394,7 @@ extension AuthManager {
                 try await ssoReloginAsync(isSilent: isSilent)
                 allLogin(isSilent: isSilent)
             } catch {
-                PlanetService.Auth.clearToken()
+                PlanetAuthService.clearToken()
                 Logger.authManager.error("ssoRelogin 失败: \(error)")
             }
         }

@@ -1,5 +1,5 @@
 //
-//  Task.swift
+//  PlanetTaskService.swift
 //  CSUSTPlanet
 //
 //  Created by Codex on 2026/3/25.
@@ -8,28 +8,24 @@
 import Alamofire
 import Foundation
 
-extension PlanetService {
-    enum Task {
-        enum TaskError: Error {
-            case invalidBackendURL
-            case missingBackendToken
-        }
-
-        struct ElectricitySyncRequest: Encodable {
-            let deviceToken: String
-            let tasks: [ElectricityTask]
-        }
-
-        struct ElectricityTask: Encodable {
-            let building: String
-            let campus: String
-            let notifyTime: String
-            let room: String
-        }
+enum PlanetTaskService {
+    enum TaskError: Error {
+        case invalidBackendURL
+        case missingBackendToken
     }
-}
 
-extension PlanetService.Task {
+    struct ElectricitySyncRequest: Encodable {
+        let deviceToken: String
+        let tasks: [ElectricityTask]
+    }
+
+    struct ElectricityTask: Encodable {
+        let building: String
+        let campus: String
+        let notifyTime: String
+        let room: String
+    }
+
     static func syncElectricity(
         deviceToken: String,
         tasks: [ElectricityTask]
@@ -39,7 +35,7 @@ extension PlanetService.Task {
             throw TaskError.invalidBackendURL
         }
 
-        guard let backendToken = PlanetService.authToken, !backendToken.isEmpty else {
+        guard let backendToken = PlanetAuthService.authToken, !backendToken.isEmpty else {
             throw TaskError.missingBackendToken
         }
 
