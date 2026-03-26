@@ -9,10 +9,6 @@ import Alamofire
 import Foundation
 
 enum PlanetConfigService {
-    enum ConfigError: Error {
-        case invalidBackendURL
-    }
-
     struct GeoJSON: Codable, Equatable {
         let type: String
         let features: [Feature]
@@ -70,31 +66,14 @@ enum PlanetConfigService {
     }
 
     static func campusMap() async throws -> GeoJSON {
-        let urlString = "\(Constants.backendHost)/config/campus-map"
-        guard let url = URL(string: urlString) else {
-            throw ConfigError.invalidBackendURL
-        }
-
-        var request = URLRequest(url: url)
-        request.cachePolicy = .reloadIgnoringLocalCacheData
-        return try await AF.request(request).serializingDecodable(GeoJSON.self).value
+        return try await AF.request("\(Constants.backendHost)/config/campus-map", requestModifier: { $0.cachePolicy = .reloadIgnoringLocalCacheData }).serializingDecodable(GeoJSON.self).value
     }
 
     static func semesterCalendars() async throws -> [SchoolCalendar] {
-        let urlString = "\(Constants.backendHost)/config/semester-calendars"
-        guard let url = URL(string: urlString) else {
-            throw ConfigError.invalidBackendURL
-        }
-
-        return try await AF.request(url).serializingDecodable([SchoolCalendar].self).value
+        return try await AF.request("\(Constants.backendHost)/config/semester-calendars").serializingDecodable([SchoolCalendar].self).value
     }
 
     static func semesterCalendar(semester: String) async throws -> SemesterCalendarConfig {
-        let urlString = "\(Constants.backendHost)/config/semester-calendars/\(semester)"
-        guard let url = URL(string: urlString) else {
-            throw ConfigError.invalidBackendURL
-        }
-
-        return try await AF.request(url).serializingDecodable(SemesterCalendarConfig.self).value
+        return try await AF.request("\(Constants.backendHost)/config/semester-calendars/\(semester)").serializingDecodable(SemesterCalendarConfig.self).value
     }
 }

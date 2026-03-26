@@ -9,11 +9,6 @@ import Alamofire
 import Foundation
 
 enum PlanetTaskService {
-    enum TaskError: Error {
-        case invalidBackendURL
-        case missingBackendToken
-    }
-
     struct ElectricitySyncRequest: Encodable {
         let deviceToken: String
         let tasks: [ElectricityTask]
@@ -27,24 +22,16 @@ enum PlanetTaskService {
     }
 
     static func syncElectricity(
+        authToken: String,
         deviceToken: String,
         tasks: [ElectricityTask]
     ) async throws {
-        let urlString = "\(Constants.backendHost)/task/electricity"
-        guard let url = URL(string: urlString) else {
-            throw TaskError.invalidBackendURL
-        }
-
-        guard let backendToken = PlanetAuthService.authToken, !backendToken.isEmpty else {
-            throw TaskError.missingBackendToken
-        }
-
         let headers: HTTPHeaders = [
-            .authorization(bearerToken: backendToken)
+            .authorization(bearerToken: authToken)
         ]
 
         _ = try await AF.request(
-            url,
+            "\(Constants.backendHost)/task/electricity",
             method: .post,
             parameters: ElectricitySyncRequest(deviceToken: deviceToken, tasks: tasks),
             encoder: JSONParameterEncoder.default,
