@@ -55,6 +55,8 @@ final class NotificationManager {
         permissionStatusSubject.eraseToAnyPublisher()
     }
 
+    private var isUpdatingToken = false
+
     private init() {
         startObservingLifecycle()
 
@@ -109,17 +111,23 @@ final class NotificationManager {
     func updateToken() async throws {
         guard self.token == nil else { return }
 
+        guard !isUpdatingToken else { return }
+        isUpdatingToken = true
+        defer { isUpdatingToken = false }
+
         PlatformApplication.shared.registerForRemoteNotifications()
 
         return try await withCheckedThrowingContinuation { continuation in
-            self.tokenContinuation?.resume(throwing: CancellationError())
-            self.tokenContinuation = continuation
+            Task { @MainActor in
+                self.tokenContinuation = continuation
 
-            Task {
-                try? await Task.sleep(for: .seconds(10))
-                if let pendingContinuation = self.tokenContinuation {
-                    pendingContinuation.resume(throwing: NotificationManagerError.tokenTimeout)
-                    self.tokenContinuation = nil
+                Task {
+                    try? await Task.sleep(for: .seconds(10))
+
+                    if let pendingContinuation = self.tokenContinuation {
+                        pendingContinuation.resume(throwing: NotificationManagerError.tokenTimeout)
+                        self.tokenContinuation = nil
+                    }
                 }
             }
         }
