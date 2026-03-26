@@ -89,25 +89,23 @@ final class DormDetailViewModel {
         }
     }
 
-    func configureSchedule(hour: Int, minute: Int, onConfigured: (() -> Void)? = nil) {
+    func configureSchedule(hour: Int, minute: Int) {
         guard let dormID = dorm.id else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
             try pool.write { db in try DormGRDB.updateSchedule(dormID: dormID, hour: hour, minute: minute, in: db) }
-            onConfigured?()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func cancelSchedule(onCanceled: (() -> Void)? = nil) {
+    func cancelSchedule() {
         guard let dormID = dorm.id else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
         do {
             try pool.write { db in try DormGRDB.clearSchedule(dormID: dormID, in: db) }
-            onCanceled?()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

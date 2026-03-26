@@ -58,9 +58,8 @@ struct DormDetailView: View {
             DormScheduleConfigView(
                 initialHour: viewModel.dorm.scheduleHour ?? 20,
                 initialMinute: viewModel.dorm.scheduleMinute ?? 0,
-                onConfirm: { hour, minute in
-                    viewModel.configureSchedule(hour: hour, minute: minute)
-                }
+                onConfirm: viewModel.configureSchedule,
+                isPresented: $viewModel.isScheduleConfigSheetPresented
             )
         }
         .errorToast($viewModel.errorToast)

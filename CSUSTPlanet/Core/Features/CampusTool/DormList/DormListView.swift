@@ -35,7 +35,7 @@ struct DormListView: View {
                 List {
                     ForEach(viewModel.dorms) { dorm in
                         dormCard(dorm)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                            .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                     }
@@ -63,9 +63,8 @@ struct DormListView: View {
                 DormScheduleConfigView(
                     initialHour: dorm.scheduleHour ?? 20,
                     initialMinute: dorm.scheduleMinute ?? 0,
-                    onConfirm: { hour, minute in
-                        viewModel.configureSchedule(for: dorm, hour: hour, minute: minute)
-                    }
+                    onConfirm: { hour, minute in viewModel.configureSchedule(for: dorm, hour: hour, minute: minute) },
+                    isPresented: scheduleConfigPresentedBinding
                 )
             }
         }

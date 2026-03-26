@@ -2,30 +2,29 @@
 //  DormScheduleConfigView.swift
 //  CSUSTPlanet
 //
-//  Created by Codex on 2026/3/25.
+//  Created by Zachary Liu on 2026/3/25.
 //
 
 import SwiftUI
 
 struct DormScheduleConfigView: View {
-    @Environment(\.dismiss) private var dismiss
+    @Binding var isPresented: Bool
 
     @State private var selectedHour: Int
     @State private var selectedMinute: Int
 
     let onConfirm: (Int, Int) -> Void
-    let onCancel: (() -> Void)?
 
     init(
         initialHour: Int = 20,
         initialMinute: Int = 0,
         onConfirm: @escaping (Int, Int) -> Void,
-        onCancel: (() -> Void)? = nil
+        isPresented: Binding<Bool>
     ) {
         _selectedHour = State(initialValue: min(max(initialHour, 0), 23))
         _selectedMinute = State(initialValue: min(max(initialMinute, 0), 59))
         self.onConfirm = onConfirm
-        self.onCancel = onCancel
+        self._isPresented = isPresented
     }
 
     var body: some View {
@@ -81,16 +80,14 @@ struct DormScheduleConfigView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        onCancel?()
-                        dismiss()
+                        isPresented = false
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         onConfirm(selectedHour, selectedMinute)
-                        dismiss()
+                        isPresented = false
                     }
-                    .fontWeight(.semibold)
                 }
             }
             .trackView("DormScheduleConfig")
