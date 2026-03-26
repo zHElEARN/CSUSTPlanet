@@ -10,166 +10,147 @@ import Foundation
 import JWTDecode
 import OSLog
 
-enum PlanetAuthService {
-    static var authToken: String? {
-        get { MMKVHelper.PlanetService.authToken }
-        set { MMKVHelper.PlanetService.authToken = newValue }
+@MainActor
+final class PlanetAuthService {
+    static let shared = PlanetAuthService()
+
+    private init() {}
+
+    var authToken: String?
+
+    private let refreshLeadTime: TimeInterval = 8 * 60 * 60
+    private let targetCookieName = "WISCPSID"
+    private let targetCookieDomain = "ehall.csust.edu.cn"
+
+    private enum PlanetAuthError: Error {
+        case missingCookie
+        case studentIDMismatch(expected: String, actual: String)
     }
 
-    private static let refreshLeadTime: TimeInterval = 8 * 60 * 60
-    private static let targetCookieName = "WISCPSID"
-    private static let targetCookieDomain = "ehall.csust.edu.cn"
-
-    private enum SyncTrigger: String {
-        case manual = "manual"
-        case automatic = "automatic"
-    }
-
-    private enum RefreshReason: String {
-        case missingToken = "missing_token"
-        case invalidJWT = "invalid_jwt"
-        case expired = "expired"
-        case expiringSoon = "expiring_soon"
-    }
-
-    private enum BackendTokenError: Error {
-        case invalidBackendURL
-        case missingWISCPSIDCookie
-        case invalidResponseToken
-        case userNameMismatch(expected: String, actual: String)
-    }
-
-    private struct BackendLoginRequest: Encodable {
+    private struct AuthLoginRequest: Encodable {
         let token: String
     }
 
-    private struct BackendLoginResponse: Decodable {
-        struct Profile: Decodable {
-            let userName: String
-        }
-
-        let profile: Profile
+    private struct AuthLoginResponse: Decodable {
         let token: String
     }
 
-    static func syncTokenAfterManualLogin(ssoUserName: String, session: Session) async {
-        await syncToken(trigger: .manual, ssoUserName: ssoUserName, session: session)
-    }
+    // MARK: - Core Methods
 
-    static func syncTokenAfterAutoLoginIfNeeded(ssoUserName: String, session: Session) async {
-        guard let reason = refreshReasonForCurrentToken() else {
-            Logger.authManager.debug("后端 Token 刷新跳过：当前 Token 仍有效且不在最后 8 小时内")
-            return
-        }
-
-        await syncToken(trigger: .automatic, ssoUserName: ssoUserName, session: session, refreshReason: reason)
-    }
-
-    static func clearToken() {
-        Self.authToken = nil
-    }
-
-    private static func syncToken(
-        trigger: SyncTrigger,
-        ssoUserName: String,
-        session: Session,
-        refreshReason: RefreshReason? = nil
-    ) async {
+    func authenticate(with ssoAccount: String, session: Session) async {
         do {
             let wiscpsid = try readWISCPSIDCookieValue(session: session)
             let response = try await requestBackendToken(wiscpsid: wiscpsid)
+            let newToken = response.token
 
-            let expectedUserName = ssoUserName.trimmingCharacters(in: .whitespacesAndNewlines)
-            let actualUserName = response.profile.userName.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard expectedUserName == actualUserName else {
-                throw BackendTokenError.userNameMismatch(expected: expectedUserName, actual: actualUserName)
+            guard let studentID = getStudentID(from: newToken) else {
+                Logger.planetAuthService.error("后端下发的Token缺失student_id字段")
+                return
             }
 
-            let backendToken = response.token.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !backendToken.isEmpty else {
-                throw BackendTokenError.invalidResponseToken
+            if studentID == ssoAccount {
+                self.authToken = newToken
+                MMKVHelper.PlanetService.authToken = newToken
+                Logger.planetAuthService.info("后端认证成功，Token已保存")
+            } else {
+                Logger.planetAuthService.error("后端下发的Token身份不匹配。期望: \(ssoAccount)，实际: \(studentID)")
             }
-
-            Self.authToken = backendToken
-            Logger.authManager.debug("后端 Token 刷新成功，触发方式: \(trigger.rawValue)")
         } catch {
-            Logger.authManager.error("后端 Token 刷新失败，触发方式: \(trigger.rawValue), 原因: \(String(describing: refreshReason?.rawValue)), 错误: \(error)")
-            handleSyncFailure(trigger: trigger, refreshReason: refreshReason)
+            Logger.planetAuthService.error("后端认证失败（静默处理）: \(error)")
         }
     }
 
-    private static func handleSyncFailure(trigger: SyncTrigger, refreshReason: RefreshReason?) {
-        if trigger == .manual {
-            clearToken()
+    func checkAndRefreshAuthToken(ssoAccount: String, session: Session) async {
+        self.authToken = nil
+
+        guard let cachedToken = MMKVHelper.PlanetService.authToken else {
+            Logger.planetAuthService.debug("本地无缓存的Token，尝试重新获取")
+            await authenticate(with: ssoAccount, session: session)
             return
         }
 
-        if refreshReason == .expired || refreshReason == .invalidJWT || refreshReason == .missingToken {
-            clearToken()
-        }
-    }
-
-    private static func refreshReasonForCurrentToken() -> RefreshReason? {
-        guard let backendToken = Self.authToken?.trimmingCharacters(in: .whitespacesAndNewlines),
-            !backendToken.isEmpty
-        else {
-            return .missingToken
+        guard let studentID = getStudentID(from: cachedToken), studentID == ssoAccount else {
+            Logger.planetAuthService.warning("本地缓存的Token student_id与当前登录账号不一致，清理并重新获取")
+            MMKVHelper.PlanetService.authToken = nil
+            await authenticate(with: ssoAccount, session: session)
+            return
         }
 
-        guard let expirationDate = jwtExpirationDate(token: backendToken) else {
-            return .invalidJWT
+        guard let expDate = jwtExpirationDate(token: cachedToken) else {
+            Logger.planetAuthService.warning("无法解析本地Token的过期时间，清理并重新获取")
+            MMKVHelper.PlanetService.authToken = nil
+            await authenticate(with: ssoAccount, session: session)
+            return
         }
 
         let now = Date()
-        if now >= expirationDate {
-            return .expired
+        if expDate <= now {
+            Logger.planetAuthService.info("本地Token已完全过期，清理并重新获取")
+            MMKVHelper.PlanetService.authToken = nil
+            await authenticate(with: ssoAccount, session: session)
+            return
         }
 
-        let refreshBoundary = now.addingTimeInterval(refreshLeadTime)
-        if refreshBoundary >= expirationDate {
-            return .expiringSoon
-        }
+        self.authToken = cachedToken
+        Logger.planetAuthService.info("本地Token验证通过，已加载到内存")
 
-        return nil
+        let timeRemaining = expDate.timeIntervalSince(now)
+        if timeRemaining < refreshLeadTime {
+            Logger.planetAuthService.info("Token距离过期不足8小时，发起静默续期")
+            await authenticate(with: ssoAccount, session: session)
+        }
     }
 
-    private static func requestBackendToken(wiscpsid: String) async throws -> BackendLoginResponse {
-        let loginURLString = "\(Constants.backendHost)/auth/login"
-        guard let loginURL = URL(string: loginURLString) else {
-            throw BackendTokenError.invalidBackendURL
-        }
+    func clearToken() {
+        self.authToken = nil
+        MMKVHelper.PlanetService.authToken = nil
+        Logger.planetAuthService.info("Token已清空")
+    }
 
+    // MARK: - Private Helpers
+
+    private func requestBackendToken(wiscpsid: String) async throws -> AuthLoginResponse {
         return try await AF.request(
-            loginURL,
+            "\(Constants.backendHost)/auth/login",
             method: .post,
-            parameters: BackendLoginRequest(token: wiscpsid),
+            parameters: AuthLoginRequest(token: wiscpsid),
             encoder: JSONParameterEncoder.default
         )
-        .serializingDecodable(BackendLoginResponse.self)
+        .serializingDecodable(AuthLoginResponse.self)
         .value
     }
 
-    fileprivate static func readWISCPSIDCookieValue(session: Session) throws -> String {
+    private func readWISCPSIDCookieValue(session: Session) throws -> String {
         guard let cookies = session.sessionConfiguration.httpCookieStorage?.cookies else {
-            throw BackendTokenError.missingWISCPSIDCookie
+            throw PlanetAuthError.missingCookie
         }
 
-        guard let cookie = cookies.first(where: isTargetWISCPSIDCookie), !cookie.value.isEmpty else {
-            throw BackendTokenError.missingWISCPSIDCookie
+        guard
+            let cookie = cookies.first(where: { cookie in
+                let normalizedDomain = cookie.domain.hasPrefix(".") ? String(cookie.domain.dropFirst()) : cookie.domain
+                return cookie.name == targetCookieName && normalizedDomain == targetCookieDomain
+            }),
+            !cookie.value.isEmpty
+        else {
+            throw PlanetAuthError.missingCookie
         }
 
         return cookie.value
     }
 
-    fileprivate static func isTargetWISCPSIDCookie(_ cookie: HTTPCookie) -> Bool {
-        let normalizedDomain = cookie.domain.hasPrefix(".") ? String(cookie.domain.dropFirst()) : cookie.domain
-        return cookie.name == targetCookieName && normalizedDomain == targetCookieDomain
-    }
-
-    fileprivate static func jwtExpirationDate(token: String) -> Date? {
+    private func jwtExpirationDate(token: String) -> Date? {
         do {
             let jwt = try decode(jwt: token)
             return jwt.expiresAt
+        } catch {
+            return nil
+        }
+    }
+
+    private func getStudentID(from token: String) -> String? {
+        do {
+            let jwt = try decode(jwt: token)
+            return jwt.claim(name: "student_id").string
         } catch {
             return nil
         }

@@ -99,15 +99,12 @@ class AuthManager {
 
         CookieHelper.shared.clearCookies()
         try await ssoHelper.login(username: username, password: password)
-        KeychainUtil.ssoUsername = username
-        KeychainUtil.ssoPassword = password
+        saveCredentials(credentials: (username, password))
 
         let profile = try await ssoHelper.getLoginUser()
-        ssoProfile = profile
-        MMKVHelper.shared.userId = profile.userAccount
-        TrackHelper.shared.updateUserID(profile.userAccount)
-        CookieHelper.shared.save()
-        await PlanetAuthService.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
+        updateLocalProfile(with: profile)
+
+        await PlanetAuthService.shared.authenticate(with: profile.userAccount, session: self.session)
 
         ssoInfo = "统一身份认证登录成功"
         isSSOInfoPresented = true
@@ -120,14 +117,15 @@ class AuthManager {
         Task {
             isSSOLoggingOut = true
             defer { isSSOLoggingOut = false }
+
+            PlanetAuthService.shared.clearToken()
+
             try? await eduHelper.authService.logout()
             try? await moocHelper.logout()
             try? await ssoHelper.logout()
             CookieHelper.shared.save()
-            KeychainUtil.ssoUsername = nil
-            KeychainUtil.ssoPassword = nil
+            saveCredentials(credentials: nil)
             MMKVHelper.shared.userId = nil
-            PlanetAuthService.clearToken()
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
         }
@@ -149,11 +147,9 @@ class AuthManager {
         try await ssoHelper.dynamicLogin(username: username, dynamicCode: dynamicCode, captcha: captcha)
 
         let profile = try await ssoHelper.getLoginUser()
-        ssoProfile = profile
-        MMKVHelper.shared.userId = profile.userAccount
-        TrackHelper.shared.updateUserID(profile.userAccount)
-        CookieHelper.shared.save()
-        await PlanetAuthService.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
+        updateLocalProfile(with: profile)
+
+        await PlanetAuthService.shared.authenticate(with: profile.userAccount, session: self.session)
 
         ssoInfo = "统一身份认证登录成功"
         isSSOInfoPresented = true
@@ -165,18 +161,16 @@ class AuthManager {
         CookieHelper.shared.updateCookies(cookies)
 
         let profile = try await ssoHelper.getLoginUser()
+        updateLocalProfile(with: profile)
 
-        ssoProfile = profile
-        MMKVHelper.shared.userId = profile.userAccount
-        TrackHelper.shared.updateUserID(profile.userAccount)
-        CookieHelper.shared.save()
+        await PlanetAuthService.shared.authenticate(with: profile.userAccount, session: self.session)
+
         ssoInfo = "统一身份认证登录成功"
         isSSOInfoPresented = true
         allLogin(isSilent: false)
 
         if shouldPersistCredentials {
-            KeychainUtil.ssoUsername = username
-            KeychainUtil.ssoPassword = password
+            saveCredentials(credentials: (username, password))
         }
     }
 
@@ -193,10 +187,9 @@ class AuthManager {
 
             if let ssoProfile = try? await ssoHelper.getLoginUser() {
                 Logger.authManager.debug("ssoRelogin: 统一身份认证已登录，无需再登录")
-                self.ssoProfile = ssoProfile
-                MMKVHelper.shared.userId = ssoProfile.userAccount
-                TrackHelper.shared.updateUserID(ssoProfile.userAccount)
-                await PlanetAuthService.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
+                updateLocalProfile(with: ssoProfile)
+
+                await PlanetAuthService.shared.checkAndRefreshAuthToken(ssoAccount: ssoProfile.userAccount, session: self.session)
 
                 if !isSilent {
                     ssoInfo = "统一身份认证已登录"
@@ -224,11 +217,9 @@ class AuthManager {
 
             if let ssoProfile = try? await ssoHelper.getLoginUser() {
                 Logger.authManager.debug("ssoRelogin: 验证统一身份认证登录成功")
-                self.ssoProfile = ssoProfile
-                MMKVHelper.shared.userId = ssoProfile.userAccount
-                TrackHelper.shared.updateUserID(ssoProfile.userAccount)
-                CookieHelper.shared.save()
-                await PlanetAuthService.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
+                updateLocalProfile(with: ssoProfile)
+
+                await PlanetAuthService.shared.checkAndRefreshAuthToken(ssoAccount: ssoProfile.userAccount, session: self.session)
 
                 if !isSilent {
                     ssoInfo = "统一身份认证登录成功"
@@ -369,9 +360,7 @@ class AuthManager {
         defer { moocLoginTask = nil }
         try await task.value
     }
-}
 
-extension AuthManager {
     func allLoginAsync(isSilent: Bool) async throws {
         async let edu: () = educationLoginAsync(isSilent: isSilent)
         async let mooc: () = moocLoginAsync(isSilent: isSilent)
@@ -394,7 +383,6 @@ extension AuthManager {
                 try await ssoReloginAsync(isSilent: isSilent)
                 allLogin(isSilent: isSilent)
             } catch {
-                PlanetAuthService.clearToken()
                 Logger.authManager.error("ssoRelogin 失败: \(error)")
             }
         }
@@ -417,6 +405,23 @@ extension AuthManager {
             } catch {
                 Logger.authManager.error("moocLogin 失败: \(error)")
             }
+        }
+    }
+
+    private func updateLocalProfile(with profile: SSOHelper.Profile) {
+        ssoProfile = profile
+        MMKVHelper.shared.userId = profile.userAccount
+        TrackHelper.shared.updateUserID(profile.userAccount)
+        CookieHelper.shared.save()
+    }
+
+    private func saveCredentials(credentials: (username: String, password: String)?) {
+        if let credentials {
+            KeychainUtil.ssoUsername = credentials.username
+            KeychainUtil.ssoPassword = credentials.password
+        } else {
+            KeychainUtil.ssoUsername = nil
+            KeychainUtil.ssoPassword = nil
         }
     }
 }
