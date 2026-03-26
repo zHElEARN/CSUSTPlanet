@@ -5,11 +5,12 @@
 //  Created by Zachary Liu on 2026/1/17.
 //
 
+import Foundation
+
 #if os(iOS)
 
 import BackgroundTasks
 import Combine
-import Foundation
 import OSLog
 
 // MARK: - BackgroundTaskProvider
