@@ -48,7 +48,7 @@ struct ProfileView: View {
                     }
 
                     HStack {
-                        Button(action: authManager.ssoRelogin) {
+                        Button(action: { authManager.ssoRelogin(isSilent: false) }) {
                             Label("刷新统一身份认证登录", systemImage: "person.fill")
                         }
                         .disabled(!authManager.isSSOLoggedIn)
@@ -59,7 +59,7 @@ struct ProfileView: View {
                     }
 
                     HStack {
-                        Button(action: authManager.educationLogin) {
+                        Button(action: { authManager.educationLogin(isSilent: false) }) {
                             Label("刷新教务系统登录", systemImage: "graduationcap")
                         }
                         .disabled(!authManager.isSSOLoggedIn || authManager.isEducationLoggingIn)
@@ -70,7 +70,7 @@ struct ProfileView: View {
                     }
 
                     HStack {
-                        Button(action: authManager.moocLogin) {
+                        Button(action: { authManager.moocLogin(isSilent: false) }) {
                             Label("刷新网络课程中心登录", systemImage: "book.closed")
                         }
                         .disabled(!authManager.isSSOLoggedIn || authManager.isMoocLoggingIn)

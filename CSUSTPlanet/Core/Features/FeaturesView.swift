@@ -86,7 +86,7 @@ struct FeaturesView: View {
                     } else if authManager.isEducationLoggingIn {
                         StatusBadge(text: "教务登录中")
                     } else {
-                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: authManager.educationLogin)
+                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: { authManager.educationLogin(isSilent: false) })
                     }
                 }
             }
@@ -114,7 +114,7 @@ struct FeaturesView: View {
                     } else if authManager.isMoocLoggingIn {
                         StatusBadge(text: "课程中心登录中")
                     } else if authManager.isSSOLoggedIn && !authManager.isSSOLoggingIn {
-                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: authManager.moocLogin)
+                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: { authManager.moocLogin(isSilent: false) })
                     }
                 }
             }

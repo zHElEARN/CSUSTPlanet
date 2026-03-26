@@ -241,23 +241,23 @@ struct ContentView: View {
 
         // MARK: 全局Toast状态
 
-        .toast(isPresenting: $authManager.isShowingSSOInfo) {
+        .toast(isPresenting: $authManager.isSSOInfoPresented) {
             AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.ssoInfo)
         }
-        .toast(isPresenting: $authManager.isShowingSSOError) {
-            AlertToast(displayMode: .hud, type: .error(.red), title: "统一身份认证登录错误")
+        .toast(isPresenting: $authManager.isSSOErrorPresented) {
+            AlertToast(displayMode: .hud, type: .error(.red), title: authManager.ssoError)
         }
-        .toast(isPresenting: $authManager.isShowingEducationInfo) {
+        .toast(isPresenting: $authManager.isEducationInfoPresented) {
             AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.educationInfo)
         }
-        .toast(isPresenting: $authManager.isShowingEducationError) {
-            AlertToast(displayMode: .hud, type: .error(.red), title: "教务登录错误")
+        .toast(isPresenting: $authManager.isEducationErrorPresented) {
+            AlertToast(displayMode: .hud, type: .error(.red), title: authManager.educationError)
         }
-        .toast(isPresenting: $authManager.isShowingMoocInfo) {
+        .toast(isPresenting: $authManager.isMoocInfoPresented) {
             AlertToast(displayMode: .hud, type: .systemImage("info.circle.fill", .blue), title: authManager.moocInfo)
         }
-        .toast(isPresenting: $authManager.isShowingMoocError) {
-            AlertToast(displayMode: .hud, type: .error(.red), title: "网络课程中心登录错误")
+        .toast(isPresenting: $authManager.isMoocErrorPresented) {
+            AlertToast(displayMode: .hud, type: .error(.red), title: authManager.moocError)
         }
 
         // MARK: - 主题设置 & 用户协议弹窗

@@ -5,7 +5,6 @@
 //  Created by Zhe_Learn on 2025/7/10.
 //
 
-import Alamofire
 import CSUSTKit
 import Foundation
 import SwiftUI
@@ -128,22 +127,10 @@ class SSOLoginViewModel {
     }
 
     func onBrowserLoginSuccess(_ username: String, _ password: String, _ mode: SSOBrowserView.LoginMode, _ cookies: [HTTPCookie], _ isLoginSheetPresented: Binding<Bool>) {
-        CookieHelper.shared.updateCookies(cookies)
         Task {
             do {
-                let ssoProfile = try await AuthManager.shared.ssoHelper.getLoginUser()
+                try await AuthManager.shared.ssoBrowserLogin(username: username, password: password, shouldPersistCredentials: mode == .username, cookies: cookies)
                 isLoginSheetPresented.wrappedValue = false
-                AuthManager.shared.ssoProfile = ssoProfile
-                MMKVHelper.shared.userId = ssoProfile.userAccount
-                TrackHelper.shared.updateUserID(ssoProfile.userAccount)
-                CookieHelper.shared.save()
-                AuthManager.shared.ssoInfo = "统一身份认证登录成功"
-                AuthManager.shared.isShowingSSOInfo = true
-                AuthManager.shared.allLogin()
-                if mode == .username {
-                    KeychainUtil.ssoUsername = username
-                    KeychainUtil.ssoPassword = password
-                }
             } catch {
                 errorToast.show(message: "通过网页登录失败: \(error.localizedDescription)")
             }

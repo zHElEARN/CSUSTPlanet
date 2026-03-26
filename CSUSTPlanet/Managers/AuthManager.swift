@@ -23,24 +23,27 @@ class AuthManager {
     var ssoProfile: SSOHelper.Profile?
     var isSSOLoggingIn: Bool = false
     var isSSOLoggingOut: Bool = false
-    var isShowingSSOError: Bool = false
-    var isShowingSSOInfo: Bool = false
+    var isSSOInfoPresented: Bool = false
+    var isSSOErrorPresented: Bool = false
     var ssoInfo: String = ""
+    var ssoError: String = ""
     var isSSOLoggedIn: Bool { return ssoProfile != nil }
 
     // MARK: - Education Properties
 
     var isEducationLoggingIn: Bool = false
-    var isShowingEducationError: Bool = false
-    var isShowingEducationInfo: Bool = false
+    var isEducationInfoPresented: Bool = false
+    var isEducationErrorPresented: Bool = false
     var educationInfo: String = ""
+    var educationError: String = ""
 
     // MARK: - MOOC Properties
 
     var isMoocLoggingIn: Bool = false
-    var isShowingMoocError: Bool = false
-    var isShowingMoocInfo: Bool = false
+    var isMoocInfoPresented: Bool = false
+    var isMoocErrorPresented: Bool = false
     var moocInfo: String = ""
+    var moocError: String = ""
 
     // MARK: - Helpers
 
@@ -62,7 +65,7 @@ class AuthManager {
         eduHelper = EduHelper(mode: mode, session: session)
         moocHelper = MoocHelper(mode: mode, session: session)
         startObservingLifecycle()
-        ssoRelogin()
+        ssoRelogin(isSilent: true)
     }
 
     private func startObservingLifecycle() {
@@ -75,7 +78,7 @@ class AuthManager {
                     guard let resumeAfter else { return }
                     if resumeAfter > threshold {
                         Logger.authManager.debug("App后台停留时间 (\(resumeAfter)s) 超过阈值，执行重新登录")
-                        ssoRelogin()
+                        ssoRelogin(isSilent: true)
                     } else {
                         Logger.authManager.debug("App后台停留时间 (\(resumeAfter)s) 不足 \(threshold)s，跳过")
                     }
@@ -107,9 +110,9 @@ class AuthManager {
         await PlanetService.Auth.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
 
         ssoInfo = "统一身份认证登录成功"
-        isShowingSSOInfo = true
+        isSSOInfoPresented = true
 
-        allLogin()
+        allLogin(isSilent: false)
     }
 
     func ssoLogout() {
@@ -153,14 +156,33 @@ class AuthManager {
         await PlanetService.Auth.syncTokenAfterManualLogin(ssoUserName: profile.userName, session: session)
 
         ssoInfo = "统一身份认证登录成功"
-        isShowingSSOInfo = true
+        isSSOInfoPresented = true
 
-        allLogin()
+        allLogin(isSilent: false)
+    }
+
+    func ssoBrowserLogin(username: String, password: String, shouldPersistCredentials: Bool, cookies: [HTTPCookie]) async throws {
+        CookieHelper.shared.updateCookies(cookies)
+
+        let profile = try await ssoHelper.getLoginUser()
+
+        ssoProfile = profile
+        MMKVHelper.shared.userId = profile.userAccount
+        TrackHelper.shared.updateUserID(profile.userAccount)
+        CookieHelper.shared.save()
+        ssoInfo = "统一身份认证登录成功"
+        isSSOInfoPresented = true
+        allLogin(isSilent: false)
+
+        if shouldPersistCredentials {
+            KeychainUtil.ssoUsername = username
+            KeychainUtil.ssoPassword = password
+        }
     }
 
     // MARK: - SSO Relogin Async
 
-    func ssoReloginAsync() async throws {
+    func ssoReloginAsync(isSilent: Bool) async throws {
         if let task = ssoLoginTask {
             return try await task.value
         }
@@ -176,8 +198,10 @@ class AuthManager {
                 TrackHelper.shared.updateUserID(ssoProfile.userAccount)
                 await PlanetService.Auth.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
 
-                ssoInfo = "统一身份认证已登录"
-                isShowingSSOInfo = true
+                if !isSilent {
+                    ssoInfo = "统一身份认证已登录"
+                    isSSOInfoPresented = true
+                }
                 return
             }
 
@@ -191,7 +215,10 @@ class AuthManager {
             } catch {
                 Logger.authManager.error("ssoRelogin: 统一身份认证登录失败, \(error)")
 
-                isShowingSSOError = true
+                if !isSilent {
+                    ssoError = "统一身份认证登录错误"
+                    isSSOErrorPresented = true
+                }
                 throw error
             }
 
@@ -203,12 +230,17 @@ class AuthManager {
                 CookieHelper.shared.save()
                 await PlanetService.Auth.syncTokenAfterAutoLoginIfNeeded(ssoUserName: ssoProfile.userName, session: session)
 
-                ssoInfo = "统一身份认证登录成功"
-                isShowingSSOInfo = true
+                if !isSilent {
+                    ssoInfo = "统一身份认证登录成功"
+                    isSSOInfoPresented = true
+                }
             } else {
                 Logger.authManager.debug("ssoRelogin: 验证统一身份认证登录失败")
 
-                isShowingSSOError = true
+                if !isSilent {
+                    ssoError = "统一身份认证登录错误"
+                    isSSOErrorPresented = true
+                }
                 throw SSOHelper.SSOHelperError.notLoggedIn
             }
         }
@@ -220,7 +252,7 @@ class AuthManager {
 
     // MARK: - Education Login Async
 
-    func educationLoginAsync() async throws {
+    func educationLoginAsync(isSilent: Bool) async throws {
         if let task = eduLoginTask {
             return try await task.value
         }
@@ -234,8 +266,10 @@ class AuthManager {
                 Logger.authManager.debug("educationLogin: 教务系统已登录")
                 self.eduHelper = tempEduHelper
 
-                educationInfo = "教务系统已登录"
-                isShowingEducationInfo = true
+                if !isSilent {
+                    educationInfo = "教务系统已登录"
+                    isEducationInfoPresented = true
+                }
                 return
             }
 
@@ -244,7 +278,10 @@ class AuthManager {
             } catch {
                 Logger.authManager.error("educationLogin: 教务登录请求失败, \(error)")
 
-                isShowingEducationError = true
+                if !isSilent {
+                    educationError = "教务登录错误"
+                    isEducationErrorPresented = true
+                }
                 throw error
             }
 
@@ -253,12 +290,17 @@ class AuthManager {
                 self.eduHelper = tempEduHelper
                 CookieHelper.shared.save()
 
-                educationInfo = "教务系统登录成功"
-                isShowingEducationInfo = true
+                if !isSilent {
+                    educationInfo = "教务系统登录成功"
+                    isEducationInfoPresented = true
+                }
             } else {
                 Logger.authManager.debug("educationLogin: 验证教务登录失败")
 
-                isShowingEducationError = true
+                if !isSilent {
+                    educationError = "教务登录错误"
+                    isEducationErrorPresented = true
+                }
                 throw EduHelper.EduHelperError.notLoggedIn
             }
         }
@@ -270,7 +312,7 @@ class AuthManager {
 
     // MARK: - Mooc Login Async
 
-    func moocLoginAsync() async throws {
+    func moocLoginAsync(isSilent: Bool) async throws {
         if let task = moocLoginTask {
             return try await task.value
         }
@@ -284,8 +326,10 @@ class AuthManager {
                 Logger.authManager.debug("moocLogin: 网络课程平台已登录")
                 self.moocHelper = tempMoocHelper
 
-                moocInfo = "网络课程平台已登录"
-                isShowingMoocInfo = true
+                if !isSilent {
+                    moocInfo = "网络课程平台已登录"
+                    isMoocInfoPresented = true
+                }
                 return
             }
 
@@ -294,7 +338,10 @@ class AuthManager {
             } catch {
                 Logger.authManager.error("moocLogin: 网络课程平台登录请求失败, \(error)")
 
-                isShowingMoocError = true
+                if !isSilent {
+                    moocError = "网络课程中心登录错误"
+                    isMoocErrorPresented = true
+                }
                 throw error
             }
 
@@ -303,12 +350,17 @@ class AuthManager {
                 self.moocHelper = tempMoocHelper
                 CookieHelper.shared.save()
 
-                moocInfo = "网络课程平台登录成功"
-                isShowingMoocInfo = true
+                if !isSilent {
+                    moocInfo = "网络课程平台登录成功"
+                    isMoocInfoPresented = true
+                }
             } else {
                 Logger.authManager.debug("moocLogin: 验证网络课程平台登录失败")
 
-                isShowingMoocError = true
+                if !isSilent {
+                    moocError = "网络课程中心登录错误"
+                    isMoocErrorPresented = true
+                }
                 throw MoocHelper.MoocHelperError.notLoggedIn
             }
         }
@@ -320,27 +372,27 @@ class AuthManager {
 }
 
 extension AuthManager {
-    func allLoginAsync() async throws {
-        async let edu: () = educationLoginAsync()
-        async let mooc: () = moocLoginAsync()
+    func allLoginAsync(isSilent: Bool) async throws {
+        async let edu: () = educationLoginAsync(isSilent: isSilent)
+        async let mooc: () = moocLoginAsync(isSilent: isSilent)
         _ = try await (edu, mooc)
     }
 
-    func allLogin() {
+    func allLogin(isSilent: Bool) {
         Task {
             do {
-                try await allLoginAsync()
+                try await allLoginAsync(isSilent: isSilent)
             } catch {
                 Logger.authManager.warning("后台静默登录子系统失败: \(error)")
             }
         }
     }
 
-    func ssoRelogin() {
+    func ssoRelogin(isSilent: Bool) {
         Task {
             do {
-                try await ssoReloginAsync()
-                allLogin()
+                try await ssoReloginAsync(isSilent: isSilent)
+                allLogin(isSilent: isSilent)
             } catch {
                 PlanetService.Auth.clearToken()
                 Logger.authManager.error("ssoRelogin 失败: \(error)")
@@ -348,20 +400,20 @@ extension AuthManager {
         }
     }
 
-    func educationLogin() {
+    func educationLogin(isSilent: Bool) {
         Task {
             do {
-                try await educationLoginAsync()
+                try await educationLoginAsync(isSilent: isSilent)
             } catch {
                 Logger.authManager.error("educationLogin 失败: \(error)")
             }
         }
     }
 
-    func moocLogin() {
+    func moocLogin(isSilent: Bool) {
         Task {
             do {
-                try await moocLoginAsync()
+                try await moocLoginAsync(isSilent: isSilent)
             } catch {
                 Logger.authManager.error("moocLogin 失败: \(error)")
             }
