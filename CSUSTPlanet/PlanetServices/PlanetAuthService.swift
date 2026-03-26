@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Combine
 import Foundation
 import JWTDecode
 import OSLog
@@ -16,7 +17,15 @@ final class PlanetAuthService {
 
     private init() {}
 
-    var authToken: String?
+    private var authToken: String? {
+        didSet {
+            authTokenSubject.send(authToken)
+        }
+    }
+    private var authTokenSubject = CurrentValueSubject<String?, Never>(nil)
+    var authTokenPublisher: AnyPublisher<String?, Never> {
+        authTokenSubject.eraseToAnyPublisher()
+    }
 
     private let refreshLeadTime: TimeInterval = 8 * 60 * 60
     private let targetCookieName = "WISCPSID"
