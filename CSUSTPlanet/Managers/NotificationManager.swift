@@ -34,10 +34,26 @@ final class NotificationManager {
 
     private var cancellables = Set<AnyCancellable>()
 
-    private var tokenContinuation: CheckedContinuation<String, Error>?
-    private var token: String?
+    private var tokenContinuation: CheckedContinuation<Void, Error>?
+    private var tokenSubject = CurrentValueSubject<String?, Never>(nil)
+    private var token: String? {
+        didSet {
+            tokenSubject.send(token)
+        }
+    }
+    var tokenPublisher: AnyPublisher<String?, Never> {
+        tokenSubject.eraseToAnyPublisher()
+    }
 
-    var permissionStatus: NotificationPermissionStatus?
+    private var permissionStatusSubject = CurrentValueSubject<NotificationPermissionStatus?, Never>(nil)
+    var permissionStatus: NotificationPermissionStatus? {
+        didSet {
+            permissionStatusSubject.send(permissionStatus)
+        }
+    }
+    var permissionStatusPublisher: AnyPublisher<NotificationPermissionStatus?, Never> {
+        permissionStatusSubject.eraseToAnyPublisher()
+    }
 
     private init() {
         startObservingLifecycle()
@@ -46,7 +62,7 @@ final class NotificationManager {
             await updatePermissionStatus()
         }
         Task {
-            try? await requestToken()
+            try? await updateToken()
         }
     }
 
@@ -59,7 +75,6 @@ final class NotificationManager {
                     Task {
                         await self.updatePermissionStatus()
                     }
-                    break
                 case .didBecomeInactive, .didEnterBackground:
                     break
                 }
@@ -91,8 +106,8 @@ final class NotificationManager {
         withAnimation { permissionStatus = status }
     }
 
-    func requestToken() async throws -> String {
-        if let token = token { return token }
+    func updateToken() async throws {
+        guard self.token == nil else { return }
 
         PlatformApplication.shared.registerForRemoteNotifications()
 
@@ -116,7 +131,7 @@ final class NotificationManager {
 extension NotificationManager {
     func didRegisterForRemoteNotifications(with token: Data) {
         self.token = token.hexString
-        tokenContinuation?.resume(returning: token.hexString)
+        tokenContinuation?.resume(returning: ())
         tokenContinuation = nil
     }
 
