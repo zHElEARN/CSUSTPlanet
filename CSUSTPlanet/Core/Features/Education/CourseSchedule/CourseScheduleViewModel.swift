@@ -269,3 +269,18 @@ class CourseScheduleViewModel {
         }
     }
 }
+
+extension MMKVHelper {
+    enum CourseSchedule {
+        enum CalendarSync {
+            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
+            static var exportScopeLimit: Int?
+
+            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
+            static var firstReminderOffset: Double?
+
+            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
+            static var secondReminderOffset: Double?
+        }
+    }
+}

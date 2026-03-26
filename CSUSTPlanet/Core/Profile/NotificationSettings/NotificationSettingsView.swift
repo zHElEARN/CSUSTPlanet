@@ -41,7 +41,7 @@ struct NotificationSettingsView: View {
 
             #if os(iOS)
             Section {
-                Toggle(isOn: $activityManager.isLiveActivityEnabled) {
+                Toggle(isOn: $activityManager.isEnabled) {
                     Text("允许实时活动")
                 }
             } header: {

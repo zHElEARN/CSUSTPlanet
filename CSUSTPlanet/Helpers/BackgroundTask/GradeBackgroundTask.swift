@@ -22,7 +22,7 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
     func perform() async -> Bool {
         Logger.gradeBackgroundTask.debug("开始后台获取成绩")
         do {
-            let mode: ConnectionMode = MMKVHelper.shared.isWebVPNModeEnabled ? .webVpn : .direct
+            let mode: ConnectionMode = MMKVHelper.GlobalManager.isWebVPNModeEnabled ? .webVpn : .direct
             let session = CookieHelper.shared.session
             let ssoHelper = SSOHelper(mode: mode, session: session)
             let eduHelper = EduHelper(mode: mode, session: session)

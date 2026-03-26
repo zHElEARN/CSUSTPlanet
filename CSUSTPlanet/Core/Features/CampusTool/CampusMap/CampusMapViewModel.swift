@@ -15,9 +15,9 @@ typealias Feature = PlanetConfigService.Feature
 
 @MainActor
 final class CampusMapViewModel: ObservableObject {
-    @Published var selectedCampus: CampusCardHelper.Campus? = MMKVHelper.shared.selectedCampus {
+    @Published var selectedCampus: CampusCardHelper.Campus? = MMKVHelper.CampusMap.selectedCampus {
         didSet {
-            MMKVHelper.shared.selectedCampus = selectedCampus
+            MMKVHelper.CampusMap.selectedCampus = selectedCampus
             selectedCategory = nil
             selectedBuilding = nil
             centerMapOnCampus()
@@ -284,5 +284,12 @@ extension CampusCardHelper.Campus {
         case .yuntang:
             return CLLocationCoordinate2D(latitude: 28.06667705205599, longitude: 113.00821135314567)
         }
+    }
+}
+
+extension MMKVHelper {
+    enum CampusMap {
+        @MMKVOptionalStorage(key: "CampusMap.selectedCampus")
+        static var selectedCampus: CampusCardHelper.Campus?
     }
 }

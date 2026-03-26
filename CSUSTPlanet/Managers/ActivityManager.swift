@@ -21,15 +21,15 @@ final class ActivityManager {
 
     var activity: Activity<CourseStatusWidgetAttributes>? = nil
 
-    var isLiveActivityEnabled: Bool {
+    var isEnabled: Bool {
         didSet {
-            MMKVHelper.shared.isLiveActivityEnabled = isLiveActivityEnabled
+            MMKVHelper.ActivityManager.isEnabled = isEnabled
             autoUpdateActivity()
         }
     }
 
     private init() {
-        isLiveActivityEnabled = MMKVHelper.shared.isLiveActivityEnabled
+        isEnabled = MMKVHelper.ActivityManager.isEnabled
         startObservingLifecycle()
 
         guard activity == nil, let existingActivity = Activity<CourseStatusWidgetAttributes>.activities.first else { return }
@@ -54,7 +54,7 @@ final class ActivityManager {
     }
 
     func autoUpdateActivity() {
-        guard isLiveActivityEnabled else {
+        guard isEnabled else {
             Logger.activityManager.info("实时活动已禁用。正在停止所有活跃活动")
             stopActivity()
             return
@@ -156,3 +156,10 @@ final class ActivityManager {
 }
 
 #endif
+
+extension MMKVHelper {
+    enum ActivityManager {
+        @MMKVStorage(key: "GlobalVars.isLiveActivityEnabled", defaultValue: true)
+        static var isEnabled: Bool
+    }
+}

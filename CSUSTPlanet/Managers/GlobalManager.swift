@@ -48,20 +48,20 @@ final class GlobalManager {
     static let shared = GlobalManager()
 
     private init() {
-        appearance = MMKVHelper.shared.appearance
-        isUserAgreementAccepted = MMKVHelper.shared.isUserAgreementAccepted
-        isWebVPNModeEnabled = MMKVHelper.shared.isWebVPNModeEnabled
+        appearance = MMKVHelper.GlobalManager.appearance
+        isUserAgreementAccepted = MMKVHelper.GlobalManager.isUserAgreementAccepted
+        isWebVPNModeEnabled = MMKVHelper.GlobalManager.isWebVPNModeEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
     }
 
     var selectedTab: TabItem? = .overview
     var appearance: String {
-        didSet { MMKVHelper.shared.appearance = appearance }
+        didSet { MMKVHelper.GlobalManager.appearance = appearance }
     }
     var isUserAgreementAccepted: Bool {
         didSet {
-            MMKVHelper.shared.isUserAgreementAccepted = isUserAgreementAccepted
+            MMKVHelper.GlobalManager.isUserAgreementAccepted = isUserAgreementAccepted
             TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
         }
     }
@@ -70,7 +70,7 @@ final class GlobalManager {
     }
     var isWebVPNModeEnabled: Bool {
         didSet {
-            MMKVHelper.shared.isWebVPNModeEnabled = isWebVPNModeEnabled
+            MMKVHelper.GlobalManager.isWebVPNModeEnabled = isWebVPNModeEnabled
         }
     }
 
@@ -81,4 +81,17 @@ final class GlobalManager {
     var isFromGradeAnalysisWidget: Bool = false
     var isFromCourseScheduleWidget: Bool = false
     var isFromUrgentCoursesWidget: Bool = false
+}
+
+extension MMKVHelper {
+    enum GlobalManager {
+        @MMKVStorage(key: "GlobalVars.appearance", defaultValue: "system")
+        static var appearance: String
+
+        @MMKVStorage(key: "GlobalVars.isUserAgreementAccepted", defaultValue: false)
+        static var isUserAgreementAccepted: Bool
+
+        @MMKVStorage(key: "GlobalVars.isWebVPNModeEnabled", defaultValue: false)
+        static var isWebVPNModeEnabled: Bool
+    }
 }

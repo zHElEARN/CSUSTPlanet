@@ -74,21 +74,6 @@ class MMKVHelper {
 
     // MARK: - GlobalVars properties
 
-    @MMKVStorage(key: "GlobalVars.appearance", defaultValue: "system")
-    var appearance: String
-
-    @MMKVStorage(key: "GlobalVars.isUserAgreementAccepted", defaultValue: false)
-    var isUserAgreementAccepted: Bool
-
-    @MMKVStorage(key: "GlobalVars.hasLaunchedBefore", defaultValue: false)
-    var hasLaunchedBefore: Bool
-
-    @MMKVStorage(key: "GlobalVars.isLiveActivityEnabled", defaultValue: true)
-    var isLiveActivityEnabled: Bool
-
-    @MMKVStorage(key: "GlobalVars.isWebVPNModeEnabled", defaultValue: false)
-    var isWebVPNModeEnabled: Bool
-
     @MMKVOptionalStorage(key: "GlobalVars.userId")
     var userId: String?
 
@@ -111,28 +96,6 @@ class MMKVHelper {
 
     @MMKVOptionalStorage(key: "Cached.physicsExperimentScheduleCache")
     var physicsExperimentScheduleCache: Cached<[PhysicsExperimentHelper.Course]>?
-
-    // MARK: - CampusMap Properties
-
-    @MMKVOptionalStorage(key: "CampusMap.selectedCampus")
-    var selectedCampus: CampusCardHelper.Campus?
-}
-
-// MARK: - Calendar Sync
-
-extension MMKVHelper {
-    enum CourseSchedule {
-        enum CalendarSync {
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
-            static var exportScopeLimit: Int?
-
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
-            static var firstReminderOffset: Double?
-
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
-            static var secondReminderOffset: Double?
-        }
-    }
 }
 
 // MARK: - Todo Assignments

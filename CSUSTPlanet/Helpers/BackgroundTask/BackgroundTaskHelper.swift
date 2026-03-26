@@ -127,7 +127,7 @@ final class BackgroundTaskHelper {
     }
 
     func schedule() {
-        guard MMKVHelper.BackgroundTask.isEnabled else {
+        guard isEnabled else {
             Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过后台任务调度")
             return
         }
