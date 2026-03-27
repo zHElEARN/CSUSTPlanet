@@ -81,5 +81,7 @@
 	<array>
 		<string>$(CSUSTPLANET_BACKGROUND_ID)</string>
 	</array>
+	<key>LSHasLocalizedDisplayName</key>
+	<true/>
 </dict>
 </plist>
