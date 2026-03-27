@@ -34,6 +34,7 @@ struct DormDetailView: View {
             }
             .padding()
         }
+        .task { await viewModel.loadInitial() }
         .navigationTitle("宿舍详情")
         .navigationSubtitleCompat("\(viewModel.dorm.buildingName) \(viewModel.dorm.room)")
         .alert("清除记录", isPresented: $viewModel.isDeleteAllRecordsAlertPresented) {

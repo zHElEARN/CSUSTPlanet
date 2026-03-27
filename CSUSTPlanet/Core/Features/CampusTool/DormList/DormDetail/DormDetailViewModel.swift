@@ -29,8 +29,15 @@ final class DormDetailViewModel {
     private var dormObserver: AutoRefreshingObserver?
     private var recordsObserver: AutoRefreshingObserver?
 
+    var isInitial: Bool = true
+
     init(dorm: DormGRDB) {
         self.dorm = dorm
+    }
+
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
         observeDormDetail()
         observeRecords()
     }
@@ -178,7 +185,7 @@ final class DormDetailViewModel {
                 },
                 onChange: { [weak self] data in
                     Task { @MainActor in
-                        withAnimation(.snappy) {
+                        withAnimation {
                             self?.sortedRecords = data.sortedRecords
                             self?.chartRecords = data.chartRecords
                             self?.chartYDomain = data.chartYDomain

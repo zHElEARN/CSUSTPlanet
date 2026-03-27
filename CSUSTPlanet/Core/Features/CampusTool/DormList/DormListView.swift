@@ -44,6 +44,7 @@ struct DormListView: View {
                 #endif
             }
         }
+        .task { await viewModel.loadInitial() }
         .navigationTitle("宿舍列表")
         .navigationSubtitleCompat("共\(viewModel.dorms.count)个宿舍")
         .toolbar {

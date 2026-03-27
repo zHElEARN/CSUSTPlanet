@@ -98,11 +98,8 @@ final class CampusMapViewModel: ObservableObject {
     func loadInitial() async {
         guard isInitial else { return }
         isInitial = false
-        await loadBuildings()
-    }
-
-    init() {
         requestLocationPermission()
+        await loadBuildings()
     }
 
     func requestLocationPermission() {

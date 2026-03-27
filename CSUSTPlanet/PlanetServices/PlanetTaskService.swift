@@ -100,6 +100,20 @@ final class PlanetTaskService {
         try await syncTask.value
     }
 
+    func getScheduleTasks(dorms: [DormGRDB]) -> [ElectricityTask] {
+        return dorms.compactMap { dorm in
+            guard let scheduleHour = dorm.scheduleHour, let scheduleMinute = dorm.scheduleMinute else {
+                return nil
+            }
+            return ElectricityTask(
+                building: dorm.buildingID,
+                campus: dorm.campusID,
+                notifyTime: String(format: "%02d:%02d", scheduleHour, scheduleMinute),
+                room: dorm.room
+            )
+        }
+    }
+
     private func getScheduledTasks() async throws -> [ElectricityTask] {
         guard let pool = DatabaseManager.shared.pool else { throw PlanetTaskError.databaseNotAvailable }
 

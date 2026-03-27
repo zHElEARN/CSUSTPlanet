@@ -24,7 +24,15 @@ final class DormListViewModel {
 
     private var listObserver: AutoRefreshingObserver?
 
-    init() {
+    var isInitial: Bool = true
+
+    func loadInitial() async {
+        guard isInitial else { return }
+        isInitial = false
+        observeList()
+    }
+
+    func observeList() {
         guard let pool = DatabaseManager.shared.pool else { return }
 
         listObserver = AutoRefreshingObserver { [weak self] in
@@ -54,7 +62,7 @@ final class DormListViewModel {
                 },
                 onChange: { [weak self] result in
                     Task { @MainActor in
-                        withAnimation(.snappy) {
+                        withAnimation {
                             self?.dorms = result.0
                             self?.exhaustionInfoMap = result.1
                         }

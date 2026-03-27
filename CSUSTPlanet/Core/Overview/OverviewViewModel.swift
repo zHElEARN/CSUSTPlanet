@@ -158,7 +158,7 @@ class OverviewViewModel {
                 },
                 onChange: { [weak self] data in
                     Task { @MainActor in
-                        withAnimation(.snappy) {
+                        withAnimation {
                             self?.primaryDorm = data.dorm
                             self?.electricityExhaustionInfo = data.exhaustionInfo
                         }
