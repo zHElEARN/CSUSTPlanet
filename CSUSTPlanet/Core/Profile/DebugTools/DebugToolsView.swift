@@ -12,6 +12,9 @@ struct DebugToolsView: View {
     var body: some View {
         Form {
             Section {
+                NavigationLink(destination: MockDataGeneratorView()) {
+                    Label("模拟数据生成", systemImage: "wand.and.stars")
+                }
                 NavigationLink(destination: MMKVDebugViewerView()) {
                     Label("MMKV查看器", systemImage: "internaldrive")
                 }
