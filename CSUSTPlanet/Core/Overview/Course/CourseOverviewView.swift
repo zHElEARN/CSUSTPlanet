@@ -19,12 +19,10 @@ struct CourseOverviewView: View {
                 color: .purple,
                 destination: CourseScheduleView()
             )
-            .padding(.horizontal)
 
             switch viewModel.courseDisplayState {
             case .loading:
                 EmptyCourseCard(text: "暂无课程数据", icon: "cloud.sun.fill")
-                    .padding(.horizontal)
                     .padding(.bottom, 10)
 
             case .beforeSemester(let days):
@@ -35,7 +33,6 @@ struct CourseOverviewView: View {
                             subtitle: "学期未开始",
                             icon: "party.popper.fill"
                         )
-                        .padding(.horizontal)
                         .padding(.bottom, 10)
                     } else {
                         EmptyCourseCard(
@@ -43,18 +40,15 @@ struct CourseOverviewView: View {
                             subtitle: "距离开学还有 \(days) 天",
                             icon: "calendar.badge.clock"
                         )
-                        .padding(.horizontal)
                         .padding(.bottom, 10)
                     }
                 } else {
                     EmptyCourseCard(text: "学期未开始", icon: "calendar")
-                        .padding(.horizontal)
                         .padding(.bottom, 10)
                 }
 
             case .afterSemester:
                 EmptyCourseCard(text: "本学期已结束，祝你假期愉快！", icon: "case.fill")
-                    .padding(.horizontal)
                     .padding(.bottom, 10)
 
             case .inSemester(let courses):
@@ -70,12 +64,10 @@ struct CourseOverviewView: View {
                                 )
                             }
                         }
-                        .padding(.horizontal)
                         .padding(.vertical, 10)
                     }
                 } else {
                     EmptyCourseCard(text: "今天没有课，好好休息吧 ~", icon: "checkmark.circle.fill")
-                        .padding(.horizontal)
                         .padding(.bottom, 10)
                 }
             }
