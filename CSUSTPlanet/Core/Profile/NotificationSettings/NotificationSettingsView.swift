@@ -29,7 +29,7 @@ struct NotificationSettingsView: View {
                         Text("点击开启通知")
                     }
                 } else {
-                    Button(action: { openAppNotificationSettings() }) {
+                    Button(action: notificationManager.openAppNotificationSettings) {
                         Text(notificationManager.permissionStatus == .denied ? "前往系统设置开启通知" : "前往系统设置管理通知")
                     }
                 }
@@ -54,20 +54,5 @@ struct NotificationSettingsView: View {
         .formStyle(.grouped)
         .navigationTitle("通知设置")
         .trackView("NotificationSettings")
-    }
-
-    private func openAppNotificationSettings() {
-        #if os(iOS)
-        if let url = URL(string: PlatformApplication.openNotificationSettingsURLString),
-            PlatformApplication.shared.canOpenURL(url)
-        {
-            PlatformApplication.shared.open(url)
-        }
-        #elseif os(macOS)
-        let settingsURL = "x-apple.systempreferences:com.apple.Notifications-Settings.extension"
-        if let url = URL(string: settingsURL) {
-            NSWorkspace.shared.open(url)
-        }
-        #endif
     }
 }

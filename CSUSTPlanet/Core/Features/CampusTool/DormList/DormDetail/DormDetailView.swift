@@ -50,8 +50,9 @@ struct DormDetailView: View {
         .alert("取消定时任务", isPresented: $viewModel.isCancelScheduleAlertPresented) {
             Button("保留", role: .cancel) {}
             Button("取消定时任务", role: .destructive) {
-                viewModel.cancelSchedule()
+                Task { await viewModel.cancelSchedule() }
             }
+            .disabled(viewModel.isSchedulingDorm)
         } message: {
             Text("确认取消每天 \(scheduleTimeText) 的宿舍电量提醒吗？")
         }
@@ -59,7 +60,7 @@ struct DormDetailView: View {
             DormScheduleConfigView(
                 initialHour: viewModel.dorm.scheduleHour ?? 20,
                 initialMinute: viewModel.dorm.scheduleMinute ?? 0,
-                onConfirm: viewModel.configureSchedule,
+                onConfirm: { hour, minute in Task { await viewModel.configureSchedule(hour: hour, minute: minute) } },
                 isPresented: $viewModel.isScheduleConfigSheetPresented
             )
         }
@@ -158,6 +159,7 @@ struct DormDetailView: View {
                     }
                 }
             )
+            .disabled(viewModel.isSchedulingDorm)
         }
     }
 

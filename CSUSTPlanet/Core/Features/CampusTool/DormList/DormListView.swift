@@ -64,10 +64,23 @@ struct DormListView: View {
                 DormScheduleConfigView(
                     initialHour: dorm.scheduleHour ?? 20,
                     initialMinute: dorm.scheduleMinute ?? 0,
-                    onConfirm: { hour, minute in viewModel.configureSchedule(for: dorm, hour: hour, minute: minute) },
+                    onConfirm: { hour, minute in Task { await viewModel.configureSchedule(for: dorm, hour: hour, minute: minute) } },
                     isPresented: scheduleConfigPresentedBinding
                 )
             }
+        }
+        .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {
+            Button(action: { viewModel.isNotificationDeniedAlertPresented = false }) {
+                Text("取消")
+            }
+            Button(action: {
+                NotificationManager.shared.openAppNotificationSettings()
+                viewModel.isNotificationDeniedAlertPresented = false
+            }) {
+                Text("前往设置")
+            }
+        } message: {
+            Text("需要开启通知权限以使用定时查询功能，请前往系统设置开启通知权限")
         }
         .alert(
             "删除宿舍",
@@ -170,11 +183,12 @@ struct DormListView: View {
                 Button(action: { scheduleConfigTargetDorm = dorm }) {
                     Label("配置定时通知任务", systemImage: "clock.badge")
                 }
+                .disabled(viewModel.isSchedulingDorm)
 
-                Button(role: .destructive, action: { viewModel.cancelSchedule(for: dorm) }) {
+                Button(role: .destructive, action: { Task { await viewModel.cancelSchedule(for: dorm) } }) {
                     Label("取消定时通知任务", systemImage: "bell.slash")
                 }
-                .disabled(!dorm.scheduleEnabled)
+                .disabled(!dorm.scheduleEnabled || viewModel.isSchedulingDorm)
             } label: {
                 Label("定时查询", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
             }

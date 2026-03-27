@@ -132,6 +132,21 @@ final class NotificationManager {
             }
         }
     }
+
+    func openAppNotificationSettings() {
+        #if os(iOS)
+        if let url = URL(string: PlatformApplication.openNotificationSettingsURLString),
+            PlatformApplication.shared.canOpenURL(url)
+        {
+            PlatformApplication.shared.open(url)
+        }
+        #elseif os(macOS)
+        let settingsURL = "x-apple.systempreferences:com.apple.Notifications-Settings.extension"
+        if let url = URL(string: settingsURL) {
+            NSWorkspace.shared.open(url)
+        }
+        #endif
+    }
 }
 
 // MARK: - Delegate Callback

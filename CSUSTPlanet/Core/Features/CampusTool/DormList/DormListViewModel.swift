@@ -16,6 +16,8 @@ final class DormListViewModel {
     let campusCardHelper = CampusCardHelper()
 
     var isAddDormSheetPresented: Bool = false
+    var isNotificationDeniedAlertPresented: Bool = false
+    var isSchedulingDorm: Bool = false
     var dorms: [DormGRDB] = []
     var errorToast: ToastState = .errorTitle
     var queryingDormIDs: Set<Int64> = []
@@ -153,23 +155,62 @@ final class DormListViewModel {
         }
     }
 
-    func configureSchedule(for dorm: DormGRDB, hour: Int, minute: Int) {
+    func configureSchedule(for dorm: DormGRDB, hour: Int, minute: Int) async {
         guard let dormID = dorm.id else { return }
-        guard let pool = DatabaseManager.shared.pool else { return }
 
-        do {
-            try pool.write { db in try DormGRDB.updateSchedule(dormID: dormID, hour: hour, minute: minute, in: db) }
-        } catch {
-            errorToast.show(message: error.localizedDescription)
+        await performScheduleUpdate { db in
+            try DormGRDB.updateSchedule(dormID: dormID, hour: hour, minute: minute, in: db)
         }
     }
 
-    func cancelSchedule(for dorm: DormGRDB) {
+    func cancelSchedule(for dorm: DormGRDB) async {
         guard let dormID = dorm.id else { return }
+
+        await performScheduleUpdate { db in
+            try DormGRDB.clearSchedule(dormID: dormID, in: db)
+        }
+    }
+
+    private func performScheduleUpdate(dbAction: @escaping (Database) throws -> Void) async {
         guard let pool = DatabaseManager.shared.pool else { return }
 
+        guard !isSchedulingDorm else { return }
+        isSchedulingDorm = true
+        defer { isSchedulingDorm = false }
+
         do {
-            try pool.write { db in try DormGRDB.clearSchedule(dormID: dormID, in: db) }
+            guard let authToken = PlanetAuthService.shared.authToken else {
+                errorToast.show(message: "需要登录账号以设置宿舍电量定时通知")
+                return
+            }
+            guard let deviceToken = NotificationManager.shared.token else {
+                errorToast.show(message: "无法获取设备通知令牌")
+                return
+            }
+            guard let permissionStatus = NotificationManager.shared.permissionStatus else {
+                errorToast.show(message: "无法获取通知权限状态")
+                return
+            }
+
+            switch permissionStatus {
+            case .authorized:
+                break
+            case .denied:
+                isNotificationDeniedAlertPresented = true
+                return
+            case .requestable:
+                guard try await NotificationManager.shared.requestPermission() else {
+                    isNotificationDeniedAlertPresented = true
+                    return
+                }
+            }
+
+            try await pool.write { db in
+                try dbAction(db)
+            }
+
+            try await PlanetTaskService.shared.sync(permissionStatus: permissionStatus, deviceToken: deviceToken, authToken: authToken)
+
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
