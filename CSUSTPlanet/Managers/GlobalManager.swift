@@ -80,7 +80,7 @@ final class GlobalManager {
     var isFromElectricityWidget: Bool = false
     var isFromGradeAnalysisWidget: Bool = false
     var isFromCourseScheduleWidget: Bool = false
-    var isFromUrgentCoursesWidget: Bool = false
+    var isFromTodoAssignmentsWidget: Bool = false
 }
 
 extension MMKVHelper {

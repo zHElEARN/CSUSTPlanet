@@ -276,7 +276,7 @@ struct ContentView: View {
             case "electricity": globalManager.isFromElectricityWidget = true
             case "gradeAnalysis": globalManager.isFromGradeAnalysisWidget = true
             case "courseSchedule": globalManager.isFromCourseScheduleWidget = true
-            case "urgentCourses": globalManager.isFromUrgentCoursesWidget = true
+            case "todoAssignments": globalManager.isFromTodoAssignmentsWidget = true
             default: break
             }
         }
