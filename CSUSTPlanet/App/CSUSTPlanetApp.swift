@@ -30,6 +30,8 @@ struct CSUSTPlanetApp: App {
         _ = DatabaseManager.shared
         _ = TrackHelper.shared
         _ = NotificationManager.shared
+        _ = PlanetAuthService.shared
+        _ = PlanetTaskService.shared
 
         #if os(iOS)
         _ = BackgroundTaskHelper.shared

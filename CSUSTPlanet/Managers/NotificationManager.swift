@@ -36,7 +36,7 @@ final class NotificationManager {
 
     private var tokenContinuation: CheckedContinuation<Void, Error>?
     private var tokenSubject = CurrentValueSubject<String?, Never>(nil)
-    private var token: String? {
+    private(set) var token: String? {
         didSet {
             tokenSubject.send(token)
         }
@@ -46,7 +46,7 @@ final class NotificationManager {
     }
 
     private var permissionStatusSubject = CurrentValueSubject<NotificationPermissionStatus?, Never>(nil)
-    var permissionStatus: NotificationPermissionStatus? {
+    private(set) var permissionStatus: NotificationPermissionStatus? {
         didSet {
             permissionStatusSubject.send(permissionStatus)
         }

@@ -17,7 +17,7 @@ final class PlanetAuthService {
 
     private init() {}
 
-    private var authToken: String? {
+    private(set) var authToken: String? {
         didSet {
             authTokenSubject.send(authToken)
         }
