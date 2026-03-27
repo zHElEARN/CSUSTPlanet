@@ -13,27 +13,20 @@ struct CourseOverviewView: View {
     @State private var isCourseSchedulePresented = false
 
     var body: some View {
-        CustomGroupBox {
-            VStack(alignment: .leading, spacing: 14) {
-                Text("今日课程")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .fontDesign(.rounded)
+        TrackLink(destination: CourseScheduleView()) {
+            CustomGroupBox {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("今日课程")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
 
-                contentView
+                    contentView
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .contentShape(.rect)
-        .gesture(
-            TapGesture().onEnded {
-                isCourseSchedulePresented = true
-            },
-            including: .gesture
-        )
-        .navigationDestination(isPresented: $isCourseSchedulePresented) {
-            CourseScheduleView()
-        }
+        .buttonStyle(.plain)
         .onAppear(perform: viewModel.onAppear)
     }
 
