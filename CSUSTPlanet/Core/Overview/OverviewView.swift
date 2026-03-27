@@ -9,45 +9,23 @@ import CSUSTKit
 import SwiftUI
 
 struct OverviewView: View {
-    @State var viewModel = OverviewViewModel()
     @Bindable var globalManager = GlobalManager.shared
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                // 头部欢迎语
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
-                        Text(Date().formatted(.dateTime.month().day().weekday()))
-                        if let weekInfo = viewModel.weekInfo {
-                            Text("·")
-                            Text(weekInfo)
-                        }
-                    }
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                .padding(.top, 10)
+                OverviewHeaderView()
 
-                // 今日课程
-                CourseOverviewView(viewModel: viewModel)
+                CourseOverviewView()
 
                 VStack(spacing: 24) {
-                    // 成绩
-                    GradeOverviewView(viewModel: viewModel)
+                    GradeOverviewView()
 
-                    // 宿舍电量
-                    DormOverviewView(viewModel: viewModel)
+                    DormOverviewView()
 
-                    // 待提交作业
-                    AssignmentOverviewView(viewModel: viewModel)
+                    AssignmentOverviewView()
 
-                    // 考试安排
-                    ExamOverviewView(viewModel: viewModel)
+                    ExamOverviewView()
                 }
                 .padding(.horizontal)
 
@@ -55,7 +33,6 @@ struct OverviewView: View {
             }
         }
         .navigationTitle("概览")
-        .onAppear(perform: viewModel.onAppear)
         .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
             DormListView().trackRoot("Widget")
         }

@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct AssignmentOverviewView: View {
-    @Bindable var viewModel: OverviewViewModel
+    @State private var viewModel = AssignmentOverviewViewModel()
 
     var body: some View {
         VStack(spacing: 12) {
@@ -27,6 +27,7 @@ struct AssignmentOverviewView: View {
                 AssignmentListView(assignments: assignments)
             }
         }
+        .onAppear(perform: viewModel.onAppear)
     }
 }
 

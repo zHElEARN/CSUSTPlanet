@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct ExamOverviewView: View {
-    @Bindable var viewModel: OverviewViewModel
+    @State private var viewModel = ExamOverviewViewModel()
 
     var body: some View {
         VStack(spacing: 12) {
@@ -24,19 +24,24 @@ struct ExamOverviewView: View {
             if pendingExams.isEmpty {
                 OverviewEmptyStateView(icon: "calendar.badge.checkmark", text: "暂无考试安排")
             } else {
-                ExamListView(viewModel: viewModel)
+                ExamListView(
+                    pendingExams: pendingExams,
+                    daysUntilExam: viewModel.daysUntilExam
+                )
             }
         }
+        .onAppear(perform: viewModel.onAppear)
     }
 }
 
 private struct ExamListView: View {
-    @Bindable var viewModel: OverviewViewModel
+    let pendingExams: [EduHelper.Exam]
+    let daysUntilExam: (EduHelper.Exam) -> Int
 
     var body: some View {
         CustomGroupBox {
             VStack(spacing: 0) {
-                ForEach(Array(viewModel.pendingExams.enumerated()), id: \.offset) { index, exam in
+                ForEach(Array(pendingExams.enumerated()), id: \.offset) { index, exam in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(exam.courseName)
@@ -58,7 +63,7 @@ private struct ExamListView: View {
 
                         Spacer()
 
-                        let daysLeft = viewModel.daysUntilExam(exam)
+                        let daysLeft = daysUntilExam(exam)
                         if daysLeft == 0 {
                             Text("今天")
                                 .font(.caption.bold())
@@ -85,7 +90,7 @@ private struct ExamListView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 12)
 
-                    if index < viewModel.pendingExams.count - 1 {
+                    if index < pendingExams.count - 1 {
                         Divider()
                     }
                 }

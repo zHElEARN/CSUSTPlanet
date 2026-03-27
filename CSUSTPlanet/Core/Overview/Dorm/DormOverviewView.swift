@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct DormOverviewView: View {
-    @Bindable var viewModel: OverviewViewModel
+    @State private var viewModel = DormOverviewViewModel()
 
     var body: some View {
         TrackLink(destination: DormListView()) {
@@ -63,5 +63,6 @@ struct DormOverviewView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .onAppear(perform: viewModel.onAppear)
     }
 }

@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct GradeOverviewView: View {
-    @Bindable var viewModel: OverviewViewModel
+    @State private var viewModel = GradeOverviewViewModel()
 
     var body: some View {
         TrackLink(destination: GradeQueryView()) {
@@ -48,5 +48,6 @@ struct GradeOverviewView: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .onAppear(perform: viewModel.onAppear)
     }
 }

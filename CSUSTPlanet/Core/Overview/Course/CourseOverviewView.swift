@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct CourseOverviewView: View {
-    @Bindable var viewModel: OverviewViewModel
+    @State private var viewModel = CourseOverviewViewModel()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -66,7 +66,7 @@ struct CourseOverviewView: View {
                                     course: item.course.course,
                                     session: item.course.session,
                                     isCurrent: item.isCurrent,
-                                    viewModel: viewModel
+                                    courseTimeText: viewModel.formatCourseTime(item.course.session.startSection, item.course.session.endSection)
                                 )
                             }
                         }
@@ -80,6 +80,7 @@ struct CourseOverviewView: View {
                 }
             }
         }
+        .onAppear(perform: viewModel.onAppear)
     }
 }
 
@@ -87,7 +88,7 @@ struct CourseCard: View {
     let course: EduHelper.Course
     let session: EduHelper.ScheduleSession
     let isCurrent: Bool
-    @Bindable var viewModel: OverviewViewModel
+    let courseTimeText: String
 
     @State private var showDetail = false
 
@@ -125,7 +126,7 @@ struct CourseCard: View {
             HStack {
                 Label(session.classroom ?? "未知地点", systemImage: "location.fill")
                 Spacer()
-                Text(viewModel.formatCourseTime(session.startSection, session.endSection))
+                Text(courseTimeText)
             }
             .font(.caption)
             .fontWeight(.medium)
