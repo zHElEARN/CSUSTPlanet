@@ -31,6 +31,7 @@ extension Logger {
 
     static let dormElectricityWidget = Logger(subsystem: widgetSubsystem, category: "DormElectricityWidget")
     static let gradeAnalysisWidget = Logger(subsystem: widgetSubsystem, category: "GradeAnalysisWidget")
+    static let todoAssignmentsWidget = Logger(subsystem: widgetSubsystem, category: "TodoAssignmentsWidget")
 
     #if WIDGET
     static let mmkv = Logger(subsystem: widgetSubsystem, category: "MMKV")

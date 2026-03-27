@@ -1,15 +1,14 @@
 //
-//  RefreshUrgentCoursesTimelineIntent.swift
+//  RefreshTodoAssignmentsTimelineIntent.swift
 //  CSUSTPlanetWidgetExtension
 //
-//  Created by Zhe_Learn on 2025/10/13.
+//  Created by Zachary Liu on 2026/3/27.
 //
 
 import AppIntents
-import Foundation
 import WidgetKit
 
-struct RefreshUrgentCoursesTimelineIntent: AppIntent {
+struct RefreshTodoAssignmentsTimelineIntent: AppIntent {
     static var title: LocalizedStringResource = "刷新待提交作业时间线"
     static var isDiscoverable: Bool = false
 

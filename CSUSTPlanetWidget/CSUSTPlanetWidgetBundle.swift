@@ -14,9 +14,9 @@ struct CSUSTPlanetWidgetBundle: WidgetBundle {
     var body: some Widget {
         DormElectricityWidget()
         GradeAnalysisWidget()
+        TodoAssignmentsWidget()
         TodayCoursesWidget()
         WeeklyCoursesWidget()
-        // UrgentCoursesWidget()
 
         #if os(iOS)
         CourseStatusWidgetLiveActivity()
