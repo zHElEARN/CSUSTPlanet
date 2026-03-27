@@ -127,6 +127,13 @@ struct ExamScheduleView: View {
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
                                 .background(Color.orange, in: Capsule())
+                        } else if daysLeft == 2 {
+                            Text("后天")
+                                .font(.caption.bold())
+                                .foregroundColor(.green)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.green.opacity(0.14), in: Capsule())
                         } else {
                             Text("还有 \(daysLeft) 天")
                                 .font(.caption.bold())
