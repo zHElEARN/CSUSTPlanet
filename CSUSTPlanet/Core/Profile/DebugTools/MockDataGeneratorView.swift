@@ -12,6 +12,7 @@ import SwiftUI
 struct MockDataGeneratorView: View {
     @State private var todoAssignmentsCacheDescription = ""
     @State private var examSchedulesCacheDescription = ""
+    @State private var courseScheduleCacheDescription = ""
 
     var body: some View {
         Form {
@@ -62,12 +63,40 @@ struct MockDataGeneratorView: View {
             } footer: {
                 Text(examSchedulesCacheDescription)
             }
+
+            Section {
+                Button("清空课表数据（nil）") {
+                    MMKVHelper.shared.courseScheduleCache = nil
+                    refreshCourseScheduleCacheDescription()
+                }
+
+                Button("清空课表数据（空课程）") {
+                    MMKVHelper.shared.courseScheduleCache = Cached(
+                        cachedAt: .now,
+                        value: MockCourseScheduleFactory.makeEmptyCourseScheduleData()
+                    )
+                    refreshCourseScheduleCacheDescription()
+                }
+
+                Button("生成今日满课模拟课表") {
+                    MMKVHelper.shared.courseScheduleCache = Cached(
+                        cachedAt: .now,
+                        value: MockCourseScheduleFactory.makeTodayFilledCourseScheduleData()
+                    )
+                    refreshCourseScheduleCacheDescription()
+                }
+            } header: {
+                Text("课表")
+            } footer: {
+                Text(courseScheduleCacheDescription)
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("模拟数据生成")
         .onAppear {
             refreshTodoAssignmentsCacheDescription()
             refreshExamSchedulesCacheDescription()
+            refreshCourseScheduleCacheDescription()
         }
     }
 
@@ -91,6 +120,25 @@ struct MockDataGeneratorView: View {
         }
 
         examSchedulesCacheDescription = "当前状态：\(cache.value.count) 场考试，缓存时间 \(cache.cachedAt.formatted(date: .abbreviated, time: .standard))"
+    }
+
+    private func refreshCourseScheduleCacheDescription() {
+        guard let cache = MMKVHelper.shared.courseScheduleCache else {
+            courseScheduleCacheDescription = "当前状态：nil"
+            return
+        }
+
+        let courseCount = cache.value.courses.count
+        let sessionCount = cache.value.courses.reduce(into: 0) { partialResult, course in
+            partialResult += course.sessions.count
+        }
+        let todayCoursesCount = CourseScheduleUtil.getUnfinishedCourses(
+            semesterStartDate: cache.value.semesterStartDate,
+            now: .now,
+            courses: cache.value.courses
+        ).count
+
+        courseScheduleCacheDescription = "当前状态：\(cache.value.semester ?? "默认学期")，\(courseCount) 门课程，\(sessionCount) 个上课安排，今日可见 \(todayCoursesCount) 门，缓存时间 \(cache.cachedAt.formatted(date: .abbreviated, time: .standard))"
     }
 }
 
@@ -229,6 +277,84 @@ private enum MockExamSchedulesFactory {
     private static func examTimeText(start: Date, durationHours: Int) -> String {
         let end = start.addingTimeInterval(TimeInterval(durationHours * 3600))
         return "\(start.formatted(date: .numeric, time: .shortened)) - \(end.formatted(date: .omitted, time: .shortened))"
+    }
+}
+
+private enum MockCourseScheduleFactory {
+    static func makeEmptyCourseScheduleData(referenceDate: Date = .now) -> CourseScheduleData {
+        CourseScheduleData(
+            semester: semesterText(for: referenceDate),
+            semesterStartDate: semesterStartDate(for: referenceDate),
+            courses: []
+        )
+    }
+
+    static func makeTodayFilledCourseScheduleData(referenceDate: Date = .now) -> CourseScheduleData {
+        let today = CourseScheduleUtil.getDayOfWeek(referenceDate)
+        let currentWeek = 1
+        let weeks = [currentWeek]
+
+        let courses: [EduHelper.Course] = [
+            .init(
+                courseName: "移动应用设计基础",
+                groupName: "开发联调组 A",
+                teacher: "周老师",
+                sessions: [
+                    .init(weeks: weeks, startSection: 1, endSection: 2, dayOfWeek: today, classroom: "云综教 A-101")
+                ]
+            ),
+            .init(
+                courseName: "SwiftUI 界面重构实训",
+                groupName: "开发联调组 B",
+                teacher: "陈老师",
+                sessions: [
+                    .init(weeks: weeks, startSection: 3, endSection: 4, dayOfWeek: today, classroom: "云综教 A-203")
+                ]
+            ),
+            .init(
+                courseName: "数据模型与缓存调试",
+                groupName: "开发联调组 C",
+                teacher: "刘老师",
+                sessions: [
+                    .init(weeks: weeks, startSection: 5, endSection: 6, dayOfWeek: today, classroom: "工科一号楼 305")
+                ]
+            ),
+            .init(
+                courseName: "课程组件样式验证",
+                groupName: "开发联调组 D",
+                teacher: "王老师",
+                sessions: [
+                    .init(weeks: weeks, startSection: 7, endSection: 8, dayOfWeek: today, classroom: "工科二号楼 410")
+                ]
+            ),
+            .init(
+                courseName: "全天场景覆盖测试",
+                groupName: "开发联调组 E",
+                teacher: "李老师",
+                sessions: [
+                    .init(weeks: weeks, startSection: 9, endSection: 10, dayOfWeek: today, classroom: "云综教 B-502")
+                ]
+            ),
+        ]
+
+        return CourseScheduleData(
+            semester: semesterText(for: referenceDate),
+            semesterStartDate: semesterStartDate(for: referenceDate),
+            courses: courses
+        )
+    }
+
+    private static func semesterStartDate(for referenceDate: Date) -> Date {
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: referenceDate)
+        let weekday = calendar.component(.weekday, from: todayStart)
+        let daysSinceSunday = weekday - 1
+        return calendar.date(byAdding: .day, value: -daysSinceSunday, to: todayStart) ?? todayStart
+    }
+
+    private static func semesterText(for referenceDate: Date) -> String {
+        let year = Calendar.current.component(.year, from: referenceDate)
+        return "\(year)-\(year + 1)-Mock"
     }
 }
 #endif
