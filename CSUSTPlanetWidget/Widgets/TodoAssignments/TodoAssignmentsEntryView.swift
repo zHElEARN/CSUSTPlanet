@@ -87,7 +87,7 @@ struct TodoAssignmentsEntryView: View {
             contentItems: displayedItems,
             totalAssignments: items.count,
             remainingAssignments: max(0, items.count - displayedItems.count),
-            showsOverflowInHeader: showsOverflowInHeader,
+            showsOverflowInHeader: showsOverflowInHeader || (family == .systemLarge && items.count > maxContentRows),
             showsOverflowInContent: showsOverflowInContent
         )
     }
@@ -103,14 +103,14 @@ struct TodoAssignmentsEntryView: View {
                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                 .foregroundStyle(.red)
 
-            if family == .systemMedium {
+            if family != .systemSmall {
                 lastUpdatedDateView(lastUpdated: lastUpdated)
             }
 
             Spacer()
 
             if summary.showsOverflowInHeader {
-                Text("还有 \(summary.remainingAssignments) 个")
+                Text("还有 \(summary.remainingAssignments) 个未展示")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -122,32 +122,78 @@ struct TodoAssignmentsEntryView: View {
 
     @ViewBuilder
     private func assignmentRowView(item: DisplayAssignmentItem) -> some View {
-        HStack(alignment: .center, spacing: 0) {
-            if family == .systemMedium {
-                HStack(alignment: .center, spacing: 2) {
+        if family == .systemLarge {
+            largeAssignmentCardView(item: item)
+        } else {
+            HStack(alignment: .center, spacing: 0) {
+                if family == .systemMedium {
+                    HStack(alignment: .center, spacing: 2) {
+                        Text(item.assignment.title)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                            .layoutPriority(1)
+
+                        Text(item.courseName)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
                     Text(item.assignment.title)
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
-                        .layoutPriority(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                deadlineBadge(for: item.assignment)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    @ViewBuilder
+    private func largeAssignmentCardView(item: DisplayAssignmentItem) -> some View {
+        HStack(spacing: 2) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(cardAccentColor)
+                .frame(width: 4)
+
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.assignment.title)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
 
                     Text(item.courseName)
-                        .font(.system(size: 11))
+                        .font(.system(size: 13))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                Text(item.assignment.title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.primary)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+                .padding(.leading, 2)
 
-            deadlineBadge(for: item.assignment)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(item.assignment.deadline, format: .dateTime.month().day().hour().minute())
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+
+                    Text(item.assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(badgeForegroundColor(for: item.assignment))
+                        .lineLimit(1)
+                }
+                .padding(.trailing, 2)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(cardAccentColor.opacity(0.1))
+            .cornerRadius(4)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
@@ -236,11 +282,25 @@ struct TodoAssignmentsEntryView: View {
     }
 
     private var rowSpacing: CGFloat {
-        family == .systemMedium ? 4 : 3
+        switch family {
+        case .systemSmall:
+            return 3
+        case .systemMedium:
+            return 4
+        default:
+            return 5
+        }
     }
 
     private var maxContentRows: Int {
-        family == .systemSmall ? 4 : 5
+        switch family {
+        case .systemSmall:
+            return 4
+        case .systemLarge:
+            return 6
+        default:
+            return 5
+        }
     }
 
     private func rowHeight(for availableHeight: CGFloat, rowCount: Int) -> CGFloat {
@@ -265,6 +325,10 @@ struct TodoAssignmentsEntryView: View {
         }
 
         return .secondary
+    }
+
+    private var cardAccentColor: Color {
+        .orange
     }
 }
 

@@ -19,7 +19,7 @@ struct TodoAssignmentsWidget: Widget {
         }
         .configurationDisplayName("待提交作业")
         .description("查看课程和未截止作业的截止时间")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 
@@ -61,4 +61,28 @@ struct TodoAssignmentsWidget: Widget {
 
 #Preview("Medium - 6个作业", as: .systemMedium, widget: { TodoAssignmentsWidget() }) {
     TodoAssignmentsEntry.mockEntry(scenario: .assignments(6))
+}
+
+#Preview("Large - 空数据", as: .systemLarge, widget: { TodoAssignmentsWidget() }) {
+    TodoAssignmentsEntry.mockEntry(scenario: .emptyData)
+}
+
+#Preview("Large - 无未截止作业", as: .systemLarge, widget: { TodoAssignmentsWidget() }) {
+    TodoAssignmentsEntry.mockEntry(scenario: .emptyAssignments)
+}
+
+#Preview("Large - 1个作业", as: .systemLarge, widget: { TodoAssignmentsWidget() }) {
+    TodoAssignmentsEntry.mockEntry(scenario: .assignments(1))
+}
+
+#Preview("Large - 3个作业", as: .systemLarge, widget: { TodoAssignmentsWidget() }) {
+    TodoAssignmentsEntry.mockEntry(scenario: .assignments(3))
+}
+
+#Preview("Large - 6个作业", as: .systemLarge, widget: { TodoAssignmentsWidget() }) {
+    TodoAssignmentsEntry.mockEntry(scenario: .assignments(6))
+}
+
+#Preview("Large - 7个作业", as: .systemLarge, widget: { TodoAssignmentsWidget() }) {
+    TodoAssignmentsEntry.mockEntry(scenario: .assignments(7))
 }
