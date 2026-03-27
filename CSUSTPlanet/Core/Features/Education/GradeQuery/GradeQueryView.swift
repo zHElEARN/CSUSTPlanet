@@ -65,7 +65,7 @@ struct GradeQueryView: View {
                 .padding(.horizontal)
                 .padding(.vertical)
                 .apply { view in
-                    if #available(iOS 26.0, *) {
+                    if #available(iOS 26.0, macOS 26.0, *) {
                         view
                             .glassEffect()
                             .padding(.horizontal)

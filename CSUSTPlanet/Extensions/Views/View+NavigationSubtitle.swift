@@ -10,7 +10,7 @@ import SwiftUI
 extension View {
     @ViewBuilder
     func navigationSubtitleCompat(_ subtitle: String) -> some View {
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, macOS 26.0, *) {
             self.navigationSubtitle(subtitle)
         } else {
             self

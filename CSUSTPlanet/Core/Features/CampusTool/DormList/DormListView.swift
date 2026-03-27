@@ -124,7 +124,7 @@ struct DormListView: View {
             }
             .buttonStyle(.plain)
             #elseif os(iOS)
-            if #available(iOS 18.0, *) {
+            if #available(iOS 18.0, macOS 15.0, *) {
                 ZStack {
                     TrackLink(
                         destination: DormDetailView(dorm: dorm)

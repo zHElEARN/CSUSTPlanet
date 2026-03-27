@@ -219,7 +219,7 @@ struct CourseScheduleView: View {
             // 星期头部（日期和周几）
             headerView(for: week, semesterStartDate: semesterStartDate)
                 .apply { view in
-                    if #available(iOS 26.0, *) {
+                    if #available(iOS 26.0, macOS 26.0, *) {
                         view
                             .background {
                                 Rectangle()

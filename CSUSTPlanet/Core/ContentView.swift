@@ -231,7 +231,7 @@ struct ContentView: View {
 
         #if os(iOS)
         .apply { view in
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, macOS 26.0, *) {
                 view.tabBarMinimizeBehavior(.onScrollDown)
             } else {
                 view

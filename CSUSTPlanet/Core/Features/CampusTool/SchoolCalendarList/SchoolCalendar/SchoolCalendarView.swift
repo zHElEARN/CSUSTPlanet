@@ -241,7 +241,7 @@ struct SchoolCalendarView: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .apply { view in
-                                if #available(iOS 26.0, macOS 15.0, *) {
+                                if #available(iOS 26.0, macOS 26.0, *) {
                                     view.glassEffect()
                                 } else {
                                     view.background(.ultraThinMaterial, in: Capsule())
