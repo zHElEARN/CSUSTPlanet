@@ -7,8 +7,11 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#endif
 
 @MainActor
 final class LifecycleManager {
@@ -25,7 +28,24 @@ final class LifecycleManager {
     private var isFirstAppearance = true
     private var lastBackgroundDate: Date?
 
-    private init() {}
+    private var cancellables = Set<AnyCancellable>()
+
+    private init() {
+        #if os(macOS)
+        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+            .sink { [weak self] _ in
+                self?.handleAppDidBecomeActive()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
+            .sink { [weak self] _ in
+                self?.lastBackgroundDate = Date()
+                self?.eventSubject.send(.didBecomeInactive)
+            }
+            .store(in: &cancellables)
+        #endif
+    }
 
     var currentScenePhase: ScenePhase? {
         scenePhaseSubject.value
@@ -40,35 +60,37 @@ final class LifecycleManager {
     }
 
     func publishScenePhaseChange(to newPhase: ScenePhase) {
-        let now = Date()
-
         scenePhaseSubject.send(newPhase)
 
         switch newPhase {
         case .active:
-            let resumeAfter: TimeInterval?
-            if isFirstAppearance {
-                resumeAfter = nil
-                isFirstAppearance = false
-                Logger.appLifecycleManager.debug("App首次进入.active状态，跳过didBecomeActive事件派发")
-                return
-            } else if let lastBackgroundDate {
-                resumeAfter = now.timeIntervalSince(lastBackgroundDate)
-                Logger.appLifecycleManager.debug("App进入.active状态, 距离上次非活跃 \(resumeAfter ?? -1)s")
-            } else {
-                resumeAfter = nil
-                Logger.appLifecycleManager.debug("App进入.active状态")
-            }
-            eventSubject.send(.didBecomeActive(resumeAfter: resumeAfter))
+            handleAppDidBecomeActive()
         case .inactive:
-            lastBackgroundDate = now
-            Logger.appLifecycleManager.debug("App进入.inactive状态")
+            lastBackgroundDate = Date()
             eventSubject.send(.didBecomeInactive)
         case .background:
-            Logger.appLifecycleManager.debug("App进入.background状态")
             eventSubject.send(.didEnterBackground)
         default:
             break
         }
+    }
+
+    // MARK: - Helper
+
+    private func handleAppDidBecomeActive() {
+        let now = Date()
+        let resumeAfter: TimeInterval?
+
+        if isFirstAppearance {
+            resumeAfter = nil
+            isFirstAppearance = false
+            return
+        } else if let lastBackgroundDate {
+            resumeAfter = now.timeIntervalSince(lastBackgroundDate)
+        } else {
+            resumeAfter = nil
+        }
+
+        eventSubject.send(.didBecomeActive(resumeAfter: resumeAfter))
     }
 }
