@@ -142,4 +142,20 @@ enum ElectricityUtil {
 
         return sampled
     }
+
+    static func chartYDomain(
+        for records: [ElectricityRecordGRDB],
+        padding: Double = 2,
+        minimumSpan: Double = 1,
+        fallback: ClosedRange<Double> = 0...2
+    ) -> ClosedRange<Double> {
+        guard let minValue = records.map(\.electricity).min(), let maxValue = records.map(\.electricity).max() else {
+            return fallback
+        }
+
+        let lowerBound = max(0, minValue - padding)
+        let upperBound = max(lowerBound + minimumSpan, maxValue + padding)
+
+        return lowerBound...upperBound
+    }
 }

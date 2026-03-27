@@ -159,16 +159,12 @@ final class DormDetailViewModel {
                 let sortedRecords = records
                 let recordsAscending = Array(records.reversed())
                 let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 150)
-                let minValue = chartRecords.map(\.electricity).min() ?? 0
-                let maxValue = chartRecords.map(\.electricity).max() ?? 0
-                let yMin = max(0, minValue - 2)
-                let yMax = max(yMin + 1, maxValue + 2)
                 let exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: recordsAscending)
 
                 return ProcessedDetailData(
                     sortedRecords: sortedRecords,
                     chartRecords: chartRecords,
-                    chartYDomain: yMin...yMax,
+                    chartYDomain: ElectricityUtil.chartYDomain(for: chartRecords),
                     exhaustionInfo: exhaustionInfo
                 )
             }

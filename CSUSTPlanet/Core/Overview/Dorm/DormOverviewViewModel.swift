@@ -13,8 +13,17 @@ import SwiftUI
 @MainActor
 @Observable
 final class DormOverviewViewModel {
+    private struct ProcessedDormOverviewData {
+        let dorm: DormGRDB?
+        let exhaustionInfo: String?
+        let chartRecords: [ElectricityRecordGRDB]
+        let chartYDomain: ClosedRange<Double>
+    }
+
     var primaryDorm: DormGRDB?
     var electricityExhaustionInfo: String?
+    var chartRecords: [ElectricityRecordGRDB] = []
+    var chartYDomain: ClosedRange<Double> = 0...2
 
     private var dormObserver: AutoRefreshingObserver?
 
@@ -26,12 +35,9 @@ final class DormOverviewViewModel {
         guard let pool = DatabaseManager.shared.pool else {
             primaryDorm = nil
             electricityExhaustionInfo = nil
+            chartRecords = []
+            chartYDomain = 0...2
             return
-        }
-
-        struct ProcessedDormOverviewData {
-            let dorm: DormGRDB?
-            let exhaustionInfo: String?
         }
 
         dormObserver = AutoRefreshingObserver { [weak self] in
@@ -52,10 +58,14 @@ final class DormOverviewViewModel {
 
                 return (dorm, records)
             }
-            .map { dorm, records in
-                ProcessedDormOverviewData(
+            .map { (dorm, records) -> ProcessedDormOverviewData in
+                let sampledRecords = ElectricityUtil.downsample(from: records, to: 80)
+
+                return ProcessedDormOverviewData(
                     dorm: dorm,
-                    exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: records)
+                    exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: records),
+                    chartRecords: sampledRecords,
+                    chartYDomain: ElectricityUtil.chartYDomain(for: sampledRecords)
                 )
             }
 
@@ -66,6 +76,8 @@ final class DormOverviewViewModel {
                     Task { @MainActor in
                         self?.primaryDorm = nil
                         self?.electricityExhaustionInfo = nil
+                        self?.chartRecords = []
+                        self?.chartYDomain = 0...2
                     }
                 },
                 onChange: { [weak self] data in
@@ -73,6 +85,8 @@ final class DormOverviewViewModel {
                         withAnimation {
                             self?.primaryDorm = data.dorm
                             self?.electricityExhaustionInfo = data.exhaustionInfo
+                            self?.chartRecords = data.chartRecords
+                            self?.chartYDomain = data.chartYDomain
                         }
                     }
                 }
