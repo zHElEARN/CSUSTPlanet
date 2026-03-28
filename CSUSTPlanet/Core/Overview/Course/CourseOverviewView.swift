@@ -105,8 +105,7 @@ struct CourseOverviewView: View {
                 )
             } else {
                 CourseListView(
-                    courses: courses,
-                    formatCourseTime: viewModel.formatCourseTime
+                    courses: courses
                 )
             }
         }
@@ -115,7 +114,6 @@ struct CourseOverviewView: View {
 
 private struct CourseListView: View {
     let courses: [(course: CourseDisplayInfo, isCurrent: Bool)]
-    let formatCourseTime: (Int, Int) -> String
 
     private var courseColors: [String: Color] {
         ColorUtil.getCourseColors(courses.map { $0.course.course })
@@ -128,8 +126,9 @@ private struct CourseListView: View {
                     course: item.course.course,
                     session: item.course.session,
                     isCurrent: item.isCurrent,
-                    courseTimeText: formatCourseTime(item.course.session.startSection, item.course.session.endSection),
-                    accentColor: courseColors[item.course.course.courseName] ?? .blue
+                    accentColor: courseColors[item.course.course.courseName] ?? .blue,
+                    startSection: item.course.session.startSection,
+                    endSection: item.course.session.endSection
                 )
             }
         }
@@ -140,8 +139,9 @@ private struct CourseRowView: View {
     let course: EduHelper.Course
     let session: EduHelper.ScheduleSession
     let isCurrent: Bool
-    let courseTimeText: String
     let accentColor: Color
+    let startSection: Int
+    let endSection: Int
 
     @State private var showDetail = false
 
@@ -161,7 +161,7 @@ private struct CourseRowView: View {
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            // .frame(maxWidth: .infinity, alignment: .leading)
 
                             if isCurrent {
                                 Circle()
@@ -186,14 +186,14 @@ private struct CourseRowView: View {
                     .padding(.leading, 2)
 
                     VStack(alignment: .trailing, spacing: 6) {
-                        Text(courseTimeText)
-                            .font(.system(size: 14, weight: .semibold))
+                        Text(CourseScheduleUtil.sectionTimeString[startSection - 1].0)
+                            .font(.system(size: 14))
                             .foregroundStyle(.primary)
                             .lineLimit(1)
 
-                        Text("第\(session.startSection)-\(session.endSection)节")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(isCurrent ? .green : .secondary)
+                        Text(CourseScheduleUtil.sectionTimeString[endSection - 1].1)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.primary)
                             .lineLimit(1)
                     }
                     .padding(.trailing, 2)

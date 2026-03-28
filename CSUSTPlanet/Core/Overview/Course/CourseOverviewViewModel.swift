@@ -50,17 +50,4 @@ final class CourseOverviewViewModel {
     func onAppear() {
         courseScheduleData = MMKVHelper.shared.courseScheduleCache
     }
-
-    func formatCourseTime(_ startSection: Int, _ endSection: Int) -> String {
-        let startIndex = startSection - 1
-        let endIndex = endSection - 1
-
-        guard startIndex >= 0 && startIndex < CourseScheduleUtil.sectionTimeString.count,
-            endIndex >= 0 && endIndex < CourseScheduleUtil.sectionTimeString.count
-        else {
-            return "时间未知"
-        }
-
-        return "\(CourseScheduleUtil.sectionTimeString[startIndex].0) - \(CourseScheduleUtil.sectionTimeString[endIndex].1)"
-    }
 }
