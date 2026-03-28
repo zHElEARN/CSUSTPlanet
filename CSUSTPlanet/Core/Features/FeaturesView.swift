@@ -59,7 +59,9 @@ struct FeaturesView: View {
             .padding(.top, sizeClass == .regular ? 20 : 0)
         }
         .navigationTitle("全部功能")
-        .background(Color.appSystemGroupedBackground)
+        #if os(iOS)
+        .background(Color(PlatformColor.systemGroupedBackground))
+        #endif
         .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
             PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
         }
@@ -187,7 +189,9 @@ struct FeaturesView: View {
                     title: "实验成绩", icon: "doc.text", color: .purple
                 )
             }
-            .background(Color.appSecondarySystemGroupedBackground)
+            #if os(iOS)
+            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            #endif
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }
@@ -204,7 +208,9 @@ struct FeaturesView: View {
 
                 ToolRow(destination: MandarinView(), title: "普通话查询", icon: "mic.circle.fill", color: .indigo)
             }
-            .background(Color.appSecondarySystemGroupedBackground)
+            #if os(iOS)
+            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            #endif
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
         }
@@ -284,7 +290,9 @@ private struct ServiceSquare<Destination: View>: View {
                     .foregroundColor(.primary)
             }
             .frame(width: 85, height: 95)
-            .background(Color.appSecondarySystemGroupedBackground)
+            #if os(iOS)
+            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            #endif
             .cornerRadius(16)
         }
     }
@@ -314,7 +322,9 @@ private struct ToolRow<Destination: View>: View {
 
                 Image(systemName: "chevron.right")
                     .font(.caption)
-                    .foregroundColor(Color.appTertiaryLabel)
+                    #if os(iOS)
+                .foregroundColor(Color(PlatformColor.tertiaryLabel))
+                    #endif
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)

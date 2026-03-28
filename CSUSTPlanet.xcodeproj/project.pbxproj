@@ -85,7 +85,6 @@
 				Database/Models/Dorm.swift,
 				Database/Models/ElectricityRecord.swift,
 				"Extensions/Color+Hex.swift",
-				"Extensions/Color+Theme.swift",
 				"Extensions/DayOfWeek+Formatter.swift",
 				"Extensions/Logger+Categories.swift",
 				"Extensions/Views/View+Apply.swift",
