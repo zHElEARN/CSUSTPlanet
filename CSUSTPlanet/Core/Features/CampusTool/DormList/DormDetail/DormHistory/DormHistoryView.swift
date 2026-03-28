@@ -38,6 +38,15 @@ struct DormHistoryView: View {
                             Label("删除", systemImage: "trash")
                         }
                     }
+                    .contextMenu {
+                        Button {
+                            withAnimation {
+                                viewModel.deleteRecord(record)
+                            }
+                        } label: {
+                            Label("删除", systemImage: "trash")
+                        }
+                    }
                 }
             }
         }

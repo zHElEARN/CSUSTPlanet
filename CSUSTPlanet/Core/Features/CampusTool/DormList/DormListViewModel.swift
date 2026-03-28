@@ -27,6 +27,8 @@ final class DormListViewModel {
     private var listObserver: AutoRefreshingObserver?
 
     var isInitial: Bool = true
+    var isFirstObservation: Bool = true
+    var isLoading: Bool = true
 
     func loadInitial() async {
         guard isInitial else { return }
@@ -64,9 +66,17 @@ final class DormListViewModel {
                 },
                 onChange: { [weak self] result in
                     Task { @MainActor in
-                        withAnimation {
-                            self?.dorms = result.0
-                            self?.exhaustionInfoMap = result.1
+                        guard let self = self else { return }
+                        if self.isFirstObservation {
+                            self.isFirstObservation = false
+                            self.dorms = result.0
+                            self.exhaustionInfoMap = result.1
+                            self.isLoading = false
+                        } else {
+                            withAnimation {
+                                self.dorms = result.0
+                                self.exhaustionInfoMap = result.1
+                            }
                         }
                     }
                 }

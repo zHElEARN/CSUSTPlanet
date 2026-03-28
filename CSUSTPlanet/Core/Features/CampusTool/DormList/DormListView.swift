@@ -18,7 +18,9 @@ struct DormListView: View {
 
     var body: some View {
         Group {
-            if viewModel.dorms.isEmpty {
+            if viewModel.isLoading {
+                ProgressView()
+            } else if viewModel.dorms.isEmpty {
                 ContentUnavailableView("暂无宿舍", systemImage: "building.2", description: Text("点击右上角添加宿舍"))
             } else {
                 #if os(macOS)
