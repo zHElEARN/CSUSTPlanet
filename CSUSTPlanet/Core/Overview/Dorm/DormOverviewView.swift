@@ -25,8 +25,10 @@ struct DormOverviewView: View {
                 HStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 8) {
-                            Image(systemName: "bolt.fill")
-                                .foregroundStyle(.yellow)
+                            Text("宿舍电量")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .fontDesign(.rounded)
 
                             if let dorm = viewModel.primaryDorm {
                                 Text(dorm.room)

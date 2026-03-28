@@ -17,15 +17,10 @@ struct GradeOverviewView: View {
             CustomGroupBox {
                 HStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "chart.bar.fill")
-                                .foregroundStyle(.green)
-
-                            Text("GPA")
-                                .font(.caption)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.secondary)
-                        }
+                        Text("成绩查询")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .fontDesign(.rounded)
 
                         Spacer(minLength: 0)
 

@@ -42,6 +42,11 @@ final class CourseOverviewViewModel {
         }
     }
 
+    var semesterInfoText: String {
+        guard let semester = courseScheduleData?.value.semester else { return "默认学期" }
+        return semester
+    }
+
     func onAppear() {
         courseScheduleData = MMKVHelper.shared.courseScheduleCache
     }

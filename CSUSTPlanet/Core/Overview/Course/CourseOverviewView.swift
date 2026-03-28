@@ -16,10 +16,17 @@ struct CourseOverviewView: View {
         TrackLink(destination: CourseScheduleView()) {
             CustomGroupBox {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text("今日课程")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
+                    HStack(spacing: 8) {
+                        Text("今日课程")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .fontDesign(.rounded)
+
+                        Text(viewModel.semesterInfoText)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.secondary)
+                    }
 
                     contentView
                 }
