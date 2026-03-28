@@ -12,29 +12,60 @@ struct CourseOverviewView: View {
     @State private var viewModel = CourseOverviewViewModel()
     @State private var isCourseSchedulePresented = false
 
+    @Namespace var namespace
+    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
+
     var body: some View {
-        TrackLink(destination: CourseScheduleView()) {
-            CustomGroupBox {
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack(spacing: 8) {
-                        Text("今日课程")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .fontDesign(.rounded)
-
-                        Text(viewModel.semesterInfoText)
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    contentView
+        Group {
+            #if os(macOS)
+            TrackLink(destination: CourseScheduleView()) {
+                CustomGroupBox {
+                    cardContent
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            #elseif os(iOS)
+            if #available(iOS 18.0, macOS 15.0, *) {
+                TrackLink(
+                    destination: CourseScheduleView()
+                        .navigationTransition(.zoom(sourceID: "courseSchedule", in: namespace))
+                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
+                ) {
+                    CustomGroupBox {
+                        cardContent.matchedTransitionSource(id: "courseSchedule", in: namespace)
+                    }
+                }
+                .id(refreshID)
+            } else {
+                TrackLink(destination: CourseScheduleView()) {
+                    CustomGroupBox {
+                        cardContent
+                    }
+                }
+            }
+            #endif
         }
         .buttonStyle(.plain)
         .onAppear(perform: viewModel.onAppear)
+    }
+
+    @ViewBuilder
+    private var cardContent: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 8) {
+                Text("今日课程")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
+
+                Text(viewModel.semesterInfoText)
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+            }
+
+            contentView
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder

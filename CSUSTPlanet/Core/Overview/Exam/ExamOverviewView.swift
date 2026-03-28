@@ -10,32 +10,63 @@ import SwiftUI
 
 struct ExamOverviewView: View {
     @State private var viewModel = ExamOverviewViewModel()
+    @Namespace var namespace
+    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
 
     var body: some View {
         let pendingExams = viewModel.pendingExams
 
-        TrackLink(destination: ExamScheduleView()) {
-            CustomGroupBox {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("考试安排")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
-
-                    if pendingExams.isEmpty {
-                        EmptyExamContentView()
-                    } else {
-                        ExamListView(
-                            pendingExams: pendingExams,
-                            daysUntilExam: viewModel.daysUntilExam
-                        )
+        Group {
+            #if os(macOS)
+            TrackLink(destination: ExamScheduleView()) {
+                CustomGroupBox {
+                    cardContent(pendingExams: pendingExams)
+                }
+            }
+            #elseif os(iOS)
+            if #available(iOS 18.0, macOS 15.0, *) {
+                TrackLink(
+                    destination: ExamScheduleView()
+                        .navigationTransition(.zoom(sourceID: "examSchedule", in: namespace))
+                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
+                ) {
+                    CustomGroupBox {
+                        cardContent(pendingExams: pendingExams)
+                            .matchedTransitionSource(id: "examSchedule", in: namespace)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .id(refreshID)
+            } else {
+                TrackLink(destination: ExamScheduleView()) {
+                    CustomGroupBox {
+                        cardContent(pendingExams: pendingExams)
+                    }
+                }
             }
+            #endif
         }
         .buttonStyle(.plain)
         .onAppear(perform: viewModel.onAppear)
+    }
+
+    @ViewBuilder
+    private func cardContent(pendingExams: [EduHelper.Exam]) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("考试安排")
+                .font(.title3)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
+
+            if pendingExams.isEmpty {
+                EmptyExamContentView()
+            } else {
+                ExamListView(
+                    pendingExams: pendingExams,
+                    daysUntilExam: viewModel.daysUntilExam
+                )
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
