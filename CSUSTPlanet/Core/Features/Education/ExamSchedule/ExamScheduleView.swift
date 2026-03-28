@@ -93,17 +93,18 @@ struct ExamScheduleView: View {
         let finished = viewModel.isExamFinished(exam)
         let daysLeft = viewModel.daysUntilExam(exam)
         let dateStyle = finished ? RelativeDateStyle.secondary : RelativeDateStyle.scheduled(for: exam.examStartTime)
-        let statusText: String = if finished {
-            "已结束"
-        } else if daysLeft == 0 {
-            "今天"
-        } else if daysLeft == 1 {
-            "明天"
-        } else if daysLeft == 2 {
-            "后天"
-        } else {
-            "还有 \(daysLeft) 天"
-        }
+        let statusText: String =
+            if finished {
+                "已结束"
+            } else if daysLeft == 0 {
+                "今天"
+            } else if daysLeft == 1 {
+                "明天"
+            } else if daysLeft == 2 {
+                "后天"
+            } else {
+                "还有 \(daysLeft) 天"
+            }
 
         CustomGroupBox {
             VStack(alignment: .leading, spacing: 0) {
