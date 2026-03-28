@@ -105,6 +105,7 @@
 				Utils/EnvironmentUtil.swift,
 				Utils/KeychainUtil.swift,
 				Utils/PlatformAliases.swift,
+				Utils/RelativeDateStyle.swift,
 			);
 			target = 00E89C5F2E2C88D800B43162 /* CSUSTPlanetWidgetExtension */;
 		};

@@ -156,9 +156,14 @@ struct TodoAssignmentsEntryView: View {
 
     @ViewBuilder
     private func largeAssignmentCardView(item: DisplayAssignmentItem) -> some View {
+        let deadlineStyle = RelativeDateStyle.assignment(
+            deadline: item.assignment.deadline,
+            isSubmitted: item.assignment.submitStatus
+        )
+
         HStack(spacing: 2) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(cardAccentColor)
+                .fill(deadlineStyle.accentColor)
                 .frame(width: 4)
 
             HStack(spacing: 0) {
@@ -177,20 +182,24 @@ struct TodoAssignmentsEntryView: View {
                 .padding(.leading, 2)
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(item.assignment.deadline, format: .dateTime.month().day().hour().minute())
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
+                    RelativeDateBadge(
+                        text: item.assignment.deadline.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)),
+                        style: deadlineStyle,
+                        font: .system(size: 11, weight: .bold),
+                        horizontalPadding: 7,
+                        verticalPadding: 3
+                    )
+                    .lineLimit(1)
 
-                    Text(item.assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
+                    Text(item.assignment.deadline, format: .dateTime.month().day().hour().minute())
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(badgeForegroundColor(for: item.assignment))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
                 }
                 .padding(.trailing, 2)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(cardAccentColor.opacity(0.1))
+            .background(deadlineStyle.cardBackgroundColor)
             .cornerRadius(4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -198,17 +207,17 @@ struct TodoAssignmentsEntryView: View {
 
     @ViewBuilder
     private func deadlineBadge(for assignment: MoocHelper.Assignment) -> some View {
-        Text(assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
-            .font(.caption2)
-            .foregroundStyle(badgeForegroundColor(for: assignment))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(badgeForegroundColor(for: assignment).opacity(0.15), in: Capsule())
-            .overlay {
-                Capsule()
-                    .stroke(badgeForegroundColor(for: assignment).opacity(0.22), lineWidth: 0.5)
-            }
-            .fixedSize(horizontal: true, vertical: false)
+        RelativeDateBadge(
+            text: assignment.deadline.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)),
+            style: RelativeDateStyle.assignment(
+                deadline: assignment.deadline,
+                isSubmitted: assignment.submitStatus
+            ),
+            font: .caption2.bold(),
+            horizontalPadding: 6,
+            verticalPadding: 2
+        )
+        .fixedSize(horizontal: true, vertical: false)
     }
 
     @ViewBuilder
@@ -310,26 +319,6 @@ struct TodoAssignmentsEntryView: View {
         return max(0, (availableHeight - totalSpacing) / CGFloat(rowCount))
     }
 
-    private func badgeForegroundColor(for assignment: MoocHelper.Assignment) -> Color {
-        if assignment.submitStatus {
-            return .secondary
-        }
-
-        let timeRemaining = assignment.deadline.timeIntervalSinceNow
-        if timeRemaining <= 12 * 3600 {
-            return .red
-        }
-
-        if assignment.canSubmit {
-            return .orange
-        }
-
-        return .secondary
-    }
-
-    private var cardAccentColor: Color {
-        .orange
-    }
 }
 
 private struct DisplaySummary {

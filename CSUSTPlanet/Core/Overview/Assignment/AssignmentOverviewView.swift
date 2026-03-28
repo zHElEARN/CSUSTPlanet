@@ -51,10 +51,14 @@ private struct AssignmentListView: View {
 private struct AssignmentRowView: View {
     let item: (courseName: String, assignment: MoocHelper.Assignment)
 
+    private var deadlineStyle: RelativeDateStyle {
+        RelativeDateStyle.assignment(deadline: item.assignment.deadline)
+    }
+
     var body: some View {
         HStack(spacing: 6) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(.orange)
+                .fill(deadlineStyle.accentColor)
                 .frame(width: 4)
 
             HStack(spacing: 0) {
@@ -73,14 +77,15 @@ private struct AssignmentRowView: View {
                 .padding(.leading, 2)
 
                 VStack(alignment: .trailing, spacing: 4) {
+                    RelativeDateBadge(
+                        text: item.assignment.deadline.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)),
+                        style: deadlineStyle
+                    )
+                    .lineLimit(1)
+
                     Text(item.assignment.deadline, format: .dateTime.month().day().hour().minute())
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.primary)
-                        .lineLimit(1)
-
-                    Text(item.assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(deadlineColor)
                         .lineLimit(1)
                 }
                 .padding(.trailing, 2)
@@ -88,22 +93,9 @@ private struct AssignmentRowView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 12)
-            .background(.orange.opacity(0.1))
+            .background(deadlineStyle.cardBackgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
-    }
-
-    private var deadlineColor: Color {
-        let timeRemaining = item.assignment.deadline.timeIntervalSinceNow
-        if timeRemaining <= 12 * 3600 {
-            return .red
-        }
-
-        if item.assignment.canSubmit {
-            return .orange
-        }
-
-        return .secondary
     }
 }
 

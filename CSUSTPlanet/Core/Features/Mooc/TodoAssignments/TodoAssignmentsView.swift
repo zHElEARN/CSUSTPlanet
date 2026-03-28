@@ -89,6 +89,13 @@ struct TodoAssignmentsView: View {
 struct AssignmentInfoView: View {
     let assignment: MoocHelper.Assignment
 
+    private var deadlineStyle: RelativeDateStyle {
+        RelativeDateStyle.assignment(
+            deadline: assignment.deadline,
+            isSubmitted: assignment.submitStatus
+        )
+    }
+
     @ViewBuilder
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -137,16 +144,13 @@ struct AssignmentInfoView: View {
                 Text(assignment.startTime, format: .dateTime.year().month().day().hour().minute())
                     .font(.caption)
                     .foregroundColor(.secondary)
-                Text(assignment.startTime, format: .relative(presentation: .named, unitsStyle: .abbreviated))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.secondary.opacity(0.15), in: Capsule())
-                    .overlay {
-                        Capsule()
-                            .stroke(.secondary.opacity(0.25), lineWidth: 0.5)
-                    }
+                RelativeDateBadge(
+                    text: assignment.startTime.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)),
+                    style: .secondary,
+                    font: .caption2.bold(),
+                    horizontalPadding: 6,
+                    verticalPadding: 2
+                )
             }
 
             HStack {
@@ -158,17 +162,14 @@ struct AssignmentInfoView: View {
 
                 Text(assignment.deadline, format: .dateTime.year().month().day().hour().minute())
                     .font(.caption)
-                    .foregroundColor(assignment.submitStatus ? .secondary : .red)
-                Text(assignment.deadline, format: .relative(presentation: .named, unitsStyle: .abbreviated))
-                    .font(.caption2)
-                    .foregroundColor(assignment.submitStatus ? .secondary : .red)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background((assignment.submitStatus ? Color.secondary : .red).opacity(0.15), in: Capsule())
-                    .overlay {
-                        Capsule()
-                            .stroke((assignment.submitStatus ? Color.secondary : .red).opacity(0.25), lineWidth: 0.5)
-                    }
+                    .foregroundColor(deadlineStyle.accentColor)
+                RelativeDateBadge(
+                    text: assignment.deadline.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)),
+                    style: deadlineStyle,
+                    font: .caption2.bold(),
+                    horizontalPadding: 6,
+                    verticalPadding: 2
+                )
             }
         }
         .padding(.vertical, 6)
