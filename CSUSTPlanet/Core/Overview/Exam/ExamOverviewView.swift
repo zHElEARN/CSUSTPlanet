@@ -56,60 +56,47 @@ private struct ExamRowView: View {
     let exam: EduHelper.Exam
     let daysUntilExam: Int
 
+    private var dateStyle: RelativeDateStyle {
+        RelativeDateStyle.scheduled(for: exam.examStartTime)
+    }
+
     var body: some View {
         HStack(spacing: 6) {
             RoundedRectangle(cornerRadius: 2)
-                .fill(statusColor)
+                .fill(dateStyle.accentColor)
                 .frame(width: 4)
 
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(exam.courseName)
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
 
-                    HStack(spacing: 6) {
-                        Image(systemName: "clock.fill")
-                            .font(.caption)
-                        Text(exam.examTime)
-                            .lineLimit(1)
-                    }
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-
-                    if !exam.examRoom.isEmpty {
-                        HStack(spacing: 6) {
-                            Image(systemName: "building.columns.fill")
-                                .font(.caption)
-                            Text(exam.examRoom)
-                                .lineLimit(1)
-                        }
+                    Text(locationText)
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
-                    }
+                        .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 2)
 
-                VStack(alignment: .trailing, spacing: 6) {
-                    Text(statusText)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(statusForegroundColor)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(statusBackgroundColor, in: Capsule())
+                VStack(alignment: .trailing, spacing: 4) {
+                    RelativeDateBadge(
+                        text: statusText,
+                        style: dateStyle
+                    )
 
-                    Text(exam.examStartTime, format: .dateTime.month().day().weekday(.abbreviated))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.secondary)
+                    Text(timeRangeText)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 12)
-            .background(statusColor.opacity(0.1))
+            .background(dateStyle.cardBackgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
     }
@@ -127,35 +114,14 @@ private struct ExamRowView: View {
         }
     }
 
-    private var statusColor: Color {
-        switch daysUntilExam {
-        case 0:
-            return .red
-        case 1:
-            return .orange
-        case 2:
-            return .green
-        default:
-            return .blue
-        }
+    private var locationText: String {
+        exam.examRoom.isEmpty ? "地点待定" : exam.examRoom
     }
 
-    private var statusForegroundColor: Color {
-        switch daysUntilExam {
-        case 0, 1:
-            return .white
-        default:
-            return statusColor
-        }
-    }
-
-    private var statusBackgroundColor: Color {
-        switch daysUntilExam {
-        case 0, 1:
-            return statusColor
-        default:
-            return statusColor.opacity(0.14)
-        }
+    private var timeRangeText: String {
+        let start = exam.examStartTime.formatted(.dateTime.month().day().hour().minute())
+        let end = exam.examEndTime.formatted(.dateTime.hour().minute())
+        return "\(start)-\(end)"
     }
 }
 

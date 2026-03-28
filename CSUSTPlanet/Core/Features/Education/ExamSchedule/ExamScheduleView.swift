@@ -92,6 +92,18 @@ struct ExamScheduleView: View {
     func examCard(exam: EduHelper.Exam) -> some View {
         let finished = viewModel.isExamFinished(exam)
         let daysLeft = viewModel.daysUntilExam(exam)
+        let dateStyle = finished ? RelativeDateStyle.secondary : RelativeDateStyle.scheduled(for: exam.examStartTime)
+        let statusText: String = if finished {
+            "已结束"
+        } else if daysLeft == 0 {
+            "今天"
+        } else if daysLeft == 1 {
+            "明天"
+        } else if daysLeft == 2 {
+            "后天"
+        } else {
+            "还有 \(daysLeft) 天"
+        }
 
         CustomGroupBox {
             VStack(alignment: .leading, spacing: 0) {
@@ -105,44 +117,11 @@ struct ExamScheduleView: View {
 
                     Spacer()
 
-                    if finished {
-                        Text("已结束")
-                            .font(.caption.bold())
-                            .foregroundColor(.gray)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.gray.opacity(0.15), in: Capsule())
-                    } else {
-                        if daysLeft == 0 {
-                            Text("今天")
-                                .font(.caption.bold())
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.red, in: Capsule())
-                        } else if daysLeft == 1 {
-                            Text("明天")
-                                .font(.caption.bold())
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.orange, in: Capsule())
-                        } else if daysLeft == 2 {
-                            Text("后天")
-                                .font(.caption.bold())
-                                .foregroundColor(.green)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.green.opacity(0.14), in: Capsule())
-                        } else {
-                            Text("还有 \(daysLeft) 天")
-                                .font(.caption.bold())
-                                .foregroundColor(.blue)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.1), in: Capsule())
-                        }
-                    }
+                    RelativeDateBadge(
+                        text: statusText,
+                        style: dateStyle,
+                        font: .caption.bold()
+                    )
                 }
                 .padding(.bottom, 12)
 
