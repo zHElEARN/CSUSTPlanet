@@ -8,6 +8,10 @@
 import AlertToast
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#endif
+
 struct FeatureItem: Identifiable {
     let id: TabItem
     let title: String
@@ -91,6 +95,19 @@ struct ContentView: View {
             return nil
         }
     }
+
+    #if os(macOS)
+    private func applyMacOSAppearance(_ appearanceName: String) {
+        switch appearanceName {
+        case "light":
+            PlatformApplication.shared.appearance = NSAppearance(named: .aqua)
+        case "dark":
+            PlatformApplication.shared.appearance = NSAppearance(named: .darkAqua)
+        default:
+            PlatformApplication.shared.appearance = nil
+        }
+    }
+    #endif
 
     var body: some View {
         Group {
@@ -262,7 +279,16 @@ struct ContentView: View {
 
         // MARK: - 主题设置 & 用户协议弹窗
 
+        #if os(iOS)
         .preferredColorScheme(preferredColorScheme)
+        #elseif os(macOS)
+        .onAppear {
+            applyMacOSAppearance(globalManager.appearance)
+        }
+        .onChange(of: globalManager.appearance) { _, newValue in
+            applyMacOSAppearance(newValue)
+        }
+        #endif
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
             UserAgreementView().interactiveDismissDisabled(true)
         }
