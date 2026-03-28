@@ -13,7 +13,14 @@ struct DormOverviewView: View {
     @State private var viewModel = DormOverviewViewModel()
 
     var body: some View {
-        TrackLink(destination: DormListView()) {
+        let destination =
+            if let dorm = viewModel.primaryDorm {
+                AnyView(DormDetailView(dorm: dorm))
+            } else {
+                AnyView(DormListView())
+            }
+
+        TrackLink(destination: destination) {
             CustomGroupBox {
                 HStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 10) {
