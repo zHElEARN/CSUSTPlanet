@@ -137,7 +137,7 @@ struct ProfileView: View {
                     Text("意见反馈")
                 }
 
-                TrackLink(destination: UserAgreementView()) {
+                TrackLink(destination: UserAgreementView(isButtonPresented: false)) {
                     Text("长理星球 用户协议")
                 }
             } header: {

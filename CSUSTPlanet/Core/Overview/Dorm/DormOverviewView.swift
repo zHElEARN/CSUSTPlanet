@@ -34,7 +34,8 @@ struct DormOverviewView: View {
             #elseif os(iOS)
             if #available(iOS 18.0, macOS 15.0, *) {
                 TrackLink(
-                    destination: destination
+                    destination:
+                        destination
                         .navigationTransition(.zoom(sourceID: "dormOverview", in: namespace))
                         .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
                 ) {
@@ -149,7 +150,7 @@ struct DormOverviewView: View {
                 .interpolationMethod(.linear)
                 .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
-                if viewModel.chartRecords.count < 15 {
+                if viewModel.chartRecords.count < 10 {
                     PointMark(
                         x: .value("日期", record.date),
                         y: .value("电量", record.electricity)

@@ -11,6 +11,8 @@ import SwiftUI
 struct UserAgreementView: View {
     @Bindable var globalManager = GlobalManager.shared
 
+    var isButtonPresented: Bool
+
     var body: some View {
         NavigationStack {
             Form {
@@ -24,24 +26,26 @@ struct UserAgreementView: View {
                 } else {
                     Text("无法加载用户协议")
                 }
-                Section {
-                    Button(action: {
-                        globalManager.isUserAgreementAccepted = true
-                    }) {
-                        Text("同意并继续使用")
+
+                if isButtonPresented {
+                    Section {
+                        Button(action: {
+                            globalManager.isUserAgreementAccepted = true
+                        }) {
+                            Text("同意并继续使用")
+                        }
+                        .tint(.blue)
+                        Button(action: {
+                            globalManager.isUserAgreementAccepted = false
+                            exit(0)
+                        }) {
+                            Text("不同意并退出")
+                        }
+                        .tint(.red)
                     }
-                    .tint(.blue)
-                    Button(action: {
-                        globalManager.isUserAgreementAccepted = false
-                        exit(0)
-                    }) {
-                        Text("不同意并退出")
-                    }
-                    .tint(.red)
                 }
             }
             .formStyle(.grouped)
-            .background(Color.appSystemBackground)
             .navigationTitle("用户协议")
         }
         .trackView("UserAgreement")

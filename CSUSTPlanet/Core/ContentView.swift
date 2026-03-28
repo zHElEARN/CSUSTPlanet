@@ -290,7 +290,7 @@ struct ContentView: View {
         }
         #endif
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
-            UserAgreementView().interactiveDismissDisabled(true)
+            UserAgreementView(isButtonPresented: true).interactiveDismissDisabled(true)
         }
 
         // MARK: - URL处理
