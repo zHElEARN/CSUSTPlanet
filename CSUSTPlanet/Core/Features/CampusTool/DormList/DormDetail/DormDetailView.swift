@@ -224,7 +224,7 @@ struct DormDetailView: View {
     private var electricityTrendCard: some View {
         CustomGroupBox {
             VStack(alignment: .leading, spacing: 16) {
-                Label("电量趋势", systemImage: "chart.xyaxis.line")
+                Label("近三个月电量趋势", systemImage: "chart.xyaxis.line")
                     .font(.headline)
 
                 Chart(viewModel.chartRecords) { record in
@@ -261,7 +261,7 @@ struct DormDetailView: View {
         TrackLink(destination: DormHistoryView(viewModel: viewModel)) {
             CustomGroupBox {
                 HStack {
-                    Label("查看所有历史记录", systemImage: "list.bullet.clipboard")
+                    Label("查看近三个月历史记录", systemImage: "list.bullet.clipboard")
                         .foregroundStyle(.primary)
                     Spacer()
                     Image(systemName: "chevron.right")

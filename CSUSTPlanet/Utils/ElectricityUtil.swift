@@ -8,6 +8,12 @@
 import Foundation
 
 enum ElectricityUtil {
+    static let recentHistoryMonths = 3
+
+    static func recentRecordsStartDate(referenceDate: Date = Date(), calendar: Calendar = .current) -> Date {
+        calendar.date(byAdding: .month, value: -recentHistoryMonths, to: referenceDate) ?? referenceDate
+    }
+
     static func getExhaustionInfo(from records: [ElectricityRecordGRDB]) -> String? {
         guard !records.isEmpty else { return nil }
         guard let predictionDate = predictExhaustionDate(from: records) else { return nil }

@@ -49,10 +49,12 @@ final class DormOverviewViewModel {
 
                 let dorm = try favoriteDorm ?? DormGRDB.order(DormGRDB.Columns.id.asc).fetchOne(db)
                 guard let dormID = dorm?.id else { return (dorm, []) }
+                let recentStartDate = ElectricityUtil.recentRecordsStartDate()
 
                 let records =
                     try ElectricityRecordGRDB
                     .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                    .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
                     .order(ElectricityRecordGRDB.Columns.date.asc)
                     .fetchAll(db)
 

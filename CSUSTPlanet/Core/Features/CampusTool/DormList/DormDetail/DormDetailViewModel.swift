@@ -150,8 +150,11 @@ final class DormDetailViewModel {
 
         recordsObserver = AutoRefreshingObserver { [weak self] in
             let observation = ValueObservation.tracking { db in
-                try ElectricityRecordGRDB
+                let recentStartDate = ElectricityUtil.recentRecordsStartDate()
+                return
+                    try ElectricityRecordGRDB
                     .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                    .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
                     .order(ElectricityRecordGRDB.Columns.date.desc)
                     .fetchAll(db)
             }

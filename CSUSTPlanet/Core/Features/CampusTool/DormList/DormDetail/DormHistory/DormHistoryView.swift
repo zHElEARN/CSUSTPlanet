@@ -13,7 +13,7 @@ struct DormHistoryView: View {
     var body: some View {
         Form {
             if viewModel.sortedRecords.isEmpty {
-                ContentUnavailableView("无历史记录", systemImage: "bolt.slash", description: Text("点击详情页的刷新按钮获取最新电量"))
+                ContentUnavailableView("无近三个月历史记录", systemImage: "bolt.slash", description: Text("点击详情页的刷新按钮获取最新电量"))
             } else {
                 ForEach(viewModel.sortedRecords) { record in
                     HStack {
@@ -51,7 +51,7 @@ struct DormHistoryView: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("历史记录")
+        .navigationTitle("近三个月历史记录")
         .navigationSubtitleCompat("共\(viewModel.sortedRecords.count)条记录")
         .errorToast($viewModel.errorToast)
         .trackView("DormHistory")

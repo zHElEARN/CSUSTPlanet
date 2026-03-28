@@ -42,7 +42,12 @@ final class DormListViewModel {
         listObserver = AutoRefreshingObserver { [weak self] in
             let observation = ValueObservation.tracking { db -> ([DormGRDB], [ElectricityRecordGRDB]) in
                 let dorms = try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
-                let records = try ElectricityRecordGRDB.order(ElectricityRecordGRDB.Columns.date.asc).fetchAll(db)
+                let recentStartDate = ElectricityUtil.recentRecordsStartDate()
+                let records =
+                    try ElectricityRecordGRDB
+                    .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
+                    .order(ElectricityRecordGRDB.Columns.date.asc)
+                    .fetchAll(db)
                 return (dorms, records)
             }
             .map { (dorms, records) -> ([DormGRDB], [Int64: String]) in
