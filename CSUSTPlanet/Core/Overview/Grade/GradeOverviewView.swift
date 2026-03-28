@@ -84,8 +84,7 @@ struct GradeOverviewView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
             gradeTrendChart
-                .frame(width: 120)
-                .frame(maxHeight: .infinity, alignment: .trailing)
+                .frame(minWidth: 120, maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
