@@ -16,29 +16,30 @@ struct OverviewView: View {
 
     private var overviewSubtitle: String {
         let dateText = Date().formatted(.dateTime.month().day().weekday())
+        var components: [String] = []
 
-        guard let weekInfo else {
-            return dateText
+        components.append(dateText)
+
+        if let currentWeekText {
+            components.append(currentWeekText)
         }
 
-        return "\(dateText) · \(weekInfo)"
+        return components.joined(separator: " ")
     }
 
-    private var weekInfo: String? {
+    private var currentWeekText: String? {
         guard let data = MMKVHelper.shared.courseScheduleCache?.value else {
             return nil
         }
-
-        let semester = data.semester ?? "默认学期"
 
         if let currentWeek = CourseScheduleUtil.getCurrentWeek(
             semesterStartDate: data.semesterStartDate,
             now: .now
         ) {
-            return "\(semester) 第\(currentWeek)周"
+            return "第\(currentWeek)周"
         }
 
-        return semester
+        return nil
     }
 
     var body: some View {
@@ -106,18 +107,11 @@ struct OverviewView: View {
             EmptyView()
         } else {
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    Text(Date().formatted(.dateTime.month().day().weekday()))
-
-                    if let weekInfo {
-                        Text("·")
-                        Text(weekInfo)
-                    }
-                }
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
+                Text(overviewSubtitle)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
