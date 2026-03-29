@@ -66,23 +66,20 @@ enum PlanetConfigService {
     }
 
     struct Announcement: Codable, Identifiable, Equatable, Hashable {
-        var id: String { "\(createdAt)-\(title)" }
-
+        let id: String
         let title: String
         let content: String
         let isBanner: Bool
-        let createdAt: String
+        let createdAt: Date
     }
 
-    struct AppVersion: Codable, Identifiable, Equatable, Hashable {
-        var id: Int { versionCode }
-
+    struct AppVersion: Codable, Equatable, Hashable {
         let versionCode: Int
         let versionName: String
         let releaseNotes: String
         let downloadUrl: String
         let isForceUpdate: Bool
-        let createdAt: String
+        let createdAt: Date
     }
 
     struct CheckAppVersionResult: Codable, Equatable {
@@ -96,6 +93,9 @@ enum PlanetConfigService {
         parameters: Parameters? = nil,
         cachePolicy: URLRequest.CachePolicy? = nil
     ) async throws -> T {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
         return try await AF.request(
             "\(Constants.backendHost)\(path)",
             method: .get,
@@ -107,7 +107,7 @@ enum PlanetConfigService {
                 }
             }
         )
-        .serializingDecodable(T.self)
+        .serializingDecodable(T.self, decoder: decoder)
         .value
     }
 

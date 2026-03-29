@@ -88,6 +88,7 @@ struct OverviewView: View {
                 overviewColumn {
                     AssignmentOverviewView()
                     ExamOverviewView()
+                    AnnouncementOverviewView()
                 }
                 .frame(minWidth: minimumColumnWidth, maxWidth: .infinity, alignment: .top)
                 .fixedSize(horizontal: false, vertical: true)
@@ -100,6 +101,7 @@ struct OverviewView: View {
                 DormOverviewView()
                 AssignmentOverviewView()
                 ExamOverviewView()
+                AnnouncementOverviewView()
             }
             .padding(.horizontal)
         }
