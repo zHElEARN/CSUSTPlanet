@@ -46,7 +46,7 @@ class PhysicsExperimentScheduleViewModel {
                 if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
                     self.data = cachedData
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.warningToast.show(message: String(format: "未登录大物实验，\n已加载上次查询数据（%@）", DateUtil.relativeTimeString(for: cachedData.cachedAt)))
+                        self.warningToast.show(message: "未登录大物实验，\n已加载上次查询数据（\(cachedData.cachedAt.formatted(.relative(presentation: .named)))）")
                     }
                 } else {
                     self.errorToast.show(message: error.localizedDescription)
@@ -55,7 +55,7 @@ class PhysicsExperimentScheduleViewModel {
                 if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
                     self.data = cachedData
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.warningToast.show(message: String(format: "错误：%@，\n已加载上次查询数据（%@）", error.localizedDescription, DateUtil.relativeTimeString(for: cachedData.cachedAt)))
+                        self.warningToast.show(message: "错误：\(error.localizedDescription)，\n已加载上次查询数据（\(cachedData.cachedAt.formatted(.relative(presentation: .named)))）")
                     }
                 } else {
                     self.errorToast.show(message: error.localizedDescription)
