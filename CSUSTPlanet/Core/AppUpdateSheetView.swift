@@ -47,7 +47,7 @@ struct AppUpdateSheetView: View {
     }
 
     private func handleLater() {
-        globalManager.dismissAppUpdateSheet()
+        globalManager.ignoreCurrentAppUpdate()
     }
 
     var body: some View {
@@ -106,7 +106,7 @@ struct AppUpdateSheetView: View {
             .toolbar {
                 if !isForceUpdate {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("暂不更新", action: handleLater)
+                        Button("忽略本次", action: handleLater)
                     }
                 } else {
                     ToolbarItem(placement: .cancellationAction) {

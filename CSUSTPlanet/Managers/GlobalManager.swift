@@ -96,9 +96,7 @@ final class GlobalManager {
         isCheckingAppVersion = true
         defer { isCheckingAppVersion = false }
 
-        guard let currentVersionName = AppVersionHelper.currentVersionName,
-            let currentVersionCode = AppVersionHelper.currentVersionCode
-        else {
+        guard let currentVersionName = AppVersionHelper.currentVersionName, let currentVersionCode = AppVersionHelper.currentVersionCode else {
             Logger.globalManager.error("启动版本检查失败：无法解析当前版本号")
             return
         }
@@ -116,6 +114,11 @@ final class GlobalManager {
                 return
             }
 
+            if !result.isForceUpdate, MMKVHelper.GlobalManager.ignoredAppUpdateVersionCode == latestVersion.versionCode {
+                Logger.globalManager.info("启动版本检查发现已忽略的版本更新：\(latestVersion.versionName, privacy: .public) (\(latestVersion.versionCode))，本次不再提示")
+                return
+            }
+
             self.latestAppVersion = latestVersion
             isForceUpdateRequired = result.isForceUpdate
             isAppUpdateSheetPresented = true
@@ -130,6 +133,13 @@ final class GlobalManager {
         guard !isForceUpdateRequired else { return }
         isAppUpdateSheetPresented = false
     }
+
+    func ignoreCurrentAppUpdate() {
+        guard !isForceUpdateRequired, let latestAppVersion else { return }
+        MMKVHelper.GlobalManager.ignoredAppUpdateVersionCode = latestAppVersion.versionCode
+        Logger.globalManager.info("用户已忽略版本更新：\(latestAppVersion.versionName, privacy: .public) (\(latestAppVersion.versionCode))")
+        dismissAppUpdateSheet()
+    }
 }
 
 extension MMKVHelper {
@@ -142,5 +152,8 @@ extension MMKVHelper {
 
         @MMKVStorage(key: "GlobalVars.isWebVPNModeEnabled", defaultValue: false)
         static var isWebVPNModeEnabled: Bool
+
+        @MMKVOptionalStorage(key: "GlobalVars.ignoredAppUpdateVersionCode")
+        static var ignoredAppUpdateVersionCode: Int?
     }
 }
