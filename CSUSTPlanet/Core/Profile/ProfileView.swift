@@ -5,7 +5,6 @@
 //  Created by Zhe_Learn on 2025/7/8.
 //
 
-import ActivityKit
 import Kingfisher
 import SwiftUI
 

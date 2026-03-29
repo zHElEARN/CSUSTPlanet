@@ -53,6 +53,7 @@ struct OverviewView: View {
                 Spacer(minLength: 40)
             }
         }
+        .frame(maxWidth: .infinity)
         .navigationTitle("概览")
         .navigationSubtitleCompat(overviewSubtitle)
         .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {

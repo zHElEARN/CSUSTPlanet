@@ -81,6 +81,7 @@ struct CampusMapView: View {
         )
         #endif
         .apply { view in
+            #if os(iOS) || os(macOS)
             if usesInspectorForBuildingsList {
                 view
                     .inspector(isPresented: $viewModel.isBuildingsListShown) {
@@ -99,6 +100,7 @@ struct CampusMapView: View {
                         phoneSheetContent
                     }
             }
+            #endif
         }
         .navigationTitle("校园地图")
         .inlineToolbarTitle()

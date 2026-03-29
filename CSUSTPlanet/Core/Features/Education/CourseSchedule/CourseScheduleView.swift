@@ -234,6 +234,7 @@ struct CourseScheduleView: View {
             // 星期头部（日期和周几）
             headerView(for: week, semesterStartDate: semesterStartDate)
                 .apply { view in
+                    #if os(iOS) || os(macOS)
                     if #available(iOS 26.0, macOS 26.0, *) {
                         view
                             .background {
@@ -245,6 +246,9 @@ struct CourseScheduleView: View {
                     } else {
                         view.background(.ultraThinMaterial)
                     }
+                    #elseif os(visionOS)
+                    view.background(.ultraThinMaterial)
+                    #endif
                 }
         }
     }

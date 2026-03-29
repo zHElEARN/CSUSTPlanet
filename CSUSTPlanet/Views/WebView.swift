@@ -33,7 +33,7 @@ struct WebView: PlatformViewRepresentable {
     }
     #endif
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     func makeUIView(context: Context) -> WKWebView {
         return createWebView(context: context)
     }

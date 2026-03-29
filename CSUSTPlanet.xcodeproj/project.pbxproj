@@ -9,13 +9,13 @@
 /* Begin PBXBuildFile section */
 		00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 00011BEE2F4786B4003A88B0 /* Sentry */; };
 		000721EA2F5EF3FA00C1423E /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 000721E92F5EF3FA00C1423E /* AlertToast */; };
-		000721ED2F5EF94500C1423E /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 000721EC2F5EF94500C1423E /* AlertToast */; };
 		003FF8792F6FD031004CF00C /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 003FF8782F6FD031004CF00C /* GRDB */; };
 		003FF87B2F6FD037004CF00C /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 003FF87A2F6FD037004CF00C /* GRDB */; };
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
 		005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = 005FBAB92F72E1BE00D7B07C /* JWTDecode */; };
 		00D4CDC72F5D183D0028E21B /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 00D4CDC62F5D183D0028E21B /* MMKV */; };
 		00D4CDC92F5D183D0028E21B /* MMKVAppExtension in Frameworks */ = {isa = PBXBuildFile; productRef = 00D4CDC82F5D183D0028E21B /* MMKVAppExtension */; };
+		00D8F5E82F78EDB300D2D360 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 00D8F5E72F78EDB300D2D360 /* AlertToast */; };
 		00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 00E573582F1F4E3A00440D8D /* CSUSTKit */; };
 		00E5735B2F1F4E4C00440D8D /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 00E5735A2F1F4E4C00440D8D /* CSUSTKit */; };
 		00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 00E574AA2F1F4F0400440D8D /* MatomoTracker */; };
@@ -186,7 +186,7 @@
 				003FF8792F6FD031004CF00C /* GRDB in Frameworks */,
 				00E573592F1F4E3A00440D8D /* CSUSTKit in Frameworks */,
 				00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */,
-				000721ED2F5EF94500C1423E /* AlertToast in Frameworks */,
+				00D8F5E82F78EDB300D2D360 /* AlertToast in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
 				00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */,
 				000721EA2F5EF3FA00C1423E /* AlertToast in Frameworks */,
@@ -272,9 +272,9 @@
 				00011BEE2F4786B4003A88B0 /* Sentry */,
 				00D4CDC62F5D183D0028E21B /* MMKV */,
 				000721E92F5EF3FA00C1423E /* AlertToast */,
-				000721EC2F5EF94500C1423E /* AlertToast */,
 				003FF8782F6FD031004CF00C /* GRDB */,
 				005FBAB92F72E1BE00D7B07C /* JWTDecode */,
+				00D8F5E72F78EDB300D2D360 /* AlertToast */,
 			);
 			productName = CSUSTPlanet;
 			productReference = 007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */;
@@ -335,9 +335,9 @@
 				00E575F92F1F4F6B00440D8D /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				00D4CDC52F5D183D0028E21B /* XCRemoteSwiftPackageReference "MMKV" */,
-				000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */,
 				003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */,
+				00D8F5E62F78EDB300D2D360 /* XCLocalSwiftPackageReference "../AlertToast" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 007CF85C2E1BD68900E319F2 /* Products */;
@@ -585,13 +585,14 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match Development com.zhelearn.CSUSTPlanet";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.zhelearn.CSUSTPlanet macos";
 				REGISTER_APP_GROUPS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -653,13 +654,14 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.zhelearn.CSUSTPlanet";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.zhelearn.CSUSTPlanet macos";
 				REGISTER_APP_GROUPS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -700,14 +702,15 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.zhelearn.CSUSTPlanet.CSUSTPlanetWidget macos";
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG WIDGET $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -748,14 +751,15 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.zhelearn.CSUSTPlanet.CSUSTPlanetWidget macos";
 				REGISTER_APP_GROUPS = YES;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = WIDGET;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -791,6 +795,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		00D8F5E62F78EDB300D2D360 /* XCLocalSwiftPackageReference "../AlertToast" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../AlertToast;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -798,14 +809,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 9.5.0;
-			};
-		};
-		000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/zHElEARN/AlertToast";
-			requirement = {
-				branch = master;
-				kind = branch;
 			};
 		};
 		003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
@@ -884,11 +887,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = AlertToast;
 		};
-		000721EC2F5EF94500C1423E /* AlertToast */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */;
-			productName = AlertToast;
-		};
 		003FF8782F6FD031004CF00C /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
@@ -918,6 +916,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 00D4CDC52F5D183D0028E21B /* XCRemoteSwiftPackageReference "MMKV" */;
 			productName = MMKVAppExtension;
+		};
+		00D8F5E72F78EDB300D2D360 /* AlertToast */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AlertToast;
 		};
 		00E573582F1F4E3A00440D8D /* CSUSTKit */ = {
 			isa = XCSwiftPackageProductDependency;

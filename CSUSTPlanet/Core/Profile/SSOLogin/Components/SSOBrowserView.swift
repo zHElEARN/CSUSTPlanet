@@ -163,7 +163,7 @@ private struct BrowserRepresentable {
     }
 }
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 extension BrowserRepresentable: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         makeWebView(coordinator: context.coordinator)

@@ -65,6 +65,7 @@ struct GradeQueryView: View {
                 .padding(.horizontal)
                 .padding(.vertical)
                 .apply { view in
+                    #if os(iOS) || os(macOS)
                     if #available(iOS 26.0, macOS 26.0, *) {
                         view
                             .glassEffect()
@@ -72,6 +73,9 @@ struct GradeQueryView: View {
                     } else {
                         view.background(.ultraThinMaterial)
                     }
+                    #elseif os(visionOS)
+                    view.background(.ultraThinMaterial)
+                    #endif
                 }
         }
         #if os(iOS)

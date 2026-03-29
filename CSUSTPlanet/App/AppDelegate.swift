@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 import UserNotifications
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 
 class AppDelegate: NSObject, UIApplicationDelegate {

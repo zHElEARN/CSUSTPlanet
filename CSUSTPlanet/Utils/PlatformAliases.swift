@@ -21,8 +21,6 @@ typealias PlatformFont = NSFont
 typealias PlatformBezierPath = NSBezierPath
 /// 应用程序对象
 typealias PlatformApplication = NSApplication
-/// 屏幕对象
-typealias PlatformScreen = NSScreen
 /// 事件对象
 typealias PlatformEvent = NSEvent
 /// 剪贴板
@@ -41,8 +39,6 @@ typealias PlatformFont = UIFont
 typealias PlatformBezierPath = UIBezierPath
 /// 应用程序对象
 typealias PlatformApplication = UIApplication
-/// 屏幕对象
-typealias PlatformScreen = UIScreen
 /// 事件对象
 typealias PlatformEvent = UIEvent
 /// 剪贴板
