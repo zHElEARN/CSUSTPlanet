@@ -76,35 +76,27 @@ struct OverviewView: View {
     @ViewBuilder
     private var responsiveOverviewContent: some View {
         ViewThatFits(in: .horizontal) {
-            HStack(alignment: .top, spacing: overviewSpacing) {
-                overviewColumn {
-                    CourseOverviewView()
-                    GradeOverviewView()
-                    DormOverviewView()
-                }
-                .frame(minWidth: minimumColumnWidth, maxWidth: .infinity, alignment: .top)
-                .fixedSize(horizontal: false, vertical: true)
-
-                overviewColumn {
-                    AssignmentOverviewView()
-                    ExamOverviewView()
-                    AnnouncementOverviewView()
-                }
-                .frame(minWidth: minimumColumnWidth, maxWidth: .infinity, alignment: .top)
-                .fixedSize(horizontal: false, vertical: true)
+            WaterfallLayout(columns: 2, spacing: overviewSpacing) {
+                overviewCards
             }
+            .frame(minWidth: minimumColumnWidth * 2 + overviewSpacing, alignment: .top)
             .padding(.horizontal)
 
-            overviewColumn {
-                CourseOverviewView()
-                GradeOverviewView()
-                DormOverviewView()
-                AssignmentOverviewView()
-                ExamOverviewView()
-                AnnouncementOverviewView()
+            WaterfallLayout(columns: 1, spacing: overviewSpacing) {
+                overviewCards
             }
             .padding(.horizontal)
         }
+    }
+
+    @ViewBuilder
+    private var overviewCards: some View {
+        CourseOverviewView()
+        GradeOverviewView()
+        DormOverviewView()
+        AssignmentOverviewView()
+        ExamOverviewView()
+        AnnouncementOverviewView()
     }
 
     @ViewBuilder
@@ -130,5 +122,41 @@ struct OverviewView: View {
             content()
         }
         .frame(maxWidth: .infinity, alignment: .top)
+    }
+}
+
+struct WaterfallLayout: Layout {
+    var columns: Int
+    var spacing: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.replacingUnspecifiedDimensions().width
+        let columnWidth = max(0, (width - spacing * CGFloat(columns - 1)) / CGFloat(columns))
+        var columnHeights = Array(repeating: CGFloat.zero, count: columns)
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(ProposedViewSize(width: columnWidth, height: nil))
+            let minIndex = columnHeights.firstIndex(of: columnHeights.min() ?? 0) ?? 0
+            columnHeights[minIndex] += size.height + spacing
+        }
+
+        let maxHeight = (columnHeights.max() ?? 0) - (subviews.isEmpty ? 0 : spacing)
+        return CGSize(width: width, height: max(0, maxHeight))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let columnWidth = max(0, (bounds.width - spacing * CGFloat(columns - 1)) / CGFloat(columns))
+        var columnHeights = Array(repeating: bounds.minY, count: columns)
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(ProposedViewSize(width: columnWidth, height: nil))
+            let minIndex = columnHeights.firstIndex(of: columnHeights.min() ?? bounds.minY) ?? 0
+
+            let x = bounds.minX + CGFloat(minIndex) * (columnWidth + spacing)
+            let y = columnHeights[minIndex]
+
+            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(width: columnWidth, height: size.height))
+            columnHeights[minIndex] += size.height + spacing
+        }
     }
 }
