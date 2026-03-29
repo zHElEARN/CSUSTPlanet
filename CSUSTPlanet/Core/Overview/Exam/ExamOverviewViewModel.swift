@@ -6,21 +6,28 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
 import SwiftUI
 
 @MainActor
 @Observable
 final class ExamOverviewViewModel {
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     private var examScheduleData: Cached<[EduHelper.Exam]>?
+
+    init() {
+        MMKVHelper.shared.$examSchedulesCache
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.examScheduleData = data
+            }
+            .store(in: &cancellables)
+    }
 
     var pendingExams: [EduHelper.Exam] {
         guard let examData = examScheduleData?.value else { return [] }
         return examData.filter { .now <= $0.examEndTime }
-    }
-
-    func onAppear() {
-        examScheduleData = MMKVHelper.shared.examSchedulesCache
     }
 
     func daysUntilExam(_ exam: EduHelper.Exam) -> Int {

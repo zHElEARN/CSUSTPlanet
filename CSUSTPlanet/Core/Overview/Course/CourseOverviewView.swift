@@ -45,7 +45,6 @@ struct CourseOverviewView: View {
             #endif
         }
         .buttonStyle(.plain)
-        .onAppear(perform: viewModel.onAppear)
     }
 
     @ViewBuilder

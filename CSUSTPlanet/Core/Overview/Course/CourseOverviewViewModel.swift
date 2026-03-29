@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
 import SwiftUI
 
@@ -19,7 +20,17 @@ final class CourseOverviewViewModel {
         case afterSemester
     }
 
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     private var courseScheduleData: Cached<CourseScheduleData>?
+
+    init() {
+        MMKVHelper.shared.$courseScheduleCache
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.courseScheduleData = data
+            }
+            .store(in: &cancellables)
+    }
 
     var courseDisplayState: CourseDisplayState {
         guard let data = courseScheduleData?.value else { return .loading }
@@ -45,9 +56,5 @@ final class CourseOverviewViewModel {
     var semesterInfoText: String {
         guard let semester = courseScheduleData?.value.semester else { return "默认学期" }
         return semester
-    }
-
-    func onAppear() {
-        courseScheduleData = MMKVHelper.shared.courseScheduleCache
     }
 }

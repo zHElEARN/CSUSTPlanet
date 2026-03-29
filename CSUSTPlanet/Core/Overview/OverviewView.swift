@@ -10,6 +10,7 @@ import SwiftUI
 
 struct OverviewView: View {
     @Bindable var globalManager = GlobalManager.shared
+    @State private var courseScheduleData = MMKVHelper.shared.courseScheduleCache
 
     private let overviewSpacing: CGFloat = 24
     private let minimumColumnWidth: CGFloat = 320
@@ -28,7 +29,7 @@ struct OverviewView: View {
     }
 
     private var currentWeekText: String? {
-        guard let data = MMKVHelper.shared.courseScheduleCache?.value else {
+        guard let data = courseScheduleData?.value else {
             return nil
         }
 
@@ -65,6 +66,9 @@ struct OverviewView: View {
         }
         .navigationDestination(isPresented: $globalManager.isFromTodoAssignmentsWidget) {
             TodoAssignmentsView().trackRoot("Widget")
+        }
+        .onReceive(MMKVHelper.shared.$courseScheduleCache) { data in
+            courseScheduleData = data
         }
         .trackView("Overview")
     }
