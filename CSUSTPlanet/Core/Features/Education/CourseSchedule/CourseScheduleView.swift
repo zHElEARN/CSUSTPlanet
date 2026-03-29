@@ -49,13 +49,28 @@ struct CourseScheduleView: View {
                     .buttonStyle(.plain)
                     .disabled(viewModel.currentWeek <= 1)
 
-                    tableView(
-                        for: viewModel.currentWeek,
-                        semesterStartDate: data.value.semesterStartDate,
-                        weeklyCourses: weeklyCourses
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 0) {
+                            ForEach(1...CourseScheduleUtil.weekCount, id: \.self) { week in
+                                tableView(
+                                    for: week,
+                                    semesterStartDate: data.value.semesterStartDate,
+                                    weeklyCourses: weeklyCourses
+                                )
+                                .containerRelativeFrame(.horizontal)
+                            }
+                        }
+                        .scrollTargetLayout()
+                    }
+                    .scrollTargetBehavior(.paging)
+                    .scrollPosition(
+                        id: Binding<Int?>(
+                            get: { viewModel.currentWeek },
+                            set: { if let newWeek = $0 { viewModel.currentWeek = newWeek } }
+                        )
                     )
+                    .animation(.easeInOut, value: viewModel.currentWeek)
 
-                    // 右侧翻页按钮
                     Button {
                         withAnimation { viewModel.currentWeek += 1 }
                     } label: {
