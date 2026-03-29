@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftUI
 
 enum TabItem: String {
@@ -47,12 +48,16 @@ enum TabItem: String {
 final class GlobalManager {
     static let shared = GlobalManager()
 
+    @ObservationIgnored private var isCheckingAppVersion = false
+
     private init() {
         appearance = MMKVHelper.GlobalManager.appearance
         isUserAgreementAccepted = MMKVHelper.GlobalManager.isUserAgreementAccepted
         isWebVPNModeEnabled = MMKVHelper.GlobalManager.isWebVPNModeEnabled
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
+
+        Task { await checkAppVersion() }
     }
 
     var selectedTab: TabItem? = .overview
@@ -77,10 +82,54 @@ final class GlobalManager {
     var hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
     var databaseFatalErrorMessage: String = DatabaseManager.shared.fatalErrorMessage
 
+    var latestAppVersion: PlanetConfigService.AppVersion?
+    var isAppUpdateSheetPresented: Bool = false
+    var isForceUpdateRequired: Bool = false
+
     var isFromElectricityWidget: Bool = false
     var isFromGradeAnalysisWidget: Bool = false
     var isFromCourseScheduleWidget: Bool = false
     var isFromTodoAssignmentsWidget: Bool = false
+
+    private func checkAppVersion() async {
+        guard !isCheckingAppVersion else { return }
+        isCheckingAppVersion = true
+        defer { isCheckingAppVersion = false }
+
+        guard let currentVersionName = AppVersionHelper.currentVersionName,
+            let currentVersionCode = AppVersionHelper.currentVersionCode
+        else {
+            Logger.globalManager.error("启动版本检查失败：无法解析当前版本号")
+            return
+        }
+
+        do {
+            let result = try await PlanetConfigService.checkAppVersion(currentVersionCode: currentVersionCode)
+
+            guard result.hasUpdate else {
+                Logger.globalManager.debug("启动版本检查完成：当前已是最新版本 \(currentVersionName, privacy: .public) (\(currentVersionCode))")
+                return
+            }
+
+            guard let latestVersion = result.latestVersion else {
+                Logger.globalManager.error("启动版本检查结果异常：hasUpdate 为 true 但 latestVersion 为空")
+                return
+            }
+
+            self.latestAppVersion = latestVersion
+            isForceUpdateRequired = result.isForceUpdate
+            isAppUpdateSheetPresented = true
+
+            Logger.globalManager.info("启动版本检查发现新版本：当前 \(currentVersionName, privacy: .public) (\(currentVersionCode))，最新 \(latestVersion.versionName, privacy: .public) (\(latestVersion.versionCode))，强制更新：\(result.isForceUpdate)")
+        } catch {
+            Logger.globalManager.error("启动版本检查失败：\(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    func dismissAppUpdateSheet() {
+        guard !isForceUpdateRequired else { return }
+        isAppUpdateSheetPresented = false
+    }
 }
 
 extension MMKVHelper {

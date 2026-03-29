@@ -15,6 +15,7 @@ extension Logger {
     static let app = Logger(subsystem: appSubsystem, category: "App")
     static let appDelegate = Logger(subsystem: appSubsystem, category: "AppDelegate")
     static let appLifecycleManager = Logger(subsystem: appSubsystem, category: "AppLifecycleManager")
+    static let globalManager = Logger(subsystem: appSubsystem, category: "GlobalManager")
     static let authManager = Logger(subsystem: appSubsystem, category: "AuthManager")
     static let planetAuthService = Logger(subsystem: appSubsystem, category: "PlanetAuthService")
     static let planetTaskService = Logger(subsystem: appSubsystem, category: "PlanetTaskService")

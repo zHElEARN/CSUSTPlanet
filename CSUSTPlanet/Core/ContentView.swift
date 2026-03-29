@@ -292,6 +292,9 @@ struct ContentView: View {
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
             UserAgreementView(isButtonPresented: true).interactiveDismissDisabled(true)
         }
+        .sheet(isPresented: $globalManager.isAppUpdateSheetPresented) {
+            AppUpdateSheetView()
+        }
 
         // MARK: - URL处理
 

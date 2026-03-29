@@ -9,11 +9,6 @@ import Alamofire
 import Foundation
 
 enum PlanetConfigService {
-    enum AppPlatform: String, Codable {
-        case ios
-        case android
-    }
-
     struct GeoJSON: Codable, Equatable {
         let type: String
         let features: [Feature]
@@ -80,9 +75,8 @@ enum PlanetConfigService {
     }
 
     struct AppVersion: Codable, Identifiable, Equatable, Hashable {
-        var id: String { "\(platform.rawValue)-\(versionCode)" }
+        var id: Int { versionCode }
 
-        let platform: AppPlatform
         let versionCode: Int
         let versionName: String
         let releaseNotes: String
@@ -133,18 +127,11 @@ enum PlanetConfigService {
         return try await get("/config/announcements")
     }
 
-    static func appVersions(platform: AppPlatform) async throws -> [AppVersion] {
-        return try await get(
-            "/config/app-versions",
-            parameters: ["platform": platform.rawValue]
-        )
-    }
-
-    static func checkAppVersion(platform: AppPlatform, currentVersionCode: Int) async throws -> CheckAppVersionResult {
+    static func checkAppVersion(currentVersionCode: Int) async throws -> CheckAppVersionResult {
         return try await get(
             "/config/app-versions/check",
             parameters: [
-                "platform": platform.rawValue,
+                "platform": "ios",
                 "currentVersionCode": currentVersionCode,
             ]
         )
