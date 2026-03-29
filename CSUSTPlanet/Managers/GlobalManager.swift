@@ -86,6 +86,8 @@ final class GlobalManager {
     var isAppUpdateSheetPresented: Bool = false
     var isForceUpdateRequired: Bool = false
 
+    var unreadAnnouncementsCount: Int = 0
+
     var isFromElectricityWidget: Bool = false
     var isFromGradeAnalysisWidget: Bool = false
     var isFromCourseScheduleWidget: Bool = false

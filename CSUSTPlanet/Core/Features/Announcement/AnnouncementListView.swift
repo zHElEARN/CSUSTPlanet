@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AnnouncementListView: View {
-    @State private var viewModel = AnnouncementListViewModel()
+    @Bindable var viewModel: AnnouncementListViewModel
 
     var body: some View {
         Group {
@@ -34,7 +34,6 @@ struct AnnouncementListView: View {
                 }
             }
         }
-        .task { await viewModel.loadInitial() }
         .safeRefreshable { await viewModel.loadAnnouncements() }
         .errorToast($viewModel.errorToast)
         .toolbar {
@@ -52,7 +51,12 @@ struct AnnouncementListView: View {
 
     @ViewBuilder
     private func announcementCard(_ announcement: Announcement) -> some View {
-        let contentText = announcement.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        let relativeCreatedAtText = announcement.createdAt.formatted(
+            .relative(
+                presentation: .named,
+                unitsStyle: .abbreviated
+            )
+        )
 
         CustomGroupBox {
             VStack(alignment: .leading, spacing: 12) {
@@ -95,17 +99,17 @@ struct AnnouncementListView: View {
                     }
                 }
 
-                if !contentText.isEmpty {
+                if !announcement.content.isEmpty {
                     Divider()
 
-                    Text(contentText)
+                    Text(announcement.content)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
                 }
 
-                Text("发布于：\(viewModel.relativeCreatedAtText(for: announcement))")
+                Text("发布于：\(relativeCreatedAtText)")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -117,6 +121,6 @@ struct AnnouncementListView: View {
 
 #Preview {
     NavigationStack {
-        AnnouncementListView()
+        AnnouncementListView(viewModel: AnnouncementListViewModel())
     }
 }

@@ -16,25 +16,30 @@ final class AnnouncementListViewModel {
     var announcements: [Announcement] = []
     var errorToast: ToastState = .errorTitle
     var isLoadingAnnouncements: Bool = false
+    var hasLoadedAnnouncements: Bool = false
     var readAnnouncementIDs: Set<String> = Set(MMKVHelper.Announcement.readIDs)
 
-    private var hasLoadedInitial = false
+    private var isInitial = false
 
-    func loadInitial() async {
-        guard !hasLoadedInitial else { return }
-        hasLoadedInitial = true
-        await loadAnnouncements()
+    func loadInitial(showError: Bool = true) async {
+        guard !isInitial else { return }
+        isInitial = true
+        await loadAnnouncements(showError: showError)
     }
 
-    func loadAnnouncements() async {
+    func loadAnnouncements(showError: Bool = true) async {
         guard !isLoadingAnnouncements else { return }
         isLoadingAnnouncements = true
         defer { isLoadingAnnouncements = false }
 
         do {
             announcements = try await PlanetConfigService.announcements()
+            GlobalManager.shared.unreadAnnouncementsCount = unreadAnnouncementsCount
+            hasLoadedAnnouncements = true
         } catch {
-            errorToast.show(message: error.localizedDescription)
+            if showError {
+                errorToast.show(message: error.localizedDescription)
+            }
         }
     }
 
@@ -46,10 +51,6 @@ final class AnnouncementListViewModel {
         sortedAnnouncements.filter(isUnread).count
     }
 
-    func relativeCreatedAtText(for announcement: Announcement) -> String {
-        DateUtil.relativeTimeString(for: announcement.createdAt)
-    }
-
     func isUnread(_ announcement: Announcement) -> Bool {
         !readAnnouncementIDs.contains(announcement.id)
     }
@@ -57,6 +58,7 @@ final class AnnouncementListViewModel {
     func markAllAsRead() {
         readAnnouncementIDs.formUnion(announcements.map(\.id))
         MMKVHelper.Announcement.readIDs = Array(readAnnouncementIDs)
+        GlobalManager.shared.unreadAnnouncementsCount = unreadAnnouncementsCount
     }
 
     private func compareAnnouncements(_ lhs: Announcement, _ rhs: Announcement) -> Bool {

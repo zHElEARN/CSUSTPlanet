@@ -170,6 +170,7 @@ struct ContentView: View {
                         Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
                             NavigationStack { OverviewView() }
                         }
+                        .badge(globalManager.unreadAnnouncementsCount)
                         if sizeClass == .compact {
                             Tab("全部功能", systemImage: "square.grid.2x2", value: TabItem.features) {
                                 NavigationStack { FeaturesView() }
@@ -199,6 +200,7 @@ struct ContentView: View {
                             NavigationStack { OverviewView() }
                                 .tabItem { Label("概览", systemImage: "rectangle.stack") }
                                 .tag(TabItem.overview)
+                                .badge(globalManager.unreadAnnouncementsCount)
                             NavigationStack { FeaturesView() }
                                 .tabItem { Label("全部功能", systemImage: "square.grid.2x2") }
                                 .tag(TabItem.features)
@@ -210,8 +212,11 @@ struct ContentView: View {
                         NavigationSplitView {
                             List(selection: $globalManager.selectedTab) {
                                 Section {
-                                    Label("概览", systemImage: "rectangle.stack").tag(TabItem.overview)
-                                    Label("我的", systemImage: "person").tag(TabItem.profile)
+                                    Label("概览", systemImage: "rectangle.stack")
+                                        .tag(TabItem.overview)
+                                        .badge(globalManager.unreadAnnouncementsCount)
+                                    Label("我的", systemImage: "person")
+                                        .tag(TabItem.profile)
                                 }
                                 ForEach(featureSections) { section in
                                     Section(section.title) {
