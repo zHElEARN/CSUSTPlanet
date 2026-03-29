@@ -6,7 +6,9 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
+import os
 
 // MARK: - Setters
 
@@ -97,29 +99,60 @@ protocol MMKVValueType {
 }
 
 @propertyWrapper
-struct MMKVStorage<T: MMKVValueType> {
+final class MMKVStorage<T: MMKVValueType> {
     let key: String
     let defaultValue: T
 
+    private lazy var subject = CurrentValueSubject<T, Never>(wrappedValue)
+    private var lock = OSAllocatedUnfairLock()
+
+    init(key: String, defaultValue: T) {
+        self.key = key
+        self.defaultValue = defaultValue
+    }
+
     var wrappedValue: T {
         get { T.read(from: MMKVHelper.shared, key: key) ?? defaultValue }
-        set { newValue.write(to: MMKVHelper.shared, key: key) }
+        set {
+            lock.withLock {
+                newValue.write(to: MMKVHelper.shared, key: key)
+                subject.send(newValue)
+            }
+        }
+    }
+
+    var projectedValue: AnyPublisher<T, Never> {
+        subject.eraseToAnyPublisher()
     }
 }
 
 @propertyWrapper
-struct MMKVOptionalStorage<T: MMKVValueType> {
+final class MMKVOptionalStorage<T: MMKVValueType> {
     let key: String
+
+    private lazy var subject = CurrentValueSubject<T?, Never>(wrappedValue)
+    private var lock = OSAllocatedUnfairLock()
+
+    init(key: String) {
+        self.key = key
+    }
 
     var wrappedValue: T? {
         get { T.read(from: MMKVHelper.shared, key: key) }
         set {
-            if let value = newValue {
-                value.write(to: MMKVHelper.shared, key: key)
-            } else {
-                MMKVHelper.shared.removeValue(forKey: key)
+            lock.withLock {
+                if let value = newValue {
+                    value.write(to: MMKVHelper.shared, key: key)
+                } else {
+                    MMKVHelper.shared.removeValue(forKey: key)
+                }
+                subject.send(newValue)
             }
         }
+    }
+
+    var projectedValue: AnyPublisher<T?, Never> {
+        subject.eraseToAnyPublisher()
     }
 }
 
