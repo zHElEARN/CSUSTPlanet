@@ -1,5 +1,5 @@
 {
-  "originHash" : "a60cebdc6889c2b3926745beee40e1ff6b98694848808506d5e01dc7f1203365",
+  "originHash" : "877b75f5077cdac07884bf21f3f9dd1dcf9f02a9b56ce0cd730e8c9ed12942b8",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/zHElEARN/CSUSTKit",
       "state" : {
-        "revision" : "850343c8f3e6b5674ad8d650caa064a8d1b13841",
-        "version" : "1.5.4"
+        "revision" : "cebb55c8e3724f254385edf6eeb9acd436c870b4",
+        "version" : "1.6.0"
       }
     },
     {
