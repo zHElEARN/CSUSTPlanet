@@ -24,6 +24,7 @@ struct DormGRDB: Codable, FetchableRecord, MutablePersistableRecord, TableRecord
     var scheduleMinute: Int?
 
     var scheduleEnabled: Bool { return scheduleHour != nil && scheduleMinute != nil }
+    var hasFetchedElectricity: Bool { return lastFetchDate != nil && lastFetchElectricity != nil }
 
     enum Columns: String, ColumnExpression {
         case id, room, buildingID, buildingName, campusID, campusName

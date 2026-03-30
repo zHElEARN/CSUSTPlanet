@@ -151,6 +151,7 @@ struct DormDetailView: View {
                     if viewModel.dorm.scheduleEnabled {
                         viewModel.isCancelScheduleAlertPresented = true
                     } else {
+                        guard viewModel.canConfigureSchedule() else { return }
                         viewModel.isScheduleConfigSheetPresented = true
                     }
                 }

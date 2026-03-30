@@ -182,7 +182,10 @@ struct DormListView: View {
             .disabled(viewModel.isQuerying(dorm))
 
             Menu {
-                Button(action: { scheduleConfigTargetDorm = dorm }) {
+                Button(action: {
+                    guard viewModel.canConfigureSchedule(for: dorm) else { return }
+                    scheduleConfigTargetDorm = dorm
+                }) {
                     Label("配置定时通知任务", systemImage: "clock.badge")
                 }
                 .disabled(viewModel.isSchedulingDorm)

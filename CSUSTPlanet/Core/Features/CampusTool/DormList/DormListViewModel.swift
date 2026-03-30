@@ -170,8 +170,17 @@ final class DormListViewModel {
         }
     }
 
+    func canConfigureSchedule(for dorm: DormGRDB) -> Bool {
+        guard dorm.hasFetchedElectricity else {
+            errorToast.show(message: "请先成功查询一次宿舍电量后再配置定时通知")
+            return false
+        }
+        return true
+    }
+
     func configureSchedule(for dorm: DormGRDB, hour: Int, minute: Int) async {
         guard let dormID = dorm.id else { return }
+        guard canConfigureSchedule(for: dorm) else { return }
 
         await performScheduleUpdate { db in
             try DormGRDB.updateSchedule(dormID: dormID, hour: hour, minute: minute, in: db)
