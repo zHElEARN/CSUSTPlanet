@@ -117,6 +117,7 @@ struct CampusMapView: View {
                         Text("金盆岭校区").tag(Optional(CampusCardHelper.Campus.jinpenling))
                         Text("云塘校区").tag(Optional(CampusCardHelper.Campus.yuntang))
                     }
+                    .pickerStyle(.inline)
                 } label: {
                     Image(systemName: "building.2")
                 }
