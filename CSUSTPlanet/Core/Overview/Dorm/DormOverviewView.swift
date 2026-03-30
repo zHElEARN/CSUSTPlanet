@@ -28,8 +28,6 @@ struct DormOverviewView: View {
                 CustomGroupBox {
                     cardContent
                 }
-                .frame(height: 130)
-                .frame(maxWidth: .infinity)
             }
             #elseif os(iOS)
             if #available(iOS 18.0, macOS 15.0, *) {
@@ -42,8 +40,6 @@ struct DormOverviewView: View {
                     CustomGroupBox {
                         cardContent.matchedTransitionSource(id: "dormOverview", in: namespace)
                     }
-                    .frame(height: 130)
-                    .frame(maxWidth: .infinity)
                 }
                 .id(refreshID)
             } else {
@@ -51,8 +47,6 @@ struct DormOverviewView: View {
                     CustomGroupBox {
                         cardContent
                     }
-                    .frame(height: 130)
-                    .frame(maxWidth: .infinity)
                 }
             }
             #endif
@@ -63,65 +57,95 @@ struct DormOverviewView: View {
 
     @ViewBuilder
     private var cardContent: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    Text("宿舍电量")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .fontDesign(.rounded)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                Text("宿舍电量")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
 
-                    if let dorm = viewModel.primaryDorm {
-                        Text(dorm.room)
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("未绑定")
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.secondary)
-                    }
+                if let dorm = viewModel.primaryDorm {
+                    Text(dorm.room)
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("未绑定")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundStyle(.secondary)
                 }
 
-                Spacer(minLength: 0)
+                Spacer()
 
-                if let dorm = viewModel.primaryDorm, let lastFetchElectricity = dorm.lastFetchElectricity {
-                    HStack(alignment: .lastTextBaseline, spacing: 4) {
-                        Text(String(format: "%.2f", lastFetchElectricity))
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundStyle(ColorUtil.electricityColor(electricity: lastFetchElectricity))
-                            .minimumScaleFactor(0.7)
-
-                        Text("kWh")
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.secondary)
+                if viewModel.primaryDorm != nil {
+                    if let lastUpdated = viewModel.lastFetchDate {
+                        lastUpdatedDateView(lastUpdated: lastUpdated)
+                            .contentTransition(.numericText())
                     }
 
-                    if let info = viewModel.electricityExhaustionInfo {
-                        Text(info)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
+                    Button(asyncAction: viewModel.queryElectricity) {
+                        Image(systemName: "arrow.clockwise.circle")
                     }
-                } else {
-                    Text("添加宿舍")
-                        .font(.title3)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
-
-                    Text("查看宿舍电量")
-                        .font(.caption)
-                        .foregroundStyle(.blue)
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.isQueryingElectricity)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
-            dormTrendChart
-                .frame(minWidth: 120, maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Spacer()
+                    if let dorm = viewModel.primaryDorm, let lastFetchElectricity = dorm.lastFetchElectricity {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text(String(format: "%.2f", lastFetchElectricity))
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundStyle(ColorUtil.electricityColor(electricity: lastFetchElectricity))
+                                .minimumScaleFactor(0.7)
+                                .contentTransition(.numericText())
+
+                            Text("kWh")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        if let info = viewModel.electricityExhaustionInfo {
+                            Text(info)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                        }
+                    } else {
+                        Text("添加宿舍")
+                            .font(.title3)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.secondary)
+
+                        Text("查看宿舍电量")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                dormTrendChart
+                    .frame(minWidth: 120, maxWidth: .infinity, maxHeight: 120, alignment: .trailing)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private func lastUpdatedDateView(lastUpdated: Date) -> some View {
+        Text("数据更新于：")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text(lastUpdated, style: .relative)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text("前")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
     }
 
     @ViewBuilder

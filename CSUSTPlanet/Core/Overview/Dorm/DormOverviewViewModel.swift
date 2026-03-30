@@ -20,15 +20,42 @@ final class DormOverviewViewModel {
         let chartYDomain: ClosedRange<Double>
     }
 
+    let campusCardHelper = CampusCardHelper()
+
     var primaryDorm: DormGRDB?
     var electricityExhaustionInfo: String?
     var chartRecords: [ElectricityRecordGRDB] = []
     var chartYDomain: ClosedRange<Double> = 0...2
+    var isQueryingElectricity: Bool = false
+
+    var lastFetchDate: Date? {
+        primaryDorm?.lastFetchDate
+    }
+
+    @ObservationIgnored var isFirstObservation = true
 
     private var dormObserver: AutoRefreshingObserver?
 
     func onAppear() {
         observePrimaryDorm()
+    }
+
+    func queryElectricity() async {
+        guard let dorm = primaryDorm else { return }
+        guard let dormID = dorm.id else { return }
+        guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        guard !isQueryingElectricity else { return }
+        isQueryingElectricity = true
+        defer { isQueryingElectricity = false }
+
+        let building = CampusCardHelper.Building(name: dorm.buildingName, id: dorm.buildingID, campus: campus)
+
+        do {
+            let electricity = try await campusCardHelper.getElectricity(building: building, room: dorm.room)
+            try await pool.write { db in try DormGRDB.updateElectricity(dormID: dormID, electricity: electricity, in: db) }
+        } catch {}
     }
 
     private func observePrimaryDorm() {
@@ -83,12 +110,22 @@ final class DormOverviewViewModel {
                     }
                 },
                 onChange: { [weak self] data in
-                    Task { @MainActor in
-                        withAnimation {
-                            self?.primaryDorm = data.dorm
-                            self?.electricityExhaustionInfo = data.exhaustionInfo
-                            self?.chartRecords = data.chartRecords
-                            self?.chartYDomain = data.chartYDomain
+                    guard let self = self else { return }
+                    Task { @MainActor [weak self] in
+                        guard let self = self else { return }
+                        if self.isFirstObservation {
+                            self.primaryDorm = data.dorm
+                            self.electricityExhaustionInfo = data.exhaustionInfo
+                            self.chartRecords = data.chartRecords
+                            self.chartYDomain = data.chartYDomain
+                            self.isFirstObservation = false
+                        } else {
+                            withAnimation {
+                                self.primaryDorm = data.dorm
+                                self.electricityExhaustionInfo = data.exhaustionInfo
+                                self.chartRecords = data.chartRecords
+                                self.chartYDomain = data.chartYDomain
+                            }
                         }
                     }
                 }

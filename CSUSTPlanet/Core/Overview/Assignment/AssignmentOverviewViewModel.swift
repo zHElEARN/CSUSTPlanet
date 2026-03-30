@@ -43,8 +43,8 @@ final class AssignmentOverviewViewModel {
             .sink { [weak self] data in
                 guard let self = self else { return }
                 if isFirstObservation {
-                    isFirstObservation = false
                     self.todoAssignmentsData = data
+                    isFirstObservation = false
                 } else {
                     withAnimation {
                         self.todoAssignmentsData = data
