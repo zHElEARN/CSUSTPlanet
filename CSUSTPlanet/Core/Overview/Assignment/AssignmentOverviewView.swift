@@ -51,18 +51,47 @@ struct AssignmentOverviewView: View {
     @ViewBuilder
     private func cardContent(assignments: [(courseName: String, assignment: MoocHelper.Assignment)]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("待提交作业")
-                .font(.title3)
-                .fontWeight(.bold)
-                .fontDesign(.rounded)
+            HStack {
+                Text("待提交作业")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
+
+                Spacer()
+
+                if let lastUpdated = viewModel.cachedAt {
+                    lastUpdatedDateView(lastUpdated: lastUpdated)
+                        .contentTransition(.numericText())
+                }
+
+                Button(asyncAction: viewModel.loadAssignments) {
+                    Image(systemName: "arrow.clockwise.circle")
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isLoadingAssignments)
+            }
 
             if assignments.isEmpty {
                 EmptyAssignmentContentView()
             } else {
                 AssignmentListView(assignments: assignments)
+                    .redacted(reason: viewModel.isLoadingAssignments ? .placeholder : [])
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func lastUpdatedDateView(lastUpdated: Date) -> some View {
+        Text("数据更新于：")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text(lastUpdated, style: .relative)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text("前")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
     }
 }
 
