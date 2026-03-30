@@ -8,14 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		00326DF62F7A15DF003A4BD1 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 00326DF52F7A15DF003A4BD1 /* AlertToast */; };
-		00326DF82F7A16A5003A4BD1 /* GRDB-dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 00326DF72F7A16A5003A4BD1 /* GRDB-dynamic */; };
-		00326DF92F7A16A5003A4BD1 /* GRDB-dynamic in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 00326DF72F7A16A5003A4BD1 /* GRDB-dynamic */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		00326DFB2F7A16C0003A4BD1 /* GRDB-dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 00326DFA2F7A16C0003A4BD1 /* GRDB-dynamic */; };
-		003272082F7A196F003A4BD1 /* CSUSTKit-dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 003272072F7A196F003A4BD1 /* CSUSTKit-dynamic */; };
-		003272092F7A196F003A4BD1 /* CSUSTKit-dynamic in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 003272072F7A196F003A4BD1 /* CSUSTKit-dynamic */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		0032720B2F7A1977003A4BD1 /* CSUSTKit-dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 0032720A2F7A1977003A4BD1 /* CSUSTKit-dynamic */; };
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
 		005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = 005FBAB92F72E1BE00D7B07C /* JWTDecode */; };
+		0080865B2F7AA250008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865A2F7AA250008CB508 /* CSUSTKit */; };
+		0080865D2F7AA255008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865C2F7AA255008CB508 /* GRDB */; };
+		0080865F2F7AA25B008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865E2F7AA25B008CB508 /* CSUSTKit */; };
+		008086612F7AA25F008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 008086602F7AA25F008CB508 /* GRDB */; };
 		00D8FFE32F7A0F7C00D2D360 /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 00D8FFE22F7A0F7C00D2D360 /* MMKV */; };
 		00D8FFEC2F7A11B200D2D360 /* MMKVAppExtension in Frameworks */ = {isa = PBXBuildFile; productRef = 00D8FFEB2F7A11B200D2D360 /* MMKVAppExtension */; };
 		00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 00E574AA2F1F4F0400440D8D /* MatomoTracker */; };
@@ -63,8 +61,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				003272092F7A196F003A4BD1 /* CSUSTKit-dynamic in Embed Frameworks */,
-				00326DF92F7A16A5003A4BD1 /* GRDB-dynamic in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -187,10 +183,10 @@
 			files = (
 				00326DF62F7A15DF003A4BD1 /* AlertToast in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
-				00326DF82F7A16A5003A4BD1 /* GRDB-dynamic in Frameworks */,
 				00D8FFE32F7A0F7C00D2D360 /* MMKV in Frameworks */,
+				008086612F7AA25F008CB508 /* GRDB in Frameworks */,
+				0080865F2F7AA25B008CB508 /* CSUSTKit in Frameworks */,
 				00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */,
-				003272082F7A196F003A4BD1 /* CSUSTKit-dynamic in Frameworks */,
 				00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */,
 				005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */,
 			);
@@ -200,11 +196,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00326DFB2F7A16C0003A4BD1 /* GRDB-dynamic in Frameworks */,
 				00E89C652E2C88D800B43162 /* SwiftUI.framework in Frameworks */,
+				0080865D2F7AA255008CB508 /* GRDB in Frameworks */,
 				00D8FFEC2F7A11B200D2D360 /* MMKVAppExtension in Frameworks */,
+				0080865B2F7AA250008CB508 /* CSUSTKit in Frameworks */,
 				00E89C632E2C88D800B43162 /* WidgetKit.framework in Frameworks */,
-				0032720B2F7A1977003A4BD1 /* CSUSTKit-dynamic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,8 +267,8 @@
 				005FBAB92F72E1BE00D7B07C /* JWTDecode */,
 				00D8FFE22F7A0F7C00D2D360 /* MMKV */,
 				00326DF52F7A15DF003A4BD1 /* AlertToast */,
-				00326DF72F7A16A5003A4BD1 /* GRDB-dynamic */,
-				003272072F7A196F003A4BD1 /* CSUSTKit-dynamic */,
+				0080865E2F7AA25B008CB508 /* CSUSTKit */,
+				008086602F7AA25F008CB508 /* GRDB */,
 			);
 			productName = CSUSTPlanet;
 			productReference = 007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */;
@@ -897,26 +893,6 @@
 			package = 000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */;
 			productName = AlertToast;
 		};
-		00326DF72F7A16A5003A4BD1 /* GRDB-dynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
-			productName = "GRDB-dynamic";
-		};
-		00326DFA2F7A16C0003A4BD1 /* GRDB-dynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
-			productName = "GRDB-dynamic";
-		};
-		003272072F7A196F003A4BD1 /* CSUSTKit-dynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */;
-			productName = "CSUSTKit-dynamic";
-		};
-		0032720A2F7A1977003A4BD1 /* CSUSTKit-dynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */;
-			productName = "CSUSTKit-dynamic";
-		};
 		0041FC6C2E2AA269007F383F /* MarkdownUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0041FC6B2E2AA269007F383F /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
@@ -926,6 +902,26 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */;
 			productName = JWTDecode;
+		};
+		0080865A2F7AA250008CB508 /* CSUSTKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */;
+			productName = CSUSTKit;
+		};
+		0080865C2F7AA255008CB508 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
+		};
+		0080865E2F7AA25B008CB508 /* CSUSTKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */;
+			productName = CSUSTKit;
+		};
+		008086602F7AA25F008CB508 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
 		};
 		00D8FFE22F7A0F7C00D2D360 /* MMKV */ = {
 			isa = XCSwiftPackageProductDependency;
