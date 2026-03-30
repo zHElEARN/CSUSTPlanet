@@ -386,7 +386,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nFRAMEWORK_NAME=\"MMKVAppExtension.framework\"\n\nPATH_DEBUG=\"$BUILT_PRODUCTS_DIR/PackageFrameworks/$FRAMEWORK_NAME\"\nPATH_ARCHIVE=\"$BUILT_PRODUCTS_DIR/$FRAMEWORK_NAME\"\n\nif [ -d \"$PATH_ARCHIVE\" ]; then\n    SOURCE_PATH=\"$PATH_ARCHIVE\"\nelif [ -d \"$PATH_DEBUG\" ]; then\n    SOURCE_PATH=\"$PATH_DEBUG\"\nelse\n    echo \"error: Cannot find $FRAMEWORK_NAME in build directories.\"\n    exit 1\nfi\n\necho \"Source found at: $SOURCE_PATH\"\n\nDEST_DIR=\"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH\"\nmkdir -p \"$DEST_DIR\"\n\necho \"Ditto copying to: $DEST_DIR/$FRAMEWORK_NAME\"\nditto \"$SOURCE_PATH\" \"$DEST_DIR/$FRAMEWORK_NAME\"\n\nif [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ]; then\n    echo \"Signing $FRAMEWORK_NAME with identity: $EXPANDED_CODE_SIGN_IDENTITY\"\n    codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements \"$DEST_DIR/$FRAMEWORK_NAME\"\nfi\n\necho \"Successfully embedded and signed $FRAMEWORK_NAME\"\n";
+			shellScript = "\"${SRCROOT}/Scripts/embed-mmkv.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
