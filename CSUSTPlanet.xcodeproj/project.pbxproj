@@ -19,7 +19,6 @@
 		005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = 005FBAB92F72E1BE00D7B07C /* JWTDecode */; };
 		00D8FFE32F7A0F7C00D2D360 /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 00D8FFE22F7A0F7C00D2D360 /* MMKV */; };
 		00D8FFEC2F7A11B200D2D360 /* MMKVAppExtension in Frameworks */ = {isa = PBXBuildFile; productRef = 00D8FFEB2F7A11B200D2D360 /* MMKVAppExtension */; };
-		00D8FFF22F7A137300D2D360 /* MMKVAppExtension.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00D8FFEE2F7A12AA00D2D360 /* MMKVAppExtension.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 00E574AA2F1F4F0400440D8D /* MatomoTracker */; };
 		00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 00E575FA2F1F4F6B00440D8D /* Kingfisher */; };
 		00E89C632E2C88D800B43162 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E89C622E2C88D800B43162 /* WidgetKit.framework */; };
@@ -38,16 +37,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		00D8FFF12F7A136900D2D360 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				00D8FFF22F7A137300D2D360 /* MMKVAppExtension.framework in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		00E89C732E2C88D800B43162 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -85,7 +74,6 @@
 
 /* Begin PBXFileReference section */
 		007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CSUSTPlanet.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		00D8FFEE2F7A12AA00D2D360 /* MMKVAppExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MMKVAppExtension.framework; path = PackageFrameworks/MMKVAppExtension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E89C602E2C88D800B43162 /* CSUSTPlanetWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CSUSTPlanetWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E89C622E2C88D800B43162 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		00E89C642E2C88D800B43162 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -250,7 +238,6 @@
 			children = (
 				00E89C622E2C88D800B43162 /* WidgetKit.framework */,
 				00E89C642E2C88D800B43162 /* SwiftUI.framework */,
-				00D8FFEE2F7A12AA00D2D360 /* MMKVAppExtension.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -267,7 +254,7 @@
 				007CF8592E1BD68900E319F2 /* Resources */,
 				00E89C732E2C88D800B43162 /* Embed Foundation Extensions */,
 				00F16E952F52E44C00E1DC4D /* Embed Frameworks */,
-				00D8FFF12F7A136900D2D360 /* CopyFiles */,
+				003274142F7A24D1003A4BD1 /* Embed MMKVAppExtension */,
 			);
 			buildRules = (
 			);
@@ -380,6 +367,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		003274142F7A24D1003A4BD1 /* Embed MMKVAppExtension */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed MMKVAppExtension";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nFRAMEWORK_NAME=\"MMKVAppExtension.framework\"\n\nPATH_DEBUG=\"$BUILT_PRODUCTS_DIR/PackageFrameworks/$FRAMEWORK_NAME\"\nPATH_ARCHIVE=\"$BUILT_PRODUCTS_DIR/$FRAMEWORK_NAME\"\n\nif [ -d \"$PATH_ARCHIVE\" ]; then\n    SOURCE_PATH=\"$PATH_ARCHIVE\"\nelif [ -d \"$PATH_DEBUG\" ]; then\n    SOURCE_PATH=\"$PATH_DEBUG\"\nelse\n    echo \"error: Cannot find $FRAMEWORK_NAME in build directories.\"\n    exit 1\nfi\n\necho \"Source found at: $SOURCE_PATH\"\n\nDEST_DIR=\"$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH\"\nmkdir -p \"$DEST_DIR\"\n\necho \"Ditto copying to: $DEST_DIR/$FRAMEWORK_NAME\"\nditto \"$SOURCE_PATH\" \"$DEST_DIR/$FRAMEWORK_NAME\"\n\nif [ -n \"$EXPANDED_CODE_SIGN_IDENTITY\" ]; then\n    echo \"Signing $FRAMEWORK_NAME with identity: $EXPANDED_CODE_SIGN_IDENTITY\"\n    codesign --force --sign \"$EXPANDED_CODE_SIGN_IDENTITY\" --preserve-metadata=identifier,entitlements \"$DEST_DIR/$FRAMEWORK_NAME\"\nfi\n\necho \"Successfully embedded and signed $FRAMEWORK_NAME\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		007CF8572E1BD68900E319F2 /* Sources */ = {
