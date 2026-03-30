@@ -7,7 +7,6 @@
 
 import AppIntents
 import OSLog
-import Sentry
 import SwiftData
 import SwiftUI
 
@@ -22,11 +21,6 @@ struct CSUSTPlanetApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
-        SentrySDK.start { options in
-            options.dsn = Constants.sentryDSN
-            options.environment = EnvironmentUtil.environment.rawValue
-        }
-
         _ = DatabaseManager.shared
         _ = TrackHelper.shared
         _ = NotificationManager.shared

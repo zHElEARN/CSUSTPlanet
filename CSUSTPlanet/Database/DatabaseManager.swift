@@ -8,7 +8,6 @@
 import Foundation
 import GRDB
 import OSLog
-import Sentry
 
 final class DatabaseManager {
     static let shared = DatabaseManager()
@@ -29,7 +28,6 @@ final class DatabaseManager {
             try Self.migrator.migrate(databasePool)
             self.pool = databasePool
         } catch {
-            SentrySDK.capture(error: error)
             self.pool = nil
             self.hasFatalError = true
             self.fatalErrorMessage = "数据库初始化失败：\(error.localizedDescription)"

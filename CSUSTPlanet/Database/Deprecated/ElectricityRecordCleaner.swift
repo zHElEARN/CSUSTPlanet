@@ -6,7 +6,6 @@
 //
 
 import OSLog
-import Sentry
 import SwiftData
 
 @ModelActor
@@ -54,7 +53,6 @@ actor ElectricityRecordCleaner {
             }
 
         } catch {
-            SentrySDK.capture(error: error)
             Logger.electricityRecordCleaner.error("清理重复电量记录时发生错误: \(error.localizedDescription)")
         }
     }

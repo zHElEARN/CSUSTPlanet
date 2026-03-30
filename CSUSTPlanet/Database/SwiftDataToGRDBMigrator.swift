@@ -8,7 +8,6 @@
 import Foundation
 import GRDB
 import OSLog
-import Sentry
 import SwiftData
 
 struct SwiftDataToGRDBMigrator {
@@ -141,7 +140,6 @@ struct SwiftDataToGRDBMigrator {
             }
         } catch {
             Logger.sharedModel.error("SwiftData 到 GRDB 迁移过程中发生错误: \(error.localizedDescription)")
-            SentrySDK.capture(error: error)
         }
     }
 }

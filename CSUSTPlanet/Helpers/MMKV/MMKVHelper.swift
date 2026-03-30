@@ -8,7 +8,6 @@
 import CSUSTKit
 import Foundation
 import OSLog
-import Sentry
 
 #if canImport(MMKV)
 import MMKV
@@ -43,7 +42,6 @@ class MMKVHelper {
                 expectedCapacity: 0
             )
         else {
-            SentrySDK.capture(message: "无法初始化MMKV实例ID: \(Constants.mmkvID)")
             fatalError("Failed to initialize MMKV with ID: \(Constants.mmkvID)")
         }
 

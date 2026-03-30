@@ -7,7 +7,6 @@
 
 import Foundation
 import OSLog
-import Sentry
 
 #if canImport(MMKV)
 import MMKV
@@ -42,13 +41,11 @@ extension MMKVHelper {
 
         func onMMKVCRCCheckFail(_ mmapID: String!) -> MMKVRecoverStrategic {
             Logger.mmkv.fault("MMKV CRC Check Failed for ID: \(mmapID ?? "Unknown", privacy: .public). Attempting recovery.")
-            SentrySDK.capture(message: "MMKV CRC Check Failed for ID: \(mmapID ?? "Unknown")")
             return .onErrorRecover
         }
 
         func onMMKVFileLengthError(_ mmapID: String!) -> MMKVRecoverStrategic {
             Logger.mmkv.fault("MMKV File Length Error for ID: \(mmapID ?? "Unknown", privacy: .public). Attempting recovery.")
-            SentrySDK.capture(message: "MMKV File Length Error for ID: \(mmapID ?? "Unknown")")
             return .onErrorRecover
         }
     }

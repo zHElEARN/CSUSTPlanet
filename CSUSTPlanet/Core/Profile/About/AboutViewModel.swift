@@ -7,7 +7,6 @@
 
 import CSUSTKit
 import Foundation
-import Sentry
 import SwiftData
 import WidgetKit
 

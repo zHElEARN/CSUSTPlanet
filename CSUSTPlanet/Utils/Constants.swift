@@ -87,8 +87,6 @@ enum Constants {
 
     static let backgroundID = AssetUtil.bundleInfo(forKey: "ConfigBackgroundID")
 
-    static let sentryDSN = AssetUtil.bundleInfo(forKey: "ConfigSentryDSN")
-
     // 数据库变更的通知名称
     static let dbChangedNotification = AssetUtil.bundleInfo(forKey: "ConfigDBChangedNotification")
 

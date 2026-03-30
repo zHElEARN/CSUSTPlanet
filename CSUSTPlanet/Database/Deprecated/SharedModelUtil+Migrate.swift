@@ -6,7 +6,6 @@
 //
 
 import OSLog
-import Sentry
 import SwiftData
 
 // 只编译到App中，不在Widget中编译（Widget中没有足够的内存进行迁移）
@@ -49,7 +48,6 @@ extension SharedModelUtil {
 
         } catch {
             Logger.sharedModel.error("迁移失败，下次启动将重试：\(error)")
-            SentrySDK.capture(error: error)
         }
     }
 

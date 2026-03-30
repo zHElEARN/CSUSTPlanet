@@ -7,7 +7,6 @@
 
 import Foundation
 import OSLog
-import Sentry
 import SwiftData
 
 enum ContainerLoadState {
@@ -43,7 +42,6 @@ enum SharedModelUtil {
             )
         } catch {
             Logger.sharedModel.error("首次初始化 ModelContainer 初始化失败: \(error)")
-            SentrySDK.capture(error: error)
 
             wipeSwiftDataStorage()
 
@@ -59,7 +57,6 @@ enum SharedModelUtil {
                 return recoveredContainer
             } catch {
                 Logger.sharedModel.error("清理旧的数据库文件后再次初始化依然失败: \(error)")
-                SentrySDK.capture(error: error)
 
                 // 彻底失败保底使用内存数据库
                 containerLoadState = .fatalError

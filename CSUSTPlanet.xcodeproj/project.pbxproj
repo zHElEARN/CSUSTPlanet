@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 00011BEE2F4786B4003A88B0 /* Sentry */; };
 		00326DF62F7A15DF003A4BD1 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 00326DF52F7A15DF003A4BD1 /* AlertToast */; };
 		00326DF82F7A16A5003A4BD1 /* GRDB-dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 00326DF72F7A16A5003A4BD1 /* GRDB-dynamic */; };
 		00326DF92F7A16A5003A4BD1 /* GRDB-dynamic in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 00326DF72F7A16A5003A4BD1 /* GRDB-dynamic */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -186,7 +185,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				00011BEF2F4786B4003A88B0 /* Sentry in Frameworks */,
 				00326DF62F7A15DF003A4BD1 /* AlertToast in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
 				00326DF82F7A16A5003A4BD1 /* GRDB-dynamic in Frameworks */,
@@ -270,7 +268,6 @@
 				0041FC6C2E2AA269007F383F /* MarkdownUI */,
 				00E574AA2F1F4F0400440D8D /* MatomoTracker */,
 				00E575FA2F1F4F6B00440D8D /* Kingfisher */,
-				00011BEE2F4786B4003A88B0 /* Sentry */,
 				005FBAB92F72E1BE00D7B07C /* JWTDecode */,
 				00D8FFE22F7A0F7C00D2D360 /* MMKV */,
 				00326DF52F7A15DF003A4BD1 /* AlertToast */,
@@ -334,7 +331,6 @@
 				00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */,
 				00E574A92F1F4F0400440D8D /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */,
 				00E575F92F1F4F6B00440D8D /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */,
 				003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */,
@@ -815,14 +811,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 9.5.0;
-			};
-		};
 		000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/zHElEARN/AlertToast";
@@ -890,11 +878,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		00011BEE2F4786B4003A88B0 /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 00011BED2F4786B4003A88B0 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
 		00326DF52F7A15DF003A4BD1 /* AlertToast */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */;
