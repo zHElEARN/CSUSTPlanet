@@ -6,7 +6,7 @@
 
 长理星球的校园网络库由[CSUSTKit](https://github.com/zHElEARN/CSUSTKit)提供支持
 
-支持iOS及iPadOS最低17.0版本，macOS最低14.0版本，visionOS最低1.0版本
+支持iOS及iPadOS最低17.0版本，macOS最低14.0版本
 
 ## 安装
 
