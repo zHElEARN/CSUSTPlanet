@@ -80,8 +80,12 @@ struct DormOverviewView: View {
 
                 if viewModel.primaryDorm != nil {
                     if let lastUpdated = viewModel.lastFetchDate {
-                        lastUpdatedDateView(lastUpdated: lastUpdated)
-                            .contentTransition(.numericText())
+                        LastUpdatedDateView(
+                            lastUpdated: lastUpdated,
+                            font: .footnote,
+                            foregroundStyle: .secondary
+                        )
+                        .contentTransition(.numericText())
                     }
 
                     Button(asyncAction: viewModel.queryElectricity) {
@@ -133,19 +137,6 @@ struct DormOverviewView: View {
             }
         }
         .frame(maxWidth: .infinity)
-    }
-
-    @ViewBuilder
-    private func lastUpdatedDateView(lastUpdated: Date) -> some View {
-        Text("数据更新于：")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            + Text(lastUpdated, style: .relative)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            + Text("前")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
     }
 
     @ViewBuilder

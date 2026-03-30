@@ -104,7 +104,11 @@ struct TodoAssignmentsEntryView: View {
                 .foregroundStyle(.red)
 
             if family != .systemSmall {
-                lastUpdatedDateView(lastUpdated: lastUpdated)
+                LastUpdatedDateView(
+                    lastUpdated: lastUpdated,
+                    font: .system(size: 10, weight: .medium),
+                    foregroundStyle: .secondary
+                )
             }
 
             Spacer()
@@ -271,23 +275,14 @@ struct TodoAssignmentsEntryView: View {
     @ViewBuilder
     private func footerView(lastUpdated: Date) -> some View {
         if family == .systemSmall {
-            lastUpdatedDateView(lastUpdated: lastUpdated)
-                .multilineTextAlignment(.center)
-                .padding(.top, 4)
+            LastUpdatedDateView(
+                lastUpdated: lastUpdated,
+                font: .system(size: 10, weight: .medium),
+                foregroundStyle: .secondary
+            )
+            .multilineTextAlignment(.center)
+            .padding(.top, 4)
         }
-    }
-
-    @ViewBuilder
-    private func lastUpdatedDateView(lastUpdated: Date) -> some View {
-        Text("更新于：")
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
-            + Text(lastUpdated, style: .relative)
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
-            + Text("前")
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
     }
 
     private var rowSpacing: CGFloat {

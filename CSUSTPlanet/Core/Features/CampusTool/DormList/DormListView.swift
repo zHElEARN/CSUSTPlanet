@@ -274,15 +274,11 @@ struct DormListView: View {
 
                 if let lastFetchDate = dorm.lastFetchDate {
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text("更新于：")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            + Text(lastFetchDate, style: .relative)
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            + Text("前")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                        LastUpdatedDateView(
+                            lastUpdated: lastFetchDate,
+                            font: .caption,
+                            foregroundStyle: .tertiary
+                        )
 
                         if let dormID = dorm.id, let info = viewModel.exhaustionInfoMap[dormID] {
                             Text(info)

@@ -83,8 +83,12 @@ struct DormElectricityEntryView: View {
                             + Text("度")
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
-                        lastUpdatedDateView(lastUpdated: lastFetchDate)
-                            .multilineTextAlignment(.trailing)
+                        LastUpdatedDateView(
+                            lastUpdated: lastFetchDate,
+                            font: .system(size: 10, weight: .medium),
+                            foregroundStyle: .secondary
+                        )
+                        .multilineTextAlignment(.trailing)
                     }
                     .frame(alignment: .trailing)
                     .padding(.trailing, 8)
@@ -96,21 +100,6 @@ struct DormElectricityEntryView: View {
             .foregroundColor(.blue)
             .buttonStyle(.plain)
         }
-    }
-
-    // MARK: - Last Updated Date View
-
-    @ViewBuilder
-    func lastUpdatedDateView(lastUpdated: Date) -> some View {
-        Text("更新于：")
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
-            + Text(lastUpdated, style: .relative)
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
-            + Text("前")
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
     }
 
     // MARK: - Content View
@@ -149,8 +138,12 @@ struct DormElectricityEntryView: View {
                 .font(.system(size: 14))
                 .foregroundColor(.secondary)
             Spacer()
-            lastUpdatedDateView(lastUpdated: lastFetchDate)
-                .multilineTextAlignment(.center)
+            LastUpdatedDateView(
+                lastUpdated: lastFetchDate,
+                font: .system(size: 10, weight: .medium),
+                foregroundStyle: .secondary
+            )
+            .multilineTextAlignment(.center)
         }
     }
 

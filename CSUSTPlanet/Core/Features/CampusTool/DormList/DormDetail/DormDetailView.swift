@@ -78,16 +78,12 @@ struct DormDetailView: View {
                         .foregroundStyle(.secondary)
                     Spacer()
                     if let lastFetchDate = viewModel.dorm.lastFetchDate {
-                        (Text("更新于：")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            + Text(lastFetchDate, style: .relative)
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            + Text("前")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary))
-                            .contentTransition(.numericText())
+                        LastUpdatedDateView(
+                            lastUpdated: lastFetchDate,
+                            font: .caption,
+                            foregroundStyle: .tertiary
+                        )
+                        .contentTransition(.numericText())
                     }
                 }
 

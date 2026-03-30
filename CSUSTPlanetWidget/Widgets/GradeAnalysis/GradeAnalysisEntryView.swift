@@ -98,26 +98,15 @@ struct GradeAnalysisEntryView: View {
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.primary)
             if let lastUpdated = lastUpdated {
-                lastUpdatedDateView(lastUpdated: lastUpdated)
+                LastUpdatedDateView(
+                    lastUpdated: lastUpdated,
+                    font: .system(size: 10, weight: .medium),
+                    foregroundStyle: .secondary
+                )
             }
             Spacer()
             refreshButtonView
         }
-    }
-
-    // MARK: - Last Updated Date View
-
-    @ViewBuilder
-    func lastUpdatedDateView(lastUpdated: Date) -> some View {
-        Text("更新于：")
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
-            + Text(lastUpdated, style: .relative)
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
-            + Text("前")
-            .font(.system(size: 10, weight: .medium))
-            .foregroundStyle(.secondary)
     }
 
     // MARK: - Stats View
@@ -137,8 +126,12 @@ struct GradeAnalysisEntryView: View {
                     statItemView(title: "加权平均", value: String(format: "%.2f", data.weightedAverageGrade), color: ColorUtil.dynamicColor(grade: data.weightedAverageGrade))
                 }
                 .frame(maxHeight: .infinity)
-                lastUpdatedDateView(lastUpdated: lastUpdated)
-                    .multilineTextAlignment(.center)
+                LastUpdatedDateView(
+                    lastUpdated: lastUpdated,
+                    font: .system(size: 10, weight: .medium),
+                    foregroundStyle: .secondary
+                )
+                .multilineTextAlignment(.center)
             }
         } else {
             HStack(spacing: 0) {

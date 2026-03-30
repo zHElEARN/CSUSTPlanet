@@ -58,8 +58,12 @@ struct GradeOverviewView: View {
                 Spacer()
 
                 if let lastUpdated = viewModel.cachedAt {
-                    lastUpdatedDateView(lastUpdated: lastUpdated)
-                        .contentTransition(.numericText())
+                    LastUpdatedDateView(
+                        lastUpdated: lastUpdated,
+                        font: .footnote,
+                        foregroundStyle: .secondary
+                    )
+                    .contentTransition(.numericText())
                 }
 
                 Button(asyncAction: viewModel.loadGrades) {
@@ -101,19 +105,6 @@ struct GradeOverviewView: View {
             .redacted(reason: viewModel.isLoadingGrades ? .placeholder : [])
         }
         .frame(maxWidth: .infinity)
-    }
-
-    @ViewBuilder
-    private func lastUpdatedDateView(lastUpdated: Date) -> some View {
-        Text("数据更新于：")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            + Text(lastUpdated, style: .relative)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            + Text("前")
-            .font(.footnote)
-            .foregroundStyle(.secondary)
     }
 
     @ViewBuilder
