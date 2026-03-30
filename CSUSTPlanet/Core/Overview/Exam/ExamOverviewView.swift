@@ -71,7 +71,6 @@ struct ExamOverviewView: View {
                 Button(asyncAction: viewModel.loadExams) {
                     Image(systemName: "arrow.clockwise.circle")
                 }
-                .buttonStyle(.plain)
                 .disabled(viewModel.isLoadingExams)
             }
 

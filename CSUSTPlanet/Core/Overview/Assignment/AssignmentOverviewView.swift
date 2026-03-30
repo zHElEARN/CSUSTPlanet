@@ -71,7 +71,6 @@ struct AssignmentOverviewView: View {
                 Button(asyncAction: viewModel.loadAssignments) {
                     Image(systemName: "arrow.clockwise.circle")
                 }
-                .buttonStyle(.plain)
                 .disabled(viewModel.isLoadingAssignments)
             }
 

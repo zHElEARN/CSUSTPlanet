@@ -69,7 +69,6 @@ struct GradeOverviewView: View {
                 Button(asyncAction: viewModel.loadGrades) {
                     Image(systemName: "arrow.clockwise.circle")
                 }
-                .buttonStyle(.plain)
                 .disabled(viewModel.isLoadingGrades)
             }
 

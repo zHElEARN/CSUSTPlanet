@@ -91,7 +91,6 @@ struct DormOverviewView: View {
                     Button(asyncAction: viewModel.queryElectricity) {
                         Image(systemName: "arrow.clockwise.circle")
                     }
-                    .buttonStyle(.plain)
                     .disabled(viewModel.isQueryingElectricity)
                 }
             }
