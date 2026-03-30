@@ -79,9 +79,11 @@ struct AnnouncementOverviewView: View {
             }
 
             HStack(spacing: 12) {
-                Image(systemName: "megaphone.fill")
-                    .font(.title3)
-                    .foregroundStyle(.orange)
+                if viewModel.unreadAnnouncementsCount > 0 {
+                    Image(systemName: "megaphone.fill")
+                        .font(.title3)
+                        .foregroundStyle(.orange)
+                }
 
                 Text(viewModel.unreadAnnouncementsCount > 0 ? "\(viewModel.unreadAnnouncementsCount) 条未读公告" : "无未读公告")
                     .font(.subheadline)
