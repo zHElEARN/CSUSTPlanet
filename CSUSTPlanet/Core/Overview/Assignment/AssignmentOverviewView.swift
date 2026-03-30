@@ -73,6 +73,7 @@ struct AssignmentOverviewView: View {
 
             if assignments.isEmpty {
                 EmptyAssignmentContentView()
+                    .redacted(reason: viewModel.isLoadingAssignments ? .placeholder : [])
             } else {
                 AssignmentListView(assignments: assignments)
                     .redacted(reason: viewModel.isLoadingAssignments ? .placeholder : [])

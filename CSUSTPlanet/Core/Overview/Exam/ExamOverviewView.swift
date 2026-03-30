@@ -51,21 +51,51 @@ struct ExamOverviewView: View {
     @ViewBuilder
     private func cardContent(pendingExams: [EduHelper.Exam]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("考试安排")
-                .font(.title3)
-                .fontWeight(.bold)
-                .fontDesign(.rounded)
+            HStack {
+                Text("考试安排")
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .fontDesign(.rounded)
+
+                Spacer()
+
+                if let lastUpdated = viewModel.cachedAt {
+                    lastUpdatedDateView(lastUpdated: lastUpdated)
+                        .contentTransition(.numericText())
+                }
+
+                Button(asyncAction: viewModel.loadExams) {
+                    Image(systemName: "arrow.clockwise.circle")
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isLoadingExams)
+            }
 
             if pendingExams.isEmpty {
                 EmptyExamContentView()
+                    .redacted(reason: viewModel.isLoadingExams ? .placeholder : [])
             } else {
                 ExamListView(
                     pendingExams: pendingExams,
                     daysUntilExam: viewModel.daysUntilExam
                 )
+                .redacted(reason: viewModel.isLoadingExams ? .placeholder : [])
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func lastUpdatedDateView(lastUpdated: Date) -> some View {
+        Text("数据更新于：")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text(lastUpdated, style: .relative)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text("前")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
     }
 }
 
