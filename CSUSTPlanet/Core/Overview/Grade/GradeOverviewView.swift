@@ -21,8 +21,6 @@ struct GradeOverviewView: View {
                 CustomGroupBox {
                     cardContent
                 }
-                .frame(height: 130)
-                .frame(maxWidth: .infinity)
             }
             #elseif os(iOS)
             if #available(iOS 18.0, macOS 15.0, *) {
@@ -34,8 +32,6 @@ struct GradeOverviewView: View {
                     CustomGroupBox {
                         cardContent.matchedTransitionSource(id: "gradeQuery", in: namespace)
                     }
-                    .frame(height: 130)
-                    .frame(maxWidth: .infinity)
                 }
                 .id(refreshID)
             } else {
@@ -43,8 +39,6 @@ struct GradeOverviewView: View {
                     CustomGroupBox {
                         cardContent
                     }
-                    .frame(height: 130)
-                    .frame(maxWidth: .infinity)
                 }
             }
             #endif
@@ -54,38 +48,72 @@ struct GradeOverviewView: View {
 
     @ViewBuilder
     private var cardContent: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
                 Text("成绩查询")
                     .font(.title3)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
 
-                Spacer(minLength: 0)
+                Spacer()
 
-                if let gradeAnalysis = viewModel.gradeAnalysis {
-                    Text(String(format: "%.2f", gradeAnalysis.overallGPA))
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.overallGPA))
-
-                    Text("平均分: \(String(format: "%.1f", gradeAnalysis.overallAverageGrade))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("-.-")
-                        .font(.largeTitle)
-                        .foregroundStyle(.secondary)
-                    Text("暂无数据")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                if let lastUpdated = viewModel.cachedAt {
+                    lastUpdatedDateView(lastUpdated: lastUpdated)
+                        .contentTransition(.numericText())
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
-            gradeTrendChart
-                .frame(minWidth: 120, maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                Button(asyncAction: viewModel.loadGrades) {
+                    Image(systemName: "arrow.clockwise.circle")
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isLoadingGrades)
+            }
+
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Spacer()
+
+                    if let gradeAnalysis = viewModel.gradeAnalysis {
+                        Text(String(format: "%.2f", gradeAnalysis.overallGPA))
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.overallGPA))
+                            .contentTransition(.numericText())
+
+                        Text("平均分: \(String(format: "%.1f", gradeAnalysis.overallAverageGrade))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .contentTransition(.numericText())
+                    } else {
+                        Text("-.-")
+                            .font(.largeTitle)
+                            .foregroundStyle(.secondary)
+
+                        Text("暂无数据")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                gradeTrendChart
+                    .frame(minWidth: 120, maxWidth: .infinity, maxHeight: 80, alignment: .trailing)
+            }
+            .redacted(reason: viewModel.isLoadingGrades ? .placeholder : [])
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private func lastUpdatedDateView(lastUpdated: Date) -> some View {
+        Text("数据更新于：")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text(lastUpdated, style: .relative)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            + Text("前")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
     }
 
     @ViewBuilder
