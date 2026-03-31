@@ -13,7 +13,7 @@ struct OnboardingView: View {
     @State private var currentPage = 0
     @State private var dormViewModel = DormListViewModel()
 
-    private let totalPages = 5
+    private let totalPages = 6
 
     var body: some View {
         NavigationStack {
@@ -31,6 +31,9 @@ struct OnboardingView: View {
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     case 3:
                         OnboardingDormNotificationPage(viewModel: dormViewModel)
+                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                    case 4:
+                        OnboardingWidgetPage()
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     default:
                         OnboardingCompletionPage()
