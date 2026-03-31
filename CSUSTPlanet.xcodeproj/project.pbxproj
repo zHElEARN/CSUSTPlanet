@@ -9,13 +9,13 @@
 /* Begin PBXBuildFile section */
 		00326DF62F7A15DF003A4BD1 /* AlertToast in Frameworks */ = {isa = PBXBuildFile; productRef = 00326DF52F7A15DF003A4BD1 /* AlertToast */; };
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
+		0051222F2F7B586B00E1595D /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 0051222E2F7B586B00E1595D /* MMKV */; };
+		005122312F7B586B00E1595D /* MMKVAppExtension-static in Frameworks */ = {isa = PBXBuildFile; productRef = 005122302F7B586B00E1595D /* MMKVAppExtension-static */; };
 		005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = 005FBAB92F72E1BE00D7B07C /* JWTDecode */; };
 		0080865B2F7AA250008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865A2F7AA250008CB508 /* CSUSTKit */; };
 		0080865D2F7AA255008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865C2F7AA255008CB508 /* GRDB */; };
 		0080865F2F7AA25B008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865E2F7AA25B008CB508 /* CSUSTKit */; };
 		008086612F7AA25F008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 008086602F7AA25F008CB508 /* GRDB */; };
-		00D8FFE32F7A0F7C00D2D360 /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 00D8FFE22F7A0F7C00D2D360 /* MMKV */; };
-		00D8FFEC2F7A11B200D2D360 /* MMKVAppExtension in Frameworks */ = {isa = PBXBuildFile; productRef = 00D8FFEB2F7A11B200D2D360 /* MMKVAppExtension */; };
 		00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 00E574AA2F1F4F0400440D8D /* MatomoTracker */; };
 		00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 00E575FA2F1F4F6B00440D8D /* Kingfisher */; };
 		00E89C632E2C88D800B43162 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E89C622E2C88D800B43162 /* WidgetKit.framework */; };
@@ -183,12 +183,12 @@
 			files = (
 				00326DF62F7A15DF003A4BD1 /* AlertToast in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
-				00D8FFE32F7A0F7C00D2D360 /* MMKV in Frameworks */,
 				008086612F7AA25F008CB508 /* GRDB in Frameworks */,
 				0080865F2F7AA25B008CB508 /* CSUSTKit in Frameworks */,
 				00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */,
 				00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */,
 				005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */,
+				0051222F2F7B586B00E1595D /* MMKV in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,7 +198,7 @@
 			files = (
 				00E89C652E2C88D800B43162 /* SwiftUI.framework in Frameworks */,
 				0080865D2F7AA255008CB508 /* GRDB in Frameworks */,
-				00D8FFEC2F7A11B200D2D360 /* MMKVAppExtension in Frameworks */,
+				005122312F7B586B00E1595D /* MMKVAppExtension-static in Frameworks */,
 				0080865B2F7AA250008CB508 /* CSUSTKit in Frameworks */,
 				00E89C632E2C88D800B43162 /* WidgetKit.framework in Frameworks */,
 			);
@@ -248,7 +248,6 @@
 				007CF8592E1BD68900E319F2 /* Resources */,
 				00E89C732E2C88D800B43162 /* Embed Foundation Extensions */,
 				00F16E952F52E44C00E1DC4D /* Embed Frameworks */,
-				003274142F7A24D1003A4BD1 /* Embed MMKVAppExtension */,
 			);
 			buildRules = (
 			);
@@ -265,10 +264,10 @@
 				00E574AA2F1F4F0400440D8D /* MatomoTracker */,
 				00E575FA2F1F4F6B00440D8D /* Kingfisher */,
 				005FBAB92F72E1BE00D7B07C /* JWTDecode */,
-				00D8FFE22F7A0F7C00D2D360 /* MMKV */,
 				00326DF52F7A15DF003A4BD1 /* AlertToast */,
 				0080865E2F7AA25B008CB508 /* CSUSTKit */,
 				008086602F7AA25F008CB508 /* GRDB */,
+				0051222E2F7B586B00E1595D /* MMKV */,
 			);
 			productName = CSUSTPlanet;
 			productReference = 007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */;
@@ -330,7 +329,7 @@
 				000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */,
 				003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */,
-				00D8FFD92F7A0E7E00D2D360 /* XCRemoteSwiftPackageReference "MMKV" */,
+				0051222D2F7B586B00E1595D /* XCRemoteSwiftPackageReference "MMKV" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 007CF85C2E1BD68900E319F2 /* Products */;
@@ -359,28 +358,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		003274142F7A24D1003A4BD1 /* Embed MMKVAppExtension */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Embed MMKVAppExtension";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Scripts/embed-mmkv.sh\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		007CF8572E1BD68900E319F2 /* Sources */ = {
@@ -845,20 +822,20 @@
 				minimumVersion = 2.4.1;
 			};
 		};
+		0051222D2F7B586B00E1595D /* XCRemoteSwiftPackageReference "MMKV" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/zHElEARN/MMKV.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/auth0/JWTDecode.swift";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 4.0.0;
-			};
-		};
-		00D8FFD92F7A0E7E00D2D360 /* XCRemoteSwiftPackageReference "MMKV" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Tencent/MMKV.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
 			};
 		};
 		00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */ = {
@@ -898,6 +875,16 @@
 			package = 0041FC6B2E2AA269007F383F /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
 			productName = MarkdownUI;
 		};
+		0051222E2F7B586B00E1595D /* MMKV */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0051222D2F7B586B00E1595D /* XCRemoteSwiftPackageReference "MMKV" */;
+			productName = MMKV;
+		};
+		005122302F7B586B00E1595D /* MMKVAppExtension-static */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0051222D2F7B586B00E1595D /* XCRemoteSwiftPackageReference "MMKV" */;
+			productName = "MMKVAppExtension-static";
+		};
 		005FBAB92F72E1BE00D7B07C /* JWTDecode */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */;
@@ -922,16 +909,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
-		};
-		00D8FFE22F7A0F7C00D2D360 /* MMKV */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 00D8FFD92F7A0E7E00D2D360 /* XCRemoteSwiftPackageReference "MMKV" */;
-			productName = MMKV;
-		};
-		00D8FFEB2F7A11B200D2D360 /* MMKVAppExtension */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 00D8FFD92F7A0E7E00D2D360 /* XCRemoteSwiftPackageReference "MMKV" */;
-			productName = MMKVAppExtension;
 		};
 		00E574AA2F1F4F0400440D8D /* MatomoTracker */ = {
 			isa = XCSwiftPackageProductDependency;

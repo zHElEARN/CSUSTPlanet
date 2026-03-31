@@ -1,5 +1,5 @@
 {
-  "originHash" : "91f6ef787c0dca9a6d2621f822ee6c7a561590566d27c1d4ac26fb5f2652ca20",
+  "originHash" : "a1d11bf33a5d899537dad3b8d33c2b60541815d3c4977030f46c4dd556a7ee37",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -85,10 +85,10 @@
     {
       "identity" : "mmkv",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Tencent/MMKV.git",
+      "location" : "https://github.com/zHElEARN/MMKV.git",
       "state" : {
-        "revision" : "23d652c17e8c2023bb50f1c92e862a2304eaa2a2",
-        "version" : "2.4.0"
+        "branch" : "master",
+        "revision" : "3c11a3273f924797a553f6945b6244ba7ec7accd"
       }
     },
     {
