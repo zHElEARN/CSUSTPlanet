@@ -9,11 +9,13 @@ import SwiftUI
 
 struct OnboardingView: View {
     let onSkip: () -> Void
+    let presentingColorScheme: ColorScheme
 
+    @Bindable private var globalManager = GlobalManager.shared
     @State private var currentPage = 0
     @State private var dormViewModel = DormListViewModel()
 
-    private let totalPages = 6
+    private let totalPages = 7
 
     var body: some View {
         NavigationStack {
@@ -34,6 +36,9 @@ struct OnboardingView: View {
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     case 4:
                         OnboardingWidgetPage()
+                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                    case 5:
+                        OnboardingSettingsPage()
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     default:
                         OnboardingCompletionPage()
@@ -71,6 +76,9 @@ struct OnboardingView: View {
                 }
             }
         }
+        #if os(iOS)
+        .preferredColorScheme(sheetPreferredColorScheme)
+        #endif
     }
 
     private func handlePrimaryAction() {
@@ -83,4 +91,17 @@ struct OnboardingView: View {
             currentPage += 1
         }
     }
+
+    #if os(iOS)
+    private var sheetPreferredColorScheme: ColorScheme? {
+        switch globalManager.appearance {
+        case "light":
+            return .light
+        case "dark":
+            return .dark
+        default:
+            return presentingColorScheme
+        }
+    }
+    #endif
 }

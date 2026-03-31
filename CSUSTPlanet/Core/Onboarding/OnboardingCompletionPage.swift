@@ -10,9 +10,9 @@ import SwiftUI
 struct OnboardingCompletionPage: View {
     var body: some View {
         ContentUnavailableView {
-            Label("配置完成", systemImage: "checkmark.circle")
+            Label("配置完成", systemImage: "checkmark.circle.fill")
         } description: {
-            Text("结束页面占位，可以开始使用 App 了")
+            Text("常用功能已经准备就绪，现在就可以开始使用长理星球了。")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

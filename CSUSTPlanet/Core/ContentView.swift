@@ -81,6 +81,7 @@ struct ContentView: View {
     @Bindable var globalManager = GlobalManager.shared
     @Bindable var authManager = AuthManager.shared
 
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) var sizeClass
 
     var body: some View {
@@ -259,7 +260,7 @@ struct ContentView: View {
         .preferredColorScheme(globalManager.preferredColorScheme)
         #endif
         .sheet(isPresented: globalManager.isOnboardingSheetShowing) {
-            OnboardingView(onSkip: globalManager.completeOnboarding)
+            OnboardingView(onSkip: globalManager.completeOnboarding, presentingColorScheme: colorScheme)
         }
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
             UserAgreementView(isButtonPresented: true).interactiveDismissDisabled(true)
