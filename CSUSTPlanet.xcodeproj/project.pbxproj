@@ -800,7 +800,7 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		000721EB2F5EF94500C1423E /* XCRemoteSwiftPackageReference "AlertToast" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/zHElEARN/AlertToast";
+			repositoryURL = "https://github.com/zHElEARN/AlertToast.git";
 			requirement = {
 				branch = master;
 				kind = branch;
@@ -816,7 +816,7 @@
 		};
 		0041FC6B2E2AA269007F383F /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.4.1;
@@ -840,7 +840,7 @@
 		};
 		00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/zHElEARN/CSUSTKit";
+			repositoryURL = "https://github.com/zHElEARN/CSUSTKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.4.4;
