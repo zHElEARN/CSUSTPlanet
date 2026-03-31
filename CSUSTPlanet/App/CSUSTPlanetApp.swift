@@ -21,8 +21,6 @@ struct CSUSTPlanetApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
-        MMKVHelper.GlobalManager.hasCompletedOnboarding = false
-
         _ = DatabaseManager.shared
         _ = TrackHelper.shared
         _ = NotificationManager.shared
