@@ -2,7 +2,7 @@
 //  OnboardingView.swift
 //  CSUSTPlanet
 //
-//  Created by Codex on 2026/3/31.
+//  Created by Zachary Liu on 2026/3/31.
 //
 
 import SwiftUI
@@ -11,8 +11,9 @@ struct OnboardingView: View {
     let onSkip: () -> Void
 
     @State private var currentPage = 0
+    @State private var dormViewModel = DormListViewModel()
 
-    private let totalPages = 3
+    private let totalPages = 5
 
     var body: some View {
         NavigationStack {
@@ -24,6 +25,12 @@ struct OnboardingView: View {
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     case 1:
                         OnboardingLoginPage()
+                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                    case 2:
+                        OnboardingDormSetupPage(viewModel: dormViewModel)
+                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
+                    case 3:
+                        OnboardingDormNotificationPage(viewModel: dormViewModel)
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     default:
                         OnboardingCompletionPage()
@@ -47,6 +54,7 @@ struct OnboardingView: View {
             .padding(.top, 16)
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .task { await dormViewModel.loadInitial() }
             .navigationTitle("欢迎进入长理星球")
             .navigationSubtitleCompat("步骤 \(currentPage + 1) / \(totalPages)")
             .inlineToolbarTitle()
