@@ -258,6 +258,9 @@ struct ContentView: View {
         #if os(iOS)
         .preferredColorScheme(globalManager.preferredColorScheme)
         #endif
+        .sheet(isPresented: globalManager.isOnboardingSheetShowing) {
+            OnboardingView(onSkip: globalManager.completeOnboarding)
+        }
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
             UserAgreementView(isButtonPresented: true).interactiveDismissDisabled(true)
         }

@@ -59,6 +59,7 @@ final class GlobalManager {
         appearance = MMKVHelper.GlobalManager.appearance
         isUserAgreementAccepted = MMKVHelper.GlobalManager.isUserAgreementAccepted
         isWebVPNModeEnabled = MMKVHelper.GlobalManager.isWebVPNModeEnabled
+        isOnboardingPresented = !MMKVHelper.GlobalManager.hasCompletedOnboarding
         isMigratingToGRDB = !MMKVHelper.SwiftData.hasMigratedToGRDB
 
         #if os(macOS)
@@ -98,11 +99,20 @@ final class GlobalManager {
     var isUserAgreementShowing: Binding<Bool> {
         Binding(get: { !self.isUserAgreementAccepted }, set: { self.isUserAgreementAccepted = !$0 })
     }
+    var isOnboardingSheetShowing: Binding<Bool> {
+        Binding(
+            get: {
+                self.isOnboardingPresented && !self.hasDatabaseFatalError && !self.isMigratingToGRDB && self.isUserAgreementAccepted && !self.isAppUpdateSheetPresented
+            },
+            set: { self.isOnboardingPresented = $0 }
+        )
+    }
     var isWebVPNModeEnabled: Bool {
         didSet {
             MMKVHelper.GlobalManager.isWebVPNModeEnabled = isWebVPNModeEnabled
         }
     }
+    var isOnboardingPresented: Bool
 
     var hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
     var databaseFatalErrorMessage: String = DatabaseManager.shared.fatalErrorMessage
@@ -162,6 +172,11 @@ final class GlobalManager {
         isAppUpdateSheetPresented = false
     }
 
+    func completeOnboarding() {
+        MMKVHelper.GlobalManager.hasCompletedOnboarding = true
+        isOnboardingPresented = false
+    }
+
     func migrateDatabaseIfNeeded() async {
         guard isMigratingToGRDB, !isMigratingDatabase else { return }
         isMigratingDatabase = true
@@ -205,6 +220,9 @@ extension MMKVHelper {
 
         @MMKVStorage(key: "GlobalVars.isWebVPNModeEnabled", defaultValue: false)
         static var isWebVPNModeEnabled: Bool
+
+        @MMKVStorage(key: "GlobalVars.hasCompletedOnboarding", defaultValue: false)
+        static var hasCompletedOnboarding: Bool
 
         @MMKVOptionalStorage(key: "GlobalVars.ignoredAppUpdateVersionCode")
         static var ignoredAppUpdateVersionCode: Int?
