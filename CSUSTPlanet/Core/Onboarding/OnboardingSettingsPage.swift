@@ -2,7 +2,7 @@
 //  OnboardingSettingsPage.swift
 //  CSUSTPlanet
 //
-//  Created by Codex on 2026/3/31.
+//  Created by Zachary Liu on 2026/3/31.
 //
 
 import SwiftUI
@@ -16,84 +16,101 @@ struct OnboardingSettingsPage: View {
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 28) {
-                VStack(spacing: 16) {
-                    Image(systemName: "slider.horizontal.3")
-                        .font(.system(size: 64, weight: .semibold))
-                        .foregroundStyle(.accent)
-                        .padding(.top, 24)
+            VStack(spacing: 20) {
+                headerSection
+                appearanceCard
 
-                    Text("完成基础设置")
-                        .font(.system(size: 28, weight: .bold))
-                        .multilineTextAlignment(.center)
-
-                    Text("先把常用偏好配置好，进入 App 后也可以随时前往“我的”页面继续调整。")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 12)
-                }
-
-                VStack(spacing: 16) {
-                    GroupBox {
-                        VStack(alignment: .leading, spacing: 14) {
-                            Label("外观主题", systemImage: "circle.lefthalf.filled")
-                                .font(.headline)
-
-                            Picker("外观主题", selection: $globalManager.appearance) {
-                                Text("跟随系统").tag("system")
-                                Text("浅色模式").tag("light")
-                                Text("深色模式").tag("dark")
-                            }
-                            .pickerStyle(.segmented)
-
-                            Text("您可以按照自己的使用习惯选择显示风格。")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(.horizontal, 8)
-
-                    #if os(iOS)
-                    GroupBox {
-                        VStack(alignment: .leading, spacing: 14) {
-                            Label("后台任务", systemImage: "gearshape.2")
-                                .font(.headline)
-
-                            Toggle("开启后台任务总开关", isOn: backgroundTaskEnabledBinding)
-
-                            Text("这里只提供总开关。成绩更新、宿舍电量等具体后台任务，后续可以前往“我的”页面进一步调整。")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    .padding(.horizontal, 8)
-
-                    GroupBox {
-                        VStack(alignment: .leading, spacing: 14) {
-                            Label("实时活动与灵动岛", systemImage: "dot.radiowaves.left.and.right")
-                                .font(.headline)
-
-                            Toggle("开启实时活动", isOn: $activityManager.isEnabled)
-
-                            Text("开启后会在上课前、上课中和下课后展示课程状态，支持实时活动与灵动岛显示。")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    .padding(.horizontal, 8)
-                    #endif
-                }
+                #if os(iOS)
+                backgroundTaskCard
+                activityCard
+                #endif
             }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.top, 12)
             .padding(.bottom, 40)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "slider.horizontal.3")
+                .font(.system(size: 52, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(.top, 16)
+
+            Text("偏好设置")
+                .font(.largeTitle.weight(.bold))
+                .multilineTextAlignment(.center)
+
+            Text("配置App的外观及相关权限。所有选项均可在应用内设置中重新修改。")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var appearanceCard: some View {
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("外观主题")
+                    .font(.headline)
+
+                Picker("外观主题", selection: $globalManager.appearance) {
+                    Text("跟随系统").tag("system")
+                    Text("浅色模式").tag("light")
+                    Text("深色模式").tag("dark")
+                }
+                .pickerStyle(.segmented)
+
+                Text("您可以按照自己的使用习惯选择显示风格。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 6)
     }
 
     #if os(iOS)
+    private var backgroundTaskCard: some View {
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("后台任务")
+                    .font(.headline)
+
+                Toggle("开启后台任务总开关", isOn: backgroundTaskEnabledBinding)
+
+                Text("包含成绩查询、宿舍电量查询具体后台任务，可以前往“后台任务设置”页面进一步调整。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 6)
+    }
+
+    private var activityCard: some View {
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("实时活动/灵动岛")
+                    .font(.headline)
+
+                Toggle("开启实时活动/灵动岛", isOn: $activityManager.isEnabled)
+
+                Text("开启后会在上课前、上课中和下课后展示课程状态。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 6)
+    }
+
     private var backgroundTaskEnabledBinding: Binding<Bool> {
         Binding(
             get: { backgroundTaskHelper.isEnabled },
@@ -105,9 +122,4 @@ struct OnboardingSettingsPage: View {
         )
     }
     #endif
-}
-
-#Preview {
-    OnboardingSettingsPage()
-        .padding()
 }

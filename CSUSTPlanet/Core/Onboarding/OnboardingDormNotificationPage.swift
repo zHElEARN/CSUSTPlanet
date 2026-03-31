@@ -33,96 +33,41 @@ struct OnboardingDormNotificationPage: View {
 
     private var onboardingDescription: String {
         if viewModel.dorms.isEmpty {
-            return "先添加一个宿舍，之后就可以为宿舍配置低电量定时提醒。"
+            return "先添加一个宿舍，之后就可以为宿舍配置电量定时提醒。"
         }
         if selectedDorm?.scheduleEnabled == true {
             return "当前宿舍已经完成定时通知配置，后续也可以随时调整提醒时间。"
         }
-        return "选择一个宿舍，并为它设置每天的提醒时间。"
+        return "选择一个宿舍，并为它设置每天的电量提醒时间。"
+    }
+
+    private var canConfigureSelectedDorm: Bool {
+        guard let selectedDorm else { return false }
+        return selectedDorm.hasFetchedElectricity && !isSelectedDormQuerying && !viewModel.isSchedulingDorm
     }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 32) {
-                VStack(spacing: 16) {
-                    Image(systemName: selectedDorm?.scheduleEnabled == true ? "bell.badge.fill" : "bell.badge")
-                        .font(.system(size: 64, weight: .semibold))
-                        .foregroundStyle(selectedDorm?.scheduleEnabled == true ? Color.green : Color.accentColor)
-                        .padding(.top, 24)
+            VStack(spacing: 28) {
+                headerSection
+                primaryCard
+                configureButtonSection
 
-                    Text(onboardingTitle)
-                        .font(.system(size: 28, weight: .bold))
-                        .multilineTextAlignment(.center)
-
-                    Text(onboardingDescription)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 12)
+                if let selectedDorm, selectedDorm.scheduleEnabled {
+                    scheduleSummaryCard(for: selectedDorm)
                 }
 
-                VStack(spacing: 18) {
-                    if viewModel.isLoading {
-                        HStack(spacing: 12) {
-                            ProgressView()
-                                .smallControlSizeOnMac()
-
-                            Text("正在读取宿舍信息...")
-                                .foregroundStyle(.secondary)
-
-                            Spacer()
-                        }
-                        .padding(.horizontal, 8)
-                    } else if viewModel.dorms.isEmpty {
-                        Button(action: { viewModel.isAddDormSheetPresented = true }) {
-                            Label("先添加宿舍", systemImage: "plus.circle.fill")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                        .padding(.horizontal, 8)
-                    } else {
-                        dormPickerCard
-
-                        if let selectedDorm, selectedDorm.scheduleEnabled {
-                            scheduleSummaryRow(for: selectedDorm)
-                        } else {
-                            Button(action: handleConfigureButtonTapped) {
-                                Label("配置宿舍定时通知", systemImage: "clock.badge")
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.large)
-                            .padding(.horizontal, 8)
-                            .disabled(viewModel.isSchedulingDorm || selectedDorm == nil || isSelectedDormQuerying)
-
-                            if isSelectedDormQuerying {
-                                Text("正在刷新该宿舍的电量数据，完成后即可继续配置定时通知。")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 20)
-                            } else if let selectedDorm, !selectedDorm.hasFetchedElectricity {
-                                Text("该宿舍还没有成功查询过电量，请先刷新一次电量后，再开启定时通知。")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 20)
-                            }
-                        }
-                    }
-
-                    Text("您也可以稍后在“宿舍”页面继续调整提醒时间。")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
+                if let statusText {
+                    footerStatusText(statusText)
                 }
+
+                footerText
             }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.top, 12)
             .padding(.bottom, 40)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task { syncSelectedDorm(with: viewModel.dorms) }
         .onChange(of: viewModel.dorms) { _, newDorms in
             syncSelectedDorm(with: newDorms)
@@ -160,28 +105,85 @@ struct OnboardingDormNotificationPage: View {
         .errorToast($viewModel.errorToast)
     }
 
-    private var dormPickerCard: some View {
-        CustomGroupBox {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 12) {
-                    Text("选择宿舍")
-                        .font(.headline)
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            Image(systemName: selectedDorm?.scheduleEnabled == true ? "bell.badge.fill" : "bell.badge")
+                .font(.system(size: 52, weight: .semibold))
+                .foregroundStyle(selectedDorm?.scheduleEnabled == true ? .green : .secondary)
+                .padding(.top, 16)
 
-                    Spacer()
+            Text(onboardingTitle)
+                .font(.largeTitle.weight(.bold))
+                .multilineTextAlignment(.center)
 
-                    if let selectedDorm {
-                        Button(asyncAction: { await viewModel.queryElectricity(for: selectedDorm) }) {
-                            if viewModel.isQuerying(selectedDorm) {
-                                ProgressView()
-                                    .smallControlSizeOnMac()
-                            } else {
-                                Label("刷新电量", systemImage: "arrow.clockwise")
-                            }
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                    }
+            Text(onboardingDescription)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var primaryCard: some View {
+        if viewModel.isLoading {
+            HStack(spacing: 12) {
+                ProgressView()
+                    .smallControlSizeOnMac()
+
+                Text("正在读取宿舍信息...")
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+            }
+            .padding(.horizontal, 6)
+        } else if viewModel.dorms.isEmpty {
+            Button(action: { viewModel.isAddDormSheetPresented = true }) {
+                Text("先添加宿舍")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .padding(.horizontal, 6)
+        } else {
+            CustomGroupBox {
+                VStack(alignment: .leading, spacing: 16) {
+                    dormPickerContent
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 6)
+        }
+    }
+
+    @ViewBuilder
+    private var configureButtonSection: some View {
+        if !viewModel.isLoading, !viewModel.dorms.isEmpty, selectedDorm?.scheduleEnabled != true {
+            Button(action: handleConfigureButtonTapped) {
+                if viewModel.isSchedulingDorm {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                } else {
+                    Text("配置宿舍电量通知")
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!canConfigureSelectedDorm)
+            .padding(.horizontal, 6)
+        }
+    }
+
+    @ViewBuilder
+    private var dormPickerContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Text("选择宿舍")
+                    .font(.headline)
+
+                Spacer()
 
                 Picker("宿舍", selection: $selectedDormID) {
                     ForEach(viewModel.dorms) { dorm in
@@ -189,52 +191,125 @@ struct OnboardingDormNotificationPage: View {
                             .tag(dorm.id as Int64?)
                     }
                 }
+                .fixedSize(horizontal: true, vertical: false)
                 .pickerStyle(.menu)
+                .labelsHidden()
+            }
 
+            HStack(spacing: 12) {
                 if let selectedDorm {
-                    Text(
-                        isSelectedDormQuerying
-                            ? "正在刷新该宿舍的最新电量。"
-                            : selectedDorm.scheduleEnabled
-                                ? "当前已配置为每天 \(formattedScheduleTime(for: selectedDorm)) 提醒。"
-                                : "当前宿舍尚未开启定时通知。"
-                    )
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    Button(asyncAction: { await viewModel.queryElectricity(for: selectedDorm) }) {
+                        if viewModel.isQuerying(selectedDorm) {
+                            ProgressView()
+                                .smallControlSizeOnMac()
+                        } else {
+                            Text("刷新电量")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
                 }
+
+                Spacer()
+
+                currentElectricityValue
             }
         }
-        .padding(.horizontal, 8)
     }
 
     @ViewBuilder
-    private func scheduleSummaryRow(for dorm: DormGRDB) -> some View {
-        HStack(spacing: 14) {
-            Circle()
-                .fill(Color.green.opacity(0.15))
-                .frame(width: 56, height: 56)
-                .overlay {
-                    Image(systemName: "clock.badge.checkmark.fill")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(.green)
+    private var currentElectricityValue: some View {
+        if let selectedDorm {
+            if isSelectedDormQuerying {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .smallControlSizeOnMac()
+
+                    Text("查询中")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
+            } else if let electricity = selectedDorm.lastFetchElectricity {
+                let electricityColor = ColorUtil.electricityColor(electricity: electricity)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(dorm.buildingName) \(dorm.room)")
-                    .font(.headline)
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                    Text(String(format: "%.2f", electricity))
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(electricityColor)
+                        .contentTransition(.numericText())
 
-                Text("每天 \(formattedScheduleTime(for: dorm)) 提醒")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                Text("宿舍定时通知已配置完成")
+                    Text("kWh")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Text("暂无电量")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
-
-            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 8)
+    }
+
+    private func scheduleSummaryCard(for dorm: DormGRDB) -> some View {
+        CustomGroupBox {
+            HStack(spacing: 14) {
+                Circle()
+                    .fill(Color.secondary.opacity(0.12))
+                    .frame(width: 56, height: 56)
+                    .overlay {
+                        Image(systemName: "clock.badge.checkmark.fill")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(dorm.buildingName) \(dorm.room)")
+                        .font(.headline)
+
+                    Text("每天 \(formattedScheduleTime(for: dorm)) 提醒")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    Text("宿舍定时通知已配置完成")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 6)
+    }
+
+    private var statusText: String? {
+        guard !viewModel.dorms.isEmpty, selectedDorm?.scheduleEnabled != true else { return nil }
+
+        if isSelectedDormQuerying {
+            return "正在刷新该宿舍的电量数据，完成后即可继续配置定时通知。"
+        }
+
+        if let selectedDorm, !selectedDorm.hasFetchedElectricity {
+            return "必须先查询到电量，才能进行定时通知配置。"
+        }
+
+        return nil
+    }
+
+    private func footerStatusText(_ text: String) -> some View {
+        Text(text)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 12)
+    }
+
+    private var footerText: some View {
+        Text("您也可以稍后在“电量查询”页面继续调整提醒时间。")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 12)
     }
 
     private func handleConfigureButtonTapped() {

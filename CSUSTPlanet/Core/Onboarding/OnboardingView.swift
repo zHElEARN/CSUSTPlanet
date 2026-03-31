@@ -21,29 +21,7 @@ struct OnboardingView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 ZStack {
-                    switch currentPage {
-                    case 0:
-                        OnboardingWelcomePage()
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
-                    case 1:
-                        OnboardingLoginPage()
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
-                    case 2:
-                        OnboardingDormSetupPage(viewModel: dormViewModel)
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
-                    case 3:
-                        OnboardingDormNotificationPage(viewModel: dormViewModel)
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
-                    case 4:
-                        OnboardingWidgetPage()
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
-                    case 5:
-                        OnboardingSettingsPage()
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
-                    default:
-                        OnboardingCompletionPage()
-                            .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
-                    }
+                    currentPageView
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -58,12 +36,12 @@ struct OnboardingView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 20)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 16)
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .task { await dormViewModel.loadInitial() }
-            .navigationTitle("欢迎进入长理星球")
+            .navigationTitle(currentNavigationTitle)
             .navigationSubtitleCompat("步骤 \(currentPage + 1) / \(totalPages)")
             .inlineToolbarTitle()
             .toolbar {
@@ -104,4 +82,50 @@ struct OnboardingView: View {
         }
     }
     #endif
+
+    @ViewBuilder
+    private var currentPageView: some View {
+        switch currentPage {
+        case 0:
+            OnboardingWelcomePage()
+                .transition(pageTransition)
+        case 1:
+            OnboardingLoginPage()
+                .transition(pageTransition)
+        case 2:
+            OnboardingDormSetupPage(viewModel: dormViewModel)
+                .transition(pageTransition)
+        case 3:
+            OnboardingDormNotificationPage(viewModel: dormViewModel)
+                .transition(pageTransition)
+        case 4:
+            OnboardingWidgetPage()
+                .transition(pageTransition)
+        case 5:
+            OnboardingSettingsPage()
+                .transition(pageTransition)
+        default:
+            OnboardingCompletionPage()
+                .transition(pageTransition)
+        }
+    }
+
+    private var pageTransition: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .leading).combined(with: .opacity)
+        )
+    }
+
+    private var currentNavigationTitle: String {
+        switch currentPage {
+        case 0: return "长理星球"
+        case 1: return "账号登录"
+        case 2: return "宿舍配置"
+        case 3: return "通知设置"
+        case 4: return "桌面小组件"
+        case 5: return "偏好设置"
+        default: return "设置完成"
+        }
+    }
 }

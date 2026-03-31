@@ -11,33 +11,43 @@ struct OnboardingWidgetPage: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 28) {
-                VStack(spacing: 16) {
-                    Image(systemName: "square.grid.2x2.fill")
-                        .font(.system(size: 64, weight: .semibold))
-                        .foregroundStyle(.accent)
-                        .padding(.top, 24)
-
-                    Text("桌面小组件")
-                        .font(.system(size: 28, weight: .bold))
-                        .multilineTextAlignment(.center)
-
-                    Text("把课表、成绩、待办和宿舍电量放到桌面上，不打开 App 也能快速查看常用校园信息。")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 12)
-                }
-
-                Image("onboarding_widget_preview")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 240)
-                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                    .shadow(color: .black.opacity(0.12), radius: 18, x: 0, y: 10)
+                headerSection
+                previewImage
             }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.top, 12)
             .padding(.bottom, 40)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "square.grid.2x2")
+                .font(.system(size: 52, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(.top, 16)
+
+            Text("桌面小组件")
+                .font(.largeTitle.weight(.bold))
+                .multilineTextAlignment(.center)
+
+            Text("把课表、成绩、待提交作业和宿舍电量等信息放到桌面上，不打开 App 也能快速查看常用校园信息。")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var previewImage: some View {
+        VStack(spacing: 16) {
+            Image("onboarding_widget_preview")
+                .resizable()
+                .scaledToFit()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 6)
     }
 }

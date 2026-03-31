@@ -10,88 +10,77 @@ import SwiftUI
 struct OnboardingWelcomePage: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 40) {
-                VStack(spacing: 16) {
-                    Image("MinimalLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 88, height: 88)
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
-                        .padding(.top, 20)
-
-                    HStack(spacing: 0) {
-                        Text("欢迎使用")
-                        Text("长理星球")
-                            .foregroundColor(.accentColor)
-                    }
-                    .font(.system(size: 30, weight: .bold))
-
-                    Text("让您的校园生活更便捷高效。")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                }
-
-                VStack(spacing: 16) {
-                    FeatureRow(
-                        icon: "graduationcap.fill",
-                        iconColor: .blue,
-                        title: "学业尽在掌握",
-                        description: "随时随地查询您的课表、考试成绩和考试安排。"
-                    )
-
-                    FeatureRow(
-                        icon: "bolt.fill",
-                        iconColor: .orange,
-                        title: "宿舍用电无忧",
-                        description: "实时掌握宿舍电量情况，并及时接收低电量贴心提醒。"
-                    )
-
-                    FeatureRow(
-                        icon: "checklist",
-                        iconColor: .green,
-                        title: "作业不再遗漏",
-                        description: "快速查看各科课程作业，轻松追踪每一个作业截止日期。"
-                    )
-                }
-                .padding(.horizontal, 20)
+            VStack(spacing: 28) {
+                headerSection
+                featureCard
             }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.top, 12)
             .padding(.bottom, 40)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
-}
 
-private struct FeatureRow: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    let description: String
+    private var headerSection: some View {
+        VStack(spacing: 16) {
+            Image("MinimalLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 76, height: 76)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .padding(.top, 16)
 
-    var body: some View {
-        GroupBox {
-            VStack(alignment: .leading) {
-                HStack(spacing: 8) {
-                    Image(systemName: icon)
-                        .font(.system(size: 20))
-                        .foregroundColor(iconColor)
-                        .frame(width: 28, alignment: .center)
+            Text("欢迎使用长理星球")
+                .font(.largeTitle.weight(.bold))
+                .multilineTextAlignment(.center)
 
-                    Text(title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                }
-
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 4)
-            }
+            Text("你的校园课程、课表、生活辅助助手")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
         }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var featureCard: some View {
+        CustomGroupBox {
+            VStack(alignment: .leading, spacing: 16) {
+                featureRow(
+                    title: "教务数据查询",
+                    description: "支持获取并展示个人课表、考试安排及考试成绩数据等。"
+                )
+
+                Divider()
+
+                featureRow(
+                    title: "宿舍电量查询与通知",
+                    description: "查询宿舍剩余电量并计算预计耗尽时间，支持配置电量查询推送通知。"
+                )
+
+                Divider()
+
+                featureRow(
+                    title: "课程作业查询",
+                    description: "汇总网络课程平台作业信息，查看所有课程的作业提交和截止信息。"
+                )
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 6)
+    }
+
+    @ViewBuilder
+    private func featureRow(title: String, description: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.headline)
+
+            Text(description)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
