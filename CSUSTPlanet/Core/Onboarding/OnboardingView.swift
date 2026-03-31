@@ -23,7 +23,7 @@ struct OnboardingView: View {
                         OnboardingWelcomePage()
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     case 1:
-                        OnboardingPlaceholderPage()
+                        OnboardingLoginPage()
                             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .move(edge: .leading).combined(with: .opacity)))
                     default:
                         OnboardingCompletionPage()
