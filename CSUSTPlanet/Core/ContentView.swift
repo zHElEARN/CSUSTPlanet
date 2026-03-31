@@ -81,33 +81,7 @@ struct ContentView: View {
     @Bindable var globalManager = GlobalManager.shared
     @Bindable var authManager = AuthManager.shared
 
-    @State private var isMigratingToGRDB: Bool = !MMKVHelper.SwiftData.hasMigratedToGRDB
-
     @Environment(\.horizontalSizeClass) var sizeClass
-
-    var preferredColorScheme: ColorScheme? {
-        switch globalManager.appearance {
-        case "light":
-            return .light
-        case "dark":
-            return .dark
-        default:
-            return nil
-        }
-    }
-
-    #if os(macOS)
-    private func applyMacOSAppearance(_ appearanceName: String) {
-        switch appearanceName {
-        case "light":
-            PlatformApplication.shared.appearance = NSAppearance(named: .aqua)
-        case "dark":
-            PlatformApplication.shared.appearance = NSAppearance(named: .darkAqua)
-        default:
-            PlatformApplication.shared.appearance = nil
-        }
-    }
-    #endif
 
     var body: some View {
         Group {
@@ -149,7 +123,7 @@ struct ContentView: View {
                     .buttonStyle(.borderedProminent)
                 }
                 .padding()
-            } else if isMigratingToGRDB {
+            } else if globalManager.isMigratingToGRDB {
                 VStack(spacing: 20) {
                     ProgressView()
                         .controlSize(.large)
@@ -159,10 +133,7 @@ struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .task {
-                    await SwiftDataToGRDBMigrator.migrateIfNeeded()
-                    withAnimation {
-                        isMigratingToGRDB = false
-                    }
+                    await globalManager.migrateDatabaseIfNeeded()
                 }
             } else {
                 if #available(iOS 18.0, macOS 15.0, *) {
@@ -285,14 +256,7 @@ struct ContentView: View {
         // MARK: - 主题设置 & 用户协议弹窗
 
         #if os(iOS)
-        .preferredColorScheme(preferredColorScheme)
-        #elseif os(macOS)
-        .onAppear {
-            applyMacOSAppearance(globalManager.appearance)
-        }
-        .onChange(of: globalManager.appearance) { _, newValue in
-            applyMacOSAppearance(newValue)
-        }
+        .preferredColorScheme(globalManager.preferredColorScheme)
         #endif
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
             UserAgreementView(isButtonPresented: true).interactiveDismissDisabled(true)

@@ -9,6 +9,10 @@ import Foundation
 import OSLog
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#endif
+
 enum TabItem: String {
     case overview
     case features
@@ -49,11 +53,17 @@ final class GlobalManager {
     static let shared = GlobalManager()
 
     @ObservationIgnored private var isCheckingAppVersion = false
+    @ObservationIgnored private var isMigratingDatabase = false
 
     private init() {
         appearance = MMKVHelper.GlobalManager.appearance
         isUserAgreementAccepted = MMKVHelper.GlobalManager.isUserAgreementAccepted
         isWebVPNModeEnabled = MMKVHelper.GlobalManager.isWebVPNModeEnabled
+        isMigratingToGRDB = !MMKVHelper.SwiftData.hasMigratedToGRDB
+
+        #if os(macOS)
+        applyMacOSAppearance(appearance)
+        #endif
 
         TrackHelper.shared.updateIsOptedOut(!isUserAgreementAccepted)
 
@@ -62,7 +72,22 @@ final class GlobalManager {
 
     var selectedTab: TabItem? = .overview
     var appearance: String {
-        didSet { MMKVHelper.GlobalManager.appearance = appearance }
+        didSet {
+            MMKVHelper.GlobalManager.appearance = appearance
+            #if os(macOS)
+            applyMacOSAppearance(appearance)
+            #endif
+        }
+    }
+    var preferredColorScheme: ColorScheme? {
+        switch appearance {
+        case "light":
+            return .light
+        case "dark":
+            return .dark
+        default:
+            return nil
+        }
     }
     var isUserAgreementAccepted: Bool {
         didSet {
@@ -81,6 +106,7 @@ final class GlobalManager {
 
     var hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
     var databaseFatalErrorMessage: String = DatabaseManager.shared.fatalErrorMessage
+    var isMigratingToGRDB: Bool
 
     var latestAppVersion: PlanetConfigService.AppVersion?
     var isAppUpdateSheetPresented: Bool = false
@@ -135,6 +161,31 @@ final class GlobalManager {
         guard !isForceUpdateRequired else { return }
         isAppUpdateSheetPresented = false
     }
+
+    func migrateDatabaseIfNeeded() async {
+        guard isMigratingToGRDB, !isMigratingDatabase else { return }
+        isMigratingDatabase = true
+        defer { isMigratingDatabase = false }
+
+        await SwiftDataToGRDBMigrator.migrateIfNeeded()
+
+        withAnimation {
+            isMigratingToGRDB = false
+        }
+    }
+
+    #if os(macOS)
+    private func applyMacOSAppearance(_ appearanceName: String) {
+        switch appearanceName {
+        case "light":
+            PlatformApplication.shared.appearance = NSAppearance(named: .aqua)
+        case "dark":
+            PlatformApplication.shared.appearance = NSAppearance(named: .darkAqua)
+        default:
+            PlatformApplication.shared.appearance = nil
+        }
+    }
+    #endif
 
     func ignoreCurrentAppUpdate() {
         guard !isForceUpdateRequired, let latestAppVersion else { return }

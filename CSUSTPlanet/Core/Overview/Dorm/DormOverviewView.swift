@@ -163,7 +163,7 @@ struct DormOverviewView: View {
                 .interpolationMethod(.linear)
                 .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
-                if viewModel.chartRecords.count < 10 {
+                if viewModel.chartRecords.count < 3 {
                     PointMark(
                         x: .value("日期", record.date),
                         y: .value("电量", record.electricity)
