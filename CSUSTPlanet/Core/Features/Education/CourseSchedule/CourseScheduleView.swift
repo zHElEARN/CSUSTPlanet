@@ -352,18 +352,41 @@ struct CourseScheduleView: View {
 
             ZStack(alignment: .topLeading) {
                 if let coursesForWeek = weeklyCourses[week] {
-                    ForEach(coursesForWeek) { courseInfo in
-                        CourseCardView(course: courseInfo.course, session: courseInfo.session, color: viewModel.courseColors[courseInfo.course.courseName] ?? .gray) {
-                            viewModel.selectedCourseInfo = courseInfo
-                            viewModel.isCourseDetailPresented = true
+                    let groupedCourses = Dictionary(grouping: coursesForWeek) { info in
+                        "\(info.session.dayOfWeek.rawValue)-\(info.session.startSection)"
+                    }
+
+                    ForEach(Array(groupedCourses.values), id: \.first!.id) { group in
+                        if let firstCourseInfo = group.first {
+                            let courseHeight = calculateHeight(for: firstCourseInfo.session)
+                            let xOffset = horizontalPadding + calculateXOffset(for: firstCourseInfo.session.dayOfWeek, columnWidth: dayColumnWidth)
+                            let yOffset = calculateYOffset(for: firstCourseInfo.session)
+
+                            if group.count == 1 {
+                                // 正常课程
+                                CourseCardView(
+                                    course: firstCourseInfo.course,
+                                    session: firstCourseInfo.session,
+                                    color: viewModel.courseColors[firstCourseInfo.course.courseName] ?? .gray
+                                ) {
+                                    viewModel.selectedCourseInfo = firstCourseInfo
+                                    viewModel.isCourseDetailPresented = true
+                                }
+                                .frame(width: dayColumnWidth, height: courseHeight)
+                                .offset(x: xOffset, y: yOffset)
+                            } else {
+                                // 冲突课程
+                                ConflictCourseCardView(
+                                    courses: group,
+                                    isPad: isPad
+                                ) { selectedInfo in
+                                    viewModel.selectedCourseInfo = selectedInfo
+                                    viewModel.isCourseDetailPresented = true
+                                }
+                                .frame(width: dayColumnWidth, height: courseHeight)
+                                .offset(x: xOffset, y: yOffset)
+                            }
                         }
-                        .frame(width: dayColumnWidth)
-                        .frame(height: calculateHeight(for: courseInfo.session))
-                        .offset(
-                            // 应用初始内边距到 x 偏移量以对齐坐标系
-                            x: horizontalPadding + calculateXOffset(for: courseInfo.session.dayOfWeek, columnWidth: dayColumnWidth),
-                            y: calculateYOffset(for: courseInfo.session)
-                        )
                     }
                 }
             }
