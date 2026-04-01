@@ -1,5 +1,5 @@
 {
-  "originHash" : "a1d11bf33a5d899537dad3b8d33c2b60541815d3c4977030f46c4dd556a7ee37",
+  "originHash" : "a56f3b8ca5a9b4ae42894f2e9b78119bc5870c00a8a37511bcda9ba53021e7b8",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -13,7 +13,7 @@
     {
       "identity" : "alerttoast",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/zHElEARN/AlertToast",
+      "location" : "https://github.com/zHElEARN/AlertToast.git",
       "state" : {
         "branch" : "master",
         "revision" : "6fac45ae622c7249d111815c994c869f3163dadb"
@@ -62,6 +62,15 @@
       "state" : {
         "revision" : "d30a5fad881137e2267f96a8e3fc35c58999bb94",
         "version" : "8.6.2"
+      }
+    },
+    {
+      "identity" : "lookinserver",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/QMUI/LookinServer.git",
+      "state" : {
+        "revision" : "e553d1b689d147817dc54ad5c28fcff71e860101",
+        "version" : "1.2.8"
       }
     },
     {

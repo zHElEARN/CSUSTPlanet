@@ -11,6 +11,7 @@
 		0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0041FC6C2E2AA269007F383F /* MarkdownUI */; };
 		0051222F2F7B586B00E1595D /* MMKV in Frameworks */ = {isa = PBXBuildFile; productRef = 0051222E2F7B586B00E1595D /* MMKV */; };
 		005122312F7B586B00E1595D /* MMKVAppExtension-static in Frameworks */ = {isa = PBXBuildFile; productRef = 005122302F7B586B00E1595D /* MMKVAppExtension-static */; };
+		005584402F7C17F100F703BC /* LookinServer in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = 0055843F2F7C17F100F703BC /* LookinServer */; };
 		005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = 005FBAB92F72E1BE00D7B07C /* JWTDecode */; };
 		0080865B2F7AA250008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865A2F7AA250008CB508 /* CSUSTKit */; };
 		0080865D2F7AA255008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865C2F7AA255008CB508 /* GRDB */; };
@@ -188,6 +189,7 @@
 				00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */,
 				00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */,
 				005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */,
+				005584402F7C17F100F703BC /* LookinServer in Frameworks */,
 				0051222F2F7B586B00E1595D /* MMKV in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -268,6 +270,7 @@
 				0080865E2F7AA25B008CB508 /* CSUSTKit */,
 				008086602F7AA25F008CB508 /* GRDB */,
 				0051222E2F7B586B00E1595D /* MMKV */,
+				0055843F2F7C17F100F703BC /* LookinServer */,
 			);
 			productName = CSUSTPlanet;
 			productReference = 007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */;
@@ -330,6 +333,7 @@
 				003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 				005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */,
 				0051222D2F7B586B00E1595D /* XCRemoteSwiftPackageReference "MMKV" */,
+				0055843E2F7C17F100F703BC /* XCRemoteSwiftPackageReference "LookinServer" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 007CF85C2E1BD68900E319F2 /* Products */;
@@ -830,6 +834,14 @@
 				kind = branch;
 			};
 		};
+		0055843E2F7C17F100F703BC /* XCRemoteSwiftPackageReference "LookinServer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/QMUI/LookinServer.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.8;
+			};
+		};
 		005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/auth0/JWTDecode.swift";
@@ -884,6 +896,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0051222D2F7B586B00E1595D /* XCRemoteSwiftPackageReference "MMKV" */;
 			productName = "MMKVAppExtension-static";
+		};
+		0055843F2F7C17F100F703BC /* LookinServer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0055843E2F7C17F100F703BC /* XCRemoteSwiftPackageReference "LookinServer" */;
+			productName = LookinServer;
 		};
 		005FBAB92F72E1BE00D7B07C /* JWTDecode */ = {
 			isa = XCSwiftPackageProductDependency;
