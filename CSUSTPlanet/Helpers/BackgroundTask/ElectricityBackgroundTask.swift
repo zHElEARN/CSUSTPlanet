@@ -83,8 +83,6 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
             }
             Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量写入数据库成功")
 
-            CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), Constants.dbChangedCFNotificationName, nil, nil, true)
-
             let content = UNMutableNotificationContent()
             content.title = "宿舍电量查询"
             content.body = "\(dorm.buildingName) \(dorm.room) 当前电量: \(String(format: "%.2f", newElectricity)) 度"

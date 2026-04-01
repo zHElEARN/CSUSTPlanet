@@ -87,16 +87,4 @@ enum Constants {
 
     static let backgroundID = AssetUtil.bundleInfo(forKey: "ConfigBackgroundID")
 
-    // 数据库变更的通知名称
-    static let dbChangedNotification = AssetUtil.bundleInfo(forKey: "ConfigDBChangedNotification")
-
-    /// 用于 Darwin 跨进程通知的 CFNotificationName
-    static var dbChangedCFNotificationName: CFNotificationName {
-        return CFNotificationName(dbChangedNotification as CFString)
-    }
-
-    /// 用于 Darwin 跨进程通知的 CFString
-    static var dbChangedCFString: CFString {
-        return dbChangedNotification as CFString
-    }
 }

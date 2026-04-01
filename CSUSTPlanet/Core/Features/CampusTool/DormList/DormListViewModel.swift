@@ -24,7 +24,7 @@ final class DormListViewModel {
     var targetDeleteDorm: DormGRDB?
     var exhaustionInfoMap: [Int64: String] = [:]
 
-    private var listObserver: AutoRefreshingObserver?
+    private var listObserver: (any DatabaseCancellable)?
 
     var isInitial: Bool = true
     var isFirstObservation: Bool = true
@@ -39,54 +39,52 @@ final class DormListViewModel {
     func observeList() {
         guard let pool = DatabaseManager.shared.pool else { return }
 
-        listObserver = AutoRefreshingObserver { [weak self] in
-            let observation = ValueObservation.tracking { db -> ([DormGRDB], [ElectricityRecordGRDB]) in
-                let dorms = try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
-                let recentStartDate = ElectricityUtil.recentRecordsStartDate()
-                let records =
-                    try ElectricityRecordGRDB
-                    .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
-                    .order(ElectricityRecordGRDB.Columns.date.asc)
-                    .fetchAll(db)
-                return (dorms, records)
-            }
-            .map { (dorms, records) -> ([DormGRDB], [Int64: String]) in
-                let recordsByDormID = Dictionary(grouping: records, by: { $0.dormID })
-                var infoMap: [Int64: String] = [:]
-                infoMap.reserveCapacity(dorms.count)
+        let observation = ValueObservation.tracking { db -> ([DormGRDB], [ElectricityRecordGRDB]) in
+            let dorms = try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
+            let recentStartDate = ElectricityUtil.recentRecordsStartDate()
+            let records =
+                try ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
+                .order(ElectricityRecordGRDB.Columns.date.asc)
+                .fetchAll(db)
+            return (dorms, records)
+        }
+        .map { (dorms, records) -> ([DormGRDB], [Int64: String]) in
+            let recordsByDormID = Dictionary(grouping: records, by: { $0.dormID })
+            var infoMap: [Int64: String] = [:]
+            infoMap.reserveCapacity(dorms.count)
 
-                for dorm in dorms {
-                    guard let dormID = dorm.id else { continue }
-                    let dormRecords = recordsByDormID[dormID] ?? []
-                    infoMap[dormID] = ElectricityUtil.getExhaustionInfo(from: dormRecords)
-                }
-                return (dorms, infoMap)
+            for dorm in dorms {
+                guard let dormID = dorm.id else { continue }
+                let dormRecords = recordsByDormID[dormID] ?? []
+                infoMap[dormID] = ElectricityUtil.getExhaustionInfo(from: dormRecords)
             }
+            return (dorms, infoMap)
+        }
 
-            return observation.start(
-                in: pool,
-                scheduling: .immediate,
-                onError: { [weak self] error in
-                    Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
-                },
-                onChange: { [weak self] result in
-                    Task { @MainActor in
-                        guard let self = self else { return }
-                        if self.isFirstObservation {
-                            self.isFirstObservation = false
+        listObserver = observation.start(
+            in: pool,
+            scheduling: .immediate,
+            onError: { [weak self] error in
+                Task { @MainActor in self?.errorToast.show(message: error.localizedDescription) }
+            },
+            onChange: { [weak self] result in
+                Task { @MainActor in
+                    guard let self = self else { return }
+                    if self.isFirstObservation {
+                        self.isFirstObservation = false
+                        self.dorms = result.0
+                        self.exhaustionInfoMap = result.1
+                        self.isLoading = false
+                    } else {
+                        withAnimation {
                             self.dorms = result.0
                             self.exhaustionInfoMap = result.1
-                            self.isLoading = false
-                        } else {
-                            withAnimation {
-                                self.dorms = result.0
-                                self.exhaustionInfoMap = result.1
-                            }
                         }
                     }
                 }
-            )
-        }
+            }
+        )
     }
 
     func addDorm(building: CampusCardHelper.Building, room: String) {
