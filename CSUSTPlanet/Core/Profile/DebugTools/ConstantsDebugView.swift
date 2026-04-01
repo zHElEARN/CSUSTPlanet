@@ -27,9 +27,6 @@ struct ConstantsDebugView: View {
             ("matomoDimensionIDAppFullVersion", Constants.matomoDimensionIDAppFullVersion),
             ("matomoSiteID", Constants.matomoSiteID),
             ("backgroundID", Constants.backgroundID),
-            ("dbChangedNotification", Constants.dbChangedNotification),
-            ("dbChangedCFNotificationName", Constants.dbChangedCFNotificationName.rawValue as String),
-            ("dbChangedCFString", Constants.dbChangedCFString as String),
         ]
     }
 

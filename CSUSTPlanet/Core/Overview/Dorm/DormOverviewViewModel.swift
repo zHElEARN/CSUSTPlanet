@@ -34,7 +34,7 @@ final class DormOverviewViewModel {
 
     @ObservationIgnored var isFirstObservation = true
 
-    private var dormObserver: AutoRefreshingObserver?
+    private var dormObserver: (any DatabaseCancellable)?
 
     func onAppear() {
         observePrimaryDorm()
@@ -67,69 +67,67 @@ final class DormOverviewViewModel {
             return
         }
 
-        dormObserver = AutoRefreshingObserver { [weak self] in
-            let observation = ValueObservation.tracking { db -> (DormGRDB?, [ElectricityRecordGRDB]) in
-                let favoriteDorm =
-                    try DormGRDB
-                    .filter(DormGRDB.Columns.isFavorite == true)
-                    .fetchOne(db)
+        let observation = ValueObservation.tracking { db -> (DormGRDB?, [ElectricityRecordGRDB]) in
+            let favoriteDorm =
+                try DormGRDB
+                .filter(DormGRDB.Columns.isFavorite == true)
+                .fetchOne(db)
 
-                let dorm = try favoriteDorm ?? DormGRDB.order(DormGRDB.Columns.id.asc).fetchOne(db)
-                guard let dormID = dorm?.id else { return (dorm, []) }
-                let recentStartDate = ElectricityUtil.recentRecordsStartDate()
+            let dorm = try favoriteDorm ?? DormGRDB.order(DormGRDB.Columns.id.asc).fetchOne(db)
+            guard let dormID = dorm?.id else { return (dorm, []) }
+            let recentStartDate = ElectricityUtil.recentRecordsStartDate()
 
-                let records =
-                    try ElectricityRecordGRDB
-                    .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
-                    .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
-                    .order(ElectricityRecordGRDB.Columns.date.asc)
-                    .fetchAll(db)
+            let records =
+                try ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
+                .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
+                .order(ElectricityRecordGRDB.Columns.date.asc)
+                .fetchAll(db)
 
-                return (dorm, records)
-            }
-            .map { (dorm, records) -> ProcessedDormOverviewData in
-                let sampledRecords = ElectricityUtil.downsample(from: records, to: 80)
+            return (dorm, records)
+        }
+        .map { (dorm, records) -> ProcessedDormOverviewData in
+            let sampledRecords = ElectricityUtil.downsample(from: records, to: 80)
 
-                return ProcessedDormOverviewData(
-                    dorm: dorm,
-                    exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: records),
-                    chartRecords: sampledRecords,
-                    chartYDomain: ElectricityUtil.chartYDomain(for: sampledRecords)
-                )
-            }
+            return ProcessedDormOverviewData(
+                dorm: dorm,
+                exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: records),
+                chartRecords: sampledRecords,
+                chartYDomain: ElectricityUtil.chartYDomain(for: sampledRecords)
+            )
+        }
 
-            return observation.start(
-                in: pool,
-                scheduling: .immediate,
-                onError: { _ in
-                    Task { @MainActor in
-                        self?.primaryDorm = nil
-                        self?.electricityExhaustionInfo = nil
-                        self?.chartRecords = []
-                        self?.chartYDomain = 0...2
-                    }
-                },
-                onChange: { [weak self] data in
+        dormObserver = observation.start(
+            in: pool,
+            scheduling: .immediate,
+            onError: { [weak self] _ in
+                Task { @MainActor in
+                    self?.primaryDorm = nil
+                    self?.electricityExhaustionInfo = nil
+                    self?.chartRecords = []
+                    self?.chartYDomain = 0...2
+                }
+            },
+            onChange: { [weak self] data in
+                guard let self = self else { return }
+                Task { @MainActor [weak self] in
                     guard let self = self else { return }
-                    Task { @MainActor [weak self] in
-                        guard let self = self else { return }
-                        if self.isFirstObservation {
+                    if self.isFirstObservation {
+                        self.primaryDorm = data.dorm
+                        self.electricityExhaustionInfo = data.exhaustionInfo
+                        self.chartRecords = data.chartRecords
+                        self.chartYDomain = data.chartYDomain
+                        self.isFirstObservation = false
+                    } else {
+                        withAnimation {
                             self.primaryDorm = data.dorm
                             self.electricityExhaustionInfo = data.exhaustionInfo
                             self.chartRecords = data.chartRecords
                             self.chartYDomain = data.chartYDomain
-                            self.isFirstObservation = false
-                        } else {
-                            withAnimation {
-                                self.primaryDorm = data.dorm
-                                self.electricityExhaustionInfo = data.exhaustionInfo
-                                self.chartRecords = data.chartRecords
-                                self.chartYDomain = data.chartYDomain
-                            }
                         }
                     }
                 }
-            )
-        }
+            }
+        )
     }
 }

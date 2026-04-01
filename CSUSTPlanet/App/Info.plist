@@ -28,8 +28,6 @@
 	<string>$(CSUSTPLANET_MATOMO_DIMENSION_ID_APP_FULL_VERSION)</string>
 	<key>ConfigBackgroundID</key>
 	<string>$(CSUSTPLANET_BACKGROUND_ID)</string>
-	<key>ConfigDBChangedNotification</key>
-    <string>$(CSUSTPLANET_DB_CHANGED_NOTIFICATION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
