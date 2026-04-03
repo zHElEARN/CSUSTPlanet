@@ -12,6 +12,7 @@ struct OnboardingSettingsPage: View {
     #if os(iOS)
     @Bindable private var backgroundTaskHelper = BackgroundTaskHelper.shared
     @Bindable private var activityManager = ActivityManager.shared
+    @State private var isBackgroundTaskNotificationDeniedAlertPresented = false
     #endif
 
     var body: some View {
@@ -30,6 +31,19 @@ struct OnboardingSettingsPage: View {
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        #if os(iOS)
+        .alert("通知权限被拒绝", isPresented: $isBackgroundTaskNotificationDeniedAlertPresented) {
+            Button("取消", role: .cancel) {
+                isBackgroundTaskNotificationDeniedAlertPresented = false
+            }
+            Button("前往设置") {
+                NotificationManager.shared.openAppNotificationSettings()
+                isBackgroundTaskNotificationDeniedAlertPresented = false
+            }
+        } message: {
+            Text("需要开启通知权限以启用后台任务，请前往系统设置开启通知权限。")
+        }
+        #endif
     }
 
     private var headerSection: some View {
@@ -115,11 +129,18 @@ struct OnboardingSettingsPage: View {
         Binding(
             get: { backgroundTaskHelper.isEnabled },
             set: { newValue in
-                withAnimation {
-                    backgroundTaskHelper.isEnabled = newValue
+                Task { @MainActor in
+                    let didSucceed = await backgroundTaskHelper.setEnabledByUser(newValue)
+                    handleBackgroundTaskToggleResult(isEnabled: newValue, didSucceed: didSucceed)
                 }
             }
         )
+    }
+
+    @MainActor
+    private func handleBackgroundTaskToggleResult(isEnabled: Bool, didSucceed: Bool) {
+        guard isEnabled, !didSucceed else { return }
+        isBackgroundTaskNotificationDeniedAlertPresented = true
     }
     #endif
 }

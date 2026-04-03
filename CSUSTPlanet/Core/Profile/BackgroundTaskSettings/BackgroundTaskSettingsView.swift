@@ -10,16 +10,11 @@ import SwiftUI
 
 struct BackgroundTaskSettingsView: View {
     @Bindable var helper = BackgroundTaskHelper.shared
+    @State private var isNotificationDeniedAlertPresented = false
 
     var body: some View {
-
         Form {
             Section {
-                let isEnabledBinding = Binding(
-                    get: { helper.isEnabled },
-                    set: { newValue in withAnimation { helper.isEnabled = newValue } }
-                )
-
                 Toggle(isOn: isEnabledBinding) {
                     Text("后台任务总开关")
                 }
@@ -34,7 +29,7 @@ struct BackgroundTaskSettingsView: View {
             } header: {
                 Text("后台任务")
             } footer: {
-                Text("开启后应用可以在后台定期运行相关操作，后台任务受系统调度，更新频率可能不准确，无电量续航影响。需要开启总开关才能以下任务才会生效")
+                Text("开启后应用可以在后台定期运行相关操作，后台任务受系统调度，更新频率可能不准确，无电量续航影响。需要开启通知权限并开启总开关才能以下任务才会生效")
             }
 
             ForEach(helper.tasks, id: \.identifier) { task in
@@ -56,7 +51,30 @@ struct BackgroundTaskSettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("后台任务设置")
+        .alert("通知权限被拒绝", isPresented: $isNotificationDeniedAlertPresented) {
+            Button("取消", role: .cancel) {
+                isNotificationDeniedAlertPresented = false
+            }
+            Button("前往设置") {
+                NotificationManager.shared.openAppNotificationSettings()
+                isNotificationDeniedAlertPresented = false
+            }
+        } message: {
+            Text("需要开启通知权限以启用后台任务，请前往系统设置开启通知权限。")
+        }
         .trackView("BackgroundTaskSettings")
+    }
+
+    private var isEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { helper.isEnabled },
+            set: { newValue in
+                Task { @MainActor in
+                    let didSucceed = await helper.setEnabledByUser(newValue)
+                    handleToggleResult(isEnabled: newValue, didSucceed: didSucceed)
+                }
+            }
+        )
     }
 
     private func formatInterval(_ interval: TimeInterval) -> String {
@@ -70,6 +88,12 @@ struct BackgroundTaskSettingsView: View {
         } else {
             return "\(minutes) 分钟"
         }
+    }
+
+    @MainActor
+    private func handleToggleResult(isEnabled: Bool, didSucceed: Bool) {
+        guard isEnabled, !didSucceed else { return }
+        isNotificationDeniedAlertPresented = true
     }
 }
 #endif

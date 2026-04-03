@@ -63,8 +63,10 @@ final class BackgroundTaskHelper {
         interval = MMKVHelper.BackgroundTask.interval
         isEnabled = MMKVHelper.BackgroundTask.isEnabled
 
+        cancel()
         register()
         startObservingLifecycle()
+        startObservingNotificationPermission()
     }
 
     private func register() {
@@ -126,6 +128,24 @@ final class BackgroundTaskHelper {
             .store(in: &cancellables)
     }
 
+    private func startObservingNotificationPermission() {
+        NotificationManager.shared.permissionStatusPublisher
+            .compactMap { $0 }
+            .removeDuplicates()
+            .sink { [weak self] status in
+                self?.handleNotificationPermissionStatusChange(status)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func handleNotificationPermissionStatusChange(_ status: NotificationPermissionStatus) {
+        guard status != .authorized else { return }
+        guard isEnabled else { return }
+
+        Logger.backgroundTaskHelper.notice("通知权限发生变化，后台任务总开关已自动关闭")
+        isEnabled = false
+    }
+
     func schedule() {
         guard isEnabled else {
             Logger.backgroundTaskHelper.debug("未开启后台自动更新，跳过后台任务调度")
@@ -146,6 +166,37 @@ final class BackgroundTaskHelper {
     func cancel() {
         BGTaskScheduler.shared.cancelAllTaskRequests()
         Logger.backgroundTaskHelper.debug("取消全部后台任务")
+    }
+
+    func setEnabledByUser(_ newValue: Bool) async -> Bool {
+        guard newValue else {
+            isEnabled = false
+            return true
+        }
+
+        let permissionStatus = NotificationManager.shared.permissionStatus ?? .requestable
+        switch permissionStatus {
+        case .authorized:
+            isEnabled = true
+            return true
+        case .denied:
+            isEnabled = false
+            return false
+        case .requestable:
+            do {
+                guard try await NotificationManager.shared.requestPermission() else {
+                    isEnabled = false
+                    return false
+                }
+
+                isEnabled = true
+                return true
+            } catch {
+                Logger.backgroundTaskHelper.error("请求通知权限失败: \(error.localizedDescription)")
+                isEnabled = false
+                return false
+            }
+        }
     }
 
     func toggleTask(_ provider: BackgroundTaskProvider) {
