@@ -129,6 +129,7 @@
 			membershipExceptions = (
 				Shared.xcconfig,
 				User.xcconfig,
+				User.xcconfig.template,
 			);
 			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
 		};
