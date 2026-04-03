@@ -102,9 +102,11 @@ struct CampusMapView: View {
         }
         .navigationTitle("校园地图")
         .inlineToolbarTitle()
+        #if os(iOS)
         .sheet(isPresented: $viewModel.isOnlineMapShown) {
             SafariView(url: url).trackView("CampusMapOnline")
         }
+        #endif
         .toast(isPresenting: $viewModel.isLoading) {
             AlertToast(type: .loading, title: "加载中", subTitle: "")
         }
@@ -122,15 +124,11 @@ struct CampusMapView: View {
                     Image(systemName: "building.2")
                 }
 
-                Button(action: {
-                    #if os(macOS)
-                    openURL(url)
-                    #else
-                    viewModel.showOnlineMap()
-                    #endif
-                }) {
+                #if os(iOS)
+                Button(action: viewModel.showOnlineMap) {
                     Image(systemName: "globe")
                 }
+                #endif
             }
 
             ToolbarItem(placement: .navigation) {
