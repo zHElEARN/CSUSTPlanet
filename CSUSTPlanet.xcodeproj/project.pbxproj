@@ -368,7 +368,7 @@
 		003DBB392F7F863E00279A99 /* Generate Licenses (LicensePlist) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			files = (
 			);
 			inputFileListPaths = (
@@ -380,7 +380,7 @@
 			);
 			outputPaths = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
 			shellScript = "OUTPUT_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/com.mono0926.LicensePlist.Output\"\nmkdir -p \"$OUTPUT_DIR\"\n/opt/homebrew/bin/license-plist --output-path \"$OUTPUT_DIR\"\n";
 			showEnvVarsInLog = 0;

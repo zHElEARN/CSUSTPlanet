@@ -36,7 +36,6 @@
 
      ```bash
      cp Configs/User.xcconfig.template Configs/User.xcconfig
-
      ```
 
    - 环境变量 (.env)
@@ -61,6 +60,12 @@
    bundle install
    bundle exec fastlane ios sync_certs
    bundle exec fastlane mac sync_certs
+   ```
+
+   安装用于构建开源许可列表的 LicensePlist
+
+   ```base
+   brew install licenseplist
    ```
 
 4. 运行项目
