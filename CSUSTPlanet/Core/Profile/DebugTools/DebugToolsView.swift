@@ -27,6 +27,9 @@ struct DebugToolsView: View {
                 NavigationLink(destination: AppSandboxFileBrowserView()) {
                     Label("App沙箱文件", systemImage: "externaldrive")
                 }
+                NavigationLink(destination: AppBundleFileBrowserView()) {
+                    Label("App Bundle文件", systemImage: "shippingbox")
+                }
                 NavigationLink(destination: ConstantsDebugView()) {
                     Label("Constants常量", systemImage: "list.bullet.rectangle")
                 }
