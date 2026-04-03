@@ -250,6 +250,7 @@
 				007CF8592E1BD68900E319F2 /* Resources */,
 				00E89C732E2C88D800B43162 /* Embed Foundation Extensions */,
 				00F16E952F52E44C00E1DC4D /* Embed Frameworks */,
+				003DBB392F7F863E00279A99 /* Generate Licenses (LicensePlist) */,
 			);
 			buildRules = (
 			);
@@ -362,6 +363,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		003DBB392F7F863E00279A99 /* Generate Licenses (LicensePlist) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate Licenses (LicensePlist)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "OUTPUT_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/com.mono0926.LicensePlist.Output\"\nmkdir -p \"$OUTPUT_DIR\"\n/opt/homebrew/bin/license-plist --output-path \"$OUTPUT_DIR\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		007CF8572E1BD68900E319F2 /* Sources */ = {

@@ -24,6 +24,12 @@ struct AboutView: View {
                 FormRow(label: "构建号", value: viewModel.buildNumber)
                 FormRow(label: "运行环境", value: viewModel.environment)
             }
+
+            Section("更多信息") {
+                TrackLink(destination: OpenSourceLicensesView()) {
+                    Text("开源许可")
+                }
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("关于")
