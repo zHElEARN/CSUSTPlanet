@@ -178,6 +178,11 @@ extension Double: MMKVValueType {
     func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
 }
 
+extension Data: MMKVValueType {
+    static func read(from helper: MMKVHelper, key: String) -> Data? { helper.data(forKey: key) }
+    func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }
+}
+
 extension Array: MMKVValueType where Element: Codable {
     static func read(from helper: MMKVHelper, key: String) -> Array? { return helper.object(forKey: key, as: Self.self) }
     func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self) }

@@ -81,6 +81,7 @@ enum KeychainUtil {
 
 // MARK: - Business Properties
 
+#if os(iOS)
 extension KeychainUtil {
     static var physicsExperimentUsername: String? {
         get { getString(forKey: "PhysicsExperimentUsername") }
@@ -107,3 +108,50 @@ extension KeychainUtil {
         set { set(newValue, forKey: "Cookies") }
     }
 }
+#elseif os(macOS)
+extension KeychainUtil {
+    static var physicsExperimentUsername: String? {
+        get { MMKVHelper.Keychain.physicsExperimentUsername }
+        set { MMKVHelper.Keychain.physicsExperimentUsername = newValue }
+    }
+
+    static var physicsExperimentPassword: String? {
+        get { MMKVHelper.Keychain.physicsExperimentPassword }
+        set { MMKVHelper.Keychain.physicsExperimentPassword = newValue }
+    }
+
+    static var ssoUsername: String? {
+        get { MMKVHelper.Keychain.ssoUsername }
+        set { MMKVHelper.Keychain.ssoUsername = newValue }
+    }
+
+    static var ssoPassword: String? {
+        get { MMKVHelper.Keychain.ssoPassword }
+        set { MMKVHelper.Keychain.ssoPassword = newValue }
+    }
+
+    static var cookies: Data? {
+        get { MMKVHelper.Keychain.cookies }
+        set { MMKVHelper.Keychain.cookies = newValue }
+    }
+}
+
+extension MMKVHelper {
+    enum Keychain {
+        @MMKVOptionalStorage(key: "Keychain.PhysicsExperimentUsername")
+        static var physicsExperimentUsername: String?
+
+        @MMKVOptionalStorage(key: "Keychain.PhysicsExperimentPassword")
+        static var physicsExperimentPassword: String?
+
+        @MMKVOptionalStorage(key: "Keychain.SSOUsername")
+        static var ssoUsername: String?
+
+        @MMKVOptionalStorage(key: "Keychain.SSOPassword")
+        static var ssoPassword: String?
+
+        @MMKVOptionalStorage(key: "Keychain.Cookies")
+        static var cookies: Data?
+    }
+}
+#endif
