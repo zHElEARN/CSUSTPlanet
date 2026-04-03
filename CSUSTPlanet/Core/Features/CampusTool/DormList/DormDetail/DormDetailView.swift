@@ -56,6 +56,17 @@ struct DormDetailView: View {
         } message: {
             Text("确认取消每天 \(scheduleTimeText) 的宿舍电量提醒吗？")
         }
+        .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {
+            Button("取消", role: .cancel) {
+                viewModel.isNotificationDeniedAlertPresented = false
+            }
+            Button("前往设置") {
+                NotificationManager.shared.openAppNotificationSettings()
+                viewModel.isNotificationDeniedAlertPresented = false
+            }
+        } message: {
+            Text("需要开启通知权限以使用定时查询功能，请前往系统设置开启通知权限")
+        }
         .sheet(isPresented: $viewModel.isScheduleConfigSheetPresented) {
             DormScheduleConfigView(
                 initialHour: viewModel.dorm.scheduleHour ?? 20,

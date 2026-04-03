@@ -110,7 +110,7 @@ final class DormDetailViewModel {
         guard let dormID = dorm.id else { return }
         guard canConfigureSchedule() else { return }
 
-        await performScheduleUpdate { db in
+        await performScheduleUpdate(requiresNotificationPermission: true) { db in
             try DormGRDB.updateSchedule(dormID: dormID, hour: hour, minute: minute, in: db)
         }
     }
@@ -118,7 +118,7 @@ final class DormDetailViewModel {
     func cancelSchedule() async {
         guard let dormID = dorm.id else { return }
 
-        await performScheduleUpdate { db in
+        await performScheduleUpdate(requiresNotificationPermission: false) { db in
             try DormGRDB.clearSchedule(dormID: dormID, in: db)
         }
     }
@@ -197,7 +197,7 @@ final class DormDetailViewModel {
         )
     }
 
-    private func performScheduleUpdate(dbAction: @escaping (Database) throws -> Void) async {
+    private func performScheduleUpdate(requiresNotificationPermission: Bool, dbAction: @escaping (Database) throws -> Void) async {
         guard let pool = DatabaseManager.shared.pool else { return }
 
         guard !isSchedulingDorm else { return }
@@ -213,29 +213,32 @@ final class DormDetailViewModel {
                 errorToast.show(message: "无法获取设备通知令牌")
                 return
             }
-            guard let permissionStatus = NotificationManager.shared.permissionStatus else {
-                errorToast.show(message: "无法获取通知权限状态")
-                return
-            }
+            let permissionStatus = NotificationManager.shared.permissionStatus ?? .denied
 
-            switch permissionStatus {
-            case .authorized:
-                break
-            case .denied:
-                isNotificationDeniedAlertPresented = true
-                return
-            case .requestable:
-                guard try await NotificationManager.shared.requestPermission() else {
+            let syncPermissionStatus: NotificationPermissionStatus
+            if requiresNotificationPermission {
+                switch permissionStatus {
+                case .authorized:
+                    syncPermissionStatus = .authorized
+                case .denied:
                     isNotificationDeniedAlertPresented = true
                     return
+                case .requestable:
+                    guard try await NotificationManager.shared.requestPermission() else {
+                        isNotificationDeniedAlertPresented = true
+                        return
+                    }
+                    syncPermissionStatus = NotificationManager.shared.permissionStatus ?? .denied
                 }
+            } else {
+                syncPermissionStatus = permissionStatus
             }
 
             try await pool.write { db in
                 try dbAction(db)
             }
 
-            try await PlanetTaskService.shared.sync(permissionStatus: permissionStatus, deviceToken: deviceToken, authToken: authToken)
+            try await PlanetTaskService.shared.sync(permissionStatus: syncPermissionStatus, deviceToken: deviceToken, authToken: authToken)
 
         } catch {
             errorToast.show(message: error.localizedDescription)
