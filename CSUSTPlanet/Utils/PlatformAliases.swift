@@ -27,6 +27,8 @@ typealias PlatformScreen = NSScreen
 typealias PlatformEvent = NSEvent
 /// 剪贴板
 typealias PlatformPasteboard = NSPasteboard
+/// 视图表示协议
+typealias PlatformViewRepresentable = NSViewRepresentable
 
 #elseif os(iOS) || os(tvOS) || os(visionOS)
 import UIKit
@@ -47,5 +49,7 @@ typealias PlatformScreen = UIScreen
 typealias PlatformEvent = UIEvent
 /// 剪贴板
 typealias PlatformPasteboard = UIPasteboard
+/// 视图表示协议
+typealias PlatformViewRepresentable = UIViewRepresentable
 
 #endif

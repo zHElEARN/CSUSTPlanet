@@ -8,12 +8,6 @@
 import SwiftUI
 import WebKit
 
-#if os(macOS)
-private typealias PlatformViewRepresentable = NSViewRepresentable
-#else
-private typealias PlatformViewRepresentable = UIViewRepresentable
-#endif
-
 struct WebView: PlatformViewRepresentable {
     let url: URL
     let cookies: [HTTPCookie]?
