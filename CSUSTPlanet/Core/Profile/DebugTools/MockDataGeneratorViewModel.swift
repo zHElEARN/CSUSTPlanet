@@ -232,7 +232,7 @@ private enum MockExamSchedulesFactory {
                 examTime: examTimeText(start: threeDaysLaterExamStart, durationHours: 2),
                 examStartTime: threeDaysLaterExamStart,
                 examEndTime: threeDaysLaterExamStart.addingTimeInterval(2 * 3600),
-                examRoom: "金盆岭校区 2 教 401",
+                examRoom: "文科楼 401",
                 seatNumber: "",
                 admissionTicketNumber: "",
                 remarks: ""
