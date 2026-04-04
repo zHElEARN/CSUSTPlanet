@@ -36,6 +36,9 @@ struct DebugToolsView: View {
                 NavigationLink(destination: DebugLogViewerView()) {
                     Label("日志查看器", systemImage: "text.alignleft")
                 }
+                NavigationLink(destination: NotificationDebugViewerView()) {
+                    Label("通知查看器", systemImage: "bell.badge")
+                }
             }
         }
         .formStyle(.grouped)
