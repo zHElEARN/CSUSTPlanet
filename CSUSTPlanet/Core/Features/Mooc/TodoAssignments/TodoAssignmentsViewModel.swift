@@ -1,5 +1,5 @@
 //
-//  TodoHomeworkViewModel.swift
+//  TodoAssignmentsViewModel.swift
 //  CSUSTPlanet
 //
 //  Created by Zachary Liu on 2026/3/20.
@@ -23,9 +23,31 @@ final class TodoAssignmentsViewModel {
 
     var errorToast: ToastState = .errorTitle
 
+    var isNotificationDeniedAlertPresented = false
+    var isNotificationSettingsPresented = false
+
+    var isTodoAssignmentsNotificationEnabled = false {
+        didSet { MMKVHelper.TodoAssignments.isNotificationEnabled = isTodoAssignmentsNotificationEnabled }
+    }
+
+    var reminderOffsetHour = 2 {
+        didSet { MMKVHelper.TodoAssignments.notificationOffsetHour = reminderOffsetHour }
+    }
+
+    var reminderOffsetMinute = 0 {
+        didSet { MMKVHelper.TodoAssignments.notificationOffsetMinute = reminderOffsetMinute }
+    }
+
     var isInitial = true
 
+    let notificationPrefix = "todo-assignments."
+    let notificationThread = "todo-assignments.thread"
+
     init() {
+        isTodoAssignmentsNotificationEnabled = MMKVHelper.TodoAssignments.isNotificationEnabled
+        reminderOffsetHour = min(max(MMKVHelper.TodoAssignments.notificationOffsetHour, 0), 72)
+        reminderOffsetMinute = min(max(MMKVHelper.TodoAssignments.notificationOffsetMinute, 0), 59)
+
         guard let data = MMKVHelper.TodoAssignments.cache else { return }
         applyData(data)
     }
@@ -33,6 +55,7 @@ final class TodoAssignmentsViewModel {
     func loadInitial() async {
         guard isInitial else { return }
         isInitial = false
+        await syncTodoNotificationsSilently()
         await loadTodoAssignments()
     }
 
@@ -57,6 +80,106 @@ final class TodoAssignmentsViewModel {
             let data = Cached(cachedAt: .now, value: newGroups)
             applyData(data)
             MMKVHelper.TodoAssignments.cache = data
+            await syncTodoNotificationsSilently()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    func updateTodoNotificationEnabled(_ enabled: Bool) async {
+        if !enabled {
+            isTodoAssignmentsNotificationEnabled = false
+            await NotificationManager.shared.clearLocalNotifications(prefix: notificationPrefix)
+            return
+        }
+
+        await NotificationManager.shared.updatePermissionStatus()
+        let permissionStatus = NotificationManager.shared.permissionStatus ?? .requestable
+
+        do {
+            switch permissionStatus {
+            case .authorized:
+                isTodoAssignmentsNotificationEnabled = true
+                await syncTodoNotificationsInteractively()
+            case .denied:
+                isTodoAssignmentsNotificationEnabled = false
+                isNotificationDeniedAlertPresented = true
+            case .requestable:
+                guard try await NotificationManager.shared.requestPermission() else {
+                    isTodoAssignmentsNotificationEnabled = false
+                    isNotificationDeniedAlertPresented = true
+                    return
+                }
+                isTodoAssignmentsNotificationEnabled = true
+                await syncTodoNotificationsInteractively()
+            }
+        } catch {
+            isTodoAssignmentsNotificationEnabled = false
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    func saveNotificationSettings(enabled: Bool, hour: Int, minute: Int) async {
+        reminderOffsetHour = min(max(hour, 0), 72)
+        reminderOffsetMinute = min(max(minute, 0), 59)
+
+        if enabled == isTodoAssignmentsNotificationEnabled {
+            if enabled {
+                await syncTodoNotificationsInteractively()
+            } else {
+                await NotificationManager.shared.clearLocalNotifications(prefix: notificationPrefix)
+            }
+            return
+        }
+
+        await updateTodoNotificationEnabled(enabled)
+    }
+
+    func syncTodoNotificationsSilently() async {
+        do {
+            await NotificationManager.shared.updatePermissionStatus()
+            let permissionStatus = NotificationManager.shared.permissionStatus ?? .requestable
+
+            if permissionStatus == .denied {
+                if isTodoAssignmentsNotificationEnabled {
+                    isTodoAssignmentsNotificationEnabled = false
+                }
+                return
+            }
+
+            guard isTodoAssignmentsNotificationEnabled else {
+                await NotificationManager.shared.clearLocalNotifications(prefix: notificationPrefix)
+                return
+            }
+
+            guard permissionStatus == .authorized else { return }
+
+            try await NotificationManager.shared.syncLocalNotifications(prefix: notificationPrefix, drafts: buildLocalNotificationDrafts())
+        } catch {}
+    }
+
+    func syncTodoNotificationsInteractively() async {
+        do {
+            await NotificationManager.shared.updatePermissionStatus()
+            let permissionStatus = NotificationManager.shared.permissionStatus ?? .requestable
+
+            if permissionStatus == .denied {
+                isTodoAssignmentsNotificationEnabled = false
+                isNotificationDeniedAlertPresented = true
+                return
+            }
+
+            guard permissionStatus == .authorized else {
+                errorToast.show(message: "通知权限未开启")
+                return
+            }
+
+            guard isTodoAssignmentsNotificationEnabled else {
+                await NotificationManager.shared.clearLocalNotifications(prefix: notificationPrefix)
+                return
+            }
+
+            try await NotificationManager.shared.syncLocalNotifications(prefix: notificationPrefix, drafts: buildLocalNotificationDrafts())
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -122,4 +245,47 @@ final class TodoAssignmentsViewModel {
         expandedCourseIDs = existingCourseIDs
         showAllAssignmentsCourseIDs = showAllAssignmentsCourseIDs.intersection(existingCourseIDs)
     }
+
+    private var reminderOffsetSeconds: TimeInterval {
+        TimeInterval(reminderOffsetHour * 3600 + reminderOffsetMinute * 60)
+    }
+
+    private func buildLocalNotificationDrafts() -> [LocalNotificationDraft] {
+        guard let groups = todoAssignmentsData?.value else { return [] }
+        let now = Date.now
+
+        return groups.flatMap { group in
+            group.assignments.compactMap { assignment in
+                guard assignment.canSubmit else { return nil }
+                guard !assignment.submitStatus else { return nil }
+                guard assignment.deadline > now else { return nil }
+
+                let triggerDate = assignment.deadline.addingTimeInterval(-reminderOffsetSeconds)
+                guard triggerDate > now else { return nil }
+
+                let identifier = "\(notificationPrefix)\(group.course.id).\(assignment.id)"
+
+                return LocalNotificationDraft(
+                    identifier: identifier,
+                    threadIdentifier: notificationThread,
+                    title: "作业截止提醒",
+                    subtitle: group.course.name,
+                    body: "\(assignment.title) 将在 \(assignment.deadline.formatted(.dateTime.month().day().hour().minute())) 截止",
+                    triggerDate: triggerDate,
+                    userInfo: [:]
+                )
+            }
+        }
+    }
+}
+
+extension MMKVHelper.TodoAssignments {
+    @MMKVStorage(key: "TodoAssignments.isNotificationEnabled", defaultValue: false)
+    static var isNotificationEnabled: Bool
+
+    @MMKVStorage(key: "TodoAssignments.notificationOffsetHour", defaultValue: 2)
+    static var notificationOffsetHour: Int
+
+    @MMKVStorage(key: "TodoAssignments.notificationOffsetMinute", defaultValue: 0)
+    static var notificationOffsetMinute: Int
 }

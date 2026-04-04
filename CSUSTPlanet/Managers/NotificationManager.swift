@@ -27,10 +27,22 @@ enum NotificationPermissionStatus: String {
     case requestable = "未设置"
 }
 
+struct LocalNotificationDraft {
+    let identifier: String
+    let threadIdentifier: String
+    let title: String
+    let subtitle: String
+    let body: String
+    let triggerDate: Date
+    let userInfo: [AnyHashable: Any]
+}
+
 @MainActor
 @Observable
 final class NotificationManager {
     static let shared = NotificationManager()
+
+    private let center = UNUserNotificationCenter.current()
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -85,13 +97,13 @@ final class NotificationManager {
     }
 
     func requestPermission() async throws -> Bool {
-        let isGranted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+        let isGranted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
         await updatePermissionStatus()
         return isGranted
     }
 
     func updatePermissionStatus() async {
-        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        let settings = await center.notificationSettings()
 
         let status: NotificationPermissionStatus
         switch settings.authorizationStatus {
@@ -99,6 +111,7 @@ final class NotificationManager {
             status = .authorized
         case .denied:
             status = .denied
+            center.removeAllPendingNotificationRequests()
         case .notDetermined:
             status = .requestable
         @unknown default:
@@ -161,6 +174,51 @@ extension NotificationManager {
     func didFailToRegisterForRemoteNotifications(with error: Error) {
         tokenContinuation?.resume(throwing: NotificationManagerError.registrationFailed(error))
         tokenContinuation = nil
+    }
+}
+
+// MARK: - Local Notification
+
+extension NotificationManager {
+    func syncLocalNotifications(prefix: String, drafts: [LocalNotificationDraft]) async throws {
+        let pendingRequests = await center.pendingNotificationRequests()
+        let pendingIdsToClear =
+            pendingRequests
+            .map(\.identifier)
+            .filter { $0.hasPrefix(prefix) }
+
+        if !pendingIdsToClear.isEmpty {
+            center.removePendingNotificationRequests(withIdentifiers: pendingIdsToClear)
+        }
+
+        for draft in drafts where draft.triggerDate > .now {
+            let content = UNMutableNotificationContent()
+            content.title = draft.title
+            content.subtitle = draft.subtitle
+            content.body = draft.body
+            content.sound = .default
+            content.threadIdentifier = draft.threadIdentifier
+            content.userInfo = draft.userInfo
+
+            let dateComponents = Calendar.current.dateComponents(
+                [.year, .month, .day, .hour, .minute, .second],
+                from: draft.triggerDate
+            )
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+            let request = UNNotificationRequest(identifier: draft.identifier, content: content, trigger: trigger)
+            try await center.add(request)
+        }
+    }
+
+    func clearLocalNotifications(prefix: String) async {
+        let pendingRequests = await center.pendingNotificationRequests()
+        let pendingIdentifiers =
+            pendingRequests
+            .map(\.identifier)
+            .filter { $0.hasPrefix(prefix) }
+        if !pendingIdentifiers.isEmpty {
+            center.removePendingNotificationRequests(withIdentifiers: pendingIdentifiers)
+        }
     }
 }
 

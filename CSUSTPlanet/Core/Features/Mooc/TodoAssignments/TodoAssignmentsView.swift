@@ -60,7 +60,28 @@ struct TodoAssignmentsView: View {
         .task { await viewModel.loadInitial() }
         .safeRefreshable { await viewModel.loadTodoAssignments() }
         .errorToast($viewModel.errorToast)
+        .sheet(isPresented: $viewModel.isNotificationSettingsPresented) {
+            TodoAssignmentsNotificationSettingsView(viewModel: viewModel)
+        }
+        .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {
+            Button(action: { viewModel.isNotificationDeniedAlertPresented = false }) {
+                Text("取消")
+            }
+            Button(action: {
+                NotificationManager.shared.openAppNotificationSettings()
+                viewModel.isNotificationDeniedAlertPresented = false
+            }) {
+                Text("前往设置")
+            }
+        } message: {
+            Text("需要开启通知权限以接收待提交作业提醒，请前往系统设置开启通知权限")
+        }
         .toolbar {
+            ToolbarItem(placement: .secondaryAction) {
+                Button(action: { viewModel.isNotificationSettingsPresented = true }) {
+                    Label("作业提醒设置", systemImage: "bell.badge")
+                }
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button(asyncAction: viewModel.loadTodoAssignments) {
                     if viewModel.isLoadingAssignments {
@@ -173,11 +194,5 @@ struct AssignmentInfoView: View {
             }
         }
         .padding(.vertical, 6)
-    }
-}
-
-#Preview {
-    NavigationStack {
-        TodoAssignmentsView()
     }
 }
