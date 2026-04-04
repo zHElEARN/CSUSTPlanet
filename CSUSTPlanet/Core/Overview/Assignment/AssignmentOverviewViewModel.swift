@@ -72,7 +72,20 @@ final class AssignmentOverviewViewModel {
                 newGroups.append(.init(course: course, assignments: assignments))
             }
 
-            MMKVHelper.TodoAssignments.cache = Cached(cachedAt: .now, value: newGroups)
+            let data = Cached(cachedAt: .now, value: newGroups)
+            MMKVHelper.TodoAssignments.cache = data
+            let drafts = TodoAssignmentsViewModel.buildLocalNotificationDrafts(
+                groups: data.value,
+                reminderOffsetHour: MMKVHelper.TodoAssignments.notificationOffsetHour,
+                reminderOffsetMinute: MMKVHelper.TodoAssignments.notificationOffsetMinute
+            )
+            await TodoAssignmentsViewModel.syncTodoNotificationsSilently(
+                isNotificationEnabled: MMKVHelper.TodoAssignments.isNotificationEnabled,
+                drafts: drafts,
+                onPermissionDenied: {
+                    MMKVHelper.TodoAssignments.isNotificationEnabled = false
+                }
+            )
         } catch {
             // [INFO] 暂时不处理错误
         }
