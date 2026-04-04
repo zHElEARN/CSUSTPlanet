@@ -34,16 +34,9 @@ struct AnnouncementListView: View {
                 }
             }
         }
+        .onAppear { viewModel.markAllAsRead() }
         .safeRefreshable { await viewModel.loadAnnouncements() }
         .errorToast($viewModel.errorToast)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("全部已读") {
-                    viewModel.markAllAsRead()
-                }
-                .disabled(viewModel.unreadAnnouncementsCount == 0)
-            }
-        }
         .navigationTitle("App公告")
         .navigationSubtitleCompat("共\(viewModel.announcements.count)条公告")
         .trackView("AnnouncementList")
