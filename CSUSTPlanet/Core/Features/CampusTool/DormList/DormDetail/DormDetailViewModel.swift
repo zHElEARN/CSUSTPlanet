@@ -213,7 +213,7 @@ final class DormDetailViewModel {
                 errorToast.show(message: "无法获取设备通知令牌")
                 return
             }
-            let permissionStatus = NotificationManager.shared.permissionStatus ?? .denied
+            let permissionStatus = NotificationManager.shared.permissionStatus ?? .requestable
 
             let syncPermissionStatus: NotificationPermissionStatus
             if requiresNotificationPermission {
