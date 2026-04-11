@@ -17,14 +17,9 @@ import MMKV
 import MMKVAppExtension
 #endif
 
-struct Cached<T: Codable>: Codable {
-    let cachedAt: Date
-    let value: T
-}
+// MARK: - MMKVHelper
 
-// MARK: - Properties
-
-class MMKVHelper {
+final class MMKVHelper {
     static let shared = MMKVHelper()
 
     private init() {}
