@@ -64,6 +64,7 @@ final class MockDataGeneratorViewModel {
 
     func clearCourseScheduleCache() {
         MMKVHelper.CourseSchedule.cache = nil
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
@@ -72,6 +73,7 @@ final class MockDataGeneratorViewModel {
             cachedAt: .now,
             value: MockCourseScheduleFactory.makeEmptyCourseScheduleData()
         )
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
@@ -80,6 +82,7 @@ final class MockDataGeneratorViewModel {
             cachedAt: .now,
             value: MockCourseScheduleFactory.makeTodayFilledCourseScheduleData()
         )
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 

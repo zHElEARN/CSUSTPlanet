@@ -69,6 +69,7 @@ final class DormDetailViewModel {
         do {
             let electricity = try await campusCardHelper.getElectricity(building: building, room: dorm.room)
             try await pool.write { db in try DormGRDB.updateElectricity(dormID: dormID, electricity: electricity, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -93,6 +94,7 @@ final class DormDetailViewModel {
 
         do {
             try pool.write { db in try DormGRDB.deleteAllElectricityRecords(dormID: dormID, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

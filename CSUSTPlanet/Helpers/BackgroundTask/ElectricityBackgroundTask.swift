@@ -81,6 +81,7 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
             try await pool.write { db in
                 try DormGRDB.updateElectricity(dormID: dormID, electricity: newElectricity, in: db)
             }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
             Logger.electricityBackgroundTask.debug("\(dorm.buildingName)-\(dorm.room) 电量写入数据库成功")
 
             let content = UNMutableNotificationContent()

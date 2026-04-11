@@ -55,6 +55,7 @@ final class DormOverviewViewModel {
         do {
             let electricity = try await campusCardHelper.getElectricity(building: building, room: dorm.room)
             try await pool.write { db in try DormGRDB.updateElectricity(dormID: dormID, electricity: electricity, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
         } catch {}
     }
 

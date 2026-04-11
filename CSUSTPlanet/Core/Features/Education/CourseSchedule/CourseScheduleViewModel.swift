@@ -149,6 +149,7 @@ class CourseScheduleViewModel {
             let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
             self.courseScheduleData = data
             MMKVHelper.CourseSchedule.cache = data
+            WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
             updateSchedules(semesterStartDate, courses)
         } catch {
             errorToast.show(message: error.localizedDescription)
