@@ -30,7 +30,7 @@ struct TodayCoursesProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (TodayCoursesEntry) -> Void) {
         if context.isPreview {
             completion(.mockEntry())
-        } else if let data = MMKVHelper.shared.courseScheduleCache {
+        } else if let data = MMKVHelper.CourseSchedule.cache {
             completion(TodayCoursesEntry(date: .now, data: data.value))
         } else {
             completion(.mockEntry())
@@ -42,7 +42,7 @@ struct TodayCoursesProvider: TimelineProvider {
         let calendar = Calendar.current
 
         // 无缓存数据时：1小时后重试
-        guard let data = MMKVHelper.shared.courseScheduleCache else {
+        guard let data = MMKVHelper.CourseSchedule.cache else {
             let entry = TodayCoursesEntry(date: currentDate, data: nil)
             let nextUpdate = calendar.date(byAdding: .hour, value: 1, to: currentDate) ?? currentDate.addingTimeInterval(3600)
             completion(Timeline(entries: [entry], policy: .after(nextUpdate)))

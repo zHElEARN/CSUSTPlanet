@@ -125,7 +125,7 @@ class AuthManager {
             try? await ssoHelper.logout()
             CookieHelper.shared.save()
             saveCredentials(credentials: nil)
-            MMKVHelper.shared.userId = nil
+            MMKVHelper.Track.userId = nil
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
         }
@@ -410,7 +410,7 @@ class AuthManager {
 
     private func updateLocalProfile(with profile: SSOHelper.Profile) {
         ssoProfile = profile
-        MMKVHelper.shared.userId = profile.userAccount
+        MMKVHelper.Track.userId = profile.userAccount
         TrackHelper.shared.updateUserID(profile.userAccount)
         CookieHelper.shared.save()
     }

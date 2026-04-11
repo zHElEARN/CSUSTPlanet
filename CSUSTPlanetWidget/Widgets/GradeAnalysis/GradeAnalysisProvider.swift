@@ -18,7 +18,7 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
     func snapshot(for configuration: GradeAnalysisAppIntent, in context: Context) async -> GradeAnalysisEntry {
         if context.isPreview {
             return .mockEntry(configuration: configuration)
-        } else if let gradeAnalysis = MMKVHelper.shared.courseGradesCache {
+        } else if let gradeAnalysis = MMKVHelper.CourseGrades.cache {
             return .init(date: .now, configuration: configuration, data: GradeAnalysisData.fromCourseGrades(gradeAnalysis.value), lastUpdated: gradeAnalysis.cachedAt)
         } else {
             return .mockEntry(configuration: configuration)
@@ -31,7 +31,7 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
         var finalData: Cached<[EduHelper.CourseGrade]>? = nil
 
         // 先从缓存中获取成绩分析
-        if let gradeAnalysis = MMKVHelper.shared.courseGradesCache {
+        if let gradeAnalysis = MMKVHelper.CourseGrades.cache {
             Logger.gradeAnalysisWidget.info("成功从缓存获取成绩分析数据")
             finalData = gradeAnalysis
         }

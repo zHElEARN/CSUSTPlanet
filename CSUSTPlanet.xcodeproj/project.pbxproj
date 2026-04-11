@@ -90,6 +90,7 @@
 				Helpers/CookieHelper.swift,
 				Helpers/MMKV/MMKVHelper.swift,
 				"Helpers/MMKV/MMKVHelper+LogHandler.swift",
+				"Helpers/MMKV/MMKVHelper+Storage.swift",
 				"Helpers/MMKV/MMKVHelper+Wrapper.swift",
 				Models/CourseScheduleData.swift,
 				Models/GradeAnalysisData.swift,

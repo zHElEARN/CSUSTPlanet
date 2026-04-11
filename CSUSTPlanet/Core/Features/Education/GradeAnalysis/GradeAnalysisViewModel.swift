@@ -55,7 +55,7 @@ class GradeAnalysisViewModel: NSObject {
 
     override init() {
         super.init()
-        guard let data = MMKVHelper.shared.courseGradesCache else { return }
+        guard let data = MMKVHelper.CourseGrades.cache else { return }
         self.courseGradesData = data
     }
 
@@ -76,7 +76,7 @@ class GradeAnalysisViewModel: NSObject {
             }
             let data = Cached(cachedAt: .now, value: courseGrades)
             self.courseGradesData = data
-            MMKVHelper.shared.courseGradesCache = data
+            MMKVHelper.CourseGrades.cache = data
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

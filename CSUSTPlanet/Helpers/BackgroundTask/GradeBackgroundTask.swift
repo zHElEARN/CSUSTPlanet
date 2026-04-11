@@ -47,7 +47,7 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
             CookieHelper.shared.save()
 
             // 获取上次缓存的成绩
-            let lastCourseGrades = MMKVHelper.shared.courseGradesCache?.value ?? []
+            let lastCourseGrades = MMKVHelper.CourseGrades.cache?.value ?? []
 
             // 重试机制：最多尝试 3 次
             var nowCourseGrades: [EduHelper.CourseGrade] = []
@@ -85,7 +85,7 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
             // 走到这里说明 nowCourseGrades 肯定不为空
             if lastCourseGrades != nowCourseGrades {
                 Logger.gradeBackgroundTask.debug("成绩发生变化，准备更新缓存并处理通知")
-                MMKVHelper.shared.courseGradesCache = .init(cachedAt: .now, value: nowCourseGrades)
+                MMKVHelper.CourseGrades.cache = .init(cachedAt: .now, value: nowCourseGrades)
 
                 let content = UNMutableNotificationContent()
                 content.title = "成绩更新提醒"

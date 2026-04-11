@@ -21,7 +21,7 @@ class PhysicsExperimentScheduleViewModel {
     var isInitial = true
 
     init() {
-        guard let data = MMKVHelper.shared.physicsExperimentScheduleCache else { return }
+        guard let data = MMKVHelper.PhysicsExperiment.scheduleCache else { return }
         self.data = data
     }
 
@@ -40,10 +40,10 @@ class PhysicsExperimentScheduleViewModel {
             let schedules = try await PhysicsExperimentManager.shared.getCourses()
             let data = Cached(cachedAt: .now, value: schedules)
             self.data = data
-            MMKVHelper.shared.physicsExperimentScheduleCache = data
+            MMKVHelper.PhysicsExperiment.scheduleCache = data
         } catch {
             if case PhysicsExperimentHelper.PhysicsExperimentError.notLoggedIn = error {
-                if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
+                if let cachedData = MMKVHelper.PhysicsExperiment.scheduleCache {
                     self.data = cachedData
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         self.warningToast.show(message: "未登录大物实验，\n已加载上次查询数据（\(cachedData.cachedAt.formatted(.relative(presentation: .named)))）")
@@ -52,7 +52,7 @@ class PhysicsExperimentScheduleViewModel {
                     self.errorToast.show(message: error.localizedDescription)
                 }
             } else {
-                if let cachedData = MMKVHelper.shared.physicsExperimentScheduleCache {
+                if let cachedData = MMKVHelper.PhysicsExperiment.scheduleCache {
                     self.data = cachedData
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         self.warningToast.show(message: "错误：\(error.localizedDescription)，\n已加载上次查询数据（\(cachedData.cachedAt.formatted(.relative(presentation: .named)))）")

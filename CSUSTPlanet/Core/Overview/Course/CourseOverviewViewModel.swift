@@ -24,7 +24,7 @@ final class CourseOverviewViewModel {
     private var courseScheduleData: Cached<CourseScheduleData>?
 
     init() {
-        MMKVHelper.shared.$courseScheduleCache
+        MMKVHelper.CourseSchedule.$cache
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
                 self?.courseScheduleData = data

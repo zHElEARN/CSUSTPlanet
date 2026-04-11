@@ -69,61 +69,11 @@ class MMKVHelper {
         )
         return decoder
     }()
-
-    // MARK: - GlobalVars properties
-
-    @MMKVOptionalStorage(key: "GlobalVars.userId")
-    var userId: String?
-
-    @MMKVStorage(key: "GlobalVars.hasCleanedUpDuplicateElectricityRecords", defaultValue: false)
-    var hasCleanedUpDuplicateElectricityRecords: Bool
-
-    // MARK: - Cached Properties
-
-    @MMKVOptionalStorage(key: "Cached.courseGradesCache")
-    var courseGradesCache: Cached<[EduHelper.CourseGrade]>?
-
-    @MMKVOptionalStorage(key: "Cached.urgentCoursesCache")
-    var urgentCoursesCache: Cached<UrgentCoursesData>?
-
-    @MMKVOptionalStorage(key: "Cached.examSchedulesCache")
-    var examSchedulesCache: Cached<[EduHelper.Exam]>?
-
-    @MMKVOptionalStorage(key: "Cached.courseScheduleCache")
-    var courseScheduleCache: Cached<CourseScheduleData>?
-
-    @MMKVOptionalStorage(key: "Cached.physicsExperimentScheduleCache")
-    var physicsExperimentScheduleCache: Cached<[PhysicsExperimentHelper.Course]>?
-}
-
-// MARK: - Todo Assignments
-
-extension MMKVHelper {
-    enum TodoAssignments {
-        @MMKVOptionalStorage(key: "TodoAssignments.cache")
-        static var cache: Cached<[TodoAssignmentsData]>?
-    }
-}
-
-// MARK: - Swift Data
-
-extension MMKVHelper {
-    enum SwiftData {
-        @MMKVStorage(key: "SwiftData.databaseVersion", defaultValue: 0)
-        static var databaseVersion: Int
-
-        @MMKVStorage(key: "SwiftData.hasMigratedToGRDB", defaultValue: false)
-        static var hasMigratedToGRDB: Bool
-    }
 }
 
 // MARK: - Methods
 
 extension MMKVHelper {
-    func clearAll() {
-        mmkv.clearAll()
-    }
-
     func removeValue(forKey key: String) {
         mmkv.removeValue(forKey: key)
     }

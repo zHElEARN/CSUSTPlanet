@@ -106,7 +106,7 @@ class CourseScheduleViewModel {
     var isExportScopeLimited: Bool = false
 
     init() {
-        guard let data = MMKVHelper.shared.courseScheduleCache else { return }
+        guard let data = MMKVHelper.CourseSchedule.cache else { return }
         self.courseScheduleData = data
         updateSchedules(data.value.semesterStartDate, data.value.courses)
     }
@@ -148,7 +148,7 @@ class CourseScheduleViewModel {
             }
             let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
             self.courseScheduleData = data
-            MMKVHelper.shared.courseScheduleCache = data
+            MMKVHelper.CourseSchedule.cache = data
             updateSchedules(semesterStartDate, courses)
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -270,17 +270,15 @@ class CourseScheduleViewModel {
     }
 }
 
-extension MMKVHelper {
-    enum CourseSchedule {
-        enum CalendarSync {
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
-            static var exportScopeLimit: Int?
+extension MMKVHelper.CourseSchedule {
+    enum CalendarSync {
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
+        static var exportScopeLimit: Int?
 
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
-            static var firstReminderOffset: Double?
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
+        static var firstReminderOffset: Double?
 
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
-            static var secondReminderOffset: Double?
-        }
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
+        static var secondReminderOffset: Double?
     }
 }
