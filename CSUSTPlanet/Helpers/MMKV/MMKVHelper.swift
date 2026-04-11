@@ -200,6 +200,75 @@ extension CampusCardHelper.Campus: MMKVValueType {
     func write(to helper: MMKVHelper, key: String) { helper.set(forKey: key, self.rawValue) }
 }
 
+// MARK: - MMKVIPCNotifier
+
+final class MMKVIPCNotifier {
+    static let shared = MMKVIPCNotifier()
+
+    private let lock = OSAllocatedUnfairLock()
+
+    #if !WIDGET
+    private var subjects: [String: PassthroughSubject<Void, Never>] = [:]
+    #endif
+
+    private init() {}
+
+    #if WIDGET
+    func notifyChange(forKey key: String) {
+        let name = "\(Constants.mmkvIPCPrefix).\(key)" as CFString
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName(name),
+            nil,
+            nil,
+            true
+        )
+        Logger.mmkvIPCNotifier.info("发送MMKV跨进程通知 - Key: \(key)")
+    }
+    #else
+    func subject(forKey key: String) -> PassthroughSubject<Void, Never> {
+        lock.withLock {
+            if let existingSubject = subjects[key] {
+                return existingSubject
+            }
+
+            let newSubject = PassthroughSubject<Void, Never>()
+            subjects[key] = newSubject
+
+            let name = "\(Constants.mmkvIPCPrefix).\(key)" as CFString
+            let observer = Unmanaged.passUnretained(self).toOpaque()
+
+            CFNotificationCenterAddObserver(
+                CFNotificationCenterGetDarwinNotifyCenter(),
+                observer,
+                Self.darwinNotificationCallback,
+                name,
+                nil,
+                .deliverImmediately
+            )
+
+            return newSubject
+        }
+    }
+
+    private static let darwinNotificationCallback: CFNotificationCallback = { _, observer, name, _, _ in
+        guard let name = name?.rawValue as? String,
+            let observerInfo = observer
+        else { return }
+
+        let changedKey = name.replacingOccurrences(of: "\(Constants.mmkvIPCPrefix).", with: "")
+        let instance = Unmanaged<MMKVIPCNotifier>.fromOpaque(observerInfo).takeUnretainedValue()
+
+        let subjectToTrigger = instance.lock.withLock {
+            instance.subjects[changedKey]
+        }
+
+        subjectToTrigger?.send(())
+        Logger.mmkvIPCNotifier.info("接收到MMKV跨进程通知 - Key: \(changedKey)")
+    }
+    #endif
+}
+
 // MARK: - MMKVStorage
 
 @propertyWrapper
@@ -207,12 +276,29 @@ final class MMKVStorage<T: MMKVValueType> {
     let key: String
     let defaultValue: T
 
-    private lazy var subject = CurrentValueSubject<T, Never>(wrappedValue)
-    private var lock = OSAllocatedUnfairLock()
+    private let subject: CurrentValueSubject<T, Never>
+    private let lock = OSAllocatedUnfairLock()
+
+    #if !WIDGET
+    private var cancellables = Set<AnyCancellable>()
+    #endif
 
     init(key: String, defaultValue: T) {
         self.key = key
         self.defaultValue = defaultValue
+
+        let initialValue = T.read(from: MMKVHelper.shared, key: key) ?? defaultValue
+        self.subject = CurrentValueSubject<T, Never>(initialValue)
+
+        #if !WIDGET
+        MMKVIPCNotifier.shared.subject(forKey: key)
+            .sink { [weak self] in
+                guard let self else { return }
+                let newValue = T.read(from: MMKVHelper.shared, key: key) ?? self.defaultValue
+                self.subject.send(newValue)
+            }
+            .store(in: &cancellables)
+        #endif
     }
 
     var wrappedValue: T {
@@ -222,6 +308,10 @@ final class MMKVStorage<T: MMKVValueType> {
                 newValue.write(to: MMKVHelper.shared, key: key)
                 subject.send(newValue)
             }
+
+            #if WIDGET
+            MMKVIPCNotifier.shared.notifyChange(forKey: key)
+            #endif
         }
     }
 
@@ -234,11 +324,26 @@ final class MMKVStorage<T: MMKVValueType> {
 final class MMKVOptionalStorage<T: MMKVValueType> {
     let key: String
 
-    private lazy var subject = CurrentValueSubject<T?, Never>(wrappedValue)
-    private var lock = OSAllocatedUnfairLock()
+    private let subject: CurrentValueSubject<T?, Never>
+    private let lock = OSAllocatedUnfairLock()
+
+    #if !WIDGET
+    private var cancellables = Set<AnyCancellable>()
+    #endif
 
     init(key: String) {
         self.key = key
+        self.subject = CurrentValueSubject(T.read(from: MMKVHelper.shared, key: key))
+
+        #if !WIDGET
+        MMKVIPCNotifier.shared.subject(forKey: key)
+            .sink { [weak self] in
+                guard let self else { return }
+                let newValue = T.read(from: MMKVHelper.shared, key: key)
+                self.subject.send(newValue)
+            }
+            .store(in: &cancellables)
+        #endif
     }
 
     var wrappedValue: T? {
@@ -251,6 +356,10 @@ final class MMKVOptionalStorage<T: MMKVValueType> {
                     MMKVHelper.shared.removeValue(forKey: key)
                 }
                 subject.send(newValue)
+
+                #if WIDGET
+                MMKVIPCNotifier.shared.notifyChange(forKey: key)
+                #endif
             }
         }
     }
