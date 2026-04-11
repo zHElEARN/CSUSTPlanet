@@ -55,6 +55,7 @@ final class GradeOverviewViewModel {
                 try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
             }
             MMKVHelper.CourseGrades.cache = Cached(cachedAt: .now, value: courseGrades)
+            WidgetTimelineRefreshHelper.reloadGradeAnalysis()
         } catch {}
     }
 }

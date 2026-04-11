@@ -72,6 +72,7 @@ class GradeQueryViewModel {
             let data = Cached(cachedAt: .now, value: courseGrades)
             applyData(data)
             MMKVHelper.CourseGrades.cache = data
+            WidgetTimelineRefreshHelper.reloadGradeAnalysis()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

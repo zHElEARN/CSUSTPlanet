@@ -25,11 +25,13 @@ final class MockDataGeneratorViewModel {
 
     func clearTodoAssignmentsCache() {
         MMKVHelper.TodoAssignments.cache = nil
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
     func setEmptyTodoAssignmentsCache() {
         MMKVHelper.TodoAssignments.cache = Cached(cachedAt: .now, value: [])
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
@@ -38,6 +40,7 @@ final class MockDataGeneratorViewModel {
             cachedAt: .now,
             value: MockTodoAssignmentsFactory.makeTwoAssignmentsData()
         )
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 

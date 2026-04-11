@@ -80,6 +80,7 @@ final class TodoAssignmentsViewModel {
             let data = Cached(cachedAt: .now, value: newGroups)
             applyData(data)
             MMKVHelper.TodoAssignments.cache = data
+            WidgetTimelineRefreshHelper.reloadTodoAssignments()
             await syncTodoNotificationsSilently()
         } catch {
             errorToast.show(message: error.localizedDescription)

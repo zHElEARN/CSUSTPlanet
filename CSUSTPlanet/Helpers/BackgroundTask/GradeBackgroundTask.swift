@@ -86,6 +86,7 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
             if lastCourseGrades != nowCourseGrades {
                 Logger.gradeBackgroundTask.debug("成绩发生变化，准备更新缓存并处理通知")
                 MMKVHelper.CourseGrades.cache = .init(cachedAt: .now, value: nowCourseGrades)
+                WidgetTimelineRefreshHelper.reloadGradeAnalysis()
 
                 let content = UNMutableNotificationContent()
                 content.title = "成绩更新提醒"
