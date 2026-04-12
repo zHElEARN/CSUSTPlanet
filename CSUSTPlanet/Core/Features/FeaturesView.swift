@@ -77,21 +77,7 @@ struct FeaturesView: View {
 
     private var educationalSystemSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "教务系统", color: .blue) {
-                Group {
-                    if authManager.isSSOLoggingIn {
-                        StatusBadge(text: "统一身份认证登录中")
-                    } else if !authManager.isSSOLoggedIn {
-                        ActionBadge(text: "点击登录", icon: "person.crop.circle.badge.exclamationmark") {
-                            globalManager.selectedTab = .profile
-                        }
-                    } else if authManager.isEducationLoggingIn {
-                        StatusBadge(text: "教务登录中")
-                    } else {
-                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: { authManager.educationLogin(isSilent: false) })
-                    }
-                }
-            }
+            sectionHeader(title: "教务系统", color: .blue)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
                 HeroCard(destination: CourseScheduleView(), title: "我的课表", icon: "calendar", color: .purple)
@@ -105,21 +91,7 @@ struct FeaturesView: View {
 
     private var moocSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "网络课程中心", color: .indigo) {
-                Group {
-                    if authManager.isSSOLoggingIn {
-                        StatusBadge(text: "统一身份认证登录中")
-                    } else if !authManager.isSSOLoggedIn {
-                        ActionBadge(text: "点击登录", icon: "person.crop.circle.badge.exclamationmark") {
-                            globalManager.selectedTab = .profile
-                        }
-                    } else if authManager.isMoocLoggingIn {
-                        StatusBadge(text: "课程中心登录中")
-                    } else if authManager.isSSOLoggedIn && !authManager.isSSOLoggingIn {
-                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: { authManager.moocLogin(isSilent: false) })
-                    }
-                }
-            }
+            sectionHeader(title: "网络课程中心", color: .indigo)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
                 HeroCard(destination: CoursesView(), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
@@ -163,19 +135,7 @@ struct FeaturesView: View {
 
     private var physicsSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "大学物理实验", color: .purple) {
-                Button {
-                    isPhysicsExperimentLoginPresented = true
-                } label: {
-                    Text("登录")
-                        .font(.caption.bold())
-                        .foregroundColor(.purple)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.purple.opacity(0.1))
-                        .cornerRadius(8)
-                }
-            }
+            sectionHeader(title: "大学物理实验", color: .purple)
 
             VStack(spacing: 0) {
                 ToolRow(
@@ -219,14 +179,12 @@ struct FeaturesView: View {
     // MARK: - Components Helper
 
     @ViewBuilder
-    private func sectionHeader<Content: View>(title: String, color: Color, @ViewBuilder actions: () -> Content = { EmptyView() }) -> some View {
+    private func sectionHeader(title: String, color: Color) -> some View {
         HStack(alignment: .center) {
             Text(title)
                 .font(.title3.bold())
 
             Spacer()
-
-            actions()
         }
     }
 }
