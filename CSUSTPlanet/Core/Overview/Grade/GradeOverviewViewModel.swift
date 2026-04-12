@@ -24,7 +24,7 @@ final class GradeOverviewViewModel {
     }
 
     init() {
-        MMKVHelper.shared.$courseGradesCache
+        MMKVHelper.CourseGrades.$cache
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
                 guard let self = self else { return }
@@ -54,7 +54,8 @@ final class GradeOverviewViewModel {
             let courseGrades = try await AuthManager.shared.withAuthRetry(system: .edu) {
                 try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
             }
-            MMKVHelper.shared.courseGradesCache = Cached(cachedAt: .now, value: courseGrades)
+            MMKVHelper.CourseGrades.cache = Cached(cachedAt: .now, value: courseGrades)
+            WidgetTimelineRefreshHelper.reloadGradeAnalysis()
         } catch {}
     }
 }

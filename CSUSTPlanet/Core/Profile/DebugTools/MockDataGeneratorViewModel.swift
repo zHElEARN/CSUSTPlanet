@@ -25,11 +25,13 @@ final class MockDataGeneratorViewModel {
 
     func clearTodoAssignmentsCache() {
         MMKVHelper.TodoAssignments.cache = nil
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
     func setEmptyTodoAssignmentsCache() {
         MMKVHelper.TodoAssignments.cache = Cached(cachedAt: .now, value: [])
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
@@ -38,21 +40,22 @@ final class MockDataGeneratorViewModel {
             cachedAt: .now,
             value: MockTodoAssignmentsFactory.makeTwoAssignmentsData()
         )
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
     func clearExamSchedulesCache() {
-        MMKVHelper.shared.examSchedulesCache = nil
+        MMKVHelper.ExamSchedule.cache = nil
         refreshExamSchedulesCacheDescription()
     }
 
     func setEmptyExamSchedulesCache() {
-        MMKVHelper.shared.examSchedulesCache = Cached(cachedAt: .now, value: [])
+        MMKVHelper.ExamSchedule.cache = Cached(cachedAt: .now, value: [])
         refreshExamSchedulesCacheDescription()
     }
 
     func generateMockExamSchedules() {
-        MMKVHelper.shared.examSchedulesCache = Cached(
+        MMKVHelper.ExamSchedule.cache = Cached(
             cachedAt: .now,
             value: MockExamSchedulesFactory.makeFiveExamsData()
         )
@@ -60,23 +63,26 @@ final class MockDataGeneratorViewModel {
     }
 
     func clearCourseScheduleCache() {
-        MMKVHelper.shared.courseScheduleCache = nil
+        MMKVHelper.CourseSchedule.cache = nil
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
     func setEmptyCourseScheduleCache() {
-        MMKVHelper.shared.courseScheduleCache = Cached(
+        MMKVHelper.CourseSchedule.cache = Cached(
             cachedAt: .now,
             value: MockCourseScheduleFactory.makeEmptyCourseScheduleData()
         )
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
     func generateTodayFilledCourseSchedule() {
-        MMKVHelper.shared.courseScheduleCache = Cached(
+        MMKVHelper.CourseSchedule.cache = Cached(
             cachedAt: .now,
             value: MockCourseScheduleFactory.makeTodayFilledCourseScheduleData()
         )
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
@@ -94,7 +100,7 @@ final class MockDataGeneratorViewModel {
     }
 
     private func refreshExamSchedulesCacheDescription() {
-        guard let cache = MMKVHelper.shared.examSchedulesCache else {
+        guard let cache = MMKVHelper.ExamSchedule.cache else {
             examSchedulesCacheDescription = "当前状态：nil"
             return
         }
@@ -103,7 +109,7 @@ final class MockDataGeneratorViewModel {
     }
 
     private func refreshCourseScheduleCacheDescription() {
-        guard let cache = MMKVHelper.shared.courseScheduleCache else {
+        guard let cache = MMKVHelper.CourseSchedule.cache else {
             courseScheduleCacheDescription = "当前状态：nil"
             return
         }

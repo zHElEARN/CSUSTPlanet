@@ -32,10 +32,10 @@ class ExamScheduleViewModel {
 
     var targetScrollID: String? = nil
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     init() {
-        guard let data = MMKVHelper.shared.examSchedulesCache else { return }
+        guard let data = MMKVHelper.ExamSchedule.cache else { return }
         self.examData = data
         updateScrollTarget(exams: data.value)
     }
@@ -91,7 +91,7 @@ class ExamScheduleViewModel {
             let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
             self.examData = data
             self.updateScrollTarget(exams: sortedExams)
-            MMKVHelper.shared.examSchedulesCache = data
+            MMKVHelper.ExamSchedule.cache = data
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -128,5 +128,12 @@ class ExamScheduleViewModel {
         } else {
             self.targetScrollID = nil
         }
+    }
+}
+
+extension MMKVHelper {
+    enum ExamSchedule {
+        @MMKVOptionalStorage(key: "Cached.examSchedulesCache")
+        static var cache: Cached<[EduHelper.Exam]>?
     }
 }

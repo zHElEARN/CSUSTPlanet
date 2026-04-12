@@ -45,12 +45,12 @@ class GradeQueryViewModel {
     var shareContent: Any? = nil
     var isShareSheetPresented: Bool = false
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     // MARK: - Methods
 
     init() {
-        guard let data = MMKVHelper.shared.courseGradesCache else { return }
+        guard let data = MMKVHelper.CourseGrades.cache else { return }
         applyData(data)
     }
 
@@ -71,7 +71,8 @@ class GradeQueryViewModel {
             }
             let data = Cached(cachedAt: .now, value: courseGrades)
             applyData(data)
-            MMKVHelper.shared.courseGradesCache = data
+            MMKVHelper.CourseGrades.cache = data
+            WidgetTimelineRefreshHelper.reloadGradeAnalysis()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

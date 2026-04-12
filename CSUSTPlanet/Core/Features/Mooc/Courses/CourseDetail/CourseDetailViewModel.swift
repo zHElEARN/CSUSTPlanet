@@ -24,7 +24,7 @@ class CourseDetailViewModel {
 
     var isRemindersSettingsPresented = false
 
-    var isInitial = true
+    @ObservationIgnored var isInitial = true
 
     var displayedAssignments: [MoocHelper.Assignment] {
         if isShowingAllAssignments {
@@ -72,7 +72,7 @@ class CourseDetailViewModel {
         }
     }
 
-    var dateFormatter = {
+    @ObservationIgnored var dateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
         return dateFormatter

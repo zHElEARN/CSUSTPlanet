@@ -5,9 +5,11 @@
 //  Created by Zachary Liu on 2026/3/21.
 //
 
+import Combine
 import Foundation
 import GRDB
 import OSLog
+import os
 
 final class DatabaseManager {
     static let shared = DatabaseManager()
@@ -75,5 +77,47 @@ final class DatabaseManager {
         }
 
         return migrator
+    }
+}
+
+final class GRDBIPCNotifier {
+    static let shared = GRDBIPCNotifier()
+
+    private let notificationName = Constants.grdbIPCName as CFString
+
+    let dbChangedSubject = PassthroughSubject<Void, Never>()
+
+    private init() {
+        setupObserver()
+    }
+
+    func notifyChange() {
+        #if WIDGET
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName(self.notificationName),
+            nil,
+            nil,
+            true
+        )
+        #endif
+    }
+
+    private func setupObserver() {
+        #if !WIDGET
+        let observer = Unmanaged.passUnretained(self).toOpaque()
+        CFNotificationCenterAddObserver(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            observer,
+            { _, observer, _, _, _ in
+                guard let observerInfo = observer else { return }
+                let instance = Unmanaged<GRDBIPCNotifier>.fromOpaque(observerInfo).takeUnretainedValue()
+                instance.dbChangedSubject.send(())
+            },
+            self.notificationName,
+            nil,
+            .deliverImmediately
+        )
+        #endif
     }
 }

@@ -39,4 +39,5 @@ extension Logger {
     #else
     static let mmkv = Logger(subsystem: appSubsystem, category: "MMKV")
     #endif
+    static let mmkvIPCNotifier = Logger(subsystem: appSubsystem, category: "MMKVIPCNotifier")
 }

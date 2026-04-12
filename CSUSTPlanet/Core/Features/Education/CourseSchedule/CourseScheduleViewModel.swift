@@ -84,7 +84,7 @@ class CourseScheduleViewModel {
     //         return dateFormatter.date(from: "2025-09-15")!
     //     }()
     // #else
-    let today: Date = .now
+    @ObservationIgnored let today: Date = .now
     // #endif
 
     // 当前日期在第几周
@@ -94,7 +94,7 @@ class CourseScheduleViewModel {
     var loadingToast: ToastState = .init(title: "添加中")
     var successToast: ToastState = .init(title: "添加成功")
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     var firstReminderOffset: CalendarReminderOffset = .tenMinutes
     var isFirstReminderEnabled: Bool = false
@@ -106,7 +106,7 @@ class CourseScheduleViewModel {
     var isExportScopeLimited: Bool = false
 
     init() {
-        guard let data = MMKVHelper.shared.courseScheduleCache else { return }
+        guard let data = MMKVHelper.CourseSchedule.cache else { return }
         self.courseScheduleData = data
         updateSchedules(data.value.semesterStartDate, data.value.courses)
     }
@@ -148,7 +148,8 @@ class CourseScheduleViewModel {
             }
             let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
             self.courseScheduleData = data
-            MMKVHelper.shared.courseScheduleCache = data
+            MMKVHelper.CourseSchedule.cache = data
+            WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
             updateSchedules(semesterStartDate, courses)
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -270,17 +271,15 @@ class CourseScheduleViewModel {
     }
 }
 
-extension MMKVHelper {
-    enum CourseSchedule {
-        enum CalendarSync {
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
-            static var exportScopeLimit: Int?
+extension MMKVHelper.CourseSchedule {
+    enum CalendarSync {
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
+        static var exportScopeLimit: Int?
 
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
-            static var firstReminderOffset: Double?
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
+        static var firstReminderOffset: Double?
 
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
-            static var secondReminderOffset: Double?
-        }
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
+        static var secondReminderOffset: Double?
     }
 }

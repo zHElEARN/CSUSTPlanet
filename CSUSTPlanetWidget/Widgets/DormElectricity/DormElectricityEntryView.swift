@@ -94,7 +94,7 @@ struct DormElectricityEntryView: View {
                     .padding(.trailing, 8)
                 }
             }
-            Button(intent: RefreshElectricityTimelineIntent()) {
+            Button(intent: RefreshElectricityTimelineIntent(dorm: dorm)) {
                 Image(systemName: "arrow.clockwise.circle")
             }
             .foregroundColor(.blue)

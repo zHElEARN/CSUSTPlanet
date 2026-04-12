@@ -49,7 +49,7 @@ final class TrackHelper {
         }
         instance.dispatchInterval = 60
         Logger.trackHelper.debug("初始化 MatomoTracker 完成")
-        if let currentUserId = MMKVHelper.shared.userId {
+        if let currentUserId = MMKVHelper.Track.userId {
             instance.userId = currentUserId
             Logger.trackHelper.debug("初始化时同步用户ID: \(currentUserId)")
         }
@@ -91,5 +91,12 @@ final class TrackHelper {
     func updateIsOptedOut(_ isOptedOut: Bool) {
         tracker.isOptedOut = isOptedOut
         Logger.trackHelper.debug("更新用户是否拒绝跟踪: \(isOptedOut)")
+    }
+}
+
+extension MMKVHelper {
+    enum Track {
+        @MMKVOptionalStorage(key: "GlobalVars.userId")
+        static var userId: String?
     }
 }
