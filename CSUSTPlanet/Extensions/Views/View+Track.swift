@@ -22,7 +22,7 @@ struct TrackPageModifier: ViewModifier {
         content
             .environment(\.trackPath, fullPath)
             .onAppear {
-                TrackHelper.shared.views(path: fullPath)
+                // TrackHelper.shared.views(path: fullPath)
             }
     }
 }
