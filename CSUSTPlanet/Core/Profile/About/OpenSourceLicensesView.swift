@@ -53,7 +53,7 @@ struct OpenSourceLicensesView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(viewModel.licenses) { license in
-                            TrackLink(destination: OpenSourceLicenseDetailView(license: license)) {
+                            NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses(.detail(license))))) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(license.title)
 

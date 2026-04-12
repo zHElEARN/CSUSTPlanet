@@ -10,38 +10,12 @@ import SwiftUI
 
 struct AnnouncementOverviewView: View {
     @State private var viewModel = AnnouncementListViewModel()
-    @Namespace private var namespace
-    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
 
     var body: some View {
-        Group {
-            #if os(macOS)
-            TrackLink(destination: AnnouncementListView(viewModel: viewModel)) {
-                CustomGroupBox {
-                    cardContent
-                }
+        NavigationLink(value: AppRoute.overview(.announcementList(viewModel: viewModel))) {
+            CustomGroupBox {
+                cardContent
             }
-            #elseif os(iOS)
-            if #available(iOS 18.0, macOS 15.0, *) {
-                TrackLink(
-                    destination: AnnouncementListView(viewModel: viewModel)
-                        .navigationTransition(.zoom(sourceID: "announcementList", in: namespace))
-                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
-                ) {
-                    CustomGroupBox {
-                        cardContent
-                            .matchedTransitionSource(id: "announcementList", in: namespace)
-                    }
-                }
-                .id(refreshID)
-            } else {
-                TrackLink(destination: AnnouncementListView(viewModel: viewModel)) {
-                    CustomGroupBox {
-                        cardContent
-                    }
-                }
-            }
-            #endif
         }
         .task { await viewModel.loadInitial(showError: false) }
         .buttonStyle(.plain)

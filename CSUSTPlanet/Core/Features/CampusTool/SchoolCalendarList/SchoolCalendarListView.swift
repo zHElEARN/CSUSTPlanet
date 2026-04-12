@@ -19,7 +19,7 @@ struct SchoolCalendarListView: View {
             } else {
                 Form {
                     ForEach(viewModel.schoolCalendars) { calendar in
-                        TrackLink(destination: SchoolCalendarView(schoolCalendar: calendar)) {
+                        NavigationLink(value: AppRoute.features(.campusTool(.schoolCalendarList(.detail(calendar))))) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(calendar.title)
                                     .font(.headline)

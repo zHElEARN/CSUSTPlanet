@@ -25,7 +25,7 @@ struct CoursesView: View {
                 Form {
                     Section {
                         ForEach(viewModel.filteredCourses, id: \.self) { course in
-                            TrackLink(destination: CourseDetailView(course: course)) {
+                            NavigationLink(value: AppRoute.features(.mooc(.courses(.detail(course))))) {
                                 courseRow(course: course)
                             }
                         }

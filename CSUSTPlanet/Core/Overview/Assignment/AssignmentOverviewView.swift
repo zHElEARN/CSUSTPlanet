@@ -10,42 +10,18 @@ import SwiftUI
 
 struct AssignmentOverviewView: View {
     @State private var viewModel = AssignmentOverviewViewModel()
-    @Namespace var namespace
-    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
+    @Environment(Router.self) private var router
 
     var body: some View {
         let assignments = viewModel.submittableAssignments
 
-        Group {
-            #if os(macOS)
-            TrackLink(destination: TodoAssignmentsView()) {
-                CustomGroupBox {
-                    cardContent(assignments: assignments)
-                }
-            }
-            #elseif os(iOS)
-            if #available(iOS 18.0, macOS 15.0, *) {
-                TrackLink(
-                    destination: TodoAssignmentsView()
-                        .navigationTransition(.zoom(sourceID: "todoAssignments", in: namespace))
-                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
-                ) {
-                    CustomGroupBox {
-                        cardContent(assignments: assignments)
-                            .matchedTransitionSource(id: "todoAssignments", in: namespace)
-                    }
-                }
-                .id(refreshID)
-            } else {
-                TrackLink(destination: TodoAssignmentsView()) {
-                    CustomGroupBox {
-                        cardContent(assignments: assignments)
-                    }
-                }
-            }
-            #endif
+        CustomGroupBox {
+            cardContent(assignments: assignments)
         }
-        .buttonStyle(.plain)
+        .contentShape(.rect)
+        .onTapGesture {
+            router.deepLinkTo(feature: .urgentCourses)
+        }
     }
 
     @ViewBuilder

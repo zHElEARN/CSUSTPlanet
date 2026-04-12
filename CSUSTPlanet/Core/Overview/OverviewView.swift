@@ -55,18 +55,6 @@ struct OverviewView: View {
         }
         .navigationTitle("概览")
         .navigationSubtitleCompat(overviewSubtitle)
-        .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
-            DormListView().trackRoot("Widget")
-        }
-        .navigationDestination(isPresented: $globalManager.isFromCourseScheduleWidget) {
-            CourseScheduleView().trackRoot("Widget")
-        }
-        .navigationDestination(isPresented: $globalManager.isFromGradeAnalysisWidget) {
-            GradeAnalysisView().trackRoot("Widget")
-        }
-        .navigationDestination(isPresented: $globalManager.isFromTodoAssignmentsWidget) {
-            TodoAssignmentsView().trackRoot("Widget")
-        }
         .onReceive(MMKVHelper.CourseSchedule.$cache) { data in
             courseScheduleData = data
         }

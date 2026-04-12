@@ -26,7 +26,7 @@ struct AboutView: View {
             }
 
             Section("更多信息") {
-                TrackLink(destination: OpenSourceLicensesView()) {
+                NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses(.main)))) {
                     Text("开源许可")
                 }
             }

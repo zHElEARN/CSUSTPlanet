@@ -218,7 +218,7 @@ struct GradeQueryView: View {
             .buttonStyle(.plain)
             .listRowBackground(viewModel.isSelected(courseGrade.courseID) ? Color.gray.opacity(0.2) : Color.clear)
         } else {
-            TrackLink(destination: GradeDetailView(courseGrade: courseGrade)) {
+            NavigationLink(value: AppRoute.features(.education(.gradeQuery(.detail(courseGrade))))) {
                 gradeCardContent(courseGrade: courseGrade)
             }
         }

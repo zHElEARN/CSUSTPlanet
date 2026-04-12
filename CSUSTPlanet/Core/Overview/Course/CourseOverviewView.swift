@@ -10,41 +10,16 @@ import SwiftUI
 
 struct CourseOverviewView: View {
     @State private var viewModel = CourseOverviewViewModel()
-    @State private var isCourseSchedulePresented = false
-
-    @Namespace var namespace
-    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
+    @Environment(Router.self) private var router
 
     var body: some View {
-        Group {
-            #if os(macOS)
-            TrackLink(destination: CourseScheduleView()) {
-                CustomGroupBox {
-                    cardContent
-                }
-            }
-            #elseif os(iOS)
-            if #available(iOS 18.0, macOS 15.0, *) {
-                TrackLink(
-                    destination: CourseScheduleView()
-                        .navigationTransition(.zoom(sourceID: "courseSchedule", in: namespace))
-                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
-                ) {
-                    CustomGroupBox {
-                        cardContent.matchedTransitionSource(id: "courseSchedule", in: namespace)
-                    }
-                }
-                .id(refreshID)
-            } else {
-                TrackLink(destination: CourseScheduleView()) {
-                    CustomGroupBox {
-                        cardContent
-                    }
-                }
-            }
-            #endif
+        CustomGroupBox {
+            cardContent
         }
-        .buttonStyle(.plain)
+        .contentShape(.rect)
+        .onTapGesture {
+            router.deepLinkTo(feature: .courseSchedule)
+        }
     }
 
     @ViewBuilder

@@ -10,42 +10,18 @@ import SwiftUI
 
 struct ExamOverviewView: View {
     @State private var viewModel = ExamOverviewViewModel()
-    @Namespace var namespace
-    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
+    @Environment(Router.self) private var router
 
     var body: some View {
         let pendingExams = viewModel.pendingExams
 
-        Group {
-            #if os(macOS)
-            TrackLink(destination: ExamScheduleView()) {
-                CustomGroupBox {
-                    cardContent(pendingExams: pendingExams)
-                }
-            }
-            #elseif os(iOS)
-            if #available(iOS 18.0, macOS 15.0, *) {
-                TrackLink(
-                    destination: ExamScheduleView()
-                        .navigationTransition(.zoom(sourceID: "examSchedule", in: namespace))
-                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
-                ) {
-                    CustomGroupBox {
-                        cardContent(pendingExams: pendingExams)
-                            .matchedTransitionSource(id: "examSchedule", in: namespace)
-                    }
-                }
-                .id(refreshID)
-            } else {
-                TrackLink(destination: ExamScheduleView()) {
-                    CustomGroupBox {
-                        cardContent(pendingExams: pendingExams)
-                    }
-                }
-            }
-            #endif
+        CustomGroupBox {
+            cardContent(pendingExams: pendingExams)
         }
-        .buttonStyle(.plain)
+        .contentShape(.rect)
+        .onTapGesture {
+            router.deepLinkTo(feature: .examSchedule)
+        }
     }
 
     @ViewBuilder

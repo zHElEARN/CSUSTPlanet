@@ -20,7 +20,7 @@ struct ProfileView: View {
         Form {
             Section {
                 if let ssoProfile = authManager.ssoProfile {
-                    TrackLink(destination: ProfileDetailView()) {
+                    NavigationLink(value: AppRoute.profile(.profileDetail)) {
                         HStack {
                             if let avatarUrl = URL(string: ssoProfile.avatar) {
                                 let resource = KF.ImageResource(
@@ -105,22 +105,22 @@ struct ProfileView: View {
                     Text("跟随系统").tag("system")
                 }
 
-                TrackLink(destination: NetworkSettingsView()) {
+                NavigationLink(value: AppRoute.profile(.networkSettings)) {
                     Label("网络设置", systemImage: "network")
                 }
 
                 #if os(iOS)
-                TrackLink(destination: BackgroundTaskSettingsView()) {
+                NavigationLink(value: AppRoute.profile(.backgroundTaskSettings)) {
                     Label("后台任务设置", systemImage: "gearshape.2")
                 }
                 #endif
 
-                TrackLink(destination: NotificationSettingsView()) {
+                NavigationLink(value: AppRoute.profile(.notificationSettings)) {
                     Label("通知设置", systemImage: "bell.badge")
                 }
 
                 #if DEBUG
-                TrackLink(destination: DebugToolsView()) {
+                NavigationLink(destination: DebugToolsView()) {
                     Label("调试工具", systemImage: "ladybug")
                 }
                 #endif
@@ -129,15 +129,15 @@ struct ProfileView: View {
             }
 
             Section {
-                TrackLink(destination: AboutView()) {
+                NavigationLink(value: AppRoute.profile(.about(.main))) {
                     Text("关于 长理星球")
                 }
 
-                TrackLink(destination: FeedbackView()) {
+                NavigationLink(value: AppRoute.profile(.feedback)) {
                     Text("意见反馈")
                 }
 
-                TrackLink(destination: UserAgreementView(isButtonPresented: false)) {
+                NavigationLink(value: AppRoute.profile(.userAgreement)) {
                     Text("长理星球 用户协议")
                 }
             } header: {
