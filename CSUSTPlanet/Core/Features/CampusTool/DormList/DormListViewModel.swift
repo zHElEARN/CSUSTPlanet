@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
 import GRDB
 import SwiftUI
@@ -24,7 +25,8 @@ final class DormListViewModel {
     var targetDeleteDorm: DormGRDB?
     var exhaustionInfoMap: [Int64: String] = [:]
 
-    private var listObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var listObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var ipcCancellable: AnyCancellable?
 
     var isInitial: Bool = true
     var isFirstObservation: Bool = true
@@ -37,6 +39,22 @@ final class DormListViewModel {
     }
 
     func observeList() {
+        setupIPCObservationIfNeeded()
+        restartListObservation()
+    }
+
+    private func setupIPCObservationIfNeeded() {
+        guard ipcCancellable == nil else { return }
+
+        ipcCancellable = GRDBIPCNotifier.shared.dbChangedSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.restartListObservation()
+            }
+    }
+
+    private func restartListObservation() {
+        listObserver?.cancel()
         guard let pool = DatabaseManager.shared.pool else { return }
 
         let observation = ValueObservation.tracking { db -> ([DormGRDB], [ElectricityRecordGRDB]) in

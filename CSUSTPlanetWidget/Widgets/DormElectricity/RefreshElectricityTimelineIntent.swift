@@ -60,6 +60,7 @@ struct RefreshElectricityTimelineIntent: AppIntent {
             try await pool.write { db in
                 try DormGRDB.updateElectricity(dormID: dormID, electricity: networkElectricity, in: db)
             }
+            GRDBIPCNotifier.shared.notifyChange()
             Logger.dormElectricityWidget.info("AppIntent 手动刷新电量成功")
         } catch {
             Logger.dormElectricityWidget.error("网络请求电量失败: \(error.localizedDescription)")

@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
 import GRDB
 import SwiftUI
@@ -28,8 +29,9 @@ final class DormDetailViewModel {
     var isNotificationDeniedAlertPresented: Bool = false
     var isSchedulingDorm: Bool = false
 
-    private var dormObserver: (any DatabaseCancellable)?
-    private var recordsObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var dormObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var recordsObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var ipcCancellable: AnyCancellable?
 
     var isInitial: Bool = true
 
@@ -40,8 +42,7 @@ final class DormDetailViewModel {
     func loadInitial() async {
         guard isInitial else { return }
         isInitial = false
-        observeDormDetail()
-        observeRecords()
+        startObservation()
     }
 
     func toggleFavorite() {
@@ -125,7 +126,28 @@ final class DormDetailViewModel {
         }
     }
 
+    private func startObservation() {
+        setupIPCObservationIfNeeded()
+        restartGRDBObservations()
+    }
+
+    private func setupIPCObservationIfNeeded() {
+        guard ipcCancellable == nil else { return }
+
+        ipcCancellable = GRDBIPCNotifier.shared.dbChangedSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.restartGRDBObservations()
+            }
+    }
+
+    private func restartGRDBObservations() {
+        observeDormDetail()
+        observeRecords()
+    }
+
     private func observeDormDetail() {
+        dormObserver?.cancel()
         guard let dormID = dorm.id else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
@@ -147,6 +169,7 @@ final class DormDetailViewModel {
     }
 
     private func observeRecords() {
+        recordsObserver?.cancel()
         guard let dormID = dorm.id else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 

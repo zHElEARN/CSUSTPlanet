@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
 import GRDB
 import SwiftUI
@@ -34,9 +35,11 @@ final class DormOverviewViewModel {
 
     @ObservationIgnored var isFirstObservation = true
 
-    private var dormObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var dormObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var ipcCancellable: AnyCancellable?
 
     func onAppear() {
+        setupIPCObservationIfNeeded()
         observePrimaryDorm()
     }
 
@@ -59,7 +62,18 @@ final class DormOverviewViewModel {
         } catch {}
     }
 
+    private func setupIPCObservationIfNeeded() {
+        guard ipcCancellable == nil else { return }
+
+        ipcCancellable = GRDBIPCNotifier.shared.dbChangedSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.observePrimaryDorm()
+            }
+    }
+
     private func observePrimaryDorm() {
+        dormObserver?.cancel()
         guard let pool = DatabaseManager.shared.pool else {
             primaryDorm = nil
             electricityExhaustionInfo = nil

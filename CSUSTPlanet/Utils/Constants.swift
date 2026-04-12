@@ -57,6 +57,8 @@ enum Constants {
         }
         return grdbDirectoryURL.appendingPathComponent("\(name).sqlite")
     }()
+    /// GRDB IPC名称
+    static let grdbIPCName: String = "\(appBundleID).IPC.GRDB"
 
     // 后端API地址
     private static let apiHostProd = AssetUtil.bundleInfo(forKey: "ConfigApiHostProd")
