@@ -12,7 +12,7 @@ typealias Announcement = PlanetConfigService.Announcement
 
 @MainActor
 @Observable
-final class AnnouncementListViewModel {
+final class AnnouncementListViewModel: Hashable {
     var announcements: [Announcement] = []
     var errorToast: ToastState = .errorTitle
     var isLoadingAnnouncements: Bool = false
@@ -71,6 +71,14 @@ final class AnnouncementListViewModel {
         }
 
         return lhs.id > rhs.id
+    }
+
+    nonisolated static func == (lhs: AnnouncementListViewModel, rhs: AnnouncementListViewModel) -> Bool {
+        return lhs === rhs
+    }
+
+    nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
     }
 }
 

@@ -8,7 +8,7 @@
 import Foundation
 import GRDB
 
-struct DormGRDB: Codable, FetchableRecord, MutablePersistableRecord, TableRecord, Identifiable, Equatable {
+struct DormGRDB: Codable, FetchableRecord, MutablePersistableRecord, TableRecord, Identifiable, Equatable, Hashable {
     static let databaseTableName = "dorms"
 
     var id: Int64?

@@ -13,7 +13,7 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class DormDetailViewModel {
+final class DormDetailViewModel: Hashable {
     @ObservationIgnored let campusCardHelper = CampusCardHelper()
 
     var dorm: DormGRDB
@@ -268,5 +268,13 @@ final class DormDetailViewModel {
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
+    }
+
+    nonisolated static func == (lhs: DormDetailViewModel, rhs: DormDetailViewModel) -> Bool {
+        return lhs === rhs
+    }
+
+    nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
     }
 }

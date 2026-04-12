@@ -76,7 +76,7 @@ struct OpenSourceLicensesView: View {
     }
 }
 
-private struct OpenSourceLicenseDetailView: View {
+struct OpenSourceLicenseDetailView: View {
     let license: OpenSourceLicense
 
     var body: some View {
