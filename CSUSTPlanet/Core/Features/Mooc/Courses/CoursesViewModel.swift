@@ -18,7 +18,7 @@ class CoursesViewModel {
 
     var isLoadingCourses = false
 
-    var isInitial = true
+    @ObservationIgnored var isInitial = true
 
     var filteredCourses: [MoocHelper.Course] {
         if searchText.isEmpty {

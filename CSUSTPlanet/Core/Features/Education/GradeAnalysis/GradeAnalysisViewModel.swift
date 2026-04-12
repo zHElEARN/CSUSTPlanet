@@ -51,7 +51,7 @@ class GradeAnalysisViewModel: NSObject {
 
     var shareContent: Any?
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     override init() {
         super.init()

@@ -19,7 +19,7 @@ final class AnnouncementListViewModel {
     var hasLoadedAnnouncements: Bool = false
     var readAnnouncementIDs: Set<String> = Set(MMKVHelper.Announcement.readIDs)
 
-    private var isInitial = false
+    @ObservationIgnored private var isInitial = false
 
     func loadInitial(showError: Bool = true) async {
         guard !isInitial else { return }

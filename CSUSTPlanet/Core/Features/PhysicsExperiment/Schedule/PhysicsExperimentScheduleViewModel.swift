@@ -18,7 +18,7 @@ class PhysicsExperimentScheduleViewModel {
     var errorToast: ToastState = .errorTitle
     var warningToast: ToastState = .warningTitle
 
-    var isInitial = true
+    @ObservationIgnored var isInitial = true
 
     init() {
         guard let data = MMKVHelper.PhysicsExperiment.scheduleCache else { return }

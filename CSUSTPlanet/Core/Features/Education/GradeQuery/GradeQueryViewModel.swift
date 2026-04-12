@@ -45,7 +45,7 @@ class GradeQueryViewModel {
     var shareContent: Any? = nil
     var isShareSheetPresented: Bool = false
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     // MARK: - Methods
 

@@ -14,7 +14,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class DormListViewModel {
-    let campusCardHelper = CampusCardHelper()
+    @ObservationIgnored let campusCardHelper = CampusCardHelper()
 
     var isAddDormSheetPresented: Bool = false
     var isNotificationDeniedAlertPresented: Bool = false
@@ -28,8 +28,8 @@ final class DormListViewModel {
     @ObservationIgnored private var listObserver: (any DatabaseCancellable)?
     @ObservationIgnored private var ipcCancellable: AnyCancellable?
 
-    var isInitial: Bool = true
-    var isFirstObservation: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
+    @ObservationIgnored var isFirstObservation: Bool = true
     var isLoading: Bool = true
 
     func loadInitial() async {

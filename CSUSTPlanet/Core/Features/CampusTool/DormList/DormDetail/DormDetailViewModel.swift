@@ -14,7 +14,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class DormDetailViewModel {
-    let campusCardHelper = CampusCardHelper()
+    @ObservationIgnored let campusCardHelper = CampusCardHelper()
 
     var dorm: DormGRDB
     var sortedRecords: [ElectricityRecordGRDB] = []
@@ -33,7 +33,7 @@ final class DormDetailViewModel {
     @ObservationIgnored private var recordsObserver: (any DatabaseCancellable)?
     @ObservationIgnored private var ipcCancellable: AnyCancellable?
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     init(dorm: DormGRDB) {
         self.dorm = dorm

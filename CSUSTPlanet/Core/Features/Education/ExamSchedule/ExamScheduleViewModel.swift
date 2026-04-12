@@ -32,7 +32,7 @@ class ExamScheduleViewModel {
 
     var targetScrollID: String? = nil
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     init() {
         guard let data = MMKVHelper.ExamSchedule.cache else { return }

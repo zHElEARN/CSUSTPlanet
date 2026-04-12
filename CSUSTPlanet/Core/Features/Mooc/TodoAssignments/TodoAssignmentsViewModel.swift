@@ -38,7 +38,7 @@ final class TodoAssignmentsViewModel {
         didSet { MMKVHelper.TodoAssignments.notificationOffsetMinute = reminderOffsetMinute }
     }
 
-    var isInitial = true
+    @ObservationIgnored var isInitial = true
 
     private static let notificationPrefix = "todo-assignments."
     private static let notificationThread = "todo-assignments.thread"
