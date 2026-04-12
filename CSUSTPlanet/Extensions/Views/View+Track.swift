@@ -9,6 +9,7 @@ import SwiftUI
 
 // MARK: - View Modifier
 
+@available(*, deprecated, message: "使用新的路由埋点方案")
 struct TrackPageModifier: ViewModifier {
     @Environment(\.trackPath) var parentPath
     let segment: String
@@ -28,6 +29,7 @@ struct TrackPageModifier: ViewModifier {
 
 // MARK: - View Extension
 
+@available(*, deprecated, message: "使用新的路由埋点方案")
 extension View {
     func trackView(_ segment: String) -> some View {
         self.modifier(TrackPageModifier(segment: segment))

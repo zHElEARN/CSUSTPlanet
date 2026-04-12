@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+@available(*, deprecated, message: "使用新的路由方案")
 struct TrackLink<Destination: View, Label: View>: View {
     @Environment(\.trackPath) var currentPath
 
