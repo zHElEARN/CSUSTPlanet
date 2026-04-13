@@ -35,18 +35,24 @@ struct CSUSTPlanetApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                #if os(macOS)
-            .frame(
-                minWidth: 400, idealWidth: 800, maxWidth: 1200,
-                minHeight: 600, idealHeight: 800, maxHeight: 1000
-            )
-                #endif
+        Group {
+            #if os(macOS)
+            Window("长理星球", id: "main") {
+                ContentView()
+                    .frame(
+                        minWidth: 400, idealWidth: 800, maxWidth: 1200,
+                        minHeight: 600, idealHeight: 800, maxHeight: 1000
+                    )
+            }
+            .windowResizability(.contentSize)
+            #else
+            WindowGroup {
+                ContentView()
+            }
+            #endif
         }
-        #if os(macOS)
-        .windowResizability(.contentSize)
-        #endif
-        .onChange(of: scenePhase) { _, newPhase in LifecycleManager.shared.publishScenePhaseChange(to: newPhase) }
+        .onChange(of: scenePhase) { _, newPhase in
+            LifecycleManager.shared.publishScenePhaseChange(to: newPhase)
+        }
     }
 }
