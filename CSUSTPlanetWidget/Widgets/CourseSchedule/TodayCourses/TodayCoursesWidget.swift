@@ -96,14 +96,26 @@ struct TodayCoursesWidget: Widget {
     TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 20:00")
 }
 
-#Preview("Small - 无课程", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+#Preview("Small - 课已上完", as: .systemSmall, widget: { TodayCoursesWidget() }) {
     TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+}
+
+#Preview("Medium - 课已上完", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+}
+
+#Preview("Large - 课已上完", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+}
+
+#Preview("Small - 无课程", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-18 10:00")
 }
 
 #Preview("Medium - 无课程", as: .systemMedium, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-18 10:00")
 }
 
 #Preview("Large - 无课程", as: .systemLarge, widget: { TodayCoursesWidget() }) {
-    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-18 10:00")
 }
