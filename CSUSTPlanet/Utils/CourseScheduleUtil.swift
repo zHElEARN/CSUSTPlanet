@@ -82,6 +82,13 @@ enum CourseScheduleUtil {
         "愿你今天有个好梦。",
     ]
 
+    /// 课表相关统一文案
+    static let courseScheduleTitle: String = "我的课表"
+    static let emptyCourseScheduleText: String = "暂无课表数据"
+    static let semesterNotStartedText: String = "学期未开始"
+    static let semesterEndedText: String = "本学期已结束"
+    static let noCoursesTodayText: String = "今天没有课，好好休息吧"
+
     private static let calendar = Calendar.current
 
     // MARK: - Methods
@@ -248,6 +255,10 @@ enum CourseScheduleUtil {
         let components = calendar.dateComponents([.day], from: today, to: startDate)
         guard let days = components.day else { return nil }
         return days > 0 ? days : nil
+    }
+
+    static func getSemesterCountdownText(days: Int) -> String {
+        return "距离开学还有 \(days) 天"
     }
 
     /// 获取当天未结束的课程列表

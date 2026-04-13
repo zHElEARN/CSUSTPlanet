@@ -26,7 +26,7 @@ struct CourseOverviewView: View {
     private var cardContent: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
-                Text("今日课程")
+                Text(CourseScheduleUtil.courseScheduleTitle)
                     .font(.title3)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
@@ -46,34 +46,34 @@ struct CourseOverviewView: View {
     private var contentView: some View {
         switch viewModel.courseDisplayState {
         case .loading:
-            EmptyCourseContentView(text: "暂无课程数据", icon: "cloud.sun.fill")
+            EmptyCourseContentView(text: CourseScheduleUtil.emptyCourseScheduleText, icon: "cloud.sun.fill")
 
         case .beforeSemester(let days):
             if let days {
                 if days > CourseScheduleUtil.semesterStartThreshold {
                     EmptyCourseContentView(
                         text: CourseScheduleUtil.getHolidayMessage(for: Date()),
-                        subtitle: "学期未开始",
+                        subtitle: CourseScheduleUtil.semesterNotStartedText,
                         icon: "party.popper.fill"
                     )
                 } else {
                     EmptyCourseContentView(
-                        text: "学期未开始",
-                        subtitle: "距离开学还有 \(days) 天",
+                        text: CourseScheduleUtil.semesterNotStartedText,
+                        subtitle: CourseScheduleUtil.getSemesterCountdownText(days: days),
                         icon: "calendar.badge.clock"
                     )
                 }
             } else {
-                EmptyCourseContentView(text: "学期未开始", icon: "calendar")
+                EmptyCourseContentView(text: CourseScheduleUtil.semesterNotStartedText, icon: "calendar")
             }
 
         case .afterSemester:
-            EmptyCourseContentView(text: "本学期已结束，祝你假期愉快！", icon: "case.fill")
+            EmptyCourseContentView(text: CourseScheduleUtil.semesterEndedText, icon: "case.fill")
 
         case .inSemester(let courses):
             if courses.isEmpty {
                 EmptyCourseContentView(
-                    text: "今天没有课，好好休息吧 ~",
+                    text: CourseScheduleUtil.noCoursesTodayText,
                     icon: "checkmark.circle.fill",
                     iconColor: .green
                 )

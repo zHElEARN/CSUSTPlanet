@@ -20,7 +20,7 @@ struct TodayCoursesEntryView: View {
         Group {
             if let data = entry.data {
                 VStack(spacing: 0) {
-                    CourseWidgetHeaderView(family: family, title: "当前课程", date: entry.date, data: data)
+                    CourseWidgetHeaderView(family: family, title: CourseScheduleUtil.courseScheduleTitle, date: entry.date, data: data)
 
                     Divider().padding(.vertical, 4)
 
@@ -63,7 +63,7 @@ struct TodayCoursesEntryView: View {
             let height = (proxy.size.height - spacing * CGFloat(count - 1)) / CGFloat(count)
 
             if courses.isEmpty {
-                Text("今天没有课程啦")
+                Text(CourseScheduleUtil.noCoursesTodayText)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)

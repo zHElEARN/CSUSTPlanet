@@ -16,7 +16,7 @@ struct CourseWidgetEmptyView: View {
                 .foregroundStyle(.gray.opacity(0.8))
 
             VStack(spacing: 4) {
-                Text("暂无课表数据")
+                Text(CourseScheduleUtil.emptyCourseScheduleText)
                     .font(.headline)
                     .foregroundColor(.primary)
 

@@ -32,11 +32,11 @@ struct CourseWidgetHeaderView: View {
 
             switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date) {
             case .beforeSemester:
-                Text("学期未开始")
+                Text(CourseScheduleUtil.semesterNotStartedText)
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
             case .afterSemester:
-                Text("学期已结束")
+                Text(CourseScheduleUtil.semesterEndedText)
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
             case .inSemester:
