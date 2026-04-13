@@ -50,26 +50,23 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
     func timeline(for configuration: DormElectricityAppIntent, in context: Context) async -> Timeline<DormElectricityEntry> {
         Logger.dormElectricityWidget.info("开始生成 timeline (仅读取本地缓存)")
 
-        let nextUpdateDate = Date().addingTimeInterval(2 * 3600)
-        let policy: TimelineReloadPolicy = .after(nextUpdateDate)
-
         guard let selectedDormEntity = configuration.dorm,
             let dormID = selectedDormEntity.dormID,
             let pool = DatabaseManager.shared.pool
         else {
             Logger.dormElectricityWidget.warning("配置不完整或数据库连接失败")
-            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
+            return Timeline(entries: [emptyEntry(for: configuration)], policy: .never)
         }
 
         guard let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) else {
             Logger.dormElectricityWidget.warning("未在数据库中找到对应的宿舍记录")
-            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
+            return Timeline(entries: [emptyEntry(for: configuration)], policy: .never)
         }
 
         let entry = (try? await buildEntry(dorm: dorm, configuration: configuration, pool: pool)) ?? emptyEntry(for: configuration)
         Logger.dormElectricityWidget.info("timeline 生成完成")
 
-        return Timeline(entries: [entry], policy: policy)
+        return Timeline(entries: [entry], policy: .never)
     }
 
     // MARK: - Helper Methods
