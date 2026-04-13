@@ -83,7 +83,6 @@ struct ExamScheduleView: View {
         }
         .navigationTitle("考试安排")
         .navigationSubtitleCompat("共 \(viewModel.examData?.value.count ?? 0) 门考试")
-        .trackView("ExamSchedule")
     }
 
     // MARK: - Exam Card
@@ -241,6 +240,5 @@ extension ExamScheduleView {
                 }
             }
         }
-        .trackView("ExamScheduleFilter")
     }
 }

@@ -95,7 +95,6 @@ struct GradeQueryView: View {
         .navigationTitle("成绩查询")
         .navigationSubtitleCompat("共\(viewModel.gradeData?.value.count ?? 0)门课程成绩")
         .inlineToolbarTitle()
-        .trackView("GradeQuery")
     }
 
     // MARK: - Stat Item

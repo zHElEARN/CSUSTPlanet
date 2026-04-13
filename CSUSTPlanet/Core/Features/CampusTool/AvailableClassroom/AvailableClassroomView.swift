@@ -161,7 +161,6 @@ struct AvailableClassroomView: View {
         .navigationTitle("空教室查询")
         .inlineToolbarTitle()
         .errorToast($viewModel.errorToast)
-        .trackView("AvailableClassroom")
     }
 
     @ViewBuilder

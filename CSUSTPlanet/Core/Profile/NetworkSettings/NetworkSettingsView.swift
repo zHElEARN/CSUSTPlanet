@@ -41,7 +41,6 @@ struct NetworkSettingsView: View {
         } message: {
             Text("关闭 WebVPN 模式需要重启应用才能生效。")
         }
-        .trackView("NetworkSettings")
     }
 
     private func handleWebVPNToggle(_ newValue: Bool) {

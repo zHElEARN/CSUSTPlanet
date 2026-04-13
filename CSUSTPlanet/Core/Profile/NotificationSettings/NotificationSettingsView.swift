@@ -58,7 +58,6 @@ struct NotificationSettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("通知设置")
-        .trackView("NotificationSettings")
     }
 
     private var effectivePermissionStatus: NotificationPermissionStatus {

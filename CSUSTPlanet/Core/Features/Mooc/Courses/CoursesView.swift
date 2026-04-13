@@ -59,7 +59,6 @@ struct CoursesView: View {
                 .disabled(viewModel.isLoadingCourses)
             }
         }
-        .trackView("Courses")
     }
 
     @ViewBuilder

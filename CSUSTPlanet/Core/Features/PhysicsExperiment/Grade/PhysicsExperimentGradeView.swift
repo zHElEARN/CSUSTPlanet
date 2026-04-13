@@ -60,7 +60,6 @@ struct PhysicsExperimentGradeView: View {
                 .disabled(viewModel.isLoadingGrades)
             }
         }
-        .trackView("PhysicsExperimentGrade")
     }
 
     // MARK: - Form Sections

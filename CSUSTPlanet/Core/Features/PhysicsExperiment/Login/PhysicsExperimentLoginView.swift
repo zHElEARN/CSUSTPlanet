@@ -70,7 +70,6 @@ struct PhysicsExperimentLoginView: View {
             }
             .errorToast($viewModel.errorToast)
         }
-        .trackView("PhysicsExperimentLogin")
     }
 }
 

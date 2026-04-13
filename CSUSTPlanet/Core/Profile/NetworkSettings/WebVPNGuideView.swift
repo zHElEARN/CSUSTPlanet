@@ -63,6 +63,5 @@ struct WebVPNGuideView: View {
             .padding(.bottom)
         }
         .presentationDetents([.medium])
-        .trackView("WebVPNGuide")
     }
 }

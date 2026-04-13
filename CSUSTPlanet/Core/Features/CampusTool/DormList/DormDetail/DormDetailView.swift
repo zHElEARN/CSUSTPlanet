@@ -76,7 +76,6 @@ struct DormDetailView: View {
             )
         }
         .errorToast($viewModel.errorToast)
-        .trackView("DormDetail")
     }
 
     @ViewBuilder

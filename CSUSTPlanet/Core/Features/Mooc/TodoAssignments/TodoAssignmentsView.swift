@@ -95,7 +95,6 @@ struct TodoAssignmentsView: View {
         }
         .navigationTitle("待提交作业")
         .navigationSubtitleCompat("共\(viewModel.unexpiredAssignmentsCount)个未截止作业")
-        .trackView("TodoAssignments")
     }
 
     private func bindingForCourse(_ courseID: String) -> Binding<Bool> {

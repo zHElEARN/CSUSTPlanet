@@ -64,7 +64,6 @@ struct ReminderOffsetSettingsView: View {
                 }
             }
         }
-        .trackView("ReminderOffsetSettings")
     }
 
     private func formatOffset() -> String {

@@ -98,7 +98,6 @@ struct TodoAssignmentsNotificationSettingsView: View {
                     }
                 }
             }
-            .trackView("TodoAssignmentsNotificationSettings")
         }
     }
 

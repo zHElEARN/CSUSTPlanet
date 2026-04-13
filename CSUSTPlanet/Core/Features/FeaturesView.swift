@@ -70,7 +70,6 @@ struct FeaturesView: View {
         //    AnnualReviewView(isPresented: $isAnnualReviewPresented)
         // }
         //#endif
-        .trackView("Features")
     }
 
     // MARK: - Extracted Subviews

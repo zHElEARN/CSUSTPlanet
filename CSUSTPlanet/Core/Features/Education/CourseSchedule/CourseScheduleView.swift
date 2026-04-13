@@ -163,7 +163,6 @@ struct CourseScheduleView: View {
         .sheet(isPresented: $viewModel.isSemestersSheetPresented) {
             CourseSemesterView(viewModel: viewModel)
         }
-        .trackView("CourseSchedule")
     }
 
     // MARK: - 课程详情视图

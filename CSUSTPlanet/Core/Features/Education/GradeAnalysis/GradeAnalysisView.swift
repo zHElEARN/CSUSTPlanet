@@ -59,7 +59,6 @@ struct GradeAnalysisView: View {
                 .disabled(viewModel.isLoadingAnalysis)
             }
         }
-        .trackView("GradeAnalysis")
     }
 
     // MARK: - Statistic Item

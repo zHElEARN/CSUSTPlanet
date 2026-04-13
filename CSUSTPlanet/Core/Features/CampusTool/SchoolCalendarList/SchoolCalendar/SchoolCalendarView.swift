@@ -135,7 +135,6 @@ struct SchoolCalendarView: View {
         .navigationSubtitleCompat(schoolCalendar.subtitle)
         .task { await viewModel.loadConfig(semester: schoolCalendar.semesterCode) }
         .errorToast($viewModel.errorToast)
-        .trackView("SchoolCalendar")
     }
 
     // MARK: - 学期概览静态卡片

@@ -72,7 +72,6 @@ struct OpenSourceLicensesView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("开源许可")
-        .trackView("OpenSourceLicenses")
     }
 }
 
@@ -104,6 +103,5 @@ struct OpenSourceLicenseDetailView: View {
         }
         .formStyle(.grouped)
         .navigationTitle(license.title)
-        .trackView("OpenSourceLicense")
     }
 }

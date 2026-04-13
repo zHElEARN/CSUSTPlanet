@@ -81,7 +81,6 @@ struct SSOLoginView: View {
                 }
             }
         }
-        .trackView("SSOLogin")
     }
 
     // MARK: - Account Login View

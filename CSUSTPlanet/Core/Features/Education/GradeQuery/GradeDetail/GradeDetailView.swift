@@ -41,7 +41,6 @@ struct GradeDetailView: View {
                 }
             }
         }
-        .trackView("GradeDetail")
     }
 
     // MARK: - Course Title

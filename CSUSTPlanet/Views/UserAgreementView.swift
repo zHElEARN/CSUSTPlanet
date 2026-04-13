@@ -48,6 +48,5 @@ struct UserAgreementView: View {
             .formStyle(.grouped)
             .navigationTitle("用户协议")
         }
-        .trackView("UserAgreement")
     }
 }

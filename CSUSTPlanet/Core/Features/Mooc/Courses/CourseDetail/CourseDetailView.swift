@@ -49,7 +49,6 @@ struct CourseDetailView: View {
                 }
             }
         }
-        .trackView("CourseDetail")
     }
 
     // MARK: - Form Sections

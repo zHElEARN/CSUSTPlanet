@@ -159,7 +159,6 @@ struct ContentView: View {
                 }
             }
         }
-        .trackRoot("App")
         .environment(router)
 
         #if os(iOS)

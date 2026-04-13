@@ -100,7 +100,6 @@ struct CourseScheduleDetailView: View {
                 }
             }
         }
-        .trackView("CourseScheduleDetail")
     }
 }
 

@@ -66,7 +66,6 @@ struct PhysicsExperimentScheduleView: View {
         }
         .task { await viewModel.loadInitial() }
         .safeRefreshable { await viewModel.loadSchedules() }
-        .trackView("PhysicsExperimentSchedule")
     }
 }
 

@@ -33,7 +33,6 @@ struct AboutView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("关于")
-        .trackView("About")
     }
 }
 

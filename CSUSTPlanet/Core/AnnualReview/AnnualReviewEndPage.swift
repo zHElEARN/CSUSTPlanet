@@ -188,7 +188,6 @@ struct AnnualReviewEndPage: View {
                         }
                     }
             }
-            .trackView("AnnualReviewFeedback")
         }
         .onAppear {
             performAnimation()

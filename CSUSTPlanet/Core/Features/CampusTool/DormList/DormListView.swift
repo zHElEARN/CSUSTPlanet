@@ -102,7 +102,6 @@ struct DormListView: View {
             }
         }
         .errorToast($viewModel.errorToast)
-        .trackView("DormList")
     }
 
     // MARK: - Dorm Card

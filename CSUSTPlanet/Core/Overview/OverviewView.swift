@@ -58,7 +58,6 @@ struct OverviewView: View {
         .onReceive(MMKVHelper.CourseSchedule.$cache) { data in
             courseScheduleData = data
         }
-        .trackView("Overview")
     }
 
     @ViewBuilder

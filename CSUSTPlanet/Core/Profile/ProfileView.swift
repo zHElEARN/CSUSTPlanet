@@ -155,6 +155,5 @@ struct ProfileView: View {
         } message: {
             Text("确定要退出登录吗？")
         }
-        .trackView("Profile")
     }
 }

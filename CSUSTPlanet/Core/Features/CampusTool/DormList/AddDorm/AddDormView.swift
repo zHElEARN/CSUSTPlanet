@@ -95,7 +95,6 @@ struct AddDormView: View {
             .task { await viewModel.loadInitial() }
             .onChange(of: viewModel.selectedCampus, viewModel.handleCampusPickerChange)
             .errorToast($viewModel.errorToast)
-            .trackView("AddDormView")
         }
     }
 }

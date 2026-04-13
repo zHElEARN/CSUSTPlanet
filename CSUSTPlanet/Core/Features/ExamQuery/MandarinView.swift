@@ -10,7 +10,6 @@ import SwiftUI
 struct MandarinView: View {
     var body: some View {
         WebView(url: URL(string: "https://zwfw.moe.gov.cn/mandarin/")!)
-            .trackView("Mandarin")
             .navigationTitle("普通话查询")
             .inlineToolbarTitle()
     }

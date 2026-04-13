@@ -53,7 +53,6 @@ struct SchoolCalendarListView: View {
         .safeRefreshable { await viewModel.loadSchoolCalendars() }
         .errorToast($viewModel.errorToast)
         .navigationTitle("校历列表")
-        .trackView("SchoolCalendarList")
     }
 }
 
