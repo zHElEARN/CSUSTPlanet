@@ -13,8 +13,8 @@ struct TodoAssignmentsView: View {
 
     var body: some View {
         Group {
-            if let courseGroups = viewModel.todoAssignmentsData?.value, !courseGroups.isEmpty {
-                Form {
+            Form {
+                if let courseGroups = viewModel.todoAssignmentsData?.value, !courseGroups.isEmpty {
                     ForEach(courseGroups, id: \.course.id) { group in
                         Section {
                             DisclosureGroup(isExpanded: bindingForCourse(group.course.id)) {
@@ -47,12 +47,12 @@ struct TodoAssignmentsView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                } else {
+                    ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .formStyle(.grouped)
-            } else {
-                ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .formStyle(.grouped)
         }
         #if os(iOS)
         .background(Color(PlatformColor.systemGroupedBackground))

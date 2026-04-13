@@ -16,8 +16,8 @@ struct GradeQueryView: View {
 
     var body: some View {
         Group {
-            if !viewModel.filteredGrades.isEmpty {
-                Form {
+            Form {
+                if !viewModel.filteredGrades.isEmpty {
                     ForEach(viewModel.groupedFilteredGrades, id: \.semester) { group in
                         Section {
                             DisclosureGroup(isExpanded: viewModel.bindingForSemester(group.semester)) {
@@ -45,17 +45,17 @@ struct GradeQueryView: View {
                             .buttonStyle(.plain)
                         }
                     }
-                }
-                .formStyle(.grouped)
-            } else {
-                if viewModel.searchText.isEmpty {
-                    ContentUnavailableView("暂无成绩记录", systemImage: "doc.text.magnifyingglass", description: Text("没有找到成绩记录"))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ContentUnavailableView.search(text: viewModel.searchText)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    if viewModel.searchText.isEmpty {
+                        ContentUnavailableView("暂无成绩记录", systemImage: "doc.text.magnifyingglass", description: Text("没有找到成绩记录"))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        ContentUnavailableView.search(text: viewModel.searchText)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 }
             }
+            .formStyle(.grouped)
         }
         #if os(iOS)
         .background(Color(PlatformColor.systemGroupedBackground))

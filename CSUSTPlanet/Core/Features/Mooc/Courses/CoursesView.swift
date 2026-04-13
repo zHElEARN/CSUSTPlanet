@@ -13,16 +13,16 @@ struct CoursesView: View {
 
     var body: some View {
         Group {
-            if viewModel.filteredCourses.isEmpty {
-                if viewModel.searchText.isEmpty {
-                    ContentUnavailableView("暂无课程信息", systemImage: "book.closed", description: Text("没有找到任何课程信息"))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Form {
+                if viewModel.filteredCourses.isEmpty {
+                    if viewModel.searchText.isEmpty {
+                        ContentUnavailableView("暂无课程信息", systemImage: "book.closed", description: Text("没有找到任何课程信息"))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        ContentUnavailableView.search(text: viewModel.searchText)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 } else {
-                    ContentUnavailableView.search(text: viewModel.searchText)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            } else {
-                Form {
                     Section {
                         ForEach(viewModel.filteredCourses, id: \.self) { course in
                             NavigationLink(value: AppRoute.features(.mooc(.courses(.detail(course))))) {
@@ -31,8 +31,8 @@ struct CoursesView: View {
                         }
                     }
                 }
-                .formStyle(.grouped)
             }
+            .formStyle(.grouped)
         }
         #if os(iOS)
         .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索课程")
