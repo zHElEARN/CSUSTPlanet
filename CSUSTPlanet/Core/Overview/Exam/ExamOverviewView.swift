@@ -15,13 +15,13 @@ struct ExamOverviewView: View {
     var body: some View {
         let pendingExams = viewModel.pendingExams
 
-        CustomGroupBox {
-            cardContent(pendingExams: pendingExams)
+        Button(action: { router.deepLinkTo(feature: .examSchedule) }) {
+            CustomGroupBox {
+                cardContent(pendingExams: pendingExams)
+            }
+            .contentShape(.rect)
         }
-        .contentShape(.rect)
-        .onTapGesture {
-            router.deepLinkTo(feature: .examSchedule)
-        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder

@@ -13,15 +13,13 @@ struct AssignmentOverviewView: View {
     @Environment(Router.self) private var router
 
     var body: some View {
-        let assignments = viewModel.submittableAssignments
-
-        CustomGroupBox {
-            cardContent(assignments: assignments)
+        Button(action: { router.deepLinkTo(feature: .urgentCourses) }) {
+            CustomGroupBox {
+                cardContent(assignments: viewModel.submittableAssignments)
+            }
+            .contentShape(.rect)
         }
-        .contentShape(.rect)
-        .onTapGesture {
-            router.deepLinkTo(feature: .urgentCourses)
-        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder

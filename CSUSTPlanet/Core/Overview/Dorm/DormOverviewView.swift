@@ -14,13 +14,13 @@ struct DormOverviewView: View {
     @Environment(Router.self) private var router
 
     var body: some View {
-        CustomGroupBox {
-            cardContent
+        Button(action: { router.deepLinkTo(feature: .electricityQuery, path: dormNavigationPath) }) {
+            CustomGroupBox {
+                cardContent
+            }
+            .contentShape(.rect)
         }
-        .contentShape(.rect)
-        .onTapGesture {
-            router.deepLinkTo(feature: .electricityQuery, path: dormNavigationPath)
-        }
+        .buttonStyle(.plain)
         .onAppear(perform: viewModel.onAppear)
     }
 

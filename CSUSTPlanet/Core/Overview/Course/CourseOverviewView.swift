@@ -13,13 +13,13 @@ struct CourseOverviewView: View {
     @Environment(Router.self) private var router
 
     var body: some View {
-        CustomGroupBox {
-            cardContent
+        Button(action: { router.deepLinkTo(feature: .courseSchedule) }) {
+            CustomGroupBox {
+                cardContent
+            }
+            .contentShape(.rect)
         }
-        .contentShape(.rect)
-        .onTapGesture {
-            router.deepLinkTo(feature: .courseSchedule)
-        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder

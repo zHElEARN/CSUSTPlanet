@@ -14,13 +14,13 @@ struct GradeOverviewView: View {
     @Environment(Router.self) private var router
 
     var body: some View {
-        CustomGroupBox {
-            cardContent
+        Button(action: { router.deepLinkTo(feature: .gradeQuery) }) {
+            CustomGroupBox {
+                cardContent
+            }
+            .contentShape(.rect)
         }
-        .contentShape(.rect)
-        .onTapGesture {
-            router.deepLinkTo(feature: .gradeQuery)
-        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
