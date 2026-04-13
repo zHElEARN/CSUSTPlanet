@@ -114,12 +114,25 @@ struct DormListView: View {
         }()
 
         Group {
+            #if os(macOS)
             NavigationLink(value: AppRoute.features(.campusTool(.dormList(.detail(.main(dorm)))))) {
                 CustomGroupBox {
                     dormCardContent(dorm, electricityColor: electricityColor)
                 }
             }
             .buttonStyle(.plain)
+            #elseif os(iOS)
+            ZStack {
+                NavigationLink(value: AppRoute.features(.campusTool(.dormList(.detail(.main(dorm)))))) {
+                    EmptyView()
+                }
+                .opacity(0)
+
+                CustomGroupBox {
+                    dormCardContent(dorm, electricityColor: electricityColor)
+                }
+            }
+            #endif
         }
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
