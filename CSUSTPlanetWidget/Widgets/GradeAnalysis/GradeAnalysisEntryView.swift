@@ -29,7 +29,7 @@ struct GradeAnalysisEntryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .widgetURL(URL(string: "csustplanet://widgets/gradeAnalysis"))
+        .widgetURL(URL(string: "csustplanet://features/grade-analysis"))
         .containerBackground(.fill.tertiary, for: .widget)
     }
 

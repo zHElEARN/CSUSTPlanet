@@ -31,7 +31,7 @@ struct DormElectricityEntryView: View {
                 emptyView
             }
         }
-        .widgetURL(URL(string: "csustplanet://widgets/electricity"))
+        .widgetURL(entry.configuration.dorm?.dormID != nil ? URL(string: "csustplanet://features/electricity/\(entry.configuration.dorm?.dormID ?? 1)") : URL(string: "csustplanet://features/electricity"))
         .containerBackground(.fill.tertiary, for: .widget)
     }
 

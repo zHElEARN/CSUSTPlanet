@@ -207,23 +207,9 @@ struct ContentView: View {
             AppUpdateSheetView()
         }
 
-        // Widget deep links are temporarily disabled during the navigationDestination migration.
-        // .onOpenURL { url in
-        //     guard url.scheme == "csustplanet", url.host == "widgets" else { return }
-        //     router.deepLinkToOverview()
-        //     switch url.pathComponents.dropFirst().first {
-        //     case "electricity":
-        //         router.deepLinkTo(feature: .electricityQuery)
-        //     case "gradeAnalysis":
-        //         router.deepLinkTo(feature: .gradeAnalysis)
-        //     case "courseSchedule":
-        //         router.deepLinkTo(feature: .courseSchedule)
-        //     case "todoAssignments":
-        //         router.deepLinkTo(feature: .urgentCourses)
-        //     default:
-        //         break
-        //     }
-        // }
+        .onOpenURL { url in
+            router.handleDeepLink(url)
+        }
     }
 
     // MARK: - Modern Layout

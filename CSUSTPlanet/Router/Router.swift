@@ -7,6 +7,7 @@
 
 import CSUSTKit
 import Foundation
+import GRDB
 import SwiftUI
 
 @MainActor
@@ -29,20 +30,6 @@ final class Router {
         return path
     }
 
-    func deepLinkToOverview(path: [AppRoute] = []) {
-        selectedTab = .overview
-        DispatchQueue.main.async {
-            self.paths[.overview] = path
-        }
-    }
-
-    func deepLinkToProfile(path: [AppRoute] = []) {
-        selectedTab = .profile
-        DispatchQueue.main.async {
-            self.paths[.profile] = path
-        }
-    }
-
     func deepLinkTo(feature: FeatureTabID, path: [AppRoute] = []) {
         if isCompact {
             selectedTab = .features
@@ -55,17 +42,6 @@ final class Router {
             DispatchQueue.main.async {
                 self.paths[targetTab] = path
             }
-        }
-    }
-
-    func deepLinkToFeaturesRoot() {
-        if isCompact {
-            selectedTab = .features
-            DispatchQueue.main.async {
-                self.paths[.features] = []
-            }
-        } else {
-            selectedTab = .overview
         }
     }
 
@@ -94,6 +70,37 @@ final class Router {
 
                 paths[.features] = []
             }
+        }
+    }
+
+    func handleDeepLink(_ url: URL) {
+        guard url.scheme == "csustplanet", let host = url.host else { return }
+
+        let paths = url.pathComponents.filter { $0 != "/" }
+
+        switch (host, paths.first) {
+        case ("features", "electricity"):
+            if paths.count > 1,
+                let dormId = Int64(paths[1]),
+                let pool = DatabaseManager.shared.pool,
+                let dorm = try? pool.read({ try DormGRDB.filter(DormGRDB.Columns.id == dormId).fetchOne($0) })
+            {
+                deepLinkTo(feature: .electricityQuery, path: [.features(.campusTool(.dormList(.detail(.main(dorm)))))])
+            } else {
+                deepLinkTo(feature: .electricityQuery)
+            }
+
+        case ("features", "grade-analysis"):
+            deepLinkTo(feature: .gradeAnalysis)
+
+        case ("features", "course-schedule"):
+            deepLinkTo(feature: .courseSchedule)
+
+        case ("features", "todo-assignments"):
+            deepLinkTo(feature: .urgentCourses)
+
+        default:
+            break
         }
     }
 }
