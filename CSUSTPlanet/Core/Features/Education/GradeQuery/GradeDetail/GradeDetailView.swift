@@ -30,6 +30,7 @@ struct GradeDetailView: View {
         .safeRefreshable { await viewModel.loadDetail(courseGrade) }
         .task { await viewModel.loadDetail(courseGrade) }
         .errorToast($viewModel.errorToast)
+        .navigationTitle("")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button(asyncAction: { await viewModel.loadDetail(courseGrade) }) {
