@@ -16,7 +16,7 @@ final class CourseOverviewViewModel {
     enum CourseDisplayState {
         case loading
         case beforeSemester(days: Int?)
-        case inSemester(courses: [(course: CourseDisplayInfo, isCurrent: Bool)])
+        case inSemester(todayCourseState: TodayCourseState)
         case afterSemester
     }
 
@@ -44,12 +44,12 @@ final class CourseOverviewViewModel {
         case .afterSemester:
             return .afterSemester
         case .inSemester:
-            let courses = CourseScheduleUtil.getUnfinishedCourses(
+            let todayCourseState = CourseScheduleUtil.getTodayCourseState(
                 semesterStartDate: data.semesterStartDate,
                 now: .now,
                 courses: data.courses
             )
-            return .inSemester(courses: courses)
+            return .inSemester(todayCourseState: todayCourseState)
         }
     }
 

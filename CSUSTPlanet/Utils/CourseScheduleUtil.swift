@@ -14,6 +14,12 @@ enum SemesterStatus {
     case afterSemester
 }
 
+enum TodayCourseState {
+    case noScheduledCourses
+    case finishedAllCourses
+    case unfinishedCourses(courses: [(course: CourseDisplayInfo, isCurrent: Bool)])
+}
+
 enum CourseScheduleUtil {
 
     // MARK: - Properties
@@ -87,7 +93,8 @@ enum CourseScheduleUtil {
     static let emptyCourseScheduleText: String = "暂无课表数据"
     static let semesterNotStartedText: String = "学期未开始"
     static let semesterEndedText: String = "本学期已结束"
-    static let noCoursesTodayText: String = "今天没有课，好好休息吧"
+    static let noScheduledCoursesTodayText: String = "今天没课，好好休息吧"
+    static let finishedCoursesTodayText: String = "今天的课已经上完啦"
 
     private static let calendar = Calendar.current
 
@@ -261,36 +268,32 @@ enum CourseScheduleUtil {
         return "距离开学还有 \(days) 天"
     }
 
-    /// 获取当天未结束的课程列表
-    /// - Parameters:
-    ///   - semesterStartDate: 学期开始日期
-    ///   - now: 当前时间
-    ///   - courses: 课程列表
-    /// - Returns: 一个包含未结束课程信息和是否为当前课程的元组数组
-    static func getUnfinishedCourses(semesterStartDate: Date, now: Date, courses: [EduHelper.Course]) -> [(course: CourseDisplayInfo, isCurrent: Bool)] {
-        let startOfTargetDate = calendar.startOfDay(for: now)
-        let startOfSemester = calendar.startOfDay(for: semesterStartDate)
-
-        guard let dayDifference = calendar.dateComponents([.day], from: startOfSemester, to: startOfTargetDate).day, dayDifference >= 0 else {
+    private static func getCoursesForTargetDate(
+        semesterStartDate: Date,
+        targetDate: Date,
+        courses: [EduHelper.Course]
+    ) -> [CourseDisplayInfo] {
+        guard let currentWeek = getCurrentWeek(semesterStartDate: semesterStartDate, now: targetDate) else {
             return []
         }
 
-        let currentWeek = (dayDifference / 7) + 1
-        let weekdayComponent = calendar.component(.weekday, from: startOfTargetDate)
-        guard let currentDayOfWeek = EduHelper.DayOfWeek(rawValue: weekdayComponent - 1) else {
-            return []
-        }
-
-        let allDailyCourses = courses.flatMap { course in
+        let currentDayOfWeek = getDayOfWeek(targetDate)
+        return courses.flatMap { course in
             course.sessions.compactMap { session -> CourseDisplayInfo? in
                 guard session.weeks.contains(currentWeek), session.dayOfWeek == currentDayOfWeek else {
                     return nil
                 }
                 return CourseDisplayInfo(course: course, session: session)
             }
-        }.sorted { $0.session.startSection < $1.session.startSection }
+        }
+        .sorted { $0.session.startSection < $1.session.startSection }
+    }
 
-        return allDailyCourses.compactMap { courseInfo -> (course: CourseDisplayInfo, isCurrent: Bool)? in
+    private static func getUnfinishedCoursesForTargetDate(
+        _ dailyCourses: [CourseDisplayInfo],
+        now: Date
+    ) -> [(course: CourseDisplayInfo, isCurrent: Bool)] {
+        return dailyCourses.compactMap { courseInfo -> (course: CourseDisplayInfo, isCurrent: Bool)? in
             let startSectionIndex = courseInfo.session.startSection - 1
             let endSectionIndex = courseInfo.session.endSection - 1
             guard startSectionIndex >= 0, startSectionIndex < sectionTimeString.count,
@@ -298,9 +301,9 @@ enum CourseScheduleUtil {
             else {
                 return nil
             }
+
             let startTimeString = sectionTimeString[startSectionIndex].0
             let endTimeString = sectionTimeString[endSectionIndex].1
-
             let startComponents = startTimeString.split(separator: ":").compactMap { Int($0) }
             let endComponents = endTimeString.split(separator: ":").compactMap { Int($0) }
 
@@ -310,12 +313,48 @@ enum CourseScheduleUtil {
             else {
                 return nil
             }
+
             guard now < courseEndDate else {
                 return nil
             }
+
             let isCurrent = now >= courseStartDate
             return (course: courseInfo, isCurrent: isCurrent)
         }
+    }
+
+    static func getTodayCourseState(semesterStartDate: Date, now: Date, courses: [EduHelper.Course]) -> TodayCourseState {
+        let dailyCourses = getCoursesForTargetDate(
+            semesterStartDate: semesterStartDate,
+            targetDate: now,
+            courses: courses
+        )
+
+        guard !dailyCourses.isEmpty else {
+            return .noScheduledCourses
+        }
+
+        let unfinishedCourses = getUnfinishedCoursesForTargetDate(dailyCourses, now: now)
+        guard !unfinishedCourses.isEmpty else {
+            return .finishedAllCourses
+        }
+
+        return .unfinishedCourses(courses: unfinishedCourses)
+    }
+
+    /// 获取当天未结束的课程列表
+    /// - Parameters:
+    ///   - semesterStartDate: 学期开始日期
+    ///   - now: 当前时间
+    ///   - courses: 课程列表
+    /// - Returns: 一个包含未结束课程信息和是否为当前课程的元组数组
+    static func getUnfinishedCourses(semesterStartDate: Date, now: Date, courses: [EduHelper.Course]) -> [(course: CourseDisplayInfo, isCurrent: Bool)] {
+        let dailyCourses = getCoursesForTargetDate(
+            semesterStartDate: semesterStartDate,
+            targetDate: now,
+            courses: courses
+        )
+        return getUnfinishedCoursesForTargetDate(dailyCourses, now: now)
     }
 
     /// 获取用于“课程状态”实时活动功能的课程信息

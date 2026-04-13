@@ -70,14 +70,21 @@ struct CourseOverviewView: View {
         case .afterSemester:
             EmptyCourseContentView(text: CourseScheduleUtil.semesterEndedText, icon: "case.fill")
 
-        case .inSemester(let courses):
-            if courses.isEmpty {
+        case .inSemester(let todayCourseState):
+            switch todayCourseState {
+            case .noScheduledCourses:
                 EmptyCourseContentView(
-                    text: CourseScheduleUtil.noCoursesTodayText,
+                    text: CourseScheduleUtil.noScheduledCoursesTodayText,
                     icon: "checkmark.circle.fill",
                     iconColor: .green
                 )
-            } else {
+            case .finishedAllCourses:
+                EmptyCourseContentView(
+                    text: CourseScheduleUtil.finishedCoursesTodayText,
+                    icon: "checkmark.circle.fill",
+                    iconColor: .green
+                )
+            case .unfinishedCourses(let courses):
                 CourseListView(
                     courses: courses
                 )

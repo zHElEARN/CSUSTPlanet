@@ -56,22 +56,33 @@ struct TodayCoursesEntryView: View {
         GeometryReader { proxy in
             let colors = ColorUtil.getCourseColors(data.courses)
             let count = (family == .systemLarge ? 5 : 2)
-            let courses = CourseScheduleUtil.getUnfinishedCourses(semesterStartDate: data.semesterStartDate, now: date, courses: data.courses)
-                .prefix(count)
+            let todayCourseState = CourseScheduleUtil.getTodayCourseState(
+                semesterStartDate: data.semesterStartDate,
+                now: date,
+                courses: data.courses
+            )
 
             let spacing: CGFloat = 4
             let height = (proxy.size.height - spacing * CGFloat(count - 1)) / CGFloat(count)
 
-            if courses.isEmpty {
-                Text(CourseScheduleUtil.noCoursesTodayText)
+            switch todayCourseState {
+            case .noScheduledCourses:
+                Text(CourseScheduleUtil.noScheduledCoursesTodayText)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
+            case .finishedAllCourses:
+                Text(CourseScheduleUtil.finishedCoursesTodayText)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case .unfinishedCourses(let courses):
                 VStack(spacing: spacing) {
-                    ForEach(courses, id: \.course.id) { course in
+                    ForEach(courses.prefix(count), id: \.course.id) { course in
                         courseRowView(courseDisplayInfo: course.course, colors: colors, isCurrent: course.isCurrent)
                             .frame(maxWidth: .infinity, maxHeight: height)
                     }
