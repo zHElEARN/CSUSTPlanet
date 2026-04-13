@@ -16,7 +16,7 @@ final class CourseOverviewViewModel {
     enum CourseDisplayState {
         case loading
         case beforeSemester(days: Int?)
-        case inSemester(todayCourseState: TodayCourseState)
+        case inSemester(dailyCourseState: DailyCourseDisplayState)
         case afterSemester
     }
 
@@ -32,24 +32,24 @@ final class CourseOverviewViewModel {
             .store(in: &cancellables)
     }
 
-    var courseDisplayState: CourseDisplayState {
+    func courseDisplayState(at now: Date) -> CourseDisplayState {
         guard let data = courseScheduleData?.value else { return .loading }
 
-        let status = CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: .now)
+        let status = CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: now)
 
         switch status {
         case .beforeSemester:
-            let days = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: .now)
+            let days = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: now)
             return .beforeSemester(days: days)
         case .afterSemester:
             return .afterSemester
         case .inSemester:
-            let todayCourseState = CourseScheduleUtil.getTodayCourseState(
+            let dailyCourseState = CourseScheduleUtil.getDailyCourseDisplayState(
                 semesterStartDate: data.semesterStartDate,
-                now: .now,
+                now: now,
                 courses: data.courses
             )
-            return .inSemester(todayCourseState: todayCourseState)
+            return .inSemester(dailyCourseState: dailyCourseState)
         }
     }
 

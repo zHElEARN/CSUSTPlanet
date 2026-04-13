@@ -20,6 +20,30 @@ enum TodayCourseState {
     case unfinishedCourses(courses: [(course: CourseDisplayInfo, isCurrent: Bool)])
 }
 
+enum TodayCourseFallbackReason {
+    case noScheduledCourses
+    case finishedAllCourses
+
+    var message: String {
+        switch self {
+        case .noScheduledCourses:
+            return CourseScheduleUtil.noScheduledCoursesTodayText
+        case .finishedAllCourses:
+            return CourseScheduleUtil.finishedCoursesTodayText
+        }
+    }
+}
+
+struct TomorrowCoursePreview {
+    let date: Date
+    let courses: [CourseDisplayInfo]
+}
+
+enum DailyCourseDisplayState {
+    case today(courses: [(course: CourseDisplayInfo, isCurrent: Bool)])
+    case tomorrowPreview(reason: TodayCourseFallbackReason, preview: TomorrowCoursePreview?)
+}
+
 enum CourseScheduleUtil {
 
     // MARK: - Properties
@@ -93,8 +117,10 @@ enum CourseScheduleUtil {
     static let emptyCourseScheduleText: String = "暂无课表数据"
     static let semesterNotStartedText: String = "学期未开始"
     static let semesterEndedText: String = "本学期已结束"
-    static let noScheduledCoursesTodayText: String = "今天没课，好好休息吧"
-    static let finishedCoursesTodayText: String = "今天的课已经上完啦"
+    static let noScheduledCoursesTodayText: String = "今天没有课程，好好休息吧"
+    static let finishedCoursesTodayText: String = "今天的课程已经上完啦"
+    static let tomorrowCoursesTitleText: String = "以下为明日课程"
+    static let noScheduledCoursesTomorrowText: String = "明天也没课哦"
 
     private static let calendar = Calendar.current
 
@@ -268,6 +294,18 @@ enum CourseScheduleUtil {
         return "距离开学还有 \(days) 天"
     }
 
+    static func getCoursesForDate(
+        semesterStartDate: Date,
+        targetDate: Date,
+        courses: [EduHelper.Course]
+    ) -> [CourseDisplayInfo] {
+        return getCoursesForTargetDate(
+            semesterStartDate: semesterStartDate,
+            targetDate: targetDate,
+            courses: courses
+        )
+    }
+
     private static func getCoursesForTargetDate(
         semesterStartDate: Date,
         targetDate: Date,
@@ -323,6 +361,27 @@ enum CourseScheduleUtil {
         }
     }
 
+    static func getTomorrowCoursePreview(
+        semesterStartDate: Date,
+        now: Date,
+        courses: [EduHelper.Course]
+    ) -> TomorrowCoursePreview? {
+        guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) else {
+            return nil
+        }
+
+        let tomorrowCourses = getCoursesForDate(
+            semesterStartDate: semesterStartDate,
+            targetDate: tomorrow,
+            courses: courses
+        )
+        guard !tomorrowCourses.isEmpty else {
+            return nil
+        }
+
+        return TomorrowCoursePreview(date: tomorrow, courses: tomorrowCourses)
+    }
+
     static func getTodayCourseState(semesterStartDate: Date, now: Date, courses: [EduHelper.Course]) -> TodayCourseState {
         let dailyCourses = getCoursesForTargetDate(
             semesterStartDate: semesterStartDate,
@@ -340,6 +399,27 @@ enum CourseScheduleUtil {
         }
 
         return .unfinishedCourses(courses: unfinishedCourses)
+    }
+
+    static func getDailyCourseDisplayState(
+        semesterStartDate: Date,
+        now: Date,
+        courses: [EduHelper.Course]
+    ) -> DailyCourseDisplayState {
+        switch getTodayCourseState(semesterStartDate: semesterStartDate, now: now, courses: courses) {
+        case .unfinishedCourses(let courses):
+            return .today(courses: courses)
+        case .noScheduledCourses:
+            return .tomorrowPreview(
+                reason: .noScheduledCourses,
+                preview: getTomorrowCoursePreview(semesterStartDate: semesterStartDate, now: now, courses: courses)
+            )
+        case .finishedAllCourses:
+            return .tomorrowPreview(
+                reason: .finishedAllCourses,
+                preview: getTomorrowCoursePreview(semesterStartDate: semesterStartDate, now: now, courses: courses)
+            )
+        }
     }
 
     /// 获取当天未结束的课程列表

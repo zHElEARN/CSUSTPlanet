@@ -6,24 +6,47 @@
 //
 
 import CSUSTKit
+import Foundation
 import SwiftUI
 
 struct CourseOverviewView: View {
     @State private var viewModel = CourseOverviewViewModel()
     @Environment(Router.self) private var router
+    @State private var selectedCourse: CourseDisplayInfo?
 
     var body: some View {
         Button(action: { router.deepLinkTo(feature: .courseSchedule) }) {
             CustomGroupBox {
-                cardContent
+                TimelineView(.periodic(from: .now, by: 60)) { context in
+                    cardContent(now: context.date)
+                }
             }
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .sheet(item: $selectedCourse) { courseInfo in
+            CourseScheduleDetailView(
+                course: courseInfo.course,
+                session: courseInfo.session,
+                isShowingToolbar: true,
+                isPresented: courseDetailBinding
+            )
+        }
+    }
+
+    private var courseDetailBinding: Binding<Bool> {
+        Binding(
+            get: { selectedCourse != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedCourse = nil
+                }
+            }
+        )
     }
 
     @ViewBuilder
-    private var cardContent: some View {
+    private func cardContent(now: Date) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
                 Text(CourseScheduleUtil.courseScheduleTitle)
@@ -37,99 +60,143 @@ struct CourseOverviewView: View {
                     .foregroundStyle(.secondary)
             }
 
-            contentView
+            contentView(now: now)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
-    private var contentView: some View {
-        switch viewModel.courseDisplayState {
+    private func contentView(now: Date) -> some View {
+        switch viewModel.courseDisplayState(at: now) {
         case .loading:
-            EmptyCourseContentView(text: CourseScheduleUtil.emptyCourseScheduleText, icon: "cloud.sun.fill")
+            EmptyCourseContentView(text: CourseScheduleUtil.emptyCourseScheduleText)
 
         case .beforeSemester(let days):
             if let days {
                 if days > CourseScheduleUtil.semesterStartThreshold {
                     EmptyCourseContentView(
-                        text: CourseScheduleUtil.getHolidayMessage(for: Date()),
-                        subtitle: CourseScheduleUtil.semesterNotStartedText,
-                        icon: "party.popper.fill"
+                        text: CourseScheduleUtil.getHolidayMessage(for: now),
+                        subtitle: CourseScheduleUtil.semesterNotStartedText
                     )
                 } else {
                     EmptyCourseContentView(
                         text: CourseScheduleUtil.semesterNotStartedText,
-                        subtitle: CourseScheduleUtil.getSemesterCountdownText(days: days),
-                        icon: "calendar.badge.clock"
+                        subtitle: CourseScheduleUtil.getSemesterCountdownText(days: days)
                     )
                 }
             } else {
-                EmptyCourseContentView(text: CourseScheduleUtil.semesterNotStartedText, icon: "calendar")
+                EmptyCourseContentView(text: CourseScheduleUtil.semesterNotStartedText)
             }
 
         case .afterSemester:
-            EmptyCourseContentView(text: CourseScheduleUtil.semesterEndedText, icon: "case.fill")
+            EmptyCourseContentView(text: CourseScheduleUtil.semesterEndedText)
 
-        case .inSemester(let todayCourseState):
-            switch todayCourseState {
-            case .noScheduledCourses:
-                EmptyCourseContentView(
-                    text: CourseScheduleUtil.noScheduledCoursesTodayText,
-                    icon: "checkmark.circle.fill",
-                    iconColor: .green
-                )
-            case .finishedAllCourses:
-                EmptyCourseContentView(
-                    text: CourseScheduleUtil.finishedCoursesTodayText,
-                    icon: "checkmark.circle.fill",
-                    iconColor: .green
-                )
-            case .unfinishedCourses(let courses):
+        case .inSemester(let dailyCourseState):
+            switch dailyCourseState {
+            case .today(let courses):
                 CourseListView(
-                    courses: courses
+                    courses: courseItems(from: courses),
+                    onSelect: { selectedCourse = $0 }
                 )
+            case .tomorrowPreview(let reason, let preview):
+                if let preview {
+                    VStack(alignment: .leading, spacing: 12) {
+                        TomorrowPreviewStatusView(text: reason.message)
+
+                        TomorrowCourseSectionView(
+                            preview: preview,
+                            onSelect: { selectedCourse = $0 }
+                        )
+                    }
+                } else {
+                    EmptyCourseContentView(
+                        text: reason.message,
+                        subtitle: CourseScheduleUtil.noScheduledCoursesTomorrowText
+                    )
+                }
             }
+        }
+    }
+
+    private func courseItems(from courses: [(course: CourseDisplayInfo, isCurrent: Bool)]) -> [CourseRowItem] {
+        courses.map { course in
+            CourseRowItem(courseInfo: course.course, isCurrent: course.isCurrent)
         }
     }
 }
 
+private struct CourseRowItem: Identifiable {
+    let courseInfo: CourseDisplayInfo
+    let isCurrent: Bool
+
+    var id: UUID { courseInfo.id }
+}
+
 private struct CourseListView: View {
-    let courses: [(course: CourseDisplayInfo, isCurrent: Bool)]
+    let courses: [CourseRowItem]
+    let onSelect: (CourseDisplayInfo) -> Void
 
     private var courseColors: [String: Color] {
-        ColorUtil.getCourseColors(courses.map { $0.course.course })
+        ColorUtil.getCourseColors(courses.map { $0.courseInfo.course })
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(courses.enumerated()), id: \.offset) { _, item in
+            ForEach(courses) { item in
                 CourseRowView(
-                    course: item.course.course,
-                    session: item.course.session,
+                    courseInfo: item.courseInfo,
                     isCurrent: item.isCurrent,
-                    accentColor: courseColors[item.course.course.courseName] ?? .blue,
-                    startSection: item.course.session.startSection,
-                    endSection: item.course.session.endSection
+                    accentColor: courseColors[item.courseInfo.course.courseName] ?? .blue,
+                    onTap: { onSelect(item.courseInfo) }
                 )
             }
         }
     }
 }
 
-private struct CourseRowView: View {
-    let course: EduHelper.Course
-    let session: EduHelper.ScheduleSession
-    let isCurrent: Bool
-    let accentColor: Color
-    let startSection: Int
-    let endSection: Int
-
-    @State private var showDetail = false
+private struct TomorrowCourseSectionView: View {
+    let preview: TomorrowCoursePreview
+    let onSelect: (CourseDisplayInfo) -> Void
 
     var body: some View {
-        Button {
-            showDetail = true
-        } label: {
+        CourseListView(
+            courses: preview.courses.map { CourseRowItem(courseInfo: $0, isCurrent: false) },
+            onSelect: onSelect
+        )
+    }
+}
+
+private struct TomorrowPreviewStatusView: View {
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Text(CourseScheduleUtil.tomorrowCoursesTitleText)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.red)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct CourseRowView: View {
+    let courseInfo: CourseDisplayInfo
+    let isCurrent: Bool
+    let accentColor: Color
+    let onTap: () -> Void
+
+    var body: some View {
+        let course = courseInfo.course
+        let session = courseInfo.session
+        let startSection = courseInfo.session.startSection
+        let endSection = courseInfo.session.endSection
+
+        Button(action: onTap) {
             HStack(spacing: 6) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(accentColor)
@@ -142,7 +209,6 @@ private struct CourseRowView: View {
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
-                            // .frame(maxWidth: .infinity, alignment: .leading)
 
                             if isCurrent {
                                 Circle()
@@ -188,39 +254,25 @@ private struct CourseRowView: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .sheet(isPresented: $showDetail) {
-            CourseScheduleDetailView(
-                course: course,
-                session: session,
-                isShowingToolbar: true,
-                isPresented: $showDetail
-            )
-        }
     }
 }
 
 private struct EmptyCourseContentView: View {
     var text: String
     var subtitle: String? = nil
-    var icon: String
-    var iconColor: Color = .secondary
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(iconColor)
+        VStack(alignment: .center, spacing: 4) {
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(text)
+            if let subtitle {
+                Text(subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                    .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)
