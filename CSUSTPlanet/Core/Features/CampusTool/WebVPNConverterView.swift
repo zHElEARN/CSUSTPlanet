@@ -30,7 +30,11 @@ struct WebVPNConverterView: View {
     // MARK: - Computed Properties for UI
 
     private var inputTitle: String {
-        selectedMode == .convert ? "原始链接" : "WebVPN 链接"
+        #if os(macOS)
+        return selectedMode == .convert ? "原始链接" : "校园网关链接"
+        #else
+        return selectedMode == .convert ? "原始链接" : "WebVPN 链接"
+        #endif
     }
 
     private var inputPlaceholder: String {
@@ -38,7 +42,11 @@ struct WebVPNConverterView: View {
     }
 
     private var outputTitle: String {
-        selectedMode == .convert ? "WebVPN 链接" : "原始链接"
+        #if os(macOS)
+        return selectedMode == .convert ? "校园网关链接" : "原始链接"
+        #else
+        return selectedMode == .convert ? "WebVPN 链接" : "原始链接"
+        #endif
     }
 
     private var outputPlaceholder: String {
@@ -143,17 +151,30 @@ struct WebVPNConverterView: View {
                         .foregroundColor(.primary)
 
                     VStack(alignment: .leading, spacing: 8) {
+                        #if os(macOS)
+                        Text("校园网关链接转换与还原")
+                            .font(.subheadline)
+                            .bold()
+                        #else
                         Text("WebVPN 转换与还原")
                             .font(.subheadline)
                             .bold()
+                        #endif
 
                         VStack(alignment: .leading, spacing: 4) {
                             Text("**转换**：")
                                 .font(.footnote)
+                            #if os(macOS)
+                            Text("将普通的互联网网址（如 `baidu.com`）或校内IP地址（如 `10.2.3.4`）转换为可通过校园网关在校外访问的专属链接。")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 12)
+                            #else
                             Text("将普通的互联网网址（如 `baidu.com`）或校内IP地址（如 `10.2.3.4`）转换为可通过校园 WebVPN 在校外访问的专属链接。")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                                 .padding(.leading, 12)
+                            #endif
                             Text("方便您在校外直接访问仅限内网使用的学术资源、内网系统等。")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
@@ -164,14 +185,28 @@ struct WebVPNConverterView: View {
                             Text("**还原**：")
                                 .font(.footnote)
                                 .padding(.top, 4)
+                            #if os(macOS)
+                            Text("将校园网关格式的专属链接还原为原始的网址或IP地址。")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 12)
+                            #else
                             Text("将 WebVPN 格式的链接还原为原始的网址或IP地址。")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                                 .padding(.leading, 12)
+                            #endif
+                            #if os(macOS)
+                            Text("当您收到一个校园网关链接，但不确定其原始地址时，此功能可以帮助您快速解析。")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 12)
+                            #else
                             Text("当您收到一个 WebVPN 链接，但不确定其原始地址时，此功能可以帮助您快速解析。")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                                 .padding(.leading, 12)
+                            #endif
                         }
                     }
                 }
@@ -188,7 +223,11 @@ struct WebVPNConverterView: View {
                 originalUrl = ""
             }
         }
+        #if os(macOS)
+        .navigationTitle("校园网关链接转换")
+        #else
         .navigationTitle("WebVPN 转换")
+        #endif
         .trackView("WebVPNConverter")
         .successToast($successToast)
     }

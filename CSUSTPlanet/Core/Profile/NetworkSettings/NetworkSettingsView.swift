@@ -22,12 +22,24 @@ struct NetworkSettingsView: View {
         Form {
             Section {
                 Toggle(isOn: isWebVPNEnabled) {
+                    #if os(macOS)
+                    Text("开启校园网关模式")
+                    #else
                     Text("开启WebVPN模式")
+                    #endif
                 }
             } header: {
+                #if os(macOS)
+                Text("校园网关")
+                #else
                 Text("WebVPN")
+                #endif
             } footer: {
+                #if os(macOS)
+                Text("开启后应用将通过学校的校园网关访问校园网资源")
+                #else
                 Text("开启后则应用通过学校的WebVPN访问校园网资源")
+                #endif
             }
         }
         .formStyle(.grouped)
@@ -35,11 +47,22 @@ struct NetworkSettingsView: View {
         .sheet(isPresented: $isWebVPNSheetPresented) {
             WebVPNGuideView(isPresented: $isWebVPNSheetPresented)
         }
-        .alert("关闭 WebVPN 模式", isPresented: $isWebVPNDisableAlertPresented) {
-            Button("取消", role: .cancel) {}
-            Button("关闭并重启", role: .destructive, action: dismissWebVPNDisableAlert)
-        } message: {
-            Text("关闭 WebVPN 模式需要重启应用才能生效。")
+        .apply { view in
+            #if os(macOS)
+            view.alert("关闭校园网关模式", isPresented: $isWebVPNDisableAlertPresented) {
+                Button("取消", role: .cancel) {}
+                Button("关闭并重启", role: .destructive, action: dismissWebVPNDisableAlert)
+            } message: {
+                Text("关闭校园网关模式需要重启应用才能生效。")
+            }
+            #else
+            view.alert("关闭 WebVPN 模式", isPresented: $isWebVPNDisableAlertPresented) {
+                Button("取消", role: .cancel) {}
+                Button("关闭并重启", role: .destructive, action: dismissWebVPNDisableAlert)
+            } message: {
+                Text("关闭 WebVPN 模式需要重启应用才能生效。")
+            }
+            #endif
         }
         .trackView("NetworkSettings")
     }
