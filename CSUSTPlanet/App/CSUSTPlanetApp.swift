@@ -7,7 +7,6 @@
 
 import AppIntents
 import OSLog
-import SwiftData
 import SwiftUI
 
 @main

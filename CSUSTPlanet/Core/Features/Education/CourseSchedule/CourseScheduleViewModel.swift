@@ -8,7 +8,6 @@
 import CSUSTKit
 import EventKit
 import Foundation
-import SwiftData
 import SwiftUI
 
 enum CalendarReminderOffset: TimeInterval, CaseIterable, Identifiable {
