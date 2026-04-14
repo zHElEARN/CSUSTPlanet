@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
 import SwiftUI
 import WidgetKit
@@ -50,12 +51,20 @@ class GradeAnalysisViewModel: NSObject {
 
     var shareContent: Any?
 
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     @ObservationIgnored var isInitial: Bool = true
 
     override init() {
         super.init()
-        guard let data = MMKVHelper.CourseGrades.cache else { return }
-        self.courseGradesData = data
+        applyCourseGradesCache(MMKVHelper.CourseGrades.cache)
+
+        MMKVHelper.CourseGrades.$cache
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.applyCourseGradesCache(data)
+            }
+            .store(in: &cancellables)
     }
 
     func loadInitial() async {
@@ -74,12 +83,15 @@ class GradeAnalysisViewModel: NSObject {
                 try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
             }
             let data = Cached(cachedAt: .now, value: courseGrades)
-            self.courseGradesData = data
             MMKVHelper.CourseGrades.cache = data
             WidgetTimelineRefreshHelper.reloadGradeAnalysis()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
+    }
+
+    private func applyCourseGradesCache(_ data: Cached<[EduHelper.CourseGrade]>?) {
+        courseGradesData = data
     }
 
     #if os(iOS)

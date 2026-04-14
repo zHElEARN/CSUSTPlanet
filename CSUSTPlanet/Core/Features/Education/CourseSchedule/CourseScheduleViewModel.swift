@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import Combine
 import EventKit
 import Foundation
 import SwiftUI
@@ -58,6 +59,8 @@ class CourseScheduleViewModel {
     var courseScheduleData: Cached<CourseScheduleData>? = nil
     var availableSemesters: [String] = []
 
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
+
     var isCourseScheduleLoading: Bool = false
     var isSemestersLoading: Bool = false
 
@@ -105,9 +108,15 @@ class CourseScheduleViewModel {
     var isExportScopeLimited: Bool = false
 
     init() {
-        guard let data = MMKVHelper.CourseSchedule.cache else { return }
-        self.courseScheduleData = data
-        updateSchedules(data.value.semesterStartDate, data.value.courses)
+        applyCourseScheduleCache(MMKVHelper.CourseSchedule.cache)
+
+        MMKVHelper.CourseSchedule.$cache
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.applyCourseScheduleCache(data)
+            }
+            .store(in: &cancellables)
     }
 
     func loadInitial() async {
@@ -146,13 +155,24 @@ class CourseScheduleViewModel {
                 try await AuthManager.shared.eduHelper.semesterService.getSemesterStartDate(academicYearSemester: self.selectedSemester)
             }
             let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
-            self.courseScheduleData = data
             MMKVHelper.CourseSchedule.cache = data
             WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
-            updateSchedules(semesterStartDate, courses)
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
+    }
+
+    private func applyCourseScheduleCache(_ data: Cached<CourseScheduleData>?) {
+        courseScheduleData = data
+
+        guard let data else {
+            realCurrentWeek = nil
+            courseColors = [:]
+            currentWeek = 1
+            return
+        }
+
+        updateSchedules(data.value.semesterStartDate, data.value.courses)
     }
 
     private func updateSchedules(_ semesterStartDate: Date, _ courses: [EduHelper.Course]) {

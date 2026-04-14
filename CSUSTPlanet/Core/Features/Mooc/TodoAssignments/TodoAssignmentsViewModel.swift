@@ -6,12 +6,15 @@
 //
 
 import CSUSTKit
+import Combine
 import SwiftUI
 
 @MainActor
 @Observable
 final class TodoAssignmentsViewModel {
     var todoAssignmentsData: Cached<[TodoAssignmentsData]>? = nil
+
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     private var unexpiredAssignmentsByCourseID: [String: [MoocHelper.Assignment]] = [:]
     private(set) var unexpiredAssignmentsCount: Int = 0
@@ -48,8 +51,15 @@ final class TodoAssignmentsViewModel {
         reminderOffsetHour = min(max(MMKVHelper.TodoAssignments.notificationOffsetHour, 0), 72)
         reminderOffsetMinute = min(max(MMKVHelper.TodoAssignments.notificationOffsetMinute, 0), 59)
 
-        guard let data = MMKVHelper.TodoAssignments.cache else { return }
-        applyData(data)
+        applyTodoAssignmentsCache(MMKVHelper.TodoAssignments.cache)
+
+        MMKVHelper.TodoAssignments.$cache
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.applyTodoAssignmentsCache(data)
+            }
+            .store(in: &cancellables)
     }
 
     func loadInitial() async {
@@ -78,10 +88,20 @@ final class TodoAssignmentsViewModel {
             }
 
             let data = Cached(cachedAt: .now, value: newGroups)
-            applyData(data)
             MMKVHelper.TodoAssignments.cache = data
             WidgetTimelineRefreshHelper.reloadTodoAssignments()
-            await syncTodoNotificationsSilently()
+            let drafts = Self.buildLocalNotificationDrafts(
+                groups: data.value,
+                reminderOffsetHour: reminderOffsetHour,
+                reminderOffsetMinute: reminderOffsetMinute
+            )
+            await Self.syncTodoNotificationsSilently(
+                isNotificationEnabled: isTodoAssignmentsNotificationEnabled,
+                drafts: drafts,
+                onPermissionDenied: {
+                    self.isTodoAssignmentsNotificationEnabled = false
+                }
+            )
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -242,8 +262,16 @@ final class TodoAssignmentsViewModel {
         return unexpiredAssignmentsByCourseID[group.course.id] ?? []
     }
 
-    private func applyData(_ data: Cached<[TodoAssignmentsData]>) {
+    private func applyTodoAssignmentsCache(_ data: Cached<[TodoAssignmentsData]>?) {
         todoAssignmentsData = data
+
+        guard let data else {
+            unexpiredAssignmentsByCourseID = [:]
+            unexpiredAssignmentsCount = 0
+            expandedCourseIDs = []
+            showAllAssignmentsCourseIDs = []
+            return
+        }
 
         let referenceDate = Date.now
         var unexpiredMap: [String: [MoocHelper.Assignment]] = [:]
