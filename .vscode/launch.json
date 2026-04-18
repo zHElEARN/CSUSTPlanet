@@ -4,7 +4,7 @@
         {
             "type": "sweetpad-lldb",
             "request": "attach",
-            "name": "SweetPad: Build and Run (Wait for debugger)",
+            "name": "SweetPad: Debug",
             "preLaunchTask": "sweetpad: debugging-launch"
         },
     ]
