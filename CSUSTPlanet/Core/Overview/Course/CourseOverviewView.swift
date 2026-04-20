@@ -101,7 +101,10 @@ struct CourseOverviewView: View {
             case .tomorrowPreview(let reason, let preview):
                 if let preview {
                     VStack(alignment: .leading, spacing: 12) {
-                        TomorrowPreviewStatusView(text: reason.message)
+                        TomorrowPreviewStatusView(
+                            text: reason.message,
+                            courseCount: preview.courses.count
+                        )
 
                         TomorrowCourseSectionView(
                             preview: preview,
@@ -168,18 +171,23 @@ private struct TomorrowCourseSectionView: View {
 
 private struct TomorrowPreviewStatusView: View {
     let text: String
+    let courseCount: Int
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 0) {
             Text(text)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .padding(.trailing, 8)
 
             Text(CourseScheduleUtil.tomorrowCoursesTitleText)
-                .font(.subheadline)
-                .fontWeight(.semibold)
                 .foregroundStyle(.red)
+                .padding(.trailing, 8)
+            Text("共")
+            Text("\(courseCount)")
+                .foregroundStyle(.blue)
+            Text("节课程")
         }
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -265,12 +273,12 @@ private struct EmptyCourseContentView: View {
         VStack(alignment: .center, spacing: 4) {
             Text(text)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
 
             if let subtitle {
                 Text(subtitle)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
