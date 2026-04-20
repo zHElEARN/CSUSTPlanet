@@ -13,6 +13,8 @@ import SwiftUI
 @Observable
 final class TodoAssignmentsViewModel {
     var todoAssignmentsData: Cached<[TodoAssignmentsData]>? = nil
+    var selectedCourseID: String? = nil
+    var isCoursePagePresented = false
 
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 

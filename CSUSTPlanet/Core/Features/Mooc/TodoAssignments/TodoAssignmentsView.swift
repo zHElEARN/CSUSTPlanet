@@ -35,6 +35,16 @@ struct TodoAssignmentsView: View {
                                     Spacer()
 
                                     Button {
+                                        viewModel.selectedCourseID = group.course.id
+                                        viewModel.isCoursePagePresented = true
+                                    } label: {
+                                        Text("前往课程")
+                                            .font(.caption)
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .controlSize(.small)
+
+                                    Button {
                                         withAnimation { viewModel.toggleShowAllAssignments(courseID: group.course.id) }
                                     } label: {
                                         Text(viewModel.isShowingAllAssignments(courseID: group.course.id) ? "仅未截止" : "查看全部")
@@ -62,6 +72,28 @@ struct TodoAssignmentsView: View {
         .errorToast($viewModel.errorToast)
         .sheet(isPresented: $viewModel.isNotificationSettingsPresented) {
             TodoAssignmentsNotificationSettingsView(viewModel: viewModel)
+        }
+        .sheet(isPresented: $viewModel.isCoursePagePresented) {
+            NavigationStack {
+                if let courseID = viewModel.selectedCourseID,
+                    let url = URL(string: "http://pt.csust.edu.cn/meol/jpk/course/layout/newpage/index.jsp?courseId=\(courseID)")
+                {
+                    WebView(url: url, cookies: CookieHelper.shared.session.session.configuration.httpCookieStorage?.cookies)
+                        #if os(macOS)
+                    .frame(minWidth: 960, minHeight: 640)
+                        #endif
+                        .navigationTitle("课程页面")
+                        .inlineToolbarTitle()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("关闭") {
+                                    viewModel.isCoursePagePresented = false
+                                    viewModel.selectedCourseID = nil
+                                }
+                            }
+                        }
+                }
+            }
         }
         .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {
             Button(action: { viewModel.isNotificationDeniedAlertPresented = false }) {
