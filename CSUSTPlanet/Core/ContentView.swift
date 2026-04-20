@@ -29,6 +29,13 @@ struct FeatureSection: Identifiable {
     let items: [FeatureItem]
 }
 
+struct SidebarPrimaryItem: Identifiable {
+    var id: AppTabItem { tab }
+    let tab: AppTabItem
+    let title: String
+    let systemImage: String
+}
+
 @MainActor
 private let featureSections: [FeatureSection] = [
     FeatureSection(
@@ -72,6 +79,12 @@ private let featureSections: [FeatureSection] = [
             FeatureItem(id: .mandarin),
         ]
     ),
+]
+
+@MainActor
+private let primarySidebarItems: [SidebarPrimaryItem] = [
+    SidebarPrimaryItem(tab: .overview, title: "概览", systemImage: "rectangle.stack"),
+    SidebarPrimaryItem(tab: .profile, title: "我的", systemImage: "person"),
 ]
 
 struct ContentView: View {
@@ -312,18 +325,24 @@ struct ContentView: View {
                     )
                 ) {
                     Section {
-                        Label("概览", systemImage: "rectangle.stack")
-                            .tag(AppTabItem.overview)
-                            .badge(globalManager.unreadAnnouncementsCount)
-                        Label("我的", systemImage: "person")
-                            .tag(AppTabItem.profile)
+                        ForEach(primarySidebarItems) { item in
+                            sidebarRow(
+                                title: item.title,
+                                systemImage: item.systemImage,
+                                tab: item.tab,
+                                badgeCount: item.tab == .overview ? globalManager.unreadAnnouncementsCount : nil
+                            )
+                        }
                     }
 
                     ForEach(featureSections) { section in
                         Section(section.title) {
                             ForEach(section.items) { item in
-                                Label(item.title, systemImage: item.icon)
-                                    .tag(AppTabItem.feature(item.id))
+                                sidebarRow(
+                                    title: item.title,
+                                    systemImage: item.icon,
+                                    tab: .feature(item.id)
+                                )
                             }
                         }
                     }
@@ -357,6 +376,24 @@ struct ContentView: View {
         NavigationStack(path: $router[pathFor: tab]) {
             root()
                 .withAppRouter()
+        }
+    }
+
+    @ViewBuilder
+    private func sidebarRow(
+        title: String,
+        systemImage: String,
+        tab: AppTabItem,
+        badgeCount: Int? = nil
+    ) -> some View {
+        let baseRow = Label(title, systemImage: systemImage)
+            .tag(tab)
+            .id(tab)
+
+        if let badgeCount, badgeCount > 0 {
+            baseRow.badge(badgeCount)
+        } else {
+            baseRow
         }
     }
 
