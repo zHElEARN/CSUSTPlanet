@@ -127,11 +127,18 @@ struct TodayCoursesEntryView: View {
 
     @ViewBuilder
     func tomorrowSummaryView(courseCount: Int) -> some View {
-        Text("\(CourseScheduleUtil.tomorrowCoursesTitleText) 共\(courseCount)节")
-            .font(.system(size: family == .systemLarge ? 11 : 10, weight: .bold))
-            .foregroundStyle(.red)
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
+        HStack(spacing: 0) {
+            Text("\(CourseScheduleUtil.tomorrowCoursesTitleText)")
+                .foregroundStyle(.red)
+                .padding(.trailing, 4)
+            Text("共")
+            Text("\(courseCount)")
+                .foregroundStyle(.blue)
+            Text("节课程")
+        }
+        .minimumScaleFactor(0.8)
+        .font(.system(size: family == .systemLarge ? 11 : 10, weight: .bold))
+        .lineLimit(1)
     }
 
     @ViewBuilder
