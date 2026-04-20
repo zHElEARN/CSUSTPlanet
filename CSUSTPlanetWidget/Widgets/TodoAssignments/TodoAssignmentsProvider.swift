@@ -10,6 +10,8 @@ import OSLog
 import WidgetKit
 
 struct TodoAssignmentsProvider: TimelineProvider {
+    private let refreshEntryCount = 12
+
     func placeholder(in context: Context) -> TodoAssignmentsEntry {
         .mockEntry()
     }
@@ -36,13 +38,34 @@ struct TodoAssignmentsProvider: TimelineProvider {
             Logger.todoAssignmentsWidget.info("缓存中无数据，将显示空视图")
         }
 
-        let entry = TodoAssignmentsEntry(
-            date: .now,
-            data: finalData?.value,
-            lastUpdated: finalData?.cachedAt
-        )
+        let now = Date.now
+        let refreshDates = timelineRefreshDates(from: now, count: refreshEntryCount)
+        let entries = refreshDates.map { refreshDate in
+            TodoAssignmentsEntry(
+                date: refreshDate,
+                data: finalData?.value,
+                lastUpdated: finalData?.cachedAt
+            )
+        }
 
-        Logger.todoAssignmentsWidget.info("待提交作业 timeline 生成完成")
-        completion(Timeline(entries: [entry], policy: .never))
+        Logger.todoAssignmentsWidget.info("待提交作业 timeline 生成完成，共 \(entries.count) 个时间点")
+        completion(Timeline(entries: entries, policy: .atEnd))
+    }
+
+    private func timelineRefreshDates(from date: Date, count: Int) -> [Date] {
+        guard count > 0 else { return [date] }
+
+        let calendar = Calendar.current
+        let nextHour =
+            calendar.nextDate(
+                after: date,
+                matching: DateComponents(minute: 0, second: 0),
+                matchingPolicy: .nextTime
+            ) ?? date.addingTimeInterval(3600)
+
+        return [date]
+            + (0..<count).compactMap { offset in
+                calendar.date(byAdding: .hour, value: offset, to: nextHour)
+            }
     }
 }
