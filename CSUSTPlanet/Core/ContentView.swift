@@ -142,11 +142,15 @@ struct ContentView: View {
                 }
             } else {
                 Group {
-                    if #available(iOS 18.0, macOS 15.0, *) {
+                    #if os(macOS)
+                    legacyLayout
+                    #else
+                    if #available(iOS 18.0, *) {
                         modernLayout
                     } else {
                         legacyLayout
                     }
+                    #endif
                 }
                 .onChange(of: isCompactEnv, initial: true) { oldValue, newValue in
                     router.isCompact = newValue
@@ -325,6 +329,9 @@ struct ContentView: View {
                     }
                 }
                 .navigationTitle("长理星球")
+                #if os(macOS)
+                .navigationSplitViewColumnWidth(min: 150, ideal: 200, max: 250)
+                #endif
             } detail: {
                 switch router.selectedTab {
                 case .overview:
