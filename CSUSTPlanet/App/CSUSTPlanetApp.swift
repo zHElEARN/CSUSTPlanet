@@ -51,6 +51,7 @@ struct CSUSTPlanetApp: App {
             }
             .defaultSize(width: WindowSize.defaultWidth, height: WindowSize.defaultHeight)
             .windowResizability(.contentMinSize)
+            TodoAssignmentsCoursePageScene()
             #else
             WindowGroup {
                 ContentView()

@@ -8,7 +8,48 @@
 import CSUSTKit
 import SwiftUI
 
+private struct TodoAssignmentsCoursePageView: View {
+    let courseID: String
+
+    var body: some View {
+        Group {
+            if let url = URL(string: "http://pt.csust.edu.cn/meol/jpk/course/layout/newpage/index.jsp?courseId=\(courseID)") {
+                WebView(url: url, cookies: CookieHelper.shared.session.session.configuration.httpCookieStorage?.cookies)
+            } else {
+                ContentUnavailableView("无法打开课程页面", systemImage: "exclamationmark.triangle", description: Text("课程链接无效"))
+            }
+        }
+        .navigationTitle("课程页面")
+        .inlineToolbarTitle()
+    }
+}
+
+#if os(macOS)
+struct TodoAssignmentsCoursePageScene: Scene {
+    static let windowID = "todo-assignments.course-page"
+
+    var body: some Scene {
+        WindowGroup("课程页面", id: Self.windowID, for: String.self) { $courseID in
+            NavigationStack {
+                if let courseID {
+                    TodoAssignmentsCoursePageView(courseID: courseID)
+                } else {
+                    ContentUnavailableView("未选择课程", systemImage: "book.closed", description: Text("请从待提交作业页面重新打开课程页面"))
+                }
+            }
+            .frame(minWidth: 960, minHeight: 540)
+        }
+        .defaultSize(width: 1280, height: 720)
+        .windowResizability(.contentMinSize)
+    }
+}
+#endif
+
 struct TodoAssignmentsView: View {
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #endif
+
     @State private var viewModel = TodoAssignmentsViewModel()
 
     var body: some View {
@@ -54,8 +95,12 @@ struct TodoAssignmentsView: View {
                                     Spacer()
 
                                     Button {
+                                        #if os(macOS)
+                                        openWindow(id: TodoAssignmentsCoursePageScene.windowID, value: group.course.id)
+                                        #else
                                         viewModel.selectedCourseID = group.course.id
                                         viewModel.isCoursePagePresented = true
+                                        #endif
                                     } label: {
                                         Text("前往课程")
                                             .font(.caption)
@@ -83,28 +128,22 @@ struct TodoAssignmentsView: View {
         .sheet(isPresented: $viewModel.isNotificationSettingsPresented) {
             TodoAssignmentsNotificationSettingsView(viewModel: viewModel)
         }
+        #if os(iOS)
         .sheet(isPresented: $viewModel.isCoursePagePresented) {
             NavigationStack {
-                if let courseID = viewModel.selectedCourseID,
-                    let url = URL(string: "http://pt.csust.edu.cn/meol/jpk/course/layout/newpage/index.jsp?courseId=\(courseID)")
-                {
-                    WebView(url: url, cookies: CookieHelper.shared.session.session.configuration.httpCookieStorage?.cookies)
-                        #if os(macOS)
-                    .frame(minWidth: 960, minHeight: 640)
-                        #endif
-                        .navigationTitle("课程页面")
-                        .inlineToolbarTitle()
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("关闭") {
-                                    viewModel.isCoursePagePresented = false
-                                    viewModel.selectedCourseID = nil
-                                }
+                if let courseID = viewModel.selectedCourseID {
+                    TodoAssignmentsCoursePageView(courseID: courseID)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("关闭") {
+                                viewModel.isCoursePagePresented = false
                             }
                         }
+                    }
                 }
             }
         }
+        #endif
         .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {
             Button(action: { viewModel.isNotificationDeniedAlertPresented = false }) {
                 Text("取消")
