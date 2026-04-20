@@ -100,7 +100,7 @@ struct CourseOverviewView: View {
                 )
             case .tomorrowPreview(let reason, let preview):
                 if let preview {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
                         TomorrowPreviewStatusView(
                             text: reason.message,
                             courseCount: preview.courses.count
@@ -177,7 +177,6 @@ private struct TomorrowPreviewStatusView: View {
         HStack(spacing: 0) {
             Text(text)
                 .padding(.trailing, 8)
-
             Text(CourseScheduleUtil.tomorrowCoursesTitleText)
                 .foregroundStyle(.red)
                 .padding(.trailing, 8)
@@ -188,6 +187,7 @@ private struct TomorrowPreviewStatusView: View {
         }
         .lineLimit(1)
         .minimumScaleFactor(0.8)
+        .font(.system(size: 13, weight: .bold))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
