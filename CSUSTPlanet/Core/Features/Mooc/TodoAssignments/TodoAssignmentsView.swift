@@ -19,8 +19,27 @@ struct TodoAssignmentsView: View {
                         Section {
                             DisclosureGroup(isExpanded: bindingForCourse(group.course.id)) {
                                 let assignments = viewModel.displayedAssignments(for: group)
+                                let isShowingAllAssignments = viewModel.isShowingAllAssignments(courseID: group.course.id)
+                                let hasHiddenAssignments = assignments.count < group.assignments.count
+
                                 ForEach(assignments.indices, id: \.self) { index in
                                     AssignmentInfoView(assignment: assignments[index])
+                                }
+
+                                if hasHiddenAssignments || isShowingAllAssignments {
+                                    Button {
+                                        withAnimation { viewModel.toggleShowAllAssignments(courseID: group.course.id) }
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Text(isShowingAllAssignments ? "仅未截止" : "查看全部")
+                                            Image(systemName: isShowingAllAssignments ? "chevron.up" : "chevron.down")
+                                        }
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .padding(.vertical, 6)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             } label: {
                                 HStack {
@@ -39,15 +58,6 @@ struct TodoAssignmentsView: View {
                                         viewModel.isCoursePagePresented = true
                                     } label: {
                                         Text("前往课程")
-                                            .font(.caption)
-                                    }
-                                    .buttonStyle(.bordered)
-                                    .controlSize(.small)
-
-                                    Button {
-                                        withAnimation { viewModel.toggleShowAllAssignments(courseID: group.course.id) }
-                                    } label: {
-                                        Text(viewModel.isShowingAllAssignments(courseID: group.course.id) ? "仅未截止" : "查看全部")
                                             .font(.caption)
                                     }
                                     .buttonStyle(.bordered)
