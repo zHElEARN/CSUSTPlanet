@@ -11,6 +11,15 @@ import SwiftUI
 
 @main
 struct CSUSTPlanetApp: App {
+    #if os(macOS)
+    private enum WindowSize {
+        static let minWidth: CGFloat = 960
+        static let minHeight: CGFloat = 540
+        static let defaultWidth: CGFloat = 1280
+        static let defaultHeight: CGFloat = 720
+    }
+    #endif
+
     #if os(iOS)
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     #elseif os(macOS)
@@ -38,12 +47,10 @@ struct CSUSTPlanetApp: App {
             #if os(macOS)
             Window("长理星球", id: "main") {
                 ContentView()
-                    .frame(
-                        minWidth: 400, idealWidth: 800, maxWidth: 1200,
-                        minHeight: 600, idealHeight: 800, maxHeight: 1000
-                    )
+                    .frame(minWidth: WindowSize.minWidth, minHeight: WindowSize.minHeight)
             }
-            .windowResizability(.contentSize)
+            .defaultSize(width: WindowSize.defaultWidth, height: WindowSize.defaultHeight)
+            .windowResizability(.contentMinSize)
             #else
             WindowGroup {
                 ContentView()
