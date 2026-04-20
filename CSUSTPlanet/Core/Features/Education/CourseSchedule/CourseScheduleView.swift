@@ -16,12 +16,31 @@ struct CourseScheduleView: View {
 
     @Environment(\.horizontalSizeClass) var sizeClass
     var isPad: Bool { sizeClass == .regular }
+    var usesSheetForCourseDetail: Bool { sizeClass == .compact }
 
     var colSpacing: CGFloat { isPad ? 4 : 2 }
     var rowSpacing: CGFloat { isPad ? 4 : 2 }
     var timeColWidth: CGFloat { isPad ? 50 : 30 }
     var headerHeight: CGFloat { isPad ? 70 : 50 }
     var sectionHeight: CGFloat { isPad ? 90 : 60 }
+
+    private var courseDetailSheetBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.isCourseDetailPresented },
+            set: { viewModel.isCourseDetailPresented = $0 }
+        )
+    }
+
+    private var courseDetailInspectorBinding: Binding<Bool> {
+        Binding(
+            get: { true },
+            set: { _ in }
+        )
+    }
+
+    private var courseDetailPresentationBinding: Binding<Bool> {
+        usesSheetForCourseDetail ? courseDetailSheetBinding : courseDetailInspectorBinding
+    }
 
     // MARK: - Body
 
@@ -43,7 +62,7 @@ struct CourseScheduleView: View {
                                 .font(.title2.weight(.semibold))
                                 .foregroundStyle(.secondary)
                                 .frame(maxHeight: .infinity)
-                                .frame(width: 48)
+                                .frame(width: 32)
                         }
                     }
                     .buttonStyle(.plain)
@@ -79,7 +98,7 @@ struct CourseScheduleView: View {
                                 .font(.title2.weight(.semibold))
                                 .foregroundStyle(.secondary)
                                 .frame(maxHeight: .infinity)
-                                .frame(width: 48)
+                                .frame(width: 32)
                         }
                     }
                     .buttonStyle(.plain)
@@ -101,31 +120,21 @@ struct CourseScheduleView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .onAppear {
-            #if os(iOS)
-            if sizeClass == .regular {
-                viewModel.isCourseDetailPresented = true
-            }
-            #endif
-        }
         .apply { view in
-            #if os(iOS)
-            if sizeClass == .regular {
-                view
-                    .inspector(isPresented: $viewModel.isCourseDetailPresented) {
-                        sheetContent(isShowingToolbar: false)
-                            .inspectorColumnWidth(min: 350, ideal: 400, max: 450)
-                    }
-            } else {
-                view.sheet(isPresented: $viewModel.isCourseDetailPresented) {
-                    sheetContent(isShowingToolbar: true)
+            if usesSheetForCourseDetail {
+                view.sheet(isPresented: courseDetailSheetBinding) {
+                    sheetContent
                 }
+            } else {
+                view
+                    .inspector(isPresented: courseDetailInspectorBinding) {
+                        sheetContent
+                            .inspectorColumnWidth(min: 200, ideal: 200, max: 300)
+                    }
             }
-            #else
-            view.sheet(isPresented: $viewModel.isCourseDetailPresented) {
-                sheetContent(isShowingToolbar: true)
-            }
-            #endif
+        }
+        .onChange(of: usesSheetForCourseDetail) { _, usesSheet in
+            viewModel.isCourseDetailPresented = usesSheet && viewModel.selectedCourseInfo != nil
         }
         .navigationTitle("我的课表")
         .navigationSubtitleCompat(viewModel.selectedSemester == nil ? "默认学期" : "学期" + (viewModel.selectedSemester ?? ""))
@@ -167,9 +176,14 @@ struct CourseScheduleView: View {
 
     // MARK: - 课程详情视图
     @ViewBuilder
-    func sheetContent(isShowingToolbar: Bool) -> some View {
+    var sheetContent: some View {
         if let courseInfo = viewModel.selectedCourseInfo {
-            CourseScheduleDetailView(course: courseInfo.course, session: courseInfo.session, isShowingToolbar: isShowingToolbar, isPresented: $viewModel.isCourseDetailPresented)
+            CourseScheduleDetailView(
+                course: courseInfo.course,
+                session: courseInfo.session,
+                isShowingToolbar: usesSheetForCourseDetail,
+                isPresented: courseDetailPresentationBinding
+            )
         } else {
             ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
         }
@@ -368,8 +382,7 @@ struct CourseScheduleView: View {
                                     session: firstCourseInfo.session,
                                     color: viewModel.courseColors[firstCourseInfo.course.courseName] ?? .gray
                                 ) {
-                                    viewModel.selectedCourseInfo = firstCourseInfo
-                                    viewModel.isCourseDetailPresented = true
+                                    presentCourseDetail(firstCourseInfo)
                                 }
                                 .frame(width: dayColumnWidth, height: courseHeight)
                                 .offset(x: xOffset, y: yOffset)
@@ -379,8 +392,7 @@ struct CourseScheduleView: View {
                                     courses: group,
                                     isPad: isPad
                                 ) { selectedInfo in
-                                    viewModel.selectedCourseInfo = selectedInfo
-                                    viewModel.isCourseDetailPresented = true
+                                    presentCourseDetail(selectedInfo)
                                 }
                                 .frame(width: dayColumnWidth, height: courseHeight)
                                 .offset(x: xOffset, y: yOffset)
@@ -395,6 +407,14 @@ struct CourseScheduleView: View {
 }
 
 extension CourseScheduleView {
+    private func presentCourseDetail(_ courseInfo: CourseDisplayInfo) {
+        viewModel.selectedCourseInfo = courseInfo
+
+        if usesSheetForCourseDetail {
+            viewModel.isCourseDetailPresented = true
+        }
+    }
+
     // 计算课程卡片的高度
     func calculateHeight(for session: EduHelper.ScheduleSession) -> CGFloat {
         let sections = CGFloat(session.endSection - session.startSection + 1)
