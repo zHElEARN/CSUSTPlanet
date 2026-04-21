@@ -27,7 +27,7 @@ struct TodoAssignmentsCoursePageView: View {
         .navigationTitle("课程页面")
         .inlineToolbarTitle()
         .toolbar {
-            ToolbarItemGroup(placement: .secondaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { webViewController.goBack() }) {
                     Label("上一页", systemImage: "chevron.left")
                 }
