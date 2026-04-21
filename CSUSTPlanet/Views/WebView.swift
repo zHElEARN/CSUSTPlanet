@@ -8,13 +8,55 @@
 import SwiftUI
 import WebKit
 
+@MainActor
+@Observable
+final class WebViewController {
+    var canGoBack = false
+    var canGoForward = false
+    var isLoading = false
+    var title: String?
+    var currentURL: URL?
+
+    @ObservationIgnored weak var webView: WKWebView?
+
+    func goBack() {
+        webView?.goBack()
+        syncState()
+    }
+
+    func goForward() {
+        webView?.goForward()
+        syncState()
+    }
+
+    func reload() {
+        webView?.reload()
+        syncState()
+    }
+
+    func syncState() {
+        guard let webView else { return }
+        canGoBack = webView.canGoBack
+        canGoForward = webView.canGoForward
+        isLoading = webView.isLoading
+        title = webView.title
+        currentURL = webView.url
+    }
+}
+
 struct WebView: PlatformViewRepresentable {
     let url: URL
     let cookies: [HTTPCookie]?
+    let controller: WebViewController?
 
-    init(url: URL, cookies: [HTTPCookie]? = nil) {
+    init(url: URL, cookies: [HTTPCookie]? = nil, controller: WebViewController? = nil) {
         self.url = url
         self.cookies = cookies
+        self.controller = controller
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
     }
 
     #if os(macOS)
@@ -50,12 +92,68 @@ struct WebView: PlatformViewRepresentable {
 
         configuration.websiteDataStore = dataStore
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.uiDelegate = context.coordinator
+        webView.navigationDelegate = context.coordinator
+        context.coordinator.controller = controller
+        controller?.webView = webView
+        controller?.syncState()
 
         return webView
     }
 
     private func updateWebView(_ webView: WKWebView, context: Context) {
+        if context.coordinator.lastRequestedURL == url {
+            return
+        }
+
+        context.coordinator.lastRequestedURL = url
         let request = URLRequest(url: url)
         webView.load(request)
+    }
+
+    final class Coordinator: NSObject, WKUIDelegate {
+        fileprivate var lastRequestedURL: URL?
+        fileprivate weak var controller: WebViewController?
+
+        func webView(
+            _ webView: WKWebView,
+            createWebViewWith configuration: WKWebViewConfiguration,
+            for navigationAction: WKNavigationAction,
+            windowFeatures: WKWindowFeatures
+        ) -> WKWebView? {
+            guard navigationAction.targetFrame == nil else { return nil }
+
+            if let url = navigationAction.request.url {
+                lastRequestedURL = url
+                webView.load(URLRequest(url: url))
+            } else {
+                lastRequestedURL = nil
+                webView.load(navigationAction.request)
+            }
+
+            return nil
+        }
+    }
+}
+
+extension WebView.Coordinator: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        controller?.syncState()
+    }
+
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        controller?.syncState()
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        controller?.syncState()
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
+        controller?.syncState()
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error) {
+        controller?.syncState()
     }
 }
