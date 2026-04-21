@@ -8,7 +8,7 @@
 import CSUSTKit
 import SwiftUI
 
-private struct TodoAssignmentsCoursePageView: View {
+struct TodoAssignmentsCoursePageView: View {
     let courseID: String
     @State private var webViewController = WebViewController()
 

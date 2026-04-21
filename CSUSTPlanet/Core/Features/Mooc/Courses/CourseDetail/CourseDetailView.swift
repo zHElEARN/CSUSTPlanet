@@ -10,9 +10,14 @@ import CSUSTKit
 import SwiftUI
 
 struct CourseDetailView: View {
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #endif
+
     let course: MoocHelper.Course
 
     @State var viewModel = CourseDetailViewModel()
+    @State private var isCoursePagePresented = false
 
     // MARK: - Body
 
@@ -33,6 +38,20 @@ struct CourseDetailView: View {
                 }
             )
         }
+        #if os(iOS)
+        .sheet(isPresented: $isCoursePagePresented) {
+            NavigationStack {
+                TodoAssignmentsCoursePageView(courseID: course.id)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("关闭") {
+                            isCoursePagePresented = false
+                        }
+                    }
+                }
+            }
+        }
+        #endif
         .task { await viewModel.loadInitial(course: course) }
         .navigationTitle(course.name)
         .apply { view in
@@ -64,6 +83,13 @@ struct CourseDetailView: View {
             }
             if let teacher = course.teacher {
                 FormRow(label: "授课教师", value: teacher)
+            }
+            Button("前往课程网页") {
+                #if os(macOS)
+                openWindow(id: TodoAssignmentsCoursePageScene.windowID, value: course.id)
+                #else
+                isCoursePagePresented = true
+                #endif
             }
         } header: {
             Text("课程信息")
