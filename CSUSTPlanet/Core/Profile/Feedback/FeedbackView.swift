@@ -15,6 +15,7 @@ struct FeedbackView: View {
     private let emailURL = URL(string: "mailto:developer@zhelearn.com")!
 
     @State private var isShowingSurveySheet = false
+    @State private var webViewController = WebViewController()
     @Environment(\.openURL) private var openURL
 
     var body: some View {
@@ -86,10 +87,32 @@ struct FeedbackView: View {
         #if os(iOS)
         .sheet(isPresented: $isShowingSurveySheet) {
             NavigationStack {
-                WebView(url: surveyURL)
+                WebView(url: surveyURL, controller: webViewController)
                 .navigationTitle("填写意见调研问卷")
                 .inlineToolbarTitle()
                 .toolbar {
+                    ToolbarItemGroup(placement: .secondaryAction) {
+                        Button(action: { webViewController.goBack() }) {
+                            Label("上一页", systemImage: "chevron.left")
+                        }
+                        .disabled(!webViewController.canGoBack)
+
+                        Button(action: { webViewController.goForward() }) {
+                            Label("下一页", systemImage: "chevron.right")
+                        }
+                        .disabled(!webViewController.canGoForward)
+                    }
+
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(action: { webViewController.reload() }) {
+                            if webViewController.isLoading {
+                                ProgressView().smallControlSizeOnMac()
+                            } else {
+                                Label("刷新", systemImage: "arrow.clockwise")
+                            }
+                        }
+                    }
+
                     ToolbarItem(placement: .cancellationAction) {
                         Button("关闭") {
                             isShowingSurveySheet = false
