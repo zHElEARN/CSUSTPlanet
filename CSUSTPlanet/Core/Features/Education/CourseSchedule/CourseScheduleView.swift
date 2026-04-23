@@ -31,17 +31,6 @@ struct CourseScheduleView: View {
         )
     }
 
-    private var courseDetailInspectorBinding: Binding<Bool> {
-        Binding(
-            get: { true },
-            set: { _ in }
-        )
-    }
-
-    private var courseDetailPresentationBinding: Binding<Bool> {
-        usesSheetForCourseDetail ? courseDetailSheetBinding : courseDetailInspectorBinding
-    }
-
     // MARK: - Body
 
     var body: some View {
@@ -127,9 +116,13 @@ struct CourseScheduleView: View {
                 }
             } else {
                 view
-                    .inspector(isPresented: courseDetailInspectorBinding) {
+                    .inspector(isPresented: .constant(true)) {
                         sheetContent
-                            .inspectorColumnWidth(min: 200, ideal: 200, max: 300)
+                            #if os(macOS)
+                        .inspectorColumnWidth(min: 200, ideal: 250, max: 300)
+                            #elseif os(iOS)
+                        .inspectorColumnWidth(min: 300, ideal: 400, max: 500)
+                            #endif
                     }
             }
         }
@@ -182,7 +175,7 @@ struct CourseScheduleView: View {
                 course: courseInfo.course,
                 session: courseInfo.session,
                 isShowingToolbar: usesSheetForCourseDetail,
-                isPresented: courseDetailPresentationBinding
+                isPresented: courseDetailSheetBinding
             )
         } else {
             ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")
