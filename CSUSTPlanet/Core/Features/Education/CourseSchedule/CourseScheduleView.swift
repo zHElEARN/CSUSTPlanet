@@ -44,7 +44,7 @@ struct CourseScheduleView: View {
                 HStack(spacing: 4) {
                     // 左侧翻页按钮
                     Button {
-                        withAnimation { viewModel.currentWeek -= 1 }
+                        viewModel.changeWeek(by: -1)
                     } label: {
                         GroupBox {
                             Image(systemName: "chevron.left")
@@ -56,6 +56,7 @@ struct CourseScheduleView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(viewModel.currentWeek <= 1)
+                    .keyboardShortcut(.leftArrow, modifiers: [])
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         LazyHStack(spacing: 0) {
@@ -77,10 +78,9 @@ struct CourseScheduleView: View {
                             set: { if let newWeek = $0 { viewModel.currentWeek = newWeek } }
                         )
                     )
-                    .animation(.easeInOut, value: viewModel.currentWeek)
 
                     Button {
-                        withAnimation { viewModel.currentWeek += 1 }
+                        viewModel.changeWeek(by: 1)
                     } label: {
                         GroupBox {
                             Image(systemName: "chevron.right")
@@ -92,6 +92,7 @@ struct CourseScheduleView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(viewModel.currentWeek >= CourseScheduleUtil.weekCount)
+                    .keyboardShortcut(.rightArrow, modifiers: [])
                 }
                 .ignoresSafeArea(.container, edges: .bottom)
                 #else

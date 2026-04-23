@@ -191,12 +191,21 @@ class CourseScheduleViewModel {
 
     func goToCurrentWeek() {
         if let realWeek = realCurrentWeek, realWeek > 0 && realWeek <= CourseScheduleUtil.weekCount {
-            withAnimation {
+            withAnimation(.snappy(duration: 0.15, extraBounce: 0)) {
                 self.currentWeek = realWeek
             }
         } else {
-            withAnimation {
+            withAnimation(.snappy(duration: 0.15, extraBounce: 0)) {
                 self.currentWeek = 1
+            }
+        }
+    }
+
+    func changeWeek(by amount: Int) {
+        let newWeek = currentWeek + amount
+        if newWeek >= 1 && newWeek <= CourseScheduleUtil.weekCount {
+            withAnimation(.snappy(duration: 0.15, extraBounce: 0)) {
+                self.currentWeek = newWeek
             }
         }
     }
