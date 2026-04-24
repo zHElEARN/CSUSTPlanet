@@ -8,40 +8,42 @@
 import SwiftUI
 
 struct SSOLoginView: View {
+    private struct LoginTabItem: Identifiable {
+        let id: Int
+        let title: String
+        let systemImage: String
+    }
+
+    private static let loginTabItems: [LoginTabItem] = [
+        LoginTabItem(id: 0, title: "账号登录", systemImage: "person.text.rectangle"),
+        LoginTabItem(id: 1, title: "验证码登录", systemImage: "message.badge"),
+        LoginTabItem(id: 2, title: "网页登录", systemImage: "safari"),
+    ]
+
     @Binding var isPresented: Bool
 
     @State var viewModel = SSOLoginViewModel()
     @Bindable var authManager = AuthManager.shared
 
+    #if os(macOS)
+    private let isCompactEnv = false
+    #else
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isCompactEnv: Bool { horizontalSizeClass == .compact }
+    #endif
+
     var body: some View {
         NavigationStack {
-            TabView(selection: $viewModel.selectedTab) {
-                Form {
-                    accountLoginSection
+            Group {
+                #if os(macOS)
+                legacyLayout
+                #else
+                if #available(iOS 18.0, *) {
+                    modernLayout
+                } else {
+                    legacyLayout
                 }
-                .formStyle(.grouped)
-                .tabItem {
-                    Label("账号登录", systemImage: "person.text.rectangle")
-                }
-                .tag(0)
-
-                Form {
-                    verificationCodeLoginSection
-                }
-                .formStyle(.grouped)
-                .tabItem {
-                    Label("验证码登录", systemImage: "message.badge")
-                }
-                .tag(1)
-
-                Form {
-                    webLoginSection
-                }
-                .formStyle(.grouped)
-                .tabItem {
-                    Label("网页登录", systemImage: "safari")
-                }
-                .tag(2)
+                #endif
             }
             #if os(macOS)
             .frame(minWidth: 350, minHeight: 400)
@@ -81,6 +83,102 @@ struct SSOLoginView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Modern Layout
+
+    @available(iOS 18.0, macOS 15.0, *)
+    @ViewBuilder
+    private var modernLayout: some View {
+        if isCompactEnv {
+            TabView(selection: $viewModel.selectedTab) {
+                Tab("账号登录", systemImage: "person.text.rectangle", value: 0) {
+                    loginForm(for: 0)
+                }
+
+                Tab("验证码登录", systemImage: "message.badge", value: 1) {
+                    loginForm(for: 1)
+                }
+
+                Tab("网页登录", systemImage: "safari", value: 2) {
+                    loginForm(for: 2)
+                }
+            }
+        } else {
+            splitLayout
+        }
+    }
+
+    // MARK: - Legacy Layout
+
+    @ViewBuilder
+    private var legacyLayout: some View {
+        if isCompactEnv {
+            TabView(selection: $viewModel.selectedTab) {
+                loginForm(for: 0)
+                    .tabItem {
+                        Label("账号登录", systemImage: "person.text.rectangle")
+                    }
+                    .tag(0)
+
+                loginForm(for: 1)
+                    .tabItem {
+                        Label("验证码登录", systemImage: "message.badge")
+                    }
+                    .tag(1)
+
+                loginForm(for: 2)
+                    .tabItem {
+                        Label("网页登录", systemImage: "safari")
+                    }
+                    .tag(2)
+            }
+        } else {
+            splitLayout
+        }
+    }
+
+    @ViewBuilder
+    private var splitLayout: some View {
+        NavigationSplitView {
+            List(
+                selection: Binding<Int?>(
+                    get: { viewModel.selectedTab },
+                    set: { newValue in
+                        if let newValue {
+                            viewModel.selectedTab = newValue
+                        }
+                    }
+                )
+            ) {
+                ForEach(Self.loginTabItems) { item in
+                    Label(item.title, systemImage: item.systemImage)
+                        .tag(item.id)
+                }
+            }
+            #if os(macOS)
+            .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 240)
+            #endif
+        } detail: {
+            loginForm(for: viewModel.selectedTab)
+        }
+    }
+
+    @ViewBuilder
+    private func loginForm(for tab: Int) -> some View {
+        Form {
+            switch tab {
+            case 0:
+                accountLoginSection
+            case 1:
+                verificationCodeLoginSection
+            case 2:
+                webLoginSection
+            default:
+                accountLoginSection
+            }
+        }
+        .formStyle(.grouped)
     }
 
     // MARK: - Account Login View
