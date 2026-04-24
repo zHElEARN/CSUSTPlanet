@@ -100,8 +100,6 @@ final class WebViewCoordinator: NSObject, WKUIDelegate {
 
 extension WebViewCoordinator {
     fileprivate func shouldDownload(_ navigationResponse: WKNavigationResponse) -> Bool {
-        guard navigationResponse.isForMainFrame else { return false }
-
         if !navigationResponse.canShowMIMEType {
             return true
         }
