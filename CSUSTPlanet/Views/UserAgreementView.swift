@@ -14,39 +14,37 @@ struct UserAgreementView: View {
     var isButtonPresented: Bool
 
     var body: some View {
-        NavigationStack {
-            Form {
-                if let userAgreementMarkdown = AssetUtil.loadMarkdownFile(named: "UserAgreement") {
-                    Markdown(userAgreementMarkdown)
-                        .markdownTextStyle(\.strong) {
-                            ForegroundColor(.primary)
-                            BackgroundColor(.yellow.opacity(0.3))
-                            FontWeight(.bold)
-                        }
-                } else {
-                    Text("无法加载用户协议")
-                }
-
-                if isButtonPresented {
-                    Section {
-                        Button(action: {
-                            globalManager.isUserAgreementAccepted = true
-                        }) {
-                            Text("同意并继续使用")
-                        }
-                        .tint(.blue)
-                        Button(action: {
-                            globalManager.isUserAgreementAccepted = false
-                            exit(0)
-                        }) {
-                            Text("不同意并退出")
-                        }
-                        .tint(.red)
+        Form {
+            if let userAgreementMarkdown = AssetUtil.loadMarkdownFile(named: "UserAgreement") {
+                Markdown(userAgreementMarkdown)
+                    .markdownTextStyle(\.strong) {
+                        ForegroundColor(.primary)
+                        BackgroundColor(.yellow.opacity(0.3))
+                        FontWeight(.bold)
                     }
+            } else {
+                Text("无法加载用户协议")
+            }
+
+            if isButtonPresented {
+                Section {
+                    Button(action: {
+                        globalManager.isUserAgreementAccepted = true
+                    }) {
+                        Text("同意并继续使用")
+                    }
+                    .tint(.blue)
+                    Button(action: {
+                        globalManager.isUserAgreementAccepted = false
+                        exit(0)
+                    }) {
+                        Text("不同意并退出")
+                    }
+                    .tint(.red)
                 }
             }
-            .formStyle(.grouped)
-            .navigationTitle("用户协议")
         }
+        .formStyle(.grouped)
+        .navigationTitle("用户协议")
     }
 }

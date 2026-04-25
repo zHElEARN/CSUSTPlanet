@@ -218,7 +218,10 @@ struct ContentView: View {
             OnboardingView(onSkip: globalManager.completeOnboarding, presentingColorScheme: colorScheme)
         }
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
-            UserAgreementView(isButtonPresented: true).interactiveDismissDisabled(true)
+            NavigationStack {
+                UserAgreementView(isButtonPresented: true)
+            }
+            .interactiveDismissDisabled(true)
         }
         .sheet(isPresented: $globalManager.isAppUpdateSheetPresented) {
             AppUpdateSheetView()
