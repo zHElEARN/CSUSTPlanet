@@ -58,18 +58,7 @@ private let featureSections: [FeatureSection] = [
             FeatureItem(id: .campusMap, title: "校园地图", icon: "map.fill", destination: { CampusMapView() }),
             FeatureItem(id: .schoolCalendar, title: "校历", icon: "calendar.badge.clock", destination: { SchoolCalendarListView() }),
             FeatureItem(id: .electricityRecharge, title: "电费充值", icon: "creditcard.fill", destination: { ElectricityRechargeView() }),
-            FeatureItem(
-                id: .webVPNConverter,
-                title: {
-                    #if os(macOS)
-                    return "校园网关转换"
-                    #else
-                    return "WebVPN"
-                    #endif
-                }(),
-                icon: "lock.shield",
-                destination: { WebVPNConverterView() }
-            ),
+            FeatureItem(id: .webVPNConverter, title: "WebVPN", icon: "lock.shield", destination: { WebVPNConverterView() }),
         ]
     ),
     FeatureSection(
