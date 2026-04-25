@@ -13,6 +13,8 @@ struct CourseScheduleDetailView: View {
     let session: EduHelper.ScheduleSession
     let isShowingToolbar: Bool
     @Binding var isPresented: Bool
+    @StateObject private var mapViewModel = CampusMapViewModel()
+
 
     private var otherSessions: [EduHelper.ScheduleSession] {
         course.sessions.filter { $0 != session }
@@ -55,7 +57,14 @@ struct CourseScheduleDetailView: View {
                 Section("本次安排") {
                     FormRow(label: "课程周次", value: formatWeeks(session.weeks))
                     FormRow(label: "上课时间", value: "\(session.dayOfWeek.chineseLongString) · 第\(session.startSection)-\(session.endSection)节")
-                    FormRow(label: "上课教室", value: session.classroom ?? "未安排教室")
+                    if let classroom = session.classroom {
+                        LabeledContent("上课教室") {
+                            ClassroomNavigationView(classroom: classroom, session: session, mapViewModel: mapViewModel)
+                        }
+                        .contentShape(.rect)
+                    } else {
+                        FormRow(label: "上课教室", value: "未安排教室")
+                    }
                 }
 
                 // MARK: - 其他安排
@@ -69,9 +78,14 @@ struct CourseScheduleDetailView: View {
                                     Text("第\(otherSession.startSection)-\(otherSession.endSection)节")
                                         .foregroundStyle(.secondary)
                                     Spacer()
-                                    Text(otherSession.classroom ?? "未安排教室")
-                                        .font(.subheadline)
-                                        .foregroundStyle(otherSession.classroom == nil ? .secondary : .primary)
+                                    
+                                    if let classroom = otherSession.classroom {
+                                        ClassroomNavigationView(classroom: classroom, session: otherSession, mapViewModel: mapViewModel, isSubheadline: true)
+                                    } else {
+                                        Text("未安排教室")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
 
                                 Text(formatWeeks(otherSession.weeks))
@@ -85,6 +99,9 @@ struct CourseScheduleDetailView: View {
             }
             .formStyle(.grouped)
             .navigationTitle("课程详情")
+            .task {
+                await mapViewModel.loadBuildings()
+            }
             .inlineToolbarTitle()
             .apply { view in
                 if isShowingToolbar {
@@ -135,3 +152,71 @@ extension CourseScheduleDetailView {
         return result.joined(separator: ", ")
     }
 }
+
+// MARK: - Map Feature Matching
+extension EduHelper.ScheduleSession {
+    /// 在给定的建筑列表中找到匹配的建筑 Feature (用于在地图上定位)
+    func matchedFeature(in buildings: [PlanetConfigService.Feature]) -> PlanetConfigService.Feature? {
+        guard let fullName = buildingFullName else { return nil }
+        return buildings.first { feature in
+            if let campus = campusName {
+                return feature.properties.name == fullName && feature.properties.campus == campus
+            }
+            return feature.properties.name == fullName
+        }
+    }
+}
+
+// MARK: - Classroom Navigation View
+private struct ClassroomNavigationView: View {
+    let classroom: String
+    let session: EduHelper.ScheduleSession
+    @ObservedObject var mapViewModel: CampusMapViewModel
+    var isSubheadline: Bool = false
+    
+    var body: some View {
+        if let feature = session.matchedFeature(in: mapViewModel.allBuildings) {
+            Button(action: {
+                mapViewModel.openNavigation(for: feature)
+            }) {
+                HStack(spacing: isSubheadline ? 2 : 4) {
+                    Text(classroom)
+                        .font(isSubheadline ? .subheadline : .body)
+                    Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
+                        .font(isSubheadline ? .caption2 : .body)
+                }
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.blue)
+        } else {
+            let isLoading = mapViewModel.isLoading && mapViewModel.allBuildings.isEmpty
+            let reason = isLoading ? "正在获取地图数据..." : (mapViewModel.allBuildings.isEmpty ? "网络未连接或无缓存" : "地图暂无该建筑坐标")
+            
+            VStack(alignment: .trailing, spacing: 2) {
+                HStack(spacing: isSubheadline ? 2 : 4) {
+                    Text(classroom)
+                        .font(isSubheadline ? .subheadline : .body)
+                    Image(systemName: "arrow.up.right")
+                        .font(isSubheadline ? .caption2 : .body)
+                }
+                .foregroundStyle(.secondary)
+                .onAppear {
+                    if !isLoading {
+                        print("[Debug] 课程地图导航不可用 - 原因: \(reason), 教室: \(classroom)")
+                    }
+                }
+                .onChange(of: isLoading) { _ in
+                    if !mapViewModel.isLoading && session.matchedFeature(in: mapViewModel.allBuildings) == nil {
+                        let finalReason = mapViewModel.allBuildings.isEmpty ? "网络未连接或无缓存" : "地图暂无该建筑坐标"
+                        print("[Debug] 课程地图导航不可用 - 原因: \(finalReason), 教室: \(classroom)")
+                    }
+                }
+                
+                Text(reason)
+                    .font(isSubheadline ? .system(size: 9) : .caption2)
+                    .foregroundStyle(isLoading ? Color.secondary : Color.red.opacity(0.8))
+            }
+        }
+    }
+}
+

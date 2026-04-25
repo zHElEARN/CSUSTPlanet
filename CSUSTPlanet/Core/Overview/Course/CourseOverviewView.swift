@@ -24,6 +24,9 @@ struct CourseOverviewView: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .onAppear {
+            CourseETAManager.shared.requestLocationIfAuthorized()
+        }
         .sheet(item: $selectedCourse) { courseInfo in
             CourseScheduleDetailView(
                 course: courseInfo.course,
@@ -96,6 +99,7 @@ struct CourseOverviewView: View {
             case .today(let courses):
                 CourseListView(
                     courses: courseItems(from: courses),
+                    now: now,
                     onSelect: { selectedCourse = $0 }
                 )
             case .tomorrowPreview(let reason, let preview):
@@ -108,6 +112,7 @@ struct CourseOverviewView: View {
 
                         TomorrowCourseSectionView(
                             preview: preview,
+                            now: now,
                             onSelect: { selectedCourse = $0 }
                         )
                     }
@@ -137,6 +142,7 @@ private struct CourseRowItem: Identifiable {
 
 private struct CourseListView: View {
     let courses: [CourseRowItem]
+    let now: Date
     let onSelect: (CourseDisplayInfo) -> Void
 
     private var courseColors: [String: Color] {
@@ -150,6 +156,7 @@ private struct CourseListView: View {
                     courseInfo: item.courseInfo,
                     isCurrent: item.isCurrent,
                     accentColor: courseColors[item.courseInfo.course.courseName] ?? .blue,
+                    now: now,
                     onTap: { onSelect(item.courseInfo) }
                 )
             }
@@ -159,11 +166,13 @@ private struct CourseListView: View {
 
 private struct TomorrowCourseSectionView: View {
     let preview: TomorrowCoursePreview
+    let now: Date
     let onSelect: (CourseDisplayInfo) -> Void
 
     var body: some View {
         CourseListView(
             courses: preview.courses.map { CourseRowItem(courseInfo: $0, isCurrent: false) },
+            now: now,
             onSelect: onSelect
         )
     }
@@ -196,6 +205,7 @@ private struct CourseRowView: View {
     let courseInfo: CourseDisplayInfo
     let isCurrent: Bool
     let accentColor: Color
+    let now: Date
     let onTap: () -> Void
 
     var body: some View {
@@ -203,6 +213,7 @@ private struct CourseRowView: View {
         let session = courseInfo.session
         let startSection = courseInfo.session.startSection
         let endSection = courseInfo.session.endSection
+        let etaText = CourseETAManager.shared.calculateETA(to: session)
 
         Button(action: onTap) {
             HStack(spacing: 6) {
@@ -226,7 +237,7 @@ private struct CourseRowView: View {
                         }
 
                         HStack(spacing: 6) {
-                            Text(session.classroom ?? "未安排教室")
+                            Text(session.displayClassroom)
                                 .lineLimit(1)
 
                             if let teacher = course.teacher, !teacher.isEmpty {
@@ -250,6 +261,18 @@ private struct CourseRowView: View {
                             .font(.system(size: 14))
                             .foregroundStyle(.primary)
                             .lineLimit(1)
+                            
+                        if etaText == "未分配教室" {
+                            Text("未分配教室")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        } else {
+                            Text("步行到达 \(etaText ?? "--:--")")
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
                     }
                     .padding(.trailing, 2)
                 }
