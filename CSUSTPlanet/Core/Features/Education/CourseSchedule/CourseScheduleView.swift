@@ -37,7 +37,7 @@ struct CourseScheduleView: View {
         VStack(spacing: 0) {
             topControlBar
             if let data = viewModel.courseScheduleData, !data.value.courses.isEmpty {
-                let weeklyCourses = CourseScheduleUtil.getWeeklyCourses(data.value.courses)
+                let weeklyCourses = viewModel.weeklyCourses
 
                 #if os(macOS)
                 // macOS下使用左右翻页按钮
@@ -135,6 +135,16 @@ struct CourseScheduleView: View {
         .inlineToolbarTitle()
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
+                Button(action: viewModel.presentAddCustomCourseEditor) {
+                    Label("添加课程", systemImage: "plus")
+                }
+                .disabled(viewModel.courseScheduleData == nil)
+
+                Button(action: { viewModel.isCustomizationManagementSheetPresented = true }) {
+                    Label("自定义管理", systemImage: "slider.horizontal.3")
+                }
+                .disabled(viewModel.courseScheduleData == nil)
+
                 Button(action: { viewModel.isSemestersSheetPresented = true }) {
                     Label("学期选择", systemImage: "calendar")
                 }
@@ -166,6 +176,15 @@ struct CourseScheduleView: View {
         .sheet(isPresented: $viewModel.isSemestersSheetPresented) {
             CourseSemesterView(viewModel: viewModel)
         }
+        .sheet(isPresented: $viewModel.isCourseEditorSheetPresented) {
+            CourseScheduleCustomCourseEditorView(
+                viewModel: viewModel,
+                editingCourse: viewModel.editingCustomCourse
+            )
+        }
+        .sheet(isPresented: $viewModel.isCustomizationManagementSheetPresented) {
+            CourseScheduleCustomizationManagementView(viewModel: viewModel)
+        }
     }
 
     // MARK: - 课程详情视图
@@ -176,6 +195,29 @@ struct CourseScheduleView: View {
                 course: courseInfo.course,
                 session: courseInfo.session,
                 isShowingToolbar: usesSheetForCourseDetail,
+                showsCustomizationActions: true,
+                isCustomCourse: {
+                    if case .custom = courseInfo.source {
+                        return true
+                    }
+                    return false
+                }(),
+                onHideOfficialCourse: {
+                    viewModel.hideOfficialCourse(named: courseInfo.course.courseName)
+                },
+                onEditCustomCourse: {
+                    if case .custom(let id) = courseInfo.source,
+                        let customCourse = viewModel.customCourse(id: id)
+                    {
+                        viewModel.presentEditor(for: customCourse)
+                        viewModel.isCourseDetailPresented = false
+                    }
+                },
+                onDeleteCustomCourse: {
+                    if case .custom(let id) = courseInfo.source {
+                        viewModel.deleteCustomCourse(id: id)
+                    }
+                },
                 isPresented: courseDetailSheetBinding
             )
         } else {

@@ -12,7 +12,37 @@ struct CourseScheduleDetailView: View {
     let course: EduHelper.Course
     let session: EduHelper.ScheduleSession
     let isShowingToolbar: Bool
+    let showsCustomizationActions: Bool
+    let isCustomCourse: Bool
+    let onHideOfficialCourse: () -> Void
+    let onEditCustomCourse: () -> Void
+    let onDeleteCustomCourse: () -> Void
     @Binding var isPresented: Bool
+
+    @State private var isHideConfirmationPresented = false
+    @State private var isDeleteConfirmationPresented = false
+
+    init(
+        course: EduHelper.Course,
+        session: EduHelper.ScheduleSession,
+        isShowingToolbar: Bool,
+        showsCustomizationActions: Bool = false,
+        isCustomCourse: Bool = false,
+        onHideOfficialCourse: @escaping () -> Void = {},
+        onEditCustomCourse: @escaping () -> Void = {},
+        onDeleteCustomCourse: @escaping () -> Void = {},
+        isPresented: Binding<Bool>
+    ) {
+        self.course = course
+        self.session = session
+        self.isShowingToolbar = isShowingToolbar
+        self.showsCustomizationActions = showsCustomizationActions
+        self.isCustomCourse = isCustomCourse
+        self.onHideOfficialCourse = onHideOfficialCourse
+        self.onEditCustomCourse = onEditCustomCourse
+        self.onDeleteCustomCourse = onDeleteCustomCourse
+        self._isPresented = isPresented
+    }
 
     private var otherSessions: [EduHelper.ScheduleSession] {
         course.sessions.filter { $0 != session }
@@ -82,10 +112,50 @@ struct CourseScheduleDetailView: View {
                         }
                     }
                 }
+
+                if showsCustomizationActions {
+                    Section("操作") {
+                        if isCustomCourse {
+                            Button {
+                                onEditCustomCourse()
+                            } label: {
+                                Label("编辑课程", systemImage: "pencil")
+                            }
+
+                            Button(role: .destructive) {
+                                isDeleteConfirmationPresented = true
+                            } label: {
+                                Label("删除课程", systemImage: "trash")
+                            }
+                        } else {
+                            Button(role: .destructive) {
+                                isHideConfirmationPresented = true
+                            } label: {
+                                Label("隐藏此课程", systemImage: "eye.slash")
+                            }
+                        }
+                    }
+                }
             }
             .formStyle(.grouped)
             .navigationTitle("课程详情")
             .inlineToolbarTitle()
+            .alert("隐藏课程", isPresented: $isHideConfirmationPresented) {
+                Button("隐藏", role: .destructive) {
+                    onHideOfficialCourse()
+                }
+                Button("取消", role: .cancel) {}
+            } message: {
+                Text("隐藏后，这门官方课程的所有上课时间都会从课表中移除。")
+            }
+            .alert("删除课程", isPresented: $isDeleteConfirmationPresented) {
+                Button("删除", role: .destructive) {
+                    onDeleteCustomCourse()
+                }
+                Button("取消", role: .cancel) {}
+            } message: {
+                Text("删除后，这门自定义课程会从课表中移除。")
+            }
             .apply { view in
                 if isShowingToolbar {
                     view.toolbar {
