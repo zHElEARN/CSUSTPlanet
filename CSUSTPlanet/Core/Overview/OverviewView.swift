@@ -10,7 +10,7 @@ import SwiftUI
 
 struct OverviewView: View {
     @Bindable var globalManager = GlobalManager.shared
-    @State private var courseScheduleData = MMKVHelper.shared.courseScheduleCache
+    @State private var courseScheduleData = MMKVHelper.CourseSchedule.cache
 
     private let overviewSpacing: CGFloat = 24
     private let minimumColumnWidth: CGFloat = 320
@@ -55,22 +55,9 @@ struct OverviewView: View {
         }
         .navigationTitle("概览")
         .navigationSubtitleCompat(overviewSubtitle)
-        .navigationDestination(isPresented: $globalManager.isFromElectricityWidget) {
-            DormListView().trackRoot("Widget")
-        }
-        .navigationDestination(isPresented: $globalManager.isFromCourseScheduleWidget) {
-            CourseScheduleView().trackRoot("Widget")
-        }
-        .navigationDestination(isPresented: $globalManager.isFromGradeAnalysisWidget) {
-            GradeAnalysisView().trackRoot("Widget")
-        }
-        .navigationDestination(isPresented: $globalManager.isFromTodoAssignmentsWidget) {
-            TodoAssignmentsView().trackRoot("Widget")
-        }
-        .onReceive(MMKVHelper.shared.$courseScheduleCache) { data in
+        .onReceive(MMKVHelper.CourseSchedule.$cache) { data in
             courseScheduleData = data
         }
-        .trackView("Overview")
     }
 
     @ViewBuilder

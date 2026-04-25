@@ -12,7 +12,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class AddDormViewModel: Observable {
-    private let campusCardHelper = CampusCardHelper()
+    @ObservationIgnored private let campusCardHelper = CampusCardHelper()
 
     var errorToast: ToastState = .errorTitle
 
@@ -32,7 +32,7 @@ final class AddDormViewModel: Observable {
         selectedCampusBuildings.first(where: { $0.id == selectedBuildingID })
     }
 
-    var isInitial = true
+    @ObservationIgnored var isInitial = true
 
     func loadInitial() async {
         guard isInitial else { return }

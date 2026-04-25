@@ -39,7 +39,6 @@ struct SSOBrowserView: View {
                 }
             }
         }
-        .trackView("SSOBrowser")
         #if os(macOS)
         .frame(minWidth: 960, minHeight: 640)
         #endif

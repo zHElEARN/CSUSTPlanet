@@ -62,7 +62,6 @@ struct BackgroundTaskSettingsView: View {
         } message: {
             Text("需要开启通知权限以启用后台任务，请前往系统设置开启通知权限。")
         }
-        .trackView("BackgroundTaskSettings")
     }
 
     private var isEnabledBinding: Binding<Bool> {

@@ -1,5 +1,5 @@
 //
-//  WebView.swift
+//  WebViewRepresentable.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/7/11.
@@ -8,18 +8,18 @@
 import SwiftUI
 import WebKit
 
-struct WebView: PlatformViewRepresentable {
+struct WebViewRepresentable: PlatformViewRepresentable {
     let url: URL
     let cookies: [HTTPCookie]?
+    let controller: WebViewController?
 
-    init(url: URL, cookies: [HTTPCookie]? = nil) {
-        self.url = url
-        self.cookies = cookies
+    func makeCoordinator() -> WebViewCoordinator {
+        WebViewCoordinator(controller: controller)
     }
 
     #if os(macOS)
     func makeNSView(context: Context) -> WKWebView {
-        return createWebView(context: context)
+        createWebView(context: context)
     }
 
     func updateNSView(_ nsView: WKWebView, context: Context) {
@@ -29,7 +29,7 @@ struct WebView: PlatformViewRepresentable {
 
     #if os(iOS)
     func makeUIView(context: Context) -> WKWebView {
-        return createWebView(context: context)
+        createWebView(context: context)
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
@@ -41,7 +41,7 @@ struct WebView: PlatformViewRepresentable {
         let configuration = WKWebViewConfiguration()
         let dataStore = WKWebsiteDataStore.nonPersistent()
 
-        if let cookies = cookies {
+        if let cookies {
             let cookieStore = dataStore.httpCookieStore
             for cookie in cookies {
                 cookieStore.setCookie(cookie)
@@ -49,13 +49,25 @@ struct WebView: PlatformViewRepresentable {
         }
 
         configuration.websiteDataStore = dataStore
+
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.uiDelegate = context.coordinator
+        webView.navigationDelegate = context.coordinator
+
+        context.coordinator.controller = controller
+        controller?.webView = webView
+        controller?.syncState()
 
         return webView
     }
 
     private func updateWebView(_ webView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
-        webView.load(request)
+        context.coordinator.controller = controller
+        controller?.webView = webView
+
+        guard context.coordinator.lastRequestedURL != url else { return }
+
+        context.coordinator.lastRequestedURL = url
+        webView.load(URLRequest(url: url))
     }
 }

@@ -53,7 +53,6 @@ struct CourseSemesterView: View {
             .formStyle(.grouped)
             .navigationTitle("学期选择")
             .inlineToolbarTitle()
-            .trackView("CourseSemester")
         }
     }
 }

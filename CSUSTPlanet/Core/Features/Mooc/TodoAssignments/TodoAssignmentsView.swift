@@ -8,19 +8,107 @@
 import CSUSTKit
 import SwiftUI
 
+struct TodoAssignmentsCoursePageView: View {
+    let courseID: String
+    @State private var webViewController = WebViewController()
+
+    var body: some View {
+        Group {
+            if let url = URL(string: "http://pt.csust.edu.cn/meol/jpk/course/layout/newpage/index.jsp?courseId=\(courseID)") {
+                WebView(
+                    url: url,
+                    cookies: CookieHelper.shared.session.session.configuration.httpCookieStorage?.cookies,
+                    controller: webViewController
+                )
+            } else {
+                ContentUnavailableView("无法打开课程页面", systemImage: "exclamationmark.triangle", description: Text("课程链接无效"))
+            }
+        }
+        .navigationTitle("课程页面")
+        .inlineToolbarTitle()
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button(action: { webViewController.goBack() }) {
+                    Label("上一页", systemImage: "chevron.left")
+                }
+                .disabled(!webViewController.canGoBack)
+
+                Button(action: { webViewController.goForward() }) {
+                    Label("下一页", systemImage: "chevron.right")
+                }
+                .disabled(!webViewController.canGoForward)
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: { webViewController.reload() }) {
+                    if webViewController.isLoading {
+                        ProgressView().smallControlSizeOnMac()
+                    } else {
+                        Label("刷新", systemImage: "arrow.clockwise")
+                    }
+                }
+            }
+        }
+    }
+}
+
+#if os(macOS)
+struct TodoAssignmentsCoursePageScene: Scene {
+    static let windowID = "todo-assignments.course-page"
+
+    var body: some Scene {
+        WindowGroup("课程页面", id: Self.windowID, for: String.self) { $courseID in
+            NavigationStack {
+                if let courseID {
+                    TodoAssignmentsCoursePageView(courseID: courseID)
+                } else {
+                    ContentUnavailableView("未选择课程", systemImage: "book.closed", description: Text("请从待提交作业页面重新打开课程页面"))
+                }
+            }
+            .frame(minWidth: 960, minHeight: 540)
+        }
+        .defaultSize(width: 1280, height: 720)
+        .windowResizability(.contentMinSize)
+    }
+}
+#endif
+
 struct TodoAssignmentsView: View {
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #endif
+
     @State private var viewModel = TodoAssignmentsViewModel()
 
     var body: some View {
         Group {
-            if let courseGroups = viewModel.todoAssignmentsData?.value, !courseGroups.isEmpty {
-                Form {
+            Form {
+                if let courseGroups = viewModel.todoAssignmentsData?.value, !courseGroups.isEmpty {
                     ForEach(courseGroups, id: \.course.id) { group in
                         Section {
                             DisclosureGroup(isExpanded: bindingForCourse(group.course.id)) {
                                 let assignments = viewModel.displayedAssignments(for: group)
+                                let isShowingAllAssignments = viewModel.isShowingAllAssignments(courseID: group.course.id)
+                                let hasHiddenAssignments = assignments.count < group.assignments.count
+
                                 ForEach(assignments.indices, id: \.self) { index in
                                     AssignmentInfoView(assignment: assignments[index])
+                                }
+
+                                if hasHiddenAssignments || isShowingAllAssignments {
+                                    Button {
+                                        withAnimation { viewModel.toggleShowAllAssignments(courseID: group.course.id) }
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Text(isShowingAllAssignments ? "仅未截止" : "查看全部")
+                                            Image(systemName: isShowingAllAssignments ? "chevron.up" : "chevron.down")
+                                        }
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .center)
+                                        .padding(.vertical, 6)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             } label: {
                                 HStack {
@@ -35,9 +123,14 @@ struct TodoAssignmentsView: View {
                                     Spacer()
 
                                     Button {
-                                        withAnimation { viewModel.toggleShowAllAssignments(courseID: group.course.id) }
+                                        #if os(macOS)
+                                        openWindow(id: TodoAssignmentsCoursePageScene.windowID, value: group.course.id)
+                                        #else
+                                        viewModel.selectedCourseID = group.course.id
+                                        viewModel.isCoursePagePresented = true
+                                        #endif
                                     } label: {
-                                        Text(viewModel.isShowingAllAssignments(courseID: group.course.id) ? "仅未截止" : "查看全部")
+                                        Text("前往课程")
                                             .font(.caption)
                                     }
                                     .buttonStyle(.bordered)
@@ -47,12 +140,12 @@ struct TodoAssignmentsView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                } else {
+                    ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .formStyle(.grouped)
-            } else {
-                ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .formStyle(.grouped)
         }
         #if os(iOS)
         .background(Color(PlatformColor.systemGroupedBackground))
@@ -63,6 +156,22 @@ struct TodoAssignmentsView: View {
         .sheet(isPresented: $viewModel.isNotificationSettingsPresented) {
             TodoAssignmentsNotificationSettingsView(viewModel: viewModel)
         }
+        #if os(iOS)
+        .sheet(isPresented: $viewModel.isCoursePagePresented) {
+            NavigationStack {
+                if let courseID = viewModel.selectedCourseID {
+                    TodoAssignmentsCoursePageView(courseID: courseID)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("关闭") {
+                                viewModel.isCoursePagePresented = false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        #endif
         .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {
             Button(action: { viewModel.isNotificationDeniedAlertPresented = false }) {
                 Text("取消")
@@ -95,7 +204,6 @@ struct TodoAssignmentsView: View {
         }
         .navigationTitle("待提交作业")
         .navigationSubtitleCompat("共\(viewModel.unexpiredAssignmentsCount)个未截止作业")
-        .trackView("TodoAssignments")
     }
 
     private func bindingForCourse(_ courseID: String) -> Binding<Bool> {

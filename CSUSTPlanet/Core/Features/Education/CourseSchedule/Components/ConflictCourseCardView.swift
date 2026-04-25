@@ -32,7 +32,7 @@ struct ConflictCourseCardView: View {
                         onSelect(info)
                     } label: {
                         let room = info.session.classroom ?? "未知"
-                        Text("\(info.course.courseName) (@\(room))")
+                        Text("\(info.course.courseName) (@\(room))") + Text("\n第\(info.session.startSection)-\(info.session.endSection)节").font(.caption)
                     }
                 }
             }
@@ -89,6 +89,10 @@ struct ConflictCourseCardView: View {
                                             .font(.system(size: 11))
                                             .foregroundColor(.secondary)
                                     }
+
+                                    Text("第\(info.session.startSection)-\(info.session.endSection)节")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(.secondary)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")

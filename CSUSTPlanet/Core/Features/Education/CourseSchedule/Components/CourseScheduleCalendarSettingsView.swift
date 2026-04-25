@@ -68,7 +68,6 @@ struct CourseScheduleCalendarSettingsView: View {
                     }
                 }
             }
-            .trackView("CourseScheduleCalendarSettings")
         }
     }
 

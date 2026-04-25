@@ -6,14 +6,15 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
 import GRDB
 import SwiftUI
 
 @MainActor
 @Observable
-final class DormDetailViewModel {
-    let campusCardHelper = CampusCardHelper()
+final class DormDetailViewModel: Hashable {
+    @ObservationIgnored let campusCardHelper = CampusCardHelper()
 
     var dorm: DormGRDB
     var sortedRecords: [ElectricityRecordGRDB] = []
@@ -28,10 +29,11 @@ final class DormDetailViewModel {
     var isNotificationDeniedAlertPresented: Bool = false
     var isSchedulingDorm: Bool = false
 
-    private var dormObserver: (any DatabaseCancellable)?
-    private var recordsObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var dormObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var recordsObserver: (any DatabaseCancellable)?
+    @ObservationIgnored private var ipcCancellable: AnyCancellable?
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     init(dorm: DormGRDB) {
         self.dorm = dorm
@@ -40,8 +42,7 @@ final class DormDetailViewModel {
     func loadInitial() async {
         guard isInitial else { return }
         isInitial = false
-        observeDormDetail()
-        observeRecords()
+        startObservation()
     }
 
     func toggleFavorite() {
@@ -69,6 +70,7 @@ final class DormDetailViewModel {
         do {
             let electricity = try await campusCardHelper.getElectricity(building: building, room: dorm.room)
             try await pool.write { db in try DormGRDB.updateElectricity(dormID: dormID, electricity: electricity, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -93,6 +95,7 @@ final class DormDetailViewModel {
 
         do {
             try pool.write { db in try DormGRDB.deleteAllElectricityRecords(dormID: dormID, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -123,7 +126,28 @@ final class DormDetailViewModel {
         }
     }
 
+    private func startObservation() {
+        setupIPCObservationIfNeeded()
+        restartGRDBObservations()
+    }
+
+    private func setupIPCObservationIfNeeded() {
+        guard ipcCancellable == nil else { return }
+
+        ipcCancellable = GRDBIPCNotifier.shared.dbChangedSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.restartGRDBObservations()
+            }
+    }
+
+    private func restartGRDBObservations() {
+        observeDormDetail()
+        observeRecords()
+    }
+
     private func observeDormDetail() {
+        dormObserver?.cancel()
         guard let dormID = dorm.id else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
@@ -145,6 +169,7 @@ final class DormDetailViewModel {
     }
 
     private func observeRecords() {
+        recordsObserver?.cancel()
         guard let dormID = dorm.id else { return }
         guard let pool = DatabaseManager.shared.pool else { return }
 
@@ -243,5 +268,13 @@ final class DormDetailViewModel {
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
+    }
+
+    nonisolated static func == (lhs: DormDetailViewModel, rhs: DormDetailViewModel) -> Bool {
+        return lhs === rhs
+    }
+
+    nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
     }
 }

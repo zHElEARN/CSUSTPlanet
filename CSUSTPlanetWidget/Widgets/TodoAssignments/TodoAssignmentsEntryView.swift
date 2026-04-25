@@ -27,7 +27,7 @@ struct TodoAssignmentsEntryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .widgetURL(URL(string: "csustplanet://widgets/todoAssignments"))
+        .widgetURL(URL(string: "csustplanet://features/todo-assignments"))
         .containerBackground(.fill.tertiary, for: .widget)
     }
 

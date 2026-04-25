@@ -6,9 +6,9 @@
 //
 
 import CSUSTKit
+import Combine
 import EventKit
 import Foundation
-import SwiftData
 import SwiftUI
 
 enum CalendarReminderOffset: TimeInterval, CaseIterable, Identifiable {
@@ -59,6 +59,8 @@ class CourseScheduleViewModel {
     var courseScheduleData: Cached<CourseScheduleData>? = nil
     var availableSemesters: [String] = []
 
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
+
     var isCourseScheduleLoading: Bool = false
     var isSemestersLoading: Bool = false
 
@@ -84,7 +86,7 @@ class CourseScheduleViewModel {
     //         return dateFormatter.date(from: "2025-09-15")!
     //     }()
     // #else
-    let today: Date = .now
+    @ObservationIgnored let today: Date = .now
     // #endif
 
     // 当前日期在第几周
@@ -94,7 +96,7 @@ class CourseScheduleViewModel {
     var loadingToast: ToastState = .init(title: "添加中")
     var successToast: ToastState = .init(title: "添加成功")
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     var firstReminderOffset: CalendarReminderOffset = .tenMinutes
     var isFirstReminderEnabled: Bool = false
@@ -106,9 +108,15 @@ class CourseScheduleViewModel {
     var isExportScopeLimited: Bool = false
 
     init() {
-        guard let data = MMKVHelper.shared.courseScheduleCache else { return }
-        self.courseScheduleData = data
-        updateSchedules(data.value.semesterStartDate, data.value.courses)
+        applyCourseScheduleCache(MMKVHelper.CourseSchedule.cache)
+
+        MMKVHelper.CourseSchedule.$cache
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.applyCourseScheduleCache(data)
+            }
+            .store(in: &cancellables)
     }
 
     func loadInitial() async {
@@ -147,12 +155,24 @@ class CourseScheduleViewModel {
                 try await AuthManager.shared.eduHelper.semesterService.getSemesterStartDate(academicYearSemester: self.selectedSemester)
             }
             let data = Cached<CourseScheduleData>(cachedAt: .now, value: CourseScheduleData(semester: selectedSemester, semesterStartDate: semesterStartDate, courses: courses))
-            self.courseScheduleData = data
-            MMKVHelper.shared.courseScheduleCache = data
-            updateSchedules(semesterStartDate, courses)
+            MMKVHelper.CourseSchedule.cache = data
+            WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
+    }
+
+    private func applyCourseScheduleCache(_ data: Cached<CourseScheduleData>?) {
+        courseScheduleData = data
+
+        guard let data else {
+            realCurrentWeek = nil
+            courseColors = [:]
+            currentWeek = 1
+            return
+        }
+
+        updateSchedules(data.value.semesterStartDate, data.value.courses)
     }
 
     private func updateSchedules(_ semesterStartDate: Date, _ courses: [EduHelper.Course]) {
@@ -171,12 +191,21 @@ class CourseScheduleViewModel {
 
     func goToCurrentWeek() {
         if let realWeek = realCurrentWeek, realWeek > 0 && realWeek <= CourseScheduleUtil.weekCount {
-            withAnimation {
+            withAnimation(.snappy(duration: 0.15, extraBounce: 0)) {
                 self.currentWeek = realWeek
             }
         } else {
-            withAnimation {
+            withAnimation(.snappy(duration: 0.15, extraBounce: 0)) {
                 self.currentWeek = 1
+            }
+        }
+    }
+
+    func changeWeek(by amount: Int) {
+        let newWeek = currentWeek + amount
+        if newWeek >= 1 && newWeek <= CourseScheduleUtil.weekCount {
+            withAnimation(.snappy(duration: 0.15, extraBounce: 0)) {
+                self.currentWeek = newWeek
             }
         }
     }
@@ -270,17 +299,15 @@ class CourseScheduleViewModel {
     }
 }
 
-extension MMKVHelper {
-    enum CourseSchedule {
-        enum CalendarSync {
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
-            static var exportScopeLimit: Int?
+extension MMKVHelper.CourseSchedule {
+    enum CalendarSync {
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.exportScopeLimit")
+        static var exportScopeLimit: Int?
 
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
-            static var firstReminderOffset: Double?
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.firstReminderOffset")
+        static var firstReminderOffset: Double?
 
-            @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
-            static var secondReminderOffset: Double?
-        }
+        @MMKVOptionalStorage(key: "CourseSchedule.CalendarSync.secondReminderOffset")
+        static var secondReminderOffset: Double?
     }
 }

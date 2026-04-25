@@ -78,7 +78,6 @@ struct ProfileDetailView: View {
         .navigationTitle("个人详情")
         .task { await viewModel.loadInitial() }
         .safeRefreshable { await viewModel.loadAll() }
-        .trackView("ProfileDetail")
     }
 
     @ViewBuilder

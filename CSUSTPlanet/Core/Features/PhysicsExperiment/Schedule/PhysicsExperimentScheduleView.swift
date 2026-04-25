@@ -15,29 +15,23 @@ struct PhysicsExperimentScheduleView: View {
 
     var body: some View {
         Group {
-            if viewModel.data?.value.isEmpty ?? true {
-                ContentUnavailableView(
-                    "暂无实验安排",
-                    systemImage: "flask",
-                    description: Text("没有找到任何大物实验安排信息")
-                )
-            } else {
-                List {
-                    if let data = viewModel.data {
+            ScrollView {
+                if let data = viewModel.data, !data.value.isEmpty {
+                    LazyVStack(spacing: 16) {
                         ForEach(data.value, id: \.id) { course in
                             ExperimentCardView(course: course)
-                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
                         }
                     }
+                    .padding(.horizontal)
+                    .padding(.vertical)
+                } else {
+                    CustomGroupBox {
+                        ContentUnavailableView("暂无实验安排", systemImage: "flask", description: Text("没有找到任何大物实验安排信息"))
+                    }
+                    .padding()
                 }
-                .listStyle(.plain)
             }
         }
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
         .navigationTitle("大物实验安排")
         .navigationSubtitleCompat("共\(viewModel.data?.value.count ?? 0)个实验")
         .toolbar {
@@ -66,7 +60,6 @@ struct PhysicsExperimentScheduleView: View {
         }
         .task { await viewModel.loadInitial() }
         .safeRefreshable { await viewModel.loadSchedules() }
-        .trackView("PhysicsExperimentSchedule")
     }
 }
 

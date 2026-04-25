@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CourseWidgetAfterSemesterView: View {
     var body: some View {
-        Text("学期已结束")
+        Text(CourseScheduleUtil.semesterEndedText)
             .font(.system(size: 16, weight: .semibold))
             .foregroundStyle(.primary)
     }

@@ -6,8 +6,8 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
-import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -25,6 +25,8 @@ class GradeQueryViewModel {
     private(set) var filteredGrades: [EduHelper.CourseGrade] = []
     private(set) var groupedFilteredGrades: [(semester: String, grades: [EduHelper.CourseGrade])] = []
     var semesterGPAs: [String: Double] = [:]
+
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     var searchText: String = "" {
         didSet { updateFilteredGrades() }
@@ -45,13 +47,20 @@ class GradeQueryViewModel {
     var shareContent: Any? = nil
     var isShareSheetPresented: Bool = false
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     // MARK: - Methods
 
     init() {
-        guard let data = MMKVHelper.shared.courseGradesCache else { return }
-        applyData(data)
+        applyGradeData(MMKVHelper.CourseGrades.cache)
+
+        MMKVHelper.CourseGrades.$cache
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.applyGradeData(data)
+            }
+            .store(in: &cancellables)
     }
 
     func loadInitial() async {
@@ -70,8 +79,8 @@ class GradeQueryViewModel {
                 try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
             }
             let data = Cached(cachedAt: .now, value: courseGrades)
-            applyData(data)
-            MMKVHelper.shared.courseGradesCache = data
+            MMKVHelper.CourseGrades.cache = data
+            WidgetTimelineRefreshHelper.reloadGradeAnalysis()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -139,10 +148,20 @@ class GradeQueryViewModel {
         selectedItems.contains(SelectionItem(course: courseID))
     }
 
-    private func applyData(_ data: Cached<[EduHelper.CourseGrade]>) {
-        self.gradeData = data
-        self.expandedSemesters = Set(data.value.map { $0.semester })
-        self.semesterGPAs = computeSemesterGPAs(data.value)
+    private func applyGradeData(_ data: Cached<[EduHelper.CourseGrade]>?) {
+        gradeData = data
+
+        guard let data else {
+            expandedSemesters = []
+            semesterGPAs = [:]
+            filteredGrades = []
+            groupedFilteredGrades = []
+            gradeAnalysis = nil
+            return
+        }
+
+        expandedSemesters = Set(data.value.map { $0.semester })
+        semesterGPAs = computeSemesterGPAs(data.value)
         updateFilteredGrades()
         updateAnalysis()
     }

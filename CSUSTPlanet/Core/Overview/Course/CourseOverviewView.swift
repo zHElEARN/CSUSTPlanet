@@ -6,52 +6,50 @@
 //
 
 import CSUSTKit
+import Foundation
 import SwiftUI
 
 struct CourseOverviewView: View {
     @State private var viewModel = CourseOverviewViewModel()
-    @State private var isCourseSchedulePresented = false
-
-    @Namespace var namespace
-    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
+    @Environment(Router.self) private var router
+    @State private var selectedCourse: CourseDisplayInfo?
 
     var body: some View {
-        Group {
-            #if os(macOS)
-            TrackLink(destination: CourseScheduleView()) {
-                CustomGroupBox {
-                    cardContent
+        Button(action: { router.deepLinkTo(feature: .courseSchedule) }) {
+            CustomGroupBox {
+                TimelineView(.periodic(from: .now, by: 60)) { context in
+                    cardContent(now: context.date)
                 }
             }
-            #elseif os(iOS)
-            if #available(iOS 18.0, macOS 15.0, *) {
-                TrackLink(
-                    destination: CourseScheduleView()
-                        .navigationTransition(.zoom(sourceID: "courseSchedule", in: namespace))
-                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
-                ) {
-                    CustomGroupBox {
-                        cardContent.matchedTransitionSource(id: "courseSchedule", in: namespace)
-                    }
-                }
-                .id(refreshID)
-            } else {
-                TrackLink(destination: CourseScheduleView()) {
-                    CustomGroupBox {
-                        cardContent
-                    }
-                }
-            }
-            #endif
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .sheet(item: $selectedCourse) { courseInfo in
+            CourseScheduleDetailView(
+                course: courseInfo.course,
+                session: courseInfo.session,
+                isShowingToolbar: true,
+                isPresented: courseDetailBinding
+            )
+        }
+    }
+
+    private var courseDetailBinding: Binding<Bool> {
+        Binding(
+            get: { selectedCourse != nil },
+            set: { isPresented in
+                if !isPresented {
+                    selectedCourse = nil
+                }
+            }
+        )
     }
 
     @ViewBuilder
-    private var cardContent: some View {
+    private func cardContent(now: Date) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 8) {
-                Text("今日课程")
+                Text(CourseScheduleUtil.courseScheduleTitle)
                     .font(.title3)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
@@ -62,92 +60,151 @@ struct CourseOverviewView: View {
                     .foregroundStyle(.secondary)
             }
 
-            contentView
+            contentView(now: now)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
-    private var contentView: some View {
-        switch viewModel.courseDisplayState {
+    private func contentView(now: Date) -> some View {
+        switch viewModel.courseDisplayState(at: now) {
         case .loading:
-            EmptyCourseContentView(text: "暂无课程数据", icon: "cloud.sun.fill")
+            EmptyCourseContentView(text: CourseScheduleUtil.emptyCourseScheduleText)
 
         case .beforeSemester(let days):
             if let days {
                 if days > CourseScheduleUtil.semesterStartThreshold {
                     EmptyCourseContentView(
-                        text: CourseScheduleUtil.getHolidayMessage(for: Date()),
-                        subtitle: "学期未开始",
-                        icon: "party.popper.fill"
+                        text: CourseScheduleUtil.getHolidayMessage(for: now),
+                        subtitle: CourseScheduleUtil.semesterNotStartedText
                     )
                 } else {
                     EmptyCourseContentView(
-                        text: "学期未开始",
-                        subtitle: "距离开学还有 \(days) 天",
-                        icon: "calendar.badge.clock"
+                        text: CourseScheduleUtil.semesterNotStartedText,
+                        subtitle: CourseScheduleUtil.getSemesterCountdownText(days: days)
                     )
                 }
             } else {
-                EmptyCourseContentView(text: "学期未开始", icon: "calendar")
+                EmptyCourseContentView(text: CourseScheduleUtil.semesterNotStartedText)
             }
 
         case .afterSemester:
-            EmptyCourseContentView(text: "本学期已结束，祝你假期愉快！", icon: "case.fill")
+            EmptyCourseContentView(text: CourseScheduleUtil.semesterEndedText)
 
-        case .inSemester(let courses):
-            if courses.isEmpty {
-                EmptyCourseContentView(
-                    text: "今天没有课，好好休息吧 ~",
-                    icon: "checkmark.circle.fill",
-                    iconColor: .green
-                )
-            } else {
+        case .inSemester(let dailyCourseState):
+            switch dailyCourseState {
+            case .today(let courses):
                 CourseListView(
-                    courses: courses
+                    courses: courseItems(from: courses),
+                    onSelect: { selectedCourse = $0 }
                 )
+            case .tomorrowPreview(let reason, let preview):
+                if let preview {
+                    VStack(alignment: .leading, spacing: 8) {
+                        TomorrowPreviewStatusView(
+                            text: reason.message,
+                            courseCount: preview.courses.count
+                        )
+
+                        TomorrowCourseSectionView(
+                            preview: preview,
+                            onSelect: { selectedCourse = $0 }
+                        )
+                    }
+                } else {
+                    EmptyCourseContentView(
+                        text: reason.message,
+                        subtitle: CourseScheduleUtil.noScheduledCoursesTomorrowText
+                    )
+                }
             }
+        }
+    }
+
+    private func courseItems(from courses: [(course: CourseDisplayInfo, isCurrent: Bool)]) -> [CourseRowItem] {
+        courses.map { course in
+            CourseRowItem(courseInfo: course.course, isCurrent: course.isCurrent)
         }
     }
 }
 
+private struct CourseRowItem: Identifiable {
+    let courseInfo: CourseDisplayInfo
+    let isCurrent: Bool
+
+    var id: UUID { courseInfo.id }
+}
+
 private struct CourseListView: View {
-    let courses: [(course: CourseDisplayInfo, isCurrent: Bool)]
+    let courses: [CourseRowItem]
+    let onSelect: (CourseDisplayInfo) -> Void
 
     private var courseColors: [String: Color] {
-        ColorUtil.getCourseColors(courses.map { $0.course.course })
+        ColorUtil.getCourseColors(courses.map { $0.courseInfo.course })
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(courses.enumerated()), id: \.offset) { _, item in
+            ForEach(courses) { item in
                 CourseRowView(
-                    course: item.course.course,
-                    session: item.course.session,
+                    courseInfo: item.courseInfo,
                     isCurrent: item.isCurrent,
-                    accentColor: courseColors[item.course.course.courseName] ?? .blue,
-                    startSection: item.course.session.startSection,
-                    endSection: item.course.session.endSection
+                    accentColor: courseColors[item.courseInfo.course.courseName] ?? .blue,
+                    onTap: { onSelect(item.courseInfo) }
                 )
             }
         }
     }
 }
 
-private struct CourseRowView: View {
-    let course: EduHelper.Course
-    let session: EduHelper.ScheduleSession
-    let isCurrent: Bool
-    let accentColor: Color
-    let startSection: Int
-    let endSection: Int
-
-    @State private var showDetail = false
+private struct TomorrowCourseSectionView: View {
+    let preview: TomorrowCoursePreview
+    let onSelect: (CourseDisplayInfo) -> Void
 
     var body: some View {
-        Button {
-            showDetail = true
-        } label: {
+        CourseListView(
+            courses: preview.courses.map { CourseRowItem(courseInfo: $0, isCurrent: false) },
+            onSelect: onSelect
+        )
+    }
+}
+
+private struct TomorrowPreviewStatusView: View {
+    let text: String
+    let courseCount: Int
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Text(text)
+                .padding(.trailing, 8)
+            Text(CourseScheduleUtil.tomorrowCoursesTitleText)
+                .foregroundStyle(.red)
+                .padding(.trailing, 8)
+            Text("共")
+            Text("\(courseCount)")
+                .foregroundStyle(.blue)
+            Text("节课程")
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+        .font(.system(size: 13, weight: .bold))
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct CourseRowView: View {
+    let courseInfo: CourseDisplayInfo
+    let isCurrent: Bool
+    let accentColor: Color
+    let onTap: () -> Void
+
+    var body: some View {
+        let course = courseInfo.course
+        let session = courseInfo.session
+        let startSection = courseInfo.session.startSection
+        let endSection = courseInfo.session.endSection
+
+        Button(action: onTap) {
             HStack(spacing: 6) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(accentColor)
@@ -160,7 +217,6 @@ private struct CourseRowView: View {
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundStyle(.primary)
                                 .lineLimit(1)
-                            // .frame(maxWidth: .infinity, alignment: .leading)
 
                             if isCurrent {
                                 Circle()
@@ -206,39 +262,25 @@ private struct CourseRowView: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .sheet(isPresented: $showDetail) {
-            CourseScheduleDetailView(
-                course: course,
-                session: session,
-                isShowingToolbar: true,
-                isPresented: $showDetail
-            )
-        }
     }
 }
 
 private struct EmptyCourseContentView: View {
     var text: String
     var subtitle: String? = nil
-    var icon: String
-    var iconColor: Color = .secondary
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(iconColor)
+        VStack(alignment: .center, spacing: 4) {
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+                .multilineTextAlignment(.center)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(text)
-                    .font(.subheadline)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                    .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)

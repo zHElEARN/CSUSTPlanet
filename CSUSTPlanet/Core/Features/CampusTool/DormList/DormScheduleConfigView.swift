@@ -90,7 +90,6 @@ struct DormScheduleConfigView: View {
                     }
                 }
             }
-            .trackView("DormScheduleConfig")
         }
     }
 

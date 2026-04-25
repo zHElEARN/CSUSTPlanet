@@ -104,7 +104,7 @@ struct CampusMapView: View {
         .inlineToolbarTitle()
         #if os(iOS)
         .sheet(isPresented: $viewModel.isOnlineMapShown) {
-            SafariView(url: url).trackView("CampusMapOnline")
+            SafariView(url: url)
         }
         #endif
         .toast(isPresenting: $viewModel.isLoading) {
@@ -138,7 +138,6 @@ struct CampusMapView: View {
             }
         }
         .task { await viewModel.loadInitial() }
-        .trackView("CampusMap")
     }
 
     private var phoneSheetContent: some View {

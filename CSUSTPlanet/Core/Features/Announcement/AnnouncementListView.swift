@@ -39,7 +39,6 @@ struct AnnouncementListView: View {
         .errorToast($viewModel.errorToast)
         .navigationTitle("App公告")
         .navigationSubtitleCompat("共\(viewModel.announcements.count)条公告")
-        .trackView("AnnouncementList")
     }
 
     @ViewBuilder

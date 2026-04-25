@@ -13,17 +13,14 @@ import AppKit
 #endif
 
 struct FeatureItem: Identifiable {
-    let id: TabItem
-    let title: String
-    let icon: String
-    let destination: () -> AnyView
+    let id: FeatureTabID
 
-    init<Content: View>(id: TabItem, title: String, icon: String, @ViewBuilder destination: @escaping () -> Content) {
+    init(id: FeatureTabID) {
         self.id = id
-        self.title = title
-        self.icon = icon
-        self.destination = { AnyView(destination()) }
     }
+
+    var title: String { id.name }
+    var icon: String { id.systemImage }
 }
 
 struct FeatureSection: Identifiable {
@@ -32,49 +29,62 @@ struct FeatureSection: Identifiable {
     let items: [FeatureItem]
 }
 
+struct SidebarPrimaryItem: Identifiable {
+    var id: AppTabItem { tab }
+    let tab: AppTabItem
+    let title: String
+    let systemImage: String
+}
+
 @MainActor
 private let featureSections: [FeatureSection] = [
     FeatureSection(
         title: "教务系统",
         items: [
-            FeatureItem(id: .courseSchedule, title: "我的课表", icon: "calendar", destination: { CourseScheduleView() }),
-            FeatureItem(id: .gradeQuery, title: "成绩查询", icon: "doc.text.magnifyingglass", destination: { GradeQueryView() }),
-            FeatureItem(id: .examSchedule, title: "考试安排", icon: "pencil.and.outline", destination: { ExamScheduleView() }),
-            FeatureItem(id: .gradeAnalysis, title: "成绩分析", icon: "chart.bar.xaxis", destination: { GradeAnalysisView() }),
+            FeatureItem(id: .courseSchedule),
+            FeatureItem(id: .gradeQuery),
+            FeatureItem(id: .examSchedule),
+            FeatureItem(id: .gradeAnalysis),
         ]
     ),
     FeatureSection(
         title: "网络课程中心",
         items: [
-            FeatureItem(id: .courses, title: "所有课程", icon: "books.vertical.fill", destination: { CoursesView() }),
-            FeatureItem(id: .urgentCourses, title: "待提交作业", icon: "list.bullet.clipboard", destination: { TodoAssignmentsView() }),
+            FeatureItem(id: .courses),
+            FeatureItem(id: .urgentCourses),
         ]
     ),
     FeatureSection(
         title: "校园工具",
         items: [
-            FeatureItem(id: .electricityQuery, title: "电量查询", icon: "bolt.fill", destination: { DormListView() }),
-            FeatureItem(id: .availableClassroom, title: "空教室查询", icon: "building.2.fill", destination: { AvailableClassroomView() }),
-            FeatureItem(id: .campusMap, title: "校园地图", icon: "map.fill", destination: { CampusMapView() }),
-            FeatureItem(id: .schoolCalendar, title: "校历", icon: "calendar.badge.clock", destination: { SchoolCalendarListView() }),
-            FeatureItem(id: .electricityRecharge, title: "电费充值", icon: "creditcard.fill", destination: { ElectricityRechargeView() }),
-            FeatureItem(id: .webVPNConverter, title: "WebVPN", icon: "lock.shield", destination: { WebVPNConverterView() }),
+            FeatureItem(id: .electricityQuery),
+            FeatureItem(id: .availableClassroom),
+            FeatureItem(id: .campusMap),
+            FeatureItem(id: .schoolCalendar),
+            FeatureItem(id: .electricityRecharge),
+            FeatureItem(id: .webVPNConverter),
         ]
     ),
     FeatureSection(
         title: "大学物理实验",
         items: [
-            FeatureItem(id: .physicsExperimentSchedule, title: "实验安排", icon: "calendar", destination: { PhysicsExperimentScheduleView() }),
-            FeatureItem(id: .physicsExperimentGrade, title: "实验成绩", icon: "doc.text", destination: { PhysicsExperimentGradeView() }),
+            FeatureItem(id: .physicsExperimentSchedule),
+            FeatureItem(id: .physicsExperimentGrade),
         ]
     ),
     FeatureSection(
         title: "其他考试查询",
         items: [
-            FeatureItem(id: .cet, title: "四六级查询", icon: "character.book.closed", destination: { CETView() }),
-            FeatureItem(id: .mandarin, title: "普通话查询", icon: "mic.circle.fill", destination: { MandarinView() }),
+            FeatureItem(id: .cet),
+            FeatureItem(id: .mandarin),
         ]
     ),
+]
+
+@MainActor
+private let primarySidebarItems: [SidebarPrimaryItem] = [
+    SidebarPrimaryItem(tab: .overview, title: "概览", systemImage: "rectangle.stack"),
+    SidebarPrimaryItem(tab: .profile, title: "我的", systemImage: "person"),
 ]
 
 struct ContentView: View {
@@ -82,7 +92,14 @@ struct ContentView: View {
     @Bindable var authManager = AuthManager.shared
 
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.horizontalSizeClass) var sizeClass
+    @State private var router = Router()
+
+    #if os(macOS)
+    private let isCompactEnv = false
+    #else
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isCompactEnv: Bool { horizontalSizeClass == .compact }
+    #endif
 
     var body: some View {
         Group {
@@ -137,91 +154,29 @@ struct ContentView: View {
                     await globalManager.migrateDatabaseIfNeeded()
                 }
             } else {
-                if #available(iOS 18.0, macOS 15.0, *) {
-                    TabView(selection: $globalManager.selectedTab) {
-                        Tab("概览", systemImage: "rectangle.stack", value: TabItem.overview) {
-                            NavigationStack { OverviewView() }
-                        }
-                        .badge(globalManager.unreadAnnouncementsCount)
-                        if sizeClass == .compact {
-                            Tab("全部功能", systemImage: "square.grid.2x2", value: TabItem.features) {
-                                NavigationStack { FeaturesView() }
-                            }
-                            Tab("我的", systemImage: "person", value: TabItem.profile) {
-                                NavigationStack { ProfileView() }
-                            }
-                        } else {
-                            Tab("我的", systemImage: "person", value: TabItem.profile) {
-                                NavigationStack { ProfileView() }
-                            }
-                            ForEach(featureSections) { section in
-                                TabSection(section.title) {
-                                    ForEach(section.items) { item in
-                                        Tab(item.title, systemImage: item.icon, value: item.id) {
-                                            NavigationStack { item.destination() }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .tabViewStyle(.sidebarAdaptable)
-                } else {
-                    if sizeClass == .compact {
-                        TabView(selection: $globalManager.selectedTab) {
-                            NavigationStack { OverviewView() }
-                                .tabItem { Label("概览", systemImage: "rectangle.stack") }
-                                .tag(TabItem.overview)
-                                .badge(globalManager.unreadAnnouncementsCount)
-                            NavigationStack { FeaturesView() }
-                                .tabItem { Label("全部功能", systemImage: "square.grid.2x2") }
-                                .tag(TabItem.features)
-                            NavigationStack { ProfileView() }
-                                .tabItem { Label("我的", systemImage: "person") }
-                                .tag(TabItem.profile)
-                        }
+                Group {
+                    #if os(macOS)
+                    legacyLayout
+                    #else
+                    if #available(iOS 18.0, *) {
+                        modernLayout
                     } else {
-                        NavigationSplitView {
-                            List(selection: $globalManager.selectedTab) {
-                                Section {
-                                    Label("概览", systemImage: "rectangle.stack")
-                                        .tag(TabItem.overview)
-                                        .badge(globalManager.unreadAnnouncementsCount)
-                                    Label("我的", systemImage: "person")
-                                        .tag(TabItem.profile)
-                                }
-                                ForEach(featureSections) { section in
-                                    Section(section.title) {
-                                        ForEach(section.items) { item in
-                                            Label(item.title, systemImage: item.icon).tag(item.id)
-                                        }
-                                    }
-                                }
-                            }
-                            .navigationTitle("长理星球")
-                        } detail: {
-                            NavigationStack {
-                                switch globalManager.selectedTab {
-                                case .overview:
-                                    OverviewView()
-                                case .profile:
-                                    ProfileView()
-                                case nil:
-                                    ContentUnavailableView("请选择项目", systemImage: "list.bullet")
-                                default:
-                                    if let item = featureSections.flatMap({ $0.items }).first(where: { $0.id == globalManager.selectedTab }) {
-                                        item.destination()
-                                    } else {
-                                        ContentUnavailableView("未找到页面", systemImage: "xmark.circle")
-                                    }
-                                }
-                            }
-                        }
+                        legacyLayout
                     }
+                    #endif
+                }
+                .onChange(of: isCompactEnv, initial: true) { oldValue, newValue in
+                    router.isCompact = newValue
+                    if oldValue != newValue {
+                        router.handleSizeClassChange(toCompact: newValue)
+                    }
+                }
+                .onChange(of: router.currentTrackPath) { oldValue, newValue in
+                    TrackHelper.shared.views(path: newValue)
                 }
             }
         }
-        .trackRoot("App")
+        .environment(router)
 
         #if os(iOS)
         .apply { view in
@@ -269,18 +224,181 @@ struct ContentView: View {
             AppUpdateSheetView()
         }
 
-        // MARK: - URL处理
-
         .onOpenURL { url in
-            guard url.scheme == "csustplanet", url.host == "widgets" else { return }
-            globalManager.selectedTab = TabItem.overview
-            switch url.pathComponents.dropFirst().first {
-            case "electricity": globalManager.isFromElectricityWidget = true
-            case "gradeAnalysis": globalManager.isFromGradeAnalysisWidget = true
-            case "courseSchedule": globalManager.isFromCourseScheduleWidget = true
-            case "todoAssignments": globalManager.isFromTodoAssignmentsWidget = true
-            default: break
+            router.handleDeepLink(url)
+        }
+    }
+
+    // MARK: - Modern Layout
+
+    @available(iOS 18.0, macOS 15.0, *)
+    private var modernLayout: some View {
+        TabView(selection: $router.selectedTab) {
+            Tab("概览", systemImage: "rectangle.stack", value: AppTabItem.overview) {
+                navigationStack(for: .overview) {
+                    OverviewView()
+                }
+            }
+            .badge(globalManager.unreadAnnouncementsCount)
+
+            if router.isCompact {
+                Tab("全部功能", systemImage: "square.grid.2x2", value: AppTabItem.features) {
+                    navigationStack(for: .features) {
+                        FeaturesView()
+                    }
+                }
+
+                Tab("我的", systemImage: "person", value: AppTabItem.profile) {
+                    navigationStack(for: .profile) {
+                        ProfileView()
+                    }
+                }
+            } else {
+                Tab("我的", systemImage: "person", value: AppTabItem.profile) {
+                    navigationStack(for: .profile) {
+                        ProfileView()
+                    }
+                }
+
+                ForEach(featureSections) { section in
+                    buildTabSection(for: section)
+                }
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
+    }
+
+    @available(iOS 18.0, macOS 15.0, *)
+    private func buildTabSection(for section: FeatureSection) -> some TabContent<AppTabItem> {
+        return TabSection(section.title) {
+            ForEach(section.items) { item in
+                buildFeatureTab(for: item)
+            }
+        }
+    }
+
+    @available(iOS 18.0, macOS 15.0, *)
+    private func buildFeatureTab(for item: FeatureItem) -> some TabContent<AppTabItem> {
+        return Tab(item.title, systemImage: item.icon, value: AppTabItem.feature(item.id)) {
+            navigationStack(for: .feature(item.id)) {
+                featureRootView(for: item.id)
+            }
+        }
+    }
+
+    // MARK: - Legacy Layout
+
+    @available(iOS 17.0, macOS 14.0, *)
+    @ViewBuilder
+    private var legacyLayout: some View {
+        if router.isCompact {
+            TabView(selection: $router.selectedTab) {
+                navigationStack(for: .overview) {
+                    OverviewView()
+                }
+                .tabItem { Label("概览", systemImage: "rectangle.stack") }
+                .tag(AppTabItem.overview)
+                .badge(globalManager.unreadAnnouncementsCount)
+
+                navigationStack(for: .features) {
+                    FeaturesView()
+                }
+                .tabItem { Label("全部功能", systemImage: "square.grid.2x2") }
+                .tag(AppTabItem.features)
+
+                navigationStack(for: .profile) {
+                    ProfileView()
+                }
+                .tabItem { Label("我的", systemImage: "person") }
+                .tag(AppTabItem.profile)
+            }
+        } else {
+            NavigationSplitView {
+                List(
+                    selection: Binding<AppTabItem?>(
+                        get: { router.selectedTab },
+                        set: { newValue in
+                            if let newValue {
+                                router.selectedTab = newValue
+                            }
+                        }
+                    )
+                ) {
+                    Section {
+                        ForEach(primarySidebarItems) { item in
+                            sidebarRow(
+                                title: item.title,
+                                systemImage: item.systemImage,
+                                tab: item.tab,
+                                badgeCount: item.tab == .overview ? globalManager.unreadAnnouncementsCount : nil
+                            )
+                        }
+                    }
+
+                    ForEach(featureSections) { section in
+                        Section(section.title) {
+                            ForEach(section.items) { item in
+                                sidebarRow(
+                                    title: item.title,
+                                    systemImage: item.icon,
+                                    tab: .feature(item.id)
+                                )
+                            }
+                        }
+                    }
+                }
+                .navigationTitle("长理星球")
+                #if os(macOS)
+                .navigationSplitViewColumnWidth(min: 150, ideal: 200, max: 250)
+                #endif
+            } detail: {
+                switch router.selectedTab {
+                case .overview:
+                    navigationStack(for: .overview) {
+                        OverviewView()
+                    }
+                case .profile:
+                    navigationStack(for: .profile) {
+                        ProfileView()
+                    }
+                case .feature(let feature):
+                    navigationStack(for: .feature(feature)) {
+                        featureRootView(for: feature)
+                    }
+                default:
+                    ContentUnavailableView("请选择项目", systemImage: "list.bullet")
+                }
+            }
+        }
+    }
+
+    private func navigationStack<Root: View>(for tab: AppTabItem, @ViewBuilder root: () -> Root) -> some View {
+        NavigationStack(path: $router[pathFor: tab]) {
+            root()
+                .withAppRouter()
+        }
+    }
+
+    @ViewBuilder
+    private func sidebarRow(
+        title: String,
+        systemImage: String,
+        tab: AppTabItem,
+        badgeCount: Int? = nil
+    ) -> some View {
+        let baseRow = Label(title, systemImage: systemImage)
+            .tag(tab)
+            .id(tab)
+
+        if let badgeCount, badgeCount > 0 {
+            baseRow.badge(badgeCount)
+        } else {
+            baseRow
+        }
+    }
+
+    @ViewBuilder
+    private func featureRootView(for feature: FeatureTabID) -> some View {
+        feature.rootRoute.destinationView
     }
 }

@@ -22,17 +22,17 @@ final class SchoolCalendarViewModel {
     var errorToast: ToastState = .errorTitle
 
     // 固定尺寸
-    let headerHeight: CGFloat = 36
-    let rowHeight: CGFloat = 46
-    let dayNames = ["日", "一", "二", "三", "四", "五", "六"]
+    @ObservationIgnored let headerHeight: CGFloat = 36
+    @ObservationIgnored let rowHeight: CGFloat = 46
+    @ObservationIgnored let dayNames = ["日", "一", "二", "三", "四", "五", "六"]
 
-    private let monthNames = [
+    @ObservationIgnored private let monthNames = [
         1: "一月", 2: "二月", 3: "三月", 4: "四月",
         5: "五月", 6: "六月", 7: "七月", 8: "八月",
         9: "九月", 10: "十月", 11: "十一月", 12: "十二月",
     ]
 
-    private let circleNumbers = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"]
+    @ObservationIgnored private let circleNumbers = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"]
 
     func loadConfig(semester: String) async {
         guard !isLoading else { return }

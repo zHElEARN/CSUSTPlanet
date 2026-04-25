@@ -5,7 +5,6 @@
 //  Created by Zhe_Learn on 2025/7/23.
 //
 
-import SwiftData
 import SwiftUI
 import WidgetKit
 
@@ -16,8 +15,8 @@ struct TodayCoursesWidget: Widget {
         StaticConfiguration(kind: kind, provider: TodayCoursesProvider()) { entry in
             TodayCoursesEntryView(entry: entry)
         }
-        .configurationDisplayName("今日课程")
-        .description("显示今天的课程安排")
+        .configurationDisplayName(CourseScheduleUtil.courseScheduleTitle)
+        .description("显示我的课表安排")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
@@ -96,14 +95,38 @@ struct TodayCoursesWidget: Widget {
     TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 20:00")
 }
 
-#Preview("Small - 无课程", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+#Preview("Small - 课已上完（明天没课）", as: .systemSmall, widget: { TodayCoursesWidget() }) {
     TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
 }
 
-#Preview("Medium - 无课程", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+#Preview("Medium - 课已上完（明天没课）", as: .systemMedium, widget: { TodayCoursesWidget() }) {
     TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
 }
 
-#Preview("Large - 无课程", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+#Preview("Large - 课已上完（明天没课）", as: .systemLarge, widget: { TodayCoursesWidget() }) {
     TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-17 22:00")
+}
+
+#Preview("Small - 明日课程预报", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockTomorrowPreviewEntry()
+}
+
+#Preview("Medium - 明日课程预报", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockTomorrowPreviewEntry()
+}
+
+#Preview("Large - 明日课程预报", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockTomorrowPreviewEntry()
+}
+
+#Preview("Small - 无课程（明天也没课）", as: .systemSmall, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-18 10:00")
+}
+
+#Preview("Medium - 无课程（明天也没课）", as: .systemMedium, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-18 10:00")
+}
+
+#Preview("Large - 无课程（明天也没课）", as: .systemLarge, widget: { TodayCoursesWidget() }) {
+    TodayCoursesEntry.mockEntry(semester: "2025-2026-1", semesterStartDate: "2025-09-07", date: "2025-09-18 10:00")
 }

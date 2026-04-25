@@ -70,34 +70,19 @@ struct FeaturesView: View {
         //    AnnualReviewView(isPresented: $isAnnualReviewPresented)
         // }
         //#endif
-        .trackView("Features")
     }
 
     // MARK: - Extracted Subviews
 
     private var educationalSystemSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "教务系统", color: .blue) {
-                Group {
-                    if authManager.isSSOLoggingIn {
-                        StatusBadge(text: "统一身份认证登录中")
-                    } else if !authManager.isSSOLoggedIn {
-                        ActionBadge(text: "点击登录", icon: "person.crop.circle.badge.exclamationmark") {
-                            globalManager.selectedTab = .profile
-                        }
-                    } else if authManager.isEducationLoggingIn {
-                        StatusBadge(text: "教务登录中")
-                    } else {
-                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: { authManager.educationLogin(isSilent: false) })
-                    }
-                }
-            }
+            sectionHeader(title: "教务系统", color: .blue)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
-                HeroCard(destination: CourseScheduleView(), title: "我的课表", icon: "calendar", color: .purple)
-                HeroCard(destination: GradeQueryView(), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
-                HeroCard(destination: ExamScheduleView(), title: "考试安排", icon: "pencil.and.outline", color: .orange)
-                HeroCard(destination: GradeAnalysisView(), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
+                HeroCard(route: .features(.education(.courseSchedule)), title: "我的课表", icon: "calendar", color: .purple)
+                HeroCard(route: .features(.education(.gradeQuery(.main))), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
+                HeroCard(route: .features(.education(.examSchedule)), title: "考试安排", icon: "pencil.and.outline", color: .orange)
+                HeroCard(route: .features(.education(.gradeAnalysis)), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
             }
         }
         .padding(.horizontal, horizontalPadding)
@@ -105,25 +90,11 @@ struct FeaturesView: View {
 
     private var moocSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "网络课程中心", color: .indigo) {
-                Group {
-                    if authManager.isSSOLoggingIn {
-                        StatusBadge(text: "统一身份认证登录中")
-                    } else if !authManager.isSSOLoggedIn {
-                        ActionBadge(text: "点击登录", icon: "person.crop.circle.badge.exclamationmark") {
-                            globalManager.selectedTab = .profile
-                        }
-                    } else if authManager.isMoocLoggingIn {
-                        StatusBadge(text: "课程中心登录中")
-                    } else if authManager.isSSOLoggedIn && !authManager.isSSOLoggingIn {
-                        ActionBadge(text: "刷新登录", icon: "arrow.clockwise", action: { authManager.moocLogin(isSilent: false) })
-                    }
-                }
-            }
+            sectionHeader(title: "网络课程中心", color: .indigo)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
-                HeroCard(destination: CoursesView(), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
-                HeroCard(destination: TodoAssignmentsView(), title: "待提交作业", icon: "list.bullet.clipboard", color: .red)
+                HeroCard(route: .features(.mooc(.courses(.main))), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
+                HeroCard(route: .features(.mooc(.todoAssignments)), title: "待提交作业", icon: "list.bullet.clipboard", color: .red)
             }
         }
         .padding(.horizontal, horizontalPadding)
@@ -153,39 +124,27 @@ struct FeaturesView: View {
 
     @ViewBuilder
     private var toolItems: some View {
-        ServiceSquare(destination: DormListView(), title: "电量查询", icon: "bolt.fill", color: .yellow)
-        ServiceSquare(destination: AvailableClassroomView(), title: "空教室查询", icon: "building.2.fill", color: .blue)
-        ServiceSquare(destination: CampusMapView(), title: "校园地图", icon: "map.fill", color: .mint)
-        ServiceSquare(destination: SchoolCalendarListView(), title: "校历", icon: "calendar.badge.clock", color: .pink)
-        ServiceSquare(destination: ElectricityRechargeView(), title: "电费充值", icon: "creditcard.fill", color: .cyan)
-        ServiceSquare(destination: WebVPNConverterView(), title: "WebVPN", icon: "lock.shield", color: .gray)
+        ServiceSquare(route: .features(.campusTool(.dormList(.main))), title: "电量查询", icon: "bolt.fill", color: .yellow)
+        ServiceSquare(route: .features(.campusTool(.availableClassroom)), title: "空教室查询", icon: "building.2.fill", color: .blue)
+        ServiceSquare(route: .features(.campusTool(.campusMap)), title: "校园地图", icon: "map.fill", color: .mint)
+        ServiceSquare(route: .features(.campusTool(.schoolCalendarList(.main))), title: "校历", icon: "calendar.badge.clock", color: .pink)
+        ServiceSquare(route: .features(.campusTool(.electricityRecharge)), title: "电费充值", icon: "creditcard.fill", color: .cyan)
+        ServiceSquare(route: .features(.campusTool(.webVPNConverter)), title: "WebVPN", icon: "lock.shield", color: .gray)
     }
 
     private var physicsSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "大学物理实验", color: .purple) {
-                Button {
-                    isPhysicsExperimentLoginPresented = true
-                } label: {
-                    Text("登录")
-                        .font(.caption.bold())
-                        .foregroundColor(.purple)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.purple.opacity(0.1))
-                        .cornerRadius(8)
-                }
-            }
+            sectionHeader(title: "大学物理实验", color: .purple)
 
             VStack(spacing: 0) {
                 ToolRow(
-                    destination: PhysicsExperimentScheduleView(),
+                    route: .features(.physicsExperiment(.schedule)),
                     title: "实验安排", icon: "calendar", color: .purple)
 
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    destination: PhysicsExperimentGradeView(),
+                    route: .features(.physicsExperiment(.grade)),
                     title: "实验成绩", icon: "doc.text", color: .purple
                 )
             }
@@ -202,11 +161,11 @@ struct FeaturesView: View {
             sectionHeader(title: "其他考试查询", color: .indigo)
 
             VStack(spacing: 0) {
-                ToolRow(destination: CETView(), title: "四六级查询", icon: "character.book.closed", color: .indigo)
+                ToolRow(route: .features(.examQuery(.cet)), title: "四六级查询", icon: "character.book.closed", color: .indigo)
 
                 Divider().padding(.leading, 56)
 
-                ToolRow(destination: MandarinView(), title: "普通话查询", icon: "mic.circle.fill", color: .indigo)
+                ToolRow(route: .features(.examQuery(.mandarin)), title: "普通话查询", icon: "mic.circle.fill", color: .indigo)
             }
             #if os(iOS)
             .background(Color(PlatformColor.secondarySystemGroupedBackground))
@@ -219,27 +178,25 @@ struct FeaturesView: View {
     // MARK: - Components Helper
 
     @ViewBuilder
-    private func sectionHeader<Content: View>(title: String, color: Color, @ViewBuilder actions: () -> Content = { EmptyView() }) -> some View {
+    private func sectionHeader(title: String, color: Color) -> some View {
         HStack(alignment: .center) {
             Text(title)
                 .font(.title3.bold())
 
             Spacer()
-
-            actions()
         }
     }
 }
 
 // MARK: - Custom Card Components
-private struct HeroCard<Destination: View>: View {
-    let destination: Destination
+private struct HeroCard: View {
+    let route: AppRoute
     let title: String
     let icon: String
     let color: Color
 
     var body: some View {
-        TrackLink(destination: destination) {
+        NavigationLink(value: route) {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(color.gradient)
@@ -269,14 +226,14 @@ private struct HeroCard<Destination: View>: View {
     }
 }
 
-private struct ServiceSquare<Destination: View>: View {
-    let destination: Destination
+private struct ServiceSquare: View {
+    let route: AppRoute
     let title: String
     let icon: String
     let color: Color
 
     var body: some View {
-        TrackLink(destination: destination) {
+        NavigationLink(value: route) {
             VStack(alignment: .center, spacing: 10) {
                 Image(systemName: icon)
                     .font(.title2)
@@ -298,14 +255,14 @@ private struct ServiceSquare<Destination: View>: View {
     }
 }
 
-private struct ToolRow<Destination: View>: View {
-    let destination: Destination
+private struct ToolRow: View {
+    let route: AppRoute
     let title: String
     let icon: String
     let color: Color
 
     var body: some View {
-        TrackLink(destination: destination) {
+        NavigationLink(value: route) {
             HStack(spacing: 16) {
                 Image(systemName: icon)
                     .font(.body)

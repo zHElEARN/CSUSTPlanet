@@ -29,7 +29,7 @@ final class ExamOverviewViewModel {
     }
 
     init() {
-        MMKVHelper.shared.$examSchedulesCache
+        MMKVHelper.ExamSchedule.$cache
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
                 guard let self = self else { return }
@@ -58,7 +58,7 @@ final class ExamOverviewViewModel {
                 return $0.examStartTime < $1.examStartTime
             }
 
-            MMKVHelper.shared.examSchedulesCache = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
+            MMKVHelper.ExamSchedule.cache = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
         } catch {}
     }
 

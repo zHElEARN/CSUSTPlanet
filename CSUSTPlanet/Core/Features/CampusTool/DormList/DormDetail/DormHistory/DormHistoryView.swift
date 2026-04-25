@@ -54,6 +54,5 @@ struct DormHistoryView: View {
         .navigationTitle("近三个月历史记录")
         .navigationSubtitleCompat("共\(viewModel.sortedRecords.count)条记录")
         .errorToast($viewModel.errorToast)
-        .trackView("DormHistory")
     }
 }

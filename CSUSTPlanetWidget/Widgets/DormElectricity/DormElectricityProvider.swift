@@ -12,16 +12,9 @@ import GRDB
 import OSLog
 import WidgetKit
 
+// MARK: - AppIntentTimelineProvider
+
 struct DormElectricityProvider: AppIntentTimelineProvider {
-
-    #if DEBUG
-    // 当学校电量不更新的时候，需要手动触发更新，打断电并修改shouldMock和mockElectricity可以配置新的电量值
-    static var shouldMock: Bool = false
-    static var mockElectricity: Double = 10
-    #endif
-
-    // MARK: - AppIntentTimelineProvider
-
     func placeholder(in context: Context) -> DormElectricityEntry {
         return .mockEntry
     }
@@ -55,68 +48,25 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: DormElectricityAppIntent, in context: Context) async -> Timeline<DormElectricityEntry> {
-        Logger.dormElectricityWidget.info("开始生成 timeline")
+        Logger.dormElectricityWidget.info("开始生成 timeline (仅读取本地缓存)")
 
-        // 设置下次刷新策略
-        let nextUpdateDate = Date().addingTimeInterval(2 * 3600)
-        let policy: TimelineReloadPolicy = .after(nextUpdateDate)
-
-        // 校验配置
-        guard let selectedDormEntity = configuration.dorm else {
-            Logger.dormElectricityWidget.warning("配置中未选择宿舍")
+        guard let selectedDormEntity = configuration.dorm,
+            let dormID = selectedDormEntity.dormID,
+            let pool = DatabaseManager.shared.pool
+        else {
+            Logger.dormElectricityWidget.warning("配置不完整或数据库连接失败")
             return Timeline(entries: [emptyEntry(for: configuration)], policy: .never)
         }
 
-        guard let dormID = selectedDormEntity.dormID else {
-            Logger.dormElectricityWidget.warning("无法解析宿舍ID")
-            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
-        }
-
-        guard let pool = DatabaseManager.shared.pool else {
-            Logger.dormElectricityWidget.error("打开数据库失败")
-            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
-        }
-
-        // 获取本地宿舍对象
-        guard var dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) else {
+        guard let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) else {
             Logger.dormElectricityWidget.warning("未在数据库中找到对应的宿舍记录")
-            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
+            return Timeline(entries: [emptyEntry(for: configuration)], policy: .never)
         }
 
-        // 解析校区与楼栋信息
-        guard let campus = CampusCardHelper.Campus(rawValue: dorm.campusName) else {
-            Logger.dormElectricityWidget.warning("无法解析校区枚举")
-            let fallbackEntry = (try? await buildEntry(dorm: dorm, configuration: configuration, pool: pool)) ?? emptyEntry(for: configuration)
-            return Timeline(entries: [fallbackEntry], policy: policy)
-        }
-        let building = CampusCardHelper.Building(name: dorm.buildingName, id: dorm.buildingID, campus: campus)
-
-        // 拉取网络数据并执行更新逻辑
-        do {
-            #if DEBUG
-            if Self.shouldMock {
-                try await updateDatabaseIfNeeded(dormID: dormID, newElectricity: Self.mockElectricity, pool: pool)
-            } else {
-                let networkElectricity = try await CampusCardHelper().getElectricity(building: building, room: dorm.room)
-                try await updateDatabaseIfNeeded(dormID: dormID, newElectricity: networkElectricity, pool: pool)
-            }
-            #else
-            let networkElectricity = try await CampusCardHelper().getElectricity(building: building, room: dorm.room)
-            try await updateDatabaseIfNeeded(dormID: dormID, newElectricity: networkElectricity, pool: pool)
-            #endif
-
-            if let refreshedDorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) {
-                dorm = refreshedDorm
-            }
-        } catch {
-            Logger.dormElectricityWidget.error("网络请求电量失败: \(error.localizedDescription)")
-            // 请求失败时，继续使用本地旧数据渲染
-        }
-
-        // 构建并返回最终的 Entry
         let entry = (try? await buildEntry(dorm: dorm, configuration: configuration, pool: pool)) ?? emptyEntry(for: configuration)
         Logger.dormElectricityWidget.info("timeline 生成完成")
-        return Timeline(entries: [entry], policy: policy)
+
+        return Timeline(entries: [entry], policy: .never)
     }
 
     // MARK: - Helper Methods
@@ -145,13 +95,6 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
 
         let entryRecords = records.map { DormElectricityEntry.Record(electricity: $0.electricity, date: $0.date) }
         return Array(entryRecords.reversed())
-    }
-
-    /// 执行核心的缓存比较与数据库更新逻辑
-    private func updateDatabaseIfNeeded(dormID: Int64, newElectricity: Double, pool: DatabasePool) async throws {
-        try await pool.write { db in
-            try DormGRDB.updateElectricity(dormID: dormID, electricity: newElectricity, in: db)
-        }
     }
 
     /// 统一构建最终的 Entry

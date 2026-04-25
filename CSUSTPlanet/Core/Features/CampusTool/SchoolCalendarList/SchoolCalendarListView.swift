@@ -13,13 +13,13 @@ struct SchoolCalendarListView: View {
 
     var body: some View {
         Group {
-            if viewModel.schoolCalendars.isEmpty {
-                ContentUnavailableView("无校历数据", systemImage: "calendar.badge.exclamationmark")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                Form {
+            Form {
+                if viewModel.schoolCalendars.isEmpty {
+                    ContentUnavailableView("无校历数据", systemImage: "calendar.badge.exclamationmark")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
                     ForEach(viewModel.schoolCalendars) { calendar in
-                        TrackLink(destination: SchoolCalendarView(schoolCalendar: calendar)) {
+                        NavigationLink(value: AppRoute.features(.campusTool(.schoolCalendarList(.detail(calendar))))) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(calendar.title)
                                     .font(.headline)
@@ -33,8 +33,8 @@ struct SchoolCalendarListView: View {
                     }
                 }
             }
+            .formStyle(.grouped)
         }
-        .formStyle(.grouped)
         #if os(iOS)
         .background(Color(PlatformColor.systemGroupedBackground))
         #endif
@@ -53,7 +53,6 @@ struct SchoolCalendarListView: View {
         .safeRefreshable { await viewModel.loadSchoolCalendars() }
         .errorToast($viewModel.errorToast)
         .navigationTitle("校历列表")
-        .trackView("SchoolCalendarList")
     }
 }
 

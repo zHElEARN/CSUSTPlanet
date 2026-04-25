@@ -25,11 +25,13 @@ final class MockDataGeneratorViewModel {
 
     func clearTodoAssignmentsCache() {
         MMKVHelper.TodoAssignments.cache = nil
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
     func setEmptyTodoAssignmentsCache() {
         MMKVHelper.TodoAssignments.cache = Cached(cachedAt: .now, value: [])
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
@@ -38,21 +40,22 @@ final class MockDataGeneratorViewModel {
             cachedAt: .now,
             value: MockTodoAssignmentsFactory.makeTwoAssignmentsData()
         )
+        WidgetTimelineRefreshHelper.reloadTodoAssignments()
         refreshTodoAssignmentsCacheDescription()
     }
 
     func clearExamSchedulesCache() {
-        MMKVHelper.shared.examSchedulesCache = nil
+        MMKVHelper.ExamSchedule.cache = nil
         refreshExamSchedulesCacheDescription()
     }
 
     func setEmptyExamSchedulesCache() {
-        MMKVHelper.shared.examSchedulesCache = Cached(cachedAt: .now, value: [])
+        MMKVHelper.ExamSchedule.cache = Cached(cachedAt: .now, value: [])
         refreshExamSchedulesCacheDescription()
     }
 
     func generateMockExamSchedules() {
-        MMKVHelper.shared.examSchedulesCache = Cached(
+        MMKVHelper.ExamSchedule.cache = Cached(
             cachedAt: .now,
             value: MockExamSchedulesFactory.makeFiveExamsData()
         )
@@ -60,23 +63,35 @@ final class MockDataGeneratorViewModel {
     }
 
     func clearCourseScheduleCache() {
-        MMKVHelper.shared.courseScheduleCache = nil
+        MMKVHelper.CourseSchedule.cache = nil
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
     func setEmptyCourseScheduleCache() {
-        MMKVHelper.shared.courseScheduleCache = Cached(
+        MMKVHelper.CourseSchedule.cache = Cached(
             cachedAt: .now,
             value: MockCourseScheduleFactory.makeEmptyCourseScheduleData()
         )
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
     func generateTodayFilledCourseSchedule() {
-        MMKVHelper.shared.courseScheduleCache = Cached(
+        MMKVHelper.CourseSchedule.cache = Cached(
             cachedAt: .now,
             value: MockCourseScheduleFactory.makeTodayFilledCourseScheduleData()
         )
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
+        refreshCourseScheduleCacheDescription()
+    }
+
+    func generateConflictedCourseSchedule() {
+        MMKVHelper.CourseSchedule.cache = Cached(
+            cachedAt: .now,
+            value: MockCourseScheduleFactory.makeConflictedCourseScheduleData()
+        )
+        WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
         refreshCourseScheduleCacheDescription()
     }
 
@@ -94,7 +109,7 @@ final class MockDataGeneratorViewModel {
     }
 
     private func refreshExamSchedulesCacheDescription() {
-        guard let cache = MMKVHelper.shared.examSchedulesCache else {
+        guard let cache = MMKVHelper.ExamSchedule.cache else {
             examSchedulesCacheDescription = "当前状态：nil"
             return
         }
@@ -103,7 +118,7 @@ final class MockDataGeneratorViewModel {
     }
 
     private func refreshCourseScheduleCacheDescription() {
-        guard let cache = MMKVHelper.shared.courseScheduleCache else {
+        guard let cache = MMKVHelper.CourseSchedule.cache else {
             courseScheduleCacheDescription = "当前状态：nil"
             return
         }
@@ -312,6 +327,52 @@ private enum MockCourseScheduleFactory {
                 teacher: "刘洋",
                 sessions: [
                     .init(weeks: weeks, startSection: 9, endSection: 10, dayOfWeek: today, classroom: "云塘校区 计算中心机房 402")
+                ]
+            ),
+        ]
+
+        return CourseScheduleData(
+            semester: semesterText(for: referenceDate),
+            semesterStartDate: semesterStartDate(for: referenceDate),
+            courses: courses
+        )
+    }
+
+    static func makeConflictedCourseScheduleData(referenceDate: Date = .now) -> CourseScheduleData {
+        let today = CourseScheduleUtil.getDayOfWeek(referenceDate)
+        let weeks = Array(1...16)
+
+        let courses: [EduHelper.Course] = [
+            .init(
+                courseName: "高等数学 A(2)",
+                groupName: "计算机类 2301",
+                teacher: "李建华",
+                sessions: [
+                    .init(weeks: weeks, startSection: 1, endSection: 2, dayOfWeek: today, classroom: "云塘校区 综合教学楼 A-201")
+                ]
+            ),
+            .init(
+                courseName: "大学英语 III",
+                groupName: "计算机类 2301",
+                teacher: "周晓燕",
+                sessions: [
+                    .init(weeks: weeks, startSection: 1, endSection: 2, dayOfWeek: today, classroom: "云塘校区 文科楼 B-104")
+                ]
+            ),
+            .init(
+                courseName: "数据结构",
+                groupName: "计算机科学与技术 2302",
+                teacher: "陈志强",
+                sessions: [
+                    .init(weeks: weeks, startSection: 5, endSection: 8, dayOfWeek: today, classroom: "云塘校区 理科楼 C-305")
+                ]
+            ),
+            .init(
+                courseName: "中国近现代史纲要",
+                groupName: "计算机类 2301",
+                teacher: "王丽",
+                sessions: [
+                    .init(weeks: weeks, startSection: 5, endSection: 6, dayOfWeek: today, classroom: "云塘校区 综合教学楼 C-502")
                 ]
             ),
         ]

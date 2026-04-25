@@ -28,14 +28,16 @@ enum Constants {
         }
         return mmkvDir
     }()
-    /// MMKV示例ID
-    static var mmkvID: String {
+    /// MMK实例ID
+    static let mmkvID: String = {
         switch EnvironmentUtil.environment {
         case .debug: return "debug"
         case .testFlight: return "testFlight"
         case .appStore: return "appStore"
         }
-    }
+    }()
+    /// MMKV IPC前缀
+    static let mmkvIPCPrefix: String = "\(appBundleID).IPC.MMKV"
 
     /// GRDB数据库路径
     static let grdbDirectoryURL: URL = {
@@ -46,7 +48,7 @@ enum Constants {
         return grdbDir
     }()
     /// GRDB数据库文件URL
-    static var grdbDatabaseURL: URL {
+    static let grdbDatabaseURL: URL = {
         let name: String
         switch EnvironmentUtil.environment {
         case .debug: name = "debug"
@@ -54,21 +56,23 @@ enum Constants {
         case .appStore: name = "appStore"
         }
         return grdbDirectoryURL.appendingPathComponent("\(name).sqlite")
-    }
+    }()
+    /// GRDB IPC名称
+    static let grdbIPCName: String = "\(appBundleID).IPC.GRDB"
 
     // 后端API地址
     private static let apiHostProd = AssetUtil.bundleInfo(forKey: "ConfigApiHostProd")
     private static let apiHostDev = AssetUtil.bundleInfo(forKey: "ConfigApiHostDev")
 
     /// 根据环境返回对应的后端地址
-    static var backendHost: String {
+    static let backendHost: String = {
         switch EnvironmentUtil.environment {
         case .appStore, .testFlight:
             return apiHostProd
         case .debug:
             return apiHostDev
         }
-    }
+    }()
 
     static let matomoURL = AssetUtil.bundleInfo(forKey: "ConfigMatomoURL")
     private static let matomoSiteIDDev = AssetUtil.bundleInfo(forKey: "ConfigMatomoSiteIDDev")
@@ -76,15 +80,14 @@ enum Constants {
     static let matomoUserIDSalt = AssetUtil.bundleInfo(forKey: "ConfigMatomoUserIDSalt")
     static let matomoDimensionIDAppFullVersion = AssetUtil.bundleInfo(forKey: "ConfigMatomoDimensionIDAppFullVersion")
 
-    static var matomoSiteID: String {
+    static let matomoSiteID: String = {
         switch EnvironmentUtil.environment {
         case .appStore, .testFlight:
             return matomoSiteIDProd
         case .debug:
             return matomoSiteIDDev
         }
-    }
+    }()
 
     static let backgroundID = AssetUtil.bundleInfo(forKey: "ConfigBackgroundID")
-
 }

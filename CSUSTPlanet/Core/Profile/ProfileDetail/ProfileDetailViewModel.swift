@@ -22,7 +22,7 @@ class ProfileDetailViewModel {
 
     var errorToast: ToastState = .errorTitle
 
-    var isInitial = true
+    @ObservationIgnored var isInitial = true
 
     func loadInitial() async {
         guard isInitial else { return }

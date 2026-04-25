@@ -76,7 +76,6 @@ struct DormDetailView: View {
             )
         }
         .errorToast($viewModel.errorToast)
-        .trackView("DormDetail")
     }
 
     @ViewBuilder
@@ -266,7 +265,7 @@ struct DormDetailView: View {
 
     @ViewBuilder
     private var historyEntryButton: some View {
-        TrackLink(destination: DormHistoryView(viewModel: viewModel)) {
+        NavigationLink(value: AppRoute.features(.campusTool(.dormList(.detail(.history(viewModel)))))) {
             CustomGroupBox {
                 HStack {
                     Label("查看近三个月历史记录", systemImage: "list.bullet.clipboard")

@@ -189,7 +189,6 @@ struct WebVPNConverterView: View {
             }
         }
         .navigationTitle("WebVPN 转换")
-        .trackView("WebVPNConverter")
         .successToast($successToast)
     }
 

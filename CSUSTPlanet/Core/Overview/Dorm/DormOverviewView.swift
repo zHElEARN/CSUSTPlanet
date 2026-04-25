@@ -11,45 +11,14 @@ import SwiftUI
 
 struct DormOverviewView: View {
     @State private var viewModel = DormOverviewViewModel()
-    @Namespace var namespace
-    @State private var refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000)
+    @Environment(Router.self) private var router
 
     var body: some View {
-        let destination =
-            if let dorm = viewModel.primaryDorm {
-                AnyView(DormDetailView(dorm: dorm))
-            } else {
-                AnyView(DormListView())
+        Button(action: { router.deepLinkTo(feature: .electricityQuery, path: dormNavigationPath) }) {
+            CustomGroupBox {
+                cardContent
             }
-
-        Group {
-            #if os(macOS)
-            TrackLink(destination: destination) {
-                CustomGroupBox {
-                    cardContent
-                }
-            }
-            #elseif os(iOS)
-            if #available(iOS 18.0, macOS 15.0, *) {
-                TrackLink(
-                    destination:
-                        destination
-                        .navigationTransition(.zoom(sourceID: "dormOverview", in: namespace))
-                        .onDisappear { refreshID = Int(CFAbsoluteTimeGetCurrent() * 1000) }
-                ) {
-                    CustomGroupBox {
-                        cardContent.matchedTransitionSource(id: "dormOverview", in: namespace)
-                    }
-                }
-                .id(refreshID)
-            } else {
-                TrackLink(destination: destination) {
-                    CustomGroupBox {
-                        cardContent
-                    }
-                }
-            }
-            #endif
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .onAppear(perform: viewModel.onAppear)
@@ -186,5 +155,13 @@ struct DormOverviewView: View {
         } else {
             Color.clear
         }
+    }
+
+    private var dormNavigationPath: [AppRoute] {
+        guard let dorm = viewModel.primaryDorm else {
+            return []
+        }
+
+        return [.features(.campusTool(.dormList(.detail(.main(dorm)))))]
     }
 }

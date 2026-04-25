@@ -15,22 +15,19 @@ struct PhysicsExperimentGradeView: View {
 
     var body: some View {
         Group {
-            if viewModel.data.isEmpty {
-                ContentUnavailableView(
-                    "暂无成绩信息",
-                    systemImage: "chart.bar.doc.horizontal",
-                    description: Text("没有找到任何大物实验成绩信息")
-                )
-            } else {
-                Form {
+            Form {
+                if viewModel.data.isEmpty {
+                    ContentUnavailableView("暂无成绩信息", systemImage: "chart.bar.doc.horizontal", description: Text("没有找到任何大物实验成绩信息"))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
                     Section {
                         ForEach(viewModel.data, id: \.itemName) { grade in
                             gradeCard(grade: grade)
                         }
                     }
                 }
-                .formStyle(.grouped)
             }
+            .formStyle(.grouped)
         }
         .errorToast($viewModel.errorToast)
         .sheet(isPresented: $isLoginPresented) {
@@ -60,7 +57,6 @@ struct PhysicsExperimentGradeView: View {
                 .disabled(viewModel.isLoadingGrades)
             }
         }
-        .trackView("PhysicsExperimentGrade")
     }
 
     // MARK: - Form Sections

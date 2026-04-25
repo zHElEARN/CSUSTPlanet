@@ -7,11 +7,19 @@
 
 import AppIntents
 import OSLog
-import SwiftData
 import SwiftUI
 
 @main
 struct CSUSTPlanetApp: App {
+    #if os(macOS)
+    private enum WindowSize {
+        static let minWidth: CGFloat = 960
+        static let minHeight: CGFloat = 540
+        static let defaultWidth: CGFloat = 1280
+        static let defaultHeight: CGFloat = 720
+    }
+    #endif
+
     #if os(iOS)
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     #elseif os(macOS)
@@ -35,18 +43,23 @@ struct CSUSTPlanetApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                #if os(macOS)
-            .frame(
-                minWidth: 400, idealWidth: 800, maxWidth: 1200,
-                minHeight: 600, idealHeight: 800, maxHeight: 1000
-            )
-                #endif
+        Group {
+            #if os(macOS)
+            Window("长理星球", id: "main") {
+                ContentView()
+                    .frame(minWidth: WindowSize.minWidth, minHeight: WindowSize.minHeight)
+            }
+            .defaultSize(width: WindowSize.defaultWidth, height: WindowSize.defaultHeight)
+            .windowResizability(.contentMinSize)
+            TodoAssignmentsCoursePageScene()
+            #else
+            WindowGroup {
+                ContentView()
+            }
+            #endif
         }
-        #if os(macOS)
-        .windowResizability(.contentSize)
-        #endif
-        .onChange(of: scenePhase) { _, newPhase in LifecycleManager.shared.publishScenePhaseChange(to: newPhase) }
+        .onChange(of: scenePhase) { _, newPhase in
+            LifecycleManager.shared.publishScenePhaseChange(to: newPhase)
+        }
     }
 }

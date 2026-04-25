@@ -6,8 +6,8 @@
 //
 
 import CSUSTKit
+import Combine
 import Foundation
-import SwiftData
 import SwiftUI
 
 @MainActor
@@ -15,6 +15,8 @@ import SwiftUI
 class ExamScheduleViewModel {
     var availableSemesters: [String] = []
     var examData: Cached<[EduHelper.Exam]>? = nil
+
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     var isLoadingSemesters: Bool = false
     var isLoadingExams: Bool = false
@@ -32,12 +34,18 @@ class ExamScheduleViewModel {
 
     var targetScrollID: String? = nil
 
-    var isInitial: Bool = true
+    @ObservationIgnored var isInitial: Bool = true
 
     init() {
-        guard let data = MMKVHelper.shared.examSchedulesCache else { return }
-        self.examData = data
-        updateScrollTarget(exams: data.value)
+        applyExamScheduleCache(MMKVHelper.ExamSchedule.cache)
+
+        MMKVHelper.ExamSchedule.$cache
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] data in
+                self?.applyExamScheduleCache(data)
+            }
+            .store(in: &cancellables)
     }
 
     func isExamFinished(_ exam: EduHelper.Exam) -> Bool {
@@ -89,9 +97,7 @@ class ExamScheduleViewModel {
             }
 
             let data = Cached<[EduHelper.Exam]>(cachedAt: .now, value: sortedExams)
-            self.examData = data
-            self.updateScrollTarget(exams: sortedExams)
-            MMKVHelper.shared.examSchedulesCache = data
+            MMKVHelper.ExamSchedule.cache = data
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -128,5 +134,23 @@ class ExamScheduleViewModel {
         } else {
             self.targetScrollID = nil
         }
+    }
+
+    private func applyExamScheduleCache(_ data: Cached<[EduHelper.Exam]>?) {
+        examData = data
+
+        guard let data else {
+            targetScrollID = nil
+            return
+        }
+
+        updateScrollTarget(exams: data.value)
+    }
+}
+
+extension MMKVHelper {
+    enum ExamSchedule {
+        @MMKVOptionalStorage(key: "Cached.examSchedulesCache")
+        static var cache: Cached<[EduHelper.Exam]>?
     }
 }

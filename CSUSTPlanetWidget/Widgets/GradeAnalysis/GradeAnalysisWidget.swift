@@ -9,7 +9,6 @@ import CSUSTKit
 import Charts
 import Foundation
 import OSLog
-import SwiftData
 import SwiftUI
 import WidgetKit
 

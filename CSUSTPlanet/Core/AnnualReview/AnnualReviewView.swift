@@ -171,7 +171,6 @@ struct AnnualReviewView: View {
             }
             .padding(.trailing, 10)
         }
-        .trackView("AnnualReview")
         .onAppear {
             viewModel.compute()
             if currentScrollID == 0 && !animatedPages.contains(0) {

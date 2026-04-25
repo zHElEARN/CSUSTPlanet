@@ -53,7 +53,7 @@ struct OpenSourceLicensesView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(viewModel.licenses) { license in
-                            TrackLink(destination: OpenSourceLicenseDetailView(license: license)) {
+                            NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses(.detail(license))))) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(license.title)
 
@@ -72,11 +72,10 @@ struct OpenSourceLicensesView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("开源许可")
-        .trackView("OpenSourceLicenses")
     }
 }
 
-private struct OpenSourceLicenseDetailView: View {
+struct OpenSourceLicenseDetailView: View {
     let license: OpenSourceLicense
 
     var body: some View {
@@ -104,6 +103,5 @@ private struct OpenSourceLicenseDetailView: View {
         }
         .formStyle(.grouped)
         .navigationTitle(license.title)
-        .trackView("OpenSourceLicense")
     }
 }

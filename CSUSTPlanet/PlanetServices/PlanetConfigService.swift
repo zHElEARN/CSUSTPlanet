@@ -33,7 +33,7 @@ enum PlanetConfigService {
         let coordinates: [[[Double]]]
     }
 
-    struct SchoolCalendar: Codable, Identifiable {
+    struct SchoolCalendar: Codable, Identifiable, Hashable {
         var id: String { semesterCode }
 
         let semesterCode: String

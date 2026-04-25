@@ -13,7 +13,7 @@ struct CourseWidgetBeforeSemesterView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text("学期未开始")
+            Text(CourseScheduleUtil.semesterNotStartedText)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.primary)
             if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: date) {
@@ -23,7 +23,7 @@ struct CourseWidgetBeforeSemesterView: View {
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
                 } else {
-                    Text("还有 \(daysUntilStart) 天开学")
+                    Text(CourseScheduleUtil.getSemesterCountdownText(days: daysUntilStart))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
                 }

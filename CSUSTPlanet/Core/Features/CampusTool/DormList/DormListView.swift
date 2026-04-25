@@ -9,10 +9,7 @@ import SwiftUI
 
 struct DormListView: View {
     @State var viewModel = DormListViewModel()
-    @State private var dormRefreshMap: [AnyHashable: Int] = [:]
     @State private var scheduleConfigTargetDorm: DormGRDB?
-
-    @Namespace var namespace
 
     // MARK: - Body
 
@@ -105,7 +102,6 @@ struct DormListView: View {
             }
         }
         .errorToast($viewModel.errorToast)
-        .trackView("DormList")
     }
 
     // MARK: - Dorm Card
@@ -119,42 +115,21 @@ struct DormListView: View {
 
         Group {
             #if os(macOS)
-            TrackLink(destination: DormDetailView(dorm: dorm)) {
+            NavigationLink(value: AppRoute.features(.campusTool(.dormList(.detail(.main(dorm)))))) {
                 CustomGroupBox {
                     dormCardContent(dorm, electricityColor: electricityColor)
                 }
             }
             .buttonStyle(.plain)
             #elseif os(iOS)
-            if #available(iOS 18.0, macOS 15.0, *) {
-                ZStack {
-                    TrackLink(
-                        destination: DormDetailView(dorm: dorm)
-                            .navigationTransition(.zoom(sourceID: dorm.id, in: namespace))
-                            .onDisappear {
-                                dormRefreshMap[dorm.id] = Int(CFAbsoluteTimeGetCurrent() * 1000)
-                            }
-                    ) {
-                        EmptyView()
-                    }
-                    .opacity(0)
-
-                    CustomGroupBox {
-                        dormCardContent(dorm, electricityColor: electricityColor)
-                            .matchedTransitionSource(id: dorm.id, in: namespace)
-                    }
+            ZStack {
+                NavigationLink(value: AppRoute.features(.campusTool(.dormList(.detail(.main(dorm)))))) {
+                    EmptyView()
                 }
-                .id(dormRefreshMap[dorm.id] ?? dorm.id.hashValue)
-            } else {
-                ZStack {
-                    TrackLink(destination: DormDetailView(dorm: dorm)) {
-                        EmptyView()
-                    }
-                    .opacity(0)
+                .opacity(0)
 
-                    CustomGroupBox {
-                        dormCardContent(dorm, electricityColor: electricityColor)
-                    }
+                CustomGroupBox {
+                    dormCardContent(dorm, electricityColor: electricityColor)
                 }
             }
             #endif

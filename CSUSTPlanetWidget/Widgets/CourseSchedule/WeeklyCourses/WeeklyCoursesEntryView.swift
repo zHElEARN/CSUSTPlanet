@@ -37,7 +37,7 @@ struct WeeklyCoursesEntryView: View {
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
-        .widgetURL(URL(string: "csustplanet://widgets/courseSchedule"))
+        .widgetURL(URL(string: "csustplanet://features/course-schedule"))
     }
 
     // MARK: - Content View
