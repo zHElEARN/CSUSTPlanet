@@ -23,10 +23,8 @@ final class CourseETAManager: NSObject, CLLocationManagerDelegate, @unchecked Se
     #if DEBUG
     private let etaLogger = Logger(subsystem: "com.csustplanet.CourseSchedule", category: "CourseETA")
     #endif
-    
-    private var coordinateCache: [String: CLLocationCoordinate2D] = [:]
-    
     private var isFetchingMapData = false
+    private var lastLocationRequestTime: Date?
     
     private override init() {
         super.init()
@@ -77,8 +75,14 @@ final class CourseETAManager: NSObject, CLLocationManagerDelegate, @unchecked Se
     }
 
     func requestLocationIfAuthorized() {
+        // 限制频繁请求，避免 ViewThatFits 等导致频繁 onAppear 触发无限刷新循环
+        if let last = lastLocationRequestTime, Date().timeIntervalSince(last) < 60 {
+            return
+        }
+        
         let status = locationManager.authorizationStatus
         if isAuthorized(status: status) {
+            lastLocationRequestTime = Date()
             locationManager.requestLocation()
         } else if status == .notDetermined {
             #if os(macOS)
@@ -93,6 +97,7 @@ final class CourseETAManager: NSObject, CLLocationManagerDelegate, @unchecked Se
         let status = manager.authorizationStatus
         Task { @MainActor in
             if self.isAuthorized(status: status) {
+                self.lastLocationRequestTime = Date()
                 self.locationManager.requestLocation()
             }
         }
@@ -125,26 +130,20 @@ final class CourseETAManager: NSObject, CLLocationManagerDelegate, @unchecked Se
         let targetCoordinate: CLLocationCoordinate2D
         let featureName: String
         
-        if let cached = coordinateCache[classroomName] {
-            targetCoordinate = cached
-            featureName = classroomName
-        } else {
-            guard let feature = session.matchedFeature(in: allBuildings) else {
-                #if DEBUG
-                etaLogger.debug("无法计算到达时间: 地图中未匹配到该教室建筑 (\(classroomName, privacy: .public))")
-                #endif
-                return nil
-            }
-            guard let center = feature.centerCoordinateWGS84() else {
-                #if DEBUG
-                etaLogger.debug("无法计算到达时间: 建筑坐标数据无效 (\(feature.properties.name, privacy: .public))")
-                #endif
-                return nil
-            }
-            coordinateCache[classroomName] = center
-            targetCoordinate = center
-            featureName = feature.properties.name
+        guard let feature = session.matchedFeature(in: allBuildings) else {
+            #if DEBUG
+            etaLogger.debug("无法计算到达时间: 地图中未匹配到该教室建筑 (\(classroomName, privacy: .public))")
+            #endif
+            return nil
         }
+        guard let center = feature.centerCoordinateWGS84() else {
+            #if DEBUG
+            etaLogger.debug("无法计算到达时间: 建筑坐标数据无效 (\(feature.properties.name, privacy: .public))")
+            #endif
+            return nil
+        }
+        targetCoordinate = center
+        featureName = feature.properties.name
         
         let start = CLLocation(latitude: userLoc.latitude, longitude: userLoc.longitude)
         let end = CLLocation(latitude: targetCoordinate.latitude, longitude: targetCoordinate.longitude)

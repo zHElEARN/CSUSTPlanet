@@ -27,9 +27,9 @@ extension EduHelper.ScheduleSession {
         guard let classroom = classroom else { return nil }
         
         // 使用正则表达式精确匹配已知的建筑简称模式
-        let pattern = #"^(金\d+[A-Z]?|云(?:工[一二三][AB]|理[12]|文科[DE]|综教[A-C]|体育馆|西田径场)|金(?:体育馆|东田径场|西田径场))"#
-        if let range = classroom.range(of: pattern, options: .regularExpression) {
-            return String(classroom[range])
+        let pattern = /^(金\d+[A-Z]?|云(?:工[一二三][AB]|理[12]|文科[DE]|综教[A-C]|体育馆|西田径场)|金(?:体育馆|东田径场|西田径场))/
+        if let match = classroom.firstMatch(of: pattern) {
+            return String(match.0)
         }
         
         // 兜底逻辑：如果正则没有命中，尝试按照 '-' 分割
