@@ -148,7 +148,7 @@ struct TodoAssignmentsView: View {
             .formStyle(.grouped)
         }
         #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
+        .background(Color(UIColor.systemGroupedBackground))
         #endif
         .task { await viewModel.loadInitial() }
         .safeRefreshable { await viewModel.loadTodoAssignments() }

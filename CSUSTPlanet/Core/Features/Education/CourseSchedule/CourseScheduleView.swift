@@ -262,7 +262,7 @@ struct CourseScheduleView: View {
         .padding(.horizontal)
         .padding(.vertical, 8)
         #if os(iOS)
-        .background(Color(PlatformColor.systemBackground))
+        .background(Color(UIColor.systemBackground))
         #endif
     }
 

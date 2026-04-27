@@ -28,10 +28,10 @@ struct FormRow: View {
 
     private func copyToClipboard(_ text: String) {
         #if os(iOS)
-        PlatformPasteboard.general.string = text
+        UIPasteboard.general.string = text
         #elseif os(macOS)
-        PlatformPasteboard.general.clearContents()
-        PlatformPasteboard.general.setString(text, forType: .string)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
         #endif
     }
 }

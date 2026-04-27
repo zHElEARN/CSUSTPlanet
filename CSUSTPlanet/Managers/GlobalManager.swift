@@ -193,11 +193,11 @@ final class GlobalManager {
     private func applyMacOSAppearance(_ appearanceName: String) {
         switch appearanceName {
         case "light":
-            PlatformApplication.shared.appearance = NSAppearance(named: .aqua)
+            NSApplication.shared.appearance = NSAppearance(named: .aqua)
         case "dark":
-            PlatformApplication.shared.appearance = NSAppearance(named: .darkAqua)
+            NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
         default:
-            PlatformApplication.shared.appearance = nil
+            NSApplication.shared.appearance = nil
         }
     }
     #endif

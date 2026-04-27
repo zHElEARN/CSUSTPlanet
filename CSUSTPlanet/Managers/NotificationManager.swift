@@ -128,7 +128,7 @@ final class NotificationManager {
         isUpdatingToken = true
         defer { isUpdatingToken = false }
 
-        PlatformApplication.shared.registerForRemoteNotifications()
+        UIApplication.shared.registerForRemoteNotifications()
 
         return try await withCheckedThrowingContinuation { continuation in
             Task { @MainActor in
@@ -148,10 +148,10 @@ final class NotificationManager {
 
     func openAppNotificationSettings() {
         #if os(iOS)
-        if let url = URL(string: PlatformApplication.openNotificationSettingsURLString),
-            PlatformApplication.shared.canOpenURL(url)
+        if let url = URL(string: UIApplication.openNotificationSettingsURLString),
+            UIApplication.shared.canOpenURL(url)
         {
-            PlatformApplication.shared.open(url)
+            UIApplication.shared.open(url)
         }
         #elseif os(macOS)
         let settingsURL = "x-apple.systempreferences:com.apple.Notifications-Settings.extension"

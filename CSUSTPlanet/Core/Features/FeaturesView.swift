@@ -60,7 +60,7 @@ struct FeaturesView: View {
         }
         .navigationTitle("全部功能")
         #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
+        .background(Color(UIColor.systemGroupedBackground))
         #endif
         .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
             PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
@@ -149,7 +149,7 @@ struct FeaturesView: View {
                 )
             }
             #if os(iOS)
-            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            .background(Color(UIColor.secondarySystemGroupedBackground))
             #endif
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
@@ -168,7 +168,7 @@ struct FeaturesView: View {
                 ToolRow(route: .features(.examQuery(.mandarin)), title: "普通话查询", icon: "mic.circle.fill", color: .indigo)
             }
             #if os(iOS)
-            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            .background(Color(UIColor.secondarySystemGroupedBackground))
             #endif
             .cornerRadius(16)
             .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
@@ -248,7 +248,7 @@ private struct ServiceSquare: View {
             }
             .frame(width: 85, height: 95)
             #if os(iOS)
-            .background(Color(PlatformColor.secondarySystemGroupedBackground))
+            .background(Color(UIColor.secondarySystemGroupedBackground))
             #endif
             .cornerRadius(16)
         }
@@ -280,7 +280,7 @@ private struct ToolRow: View {
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     #if os(iOS)
-                .foregroundColor(Color(PlatformColor.tertiaryLabel))
+                .foregroundColor(Color(UIColor.tertiaryLabel))
                     #endif
             }
             .padding(.horizontal, 16)

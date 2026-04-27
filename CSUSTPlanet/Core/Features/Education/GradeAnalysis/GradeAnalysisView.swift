@@ -268,7 +268,7 @@ struct GradeAnalysisView: View {
             analysisContent(gradeAnalysisData, isShareable: true)
                 .padding(.vertical)
                 .frame(width: UIScreen.main.bounds.width)
-                .background(Color(PlatformColor.systemGroupedBackground))
+                .background(Color(UIColor.systemGroupedBackground))
                 .environment(\.colorScheme, colorScheme)
         } else {
             ContentUnavailableView("暂无成绩数据", systemImage: "doc.text.magnifyingglass", description: Text("当前没有找到成绩数据"))
