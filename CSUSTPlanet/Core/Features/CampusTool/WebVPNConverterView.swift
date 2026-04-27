@@ -217,10 +217,10 @@ struct WebVPNConverterView: View {
 
     private func copyToClipboard() {
         #if os(iOS)
-        UIPasteboard.general.string = resultUrl
+        PlatformPasteboard.general.string = resultUrl
         #elseif os(macOS)
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(resultUrl, forType: .string)
+        PlatformPasteboard.general.clearContents()
+        PlatformPasteboard.general.setString(resultUrl, forType: .string)
         #endif
         successToast.show(message: "已复制到剪贴板")
     }

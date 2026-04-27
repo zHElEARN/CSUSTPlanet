@@ -58,7 +58,7 @@ struct GradeQueryView: View {
             .formStyle(.grouped)
         }
         #if os(iOS)
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color(PlatformColor.systemGroupedBackground))
         #endif
         .safeAreaInset(edge: .top) {
             statsSection

@@ -127,10 +127,10 @@ struct ContentView: View {
                         let text = globalManager.databaseFatalErrorMessage
                         guard !text.isEmpty else { return }
                         #if os(iOS)
-                        UIPasteboard.general.string = text
+                        PlatformPasteboard.general.string = text
                         #elseif os(macOS)
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(text, forType: .string)
+                        PlatformPasteboard.general.clearContents()
+                        PlatformPasteboard.general.setString(text, forType: .string)
                         #endif
                     }
                     .buttonStyle(.bordered)

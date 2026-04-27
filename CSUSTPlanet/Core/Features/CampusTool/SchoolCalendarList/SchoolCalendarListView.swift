@@ -36,7 +36,7 @@ struct SchoolCalendarListView: View {
             .formStyle(.grouped)
         }
         #if os(iOS)
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color(PlatformColor.systemGroupedBackground))
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

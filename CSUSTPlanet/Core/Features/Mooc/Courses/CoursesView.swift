@@ -40,7 +40,7 @@ struct CoursesView: View {
         .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "搜索课程")
         #endif
         #if os(iOS)
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color(PlatformColor.systemGroupedBackground))
         #endif
         .errorToast($viewModel.errorToast)
         .task { await viewModel.loadInitial() }
