@@ -54,8 +54,8 @@ class SSOLoginViewModel {
             let isNeedCaptcha = try await AuthManager.shared.ssoCheckNeedCaptcha(username: username)
             if isNeedCaptcha {
                 await refreshCaptcha()
-                withAnimation { self.isNeedCaptcha = true }
             }
+            withAnimation { self.isNeedCaptcha = isNeedCaptcha }
             return isNeedCaptcha
         } catch {
             errorToast.show(message: "检查是否需要验证码失败: \(error.localizedDescription)")
