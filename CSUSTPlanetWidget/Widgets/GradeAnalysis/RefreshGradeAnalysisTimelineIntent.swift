@@ -25,7 +25,11 @@ struct RefreshGradeAnalysisTimelineIntent: AppIntent {
             Logger.gradeAnalysisWidget.info("未找到有效Cookie，尝试使用账号密码登录")
             // 保存的cookie无效，尝试账号密码登录
             if let username = KeychainUtil.ssoUsername, let password = KeychainUtil.ssoPassword {
-                hasValidSSOSession = (try? await ssoHelper.login(username: username, password: password)) != nil
+                if let loginForm = try? await ssoHelper.getLoginForm() {
+                    hasValidSSOSession = (try? await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)) != nil
+                } else {
+                    hasValidSSOSession = false
+                }
             } else {
                 hasValidSSOSession = false
             }

@@ -23,11 +23,16 @@ struct RefreshTodoAssignmentsTimelineIntent: AppIntent {
         if (try? await ssoHelper.getLoginUser()) == nil {
             Logger.todoAssignmentsWidget.info("未找到有效Cookie，尝试使用账号密码登录")
             if let username = KeychainUtil.ssoUsername, let password = KeychainUtil.ssoPassword {
-                hasValidSession = (try? await ssoHelper.login(username: username, password: password)) != nil
-                if hasValidSession {
-                    Logger.todoAssignmentsWidget.info("账号密码登录SSO成功")
+                if let loginForm = try? await ssoHelper.getLoginForm() {
+                    hasValidSession = (try? await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)) != nil
+                    if hasValidSession {
+                        Logger.todoAssignmentsWidget.info("账号密码登录SSO成功")
+                    } else {
+                        Logger.todoAssignmentsWidget.warning("账号密码登录SSO失败")
+                    }
                 } else {
-                    Logger.todoAssignmentsWidget.warning("账号密码登录SSO失败")
+                    Logger.todoAssignmentsWidget.warning("获取SSO登录表单失败，无法登录")
+                    hasValidSession = false
                 }
             } else {
                 Logger.todoAssignmentsWidget.warning("未保存SSO账号密码，无法重新登录")

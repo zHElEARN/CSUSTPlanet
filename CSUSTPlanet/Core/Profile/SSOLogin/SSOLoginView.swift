@@ -16,7 +16,6 @@ struct SSOLoginView: View {
 
     private static let loginTabItems: [LoginTabItem] = [
         LoginTabItem(id: 0, title: "账号登录", systemImage: "person.text.rectangle"),
-        LoginTabItem(id: 1, title: "验证码登录", systemImage: "message.badge"),
         LoginTabItem(id: 2, title: "网页登录", systemImage: "safari"),
     ]
 
@@ -170,8 +169,6 @@ struct SSOLoginView: View {
             switch tab {
             case 0:
                 accountLoginSection
-            case 1:
-                verificationCodeLoginSection
             case 2:
                 webLoginSection
             default:
@@ -215,73 +212,6 @@ struct SSOLoginView: View {
         } footer: {
             Text("如果您不记得账号或密码，可以切换到“网页登录”尝试找回。\n\n账号密码将安全地保存在您的设备本地。当登录状态失效时，程序会自动帮您重新登录，无需反复手动输入。")
         }
-    }
-
-    // MARK: - Verification Code Login View
-
-    @ViewBuilder
-    private var verificationCodeLoginSection: some View {
-        Section {
-            TextField("账号", text: $viewModel.username)
-                .textContentType(.username)
-                #if os(iOS)
-            .textInputAutocapitalization(.never)
-                #endif
-                .autocorrectionDisabled(true)
-
-            HStack {
-                TextField("图片验证码", text: $viewModel.captcha)
-                    #if os(iOS)
-                .textInputAutocapitalization(.never)
-                    #endif
-                    .autocorrectionDisabled(true)
-
-                if let data = viewModel.captchaImageData {
-                    #if os(macOS)
-                    if let nsImage = NSImage(data: data) {
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 28)
-                            .contentShape(.rect)
-                            .onTapGesture { Task { await viewModel.handleRefreshCaptcha() } }
-                    }
-                    #else
-                    if let uiImage = UIImage(data: data) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 28)
-                            .contentShape(.rect)
-                            .onTapGesture { Task { await viewModel.handleRefreshCaptcha() } }
-                    }
-                    #endif
-                } else {
-                    ProgressView()
-                        .smallControlSizeOnMac()
-                        .frame(width: 100)
-                }
-            }
-
-            HStack {
-                TextField("短信验证码", text: $viewModel.smsCode)
-                    .textContentType(.oneTimeCode)
-                    #if os(iOS)
-                .textInputAutocapitalization(.never)
-                    #endif
-                    .autocorrectionDisabled(true)
-
-                Button(asyncAction: viewModel.handleGetDynamicCode) {
-                    Text(viewModel.countdown > 0 ? "\(viewModel.countdown)秒后重新获取" : "获取验证码")
-                }
-                .disabled(viewModel.isGetDynamicCodeDisabled)
-            }
-        } header: {
-            Text("验证码登录")
-        } footer: {
-            Text("点击图片验证码可刷新。\n\n注意：使用验证码登录时，系统无法保存您的密码凭证。一旦一段时间后登录状态失效，您将需要再次手动获取验证码登录。\n\n推荐：为了更省心的体验，建议优先使用“账号登录”或“网页登录”中的密码方式，它们支持在失效后为您自动重新登录。")
-        }
-        .task { await viewModel.handleRefreshCaptcha() }
     }
 
     // MARK: - Web Login View

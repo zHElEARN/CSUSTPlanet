@@ -91,14 +91,18 @@ class AuthManager {
 
     // MARK: - SSO Login
 
+    func ssoGetLoginForm() async throws -> SSOHelper.LoginForm {
+        return try await ssoHelper.getLoginForm()
+    }
+
     // 用于登录界面的ViewModel调用
-    func ssoLogin(username: String, password: String) async throws {
+    func ssoLogin(loginForm: SSOHelper.LoginForm, username: String, password: String) async throws {
         guard !isSSOLoggedIn else { return }
         isSSOLoggingIn = true
         defer { isSSOLoggingIn = false }
 
         CookieHelper.shared.clearCookies()
-        try await ssoHelper.login(username: username, password: password)
+        try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)
         saveCredentials(credentials: (username, password))
 
         let profile = try await ssoHelper.getLoginUser()
@@ -133,28 +137,6 @@ class AuthManager {
 
     func ssoGetCaptcha() async throws -> Data {
         return try await ssoHelper.getCaptcha()
-    }
-
-    func ssoGetDynamicCode(username: String, captcha: String) async throws {
-        try await ssoHelper.getDynamicCode(mobile: username, captcha: captcha)
-    }
-
-    func ssoDynamicLogin(username: String, captcha: String, dynamicCode: String) async throws {
-        guard !isSSOLoggedIn else { return }
-        isSSOLoggingIn = true
-        defer { isSSOLoggingIn = false }
-
-        try await ssoHelper.dynamicLogin(username: username, dynamicCode: dynamicCode, captcha: captcha)
-
-        let profile = try await ssoHelper.getLoginUser()
-        updateLocalProfile(with: profile)
-
-        await PlanetAuthService.shared.authenticate(with: profile.userAccount, session: self.session)
-
-        ssoInfo = "统一身份认证登录成功"
-        isSSOInfoPresented = true
-
-        allLogin(isSilent: false)
     }
 
     func ssoBrowserLogin(username: String, password: String, shouldPersistCredentials: Bool, cookies: [HTTPCookie]) async throws {
@@ -204,7 +186,8 @@ class AuthManager {
             }
 
             do {
-                try await ssoHelper.login(username: username, password: password)
+                let loginForm = try await ssoHelper.getLoginForm()
+                try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)
             } catch {
                 Logger.authManager.error("ssoRelogin: 统一身份认证登录失败, \(error)")
 

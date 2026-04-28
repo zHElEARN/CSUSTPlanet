@@ -32,20 +32,10 @@ class SSOLoginViewModel {
         return username.isEmpty || password.isEmpty || AuthManager.shared.isSSOLoggingIn
     }
 
-    var isGetDynamicCodeDisabled: Bool {
-        return captcha.isEmpty || username.isEmpty || countdown > 0 || AuthManager.shared.isSSOLoggingIn
-    }
-
-    var isDynamicLoginDisabled: Bool {
-        return username.isEmpty || captcha.isEmpty || smsCode.isEmpty || AuthManager.shared.isSSOLoggingIn
-    }
-
     var isToolbarLoginDisabled: Bool {
         switch selectedTab {
         case 0:
             isAccountLoginDisabled
-        case 1:
-            isDynamicLoginDisabled
         case 2:
             true
         default:
@@ -57,8 +47,6 @@ class SSOLoginViewModel {
         switch selectedTab {
         case 0:
             await handleAccountLogin(isLoginSheetPresented: isLoginSheetPresented)
-        case 1:
-            await handleDynamicLogin(isLoginSheetPresented: isLoginSheetPresented)
         case 2:
             break
         default:
@@ -73,37 +61,9 @@ class SSOLoginViewModel {
         }
 
         do {
-            try await AuthManager.shared.ssoLogin(username: username, password: password)
+            let loginForm = try await AuthManager.shared.ssoGetLoginForm()
+            try await AuthManager.shared.ssoLogin(loginForm: loginForm, username: username, password: password)
             isLoginSheetPresented.wrappedValue = false
-        } catch {
-            errorToast.show(message: error.localizedDescription)
-        }
-    }
-
-    func handleGetDynamicCode() async {
-        guard !username.isEmpty, !captcha.isEmpty else {
-            errorToast.show(message: "请输入用户名和验证码")
-            return
-        }
-
-        do {
-            try await AuthManager.shared.ssoGetDynamicCode(username: username, captcha: captcha)
-
-            countdown = 120
-            Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
-                Task { @MainActor in
-                    guard let self = self else {
-                        timer.invalidate()
-                        return
-                    }
-                    if self.countdown > 1 {
-                        self.countdown -= 1
-                    } else {
-                        timer.invalidate()
-                        self.countdown = 0
-                    }
-                }
-            }
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -112,15 +72,6 @@ class SSOLoginViewModel {
     func handleRefreshCaptcha() async {
         do {
             captchaImageData = try await AuthManager.shared.ssoGetCaptcha()
-        } catch {
-            errorToast.show(message: error.localizedDescription)
-        }
-    }
-
-    func handleDynamicLogin(isLoginSheetPresented: Binding<Bool>) async {
-        do {
-            try await AuthManager.shared.ssoDynamicLogin(username: username, captcha: captcha, dynamicCode: smsCode)
-            isLoginSheetPresented.wrappedValue = false
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
