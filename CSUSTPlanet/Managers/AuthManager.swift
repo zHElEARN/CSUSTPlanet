@@ -109,7 +109,6 @@ class AuthManager {
         isSSOLoggingIn = true
         defer { isSSOLoggingIn = false }
 
-        // CookieHelper.shared.clearCookies()
         try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: captcha)
         saveCredentials(credentials: (username, password))
 

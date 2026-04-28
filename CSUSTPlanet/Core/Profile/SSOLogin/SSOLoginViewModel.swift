@@ -37,8 +37,12 @@ class SSOLoginViewModel {
         }
 
         do {
-            let loginForm = try await AuthManager.shared.ssoHelper.getLoginForm()
-            try await AuthManager.shared.ssoLogin(loginForm: loginForm, username: username, password: password, captcha: captcha)
+            if (try? await AuthManager.shared.ssoHelper.getLoginUser()) != nil {
+                AuthManager.shared.ssoRelogin(isSilent: false)
+            } else {
+                let loginForm = try await AuthManager.shared.ssoGetLoginForm()
+                try await AuthManager.shared.ssoLogin(loginForm: loginForm, username: username, password: password, captcha: captcha)
+            }
             done()
         } catch {
             errorToast.show(message: error.localizedDescription)
