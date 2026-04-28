@@ -31,15 +31,14 @@ class SSOLoginViewModel {
     var errorToast: ToastState = .errorTitle
 
     func login(_ done: () -> Void) async {
-        guard !username.isEmpty, !password.isEmpty else {
-            errorToast.show(message: "请输入用户名或密码")
-            return
-        }
-
         do {
             if (try? await AuthManager.shared.ssoHelper.getLoginUser()) != nil {
                 AuthManager.shared.ssoRelogin(isSilent: false)
             } else {
+                if !isNeedCaptcha, await checkNeedCaptcha() {
+                    return
+                }
+
                 let loginForm = try await AuthManager.shared.ssoGetLoginForm()
                 try await AuthManager.shared.ssoLogin(loginForm: loginForm, username: username, password: password, captcha: captcha)
             }
@@ -49,14 +48,19 @@ class SSOLoginViewModel {
         }
     }
 
-    func checkNeedCaptcha() {
-        Task {
-            let isNeedCaptcha = (try? await AuthManager.shared.ssoCheckNeedCaptcha(username: username)) ?? false
+    func checkNeedCaptcha() async -> Bool {
+        guard !username.isEmpty else { return false }
+        do {
+            let isNeedCaptcha = try await AuthManager.shared.ssoCheckNeedCaptcha(username: username)
             if isNeedCaptcha {
-                captchaImageData = try await AuthManager.shared.ssoGetCaptcha()
+                await refreshCaptcha()
                 withAnimation { self.isNeedCaptcha = true }
             }
+            return isNeedCaptcha
+        } catch {
+            errorToast.show(message: "检查是否需要验证码失败: \(error.localizedDescription)")
         }
+        return false
     }
 
     func refreshCaptcha() async {

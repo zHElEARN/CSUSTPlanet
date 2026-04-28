@@ -14,6 +14,8 @@ struct SSOLoginView: View {
     @Bindable var authManager = AuthManager.shared
     @FocusState private var isUsernameFocused: Bool
 
+    // MARK: - Body
+
     var body: some View {
         NavigationStack {
             Group {
@@ -46,7 +48,7 @@ struct SSOLoginView: View {
             .formStyle(.grouped)
             .onChange(of: isUsernameFocused) { _, newValue in
                 if !newValue {
-                    viewModel.checkNeedCaptcha()
+                    Task { await viewModel.checkNeedCaptcha() }
                 }
             }
             #if os(iOS)
