@@ -45,6 +45,20 @@ class AuthManager {
     var moocInfo: String = ""
     var moocError: String = ""
 
+    // MARK: - Captcha Properties
+
+    var isCaptchaPresented: Bool = false {
+        didSet {
+            if oldValue == true && isCaptchaPresented == false {
+                captchaContinuation?.resume()
+                captchaContinuation = nil
+            }
+        }
+    }
+    var captchaImageData: Data?
+    var captcha: String = ""
+    @ObservationIgnored private var captchaContinuation: CheckedContinuation<Void, Never>?
+
     // MARK: - Helpers
 
     private(set) var ssoHelper: SSOHelper
@@ -54,9 +68,9 @@ class AuthManager {
     private let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
     private let session: Session = CookieHelper.shared.session
 
-    private var ssoLoginTask: Task<Void, Error>?
-    private var eduLoginTask: Task<Void, Error>?
-    private var moocLoginTask: Task<Void, Error>?
+    @ObservationIgnored private var ssoLoginTask: Task<Void, Error>?
+    @ObservationIgnored private var eduLoginTask: Task<Void, Error>?
+    @ObservationIgnored private var moocLoginTask: Task<Void, Error>?
 
     // MARK: - Initializer
 
@@ -89,6 +103,19 @@ class AuthManager {
             .store(in: &cancellables)
     }
 
+    private func waitForCaptchaInput() async {
+        if let existingContinuation = captchaContinuation {
+            existingContinuation.resume()
+            captchaContinuation = nil
+        }
+
+        return await withCheckedContinuation { newContinuation in
+            self.captcha = ""
+            self.captchaContinuation = newContinuation
+            self.isCaptchaPresented = true
+        }
+    }
+
     // MARK: - SSO Login
 
     func ssoGetLoginForm() async throws -> SSOHelper.LoginForm {
@@ -101,6 +128,10 @@ class AuthManager {
 
     func ssoGetCaptcha() async throws -> Data {
         return try await ssoHelper.getCaptcha()
+    }
+
+    func ssoRefreshCaptcha() async throws {
+        captchaImageData = try await ssoHelper.getCaptcha()
     }
 
     // 用于登录界面的ViewModel调用
@@ -189,8 +220,14 @@ class AuthManager {
             }
 
             do {
-                let loginForm = try await ssoHelper.getLoginForm()
-                try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)
+                let loginForm = try await ssoGetLoginForm()
+                let isNeedCaptcha = try await ssoCheckNeedCaptcha(username: username)
+                if isNeedCaptcha {
+                    try await ssoRefreshCaptcha()
+                    isCaptchaPresented = true
+                    await waitForCaptchaInput()
+                }
+                try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: captcha)
             } catch {
                 Logger.authManager.error("ssoRelogin: 统一身份认证登录失败, \(error)")
 
