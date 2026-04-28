@@ -12,6 +12,7 @@ struct SSOLoginView: View {
 
     @State var viewModel = SSOLoginViewModel()
     @Bindable var authManager = AuthManager.shared
+    @FocusState private var isUsernameFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -43,6 +44,11 @@ struct SSOLoginView: View {
                 #endif
             }
             .formStyle(.grouped)
+            .onChange(of: isUsernameFocused) { _, newValue in
+                if !newValue {
+                    viewModel.checkNeedCaptcha()
+                }
+            }
             #if os(iOS)
             .navigationTitle("统一身份认证登录")
             .inlineToolbarTitle()
@@ -66,7 +72,18 @@ struct SSOLoginView: View {
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button(asyncAction: { await viewModel.handleAccountLogin { dismiss() } }) {
+                    let disabled =
+                        if viewModel.selectedTab == .account {
+                            if viewModel.isNeedCaptcha {
+                                viewModel.username.isEmpty || viewModel.password.isEmpty || viewModel.captcha.isEmpty || AuthManager.shared.isSSOLoggingIn
+                            } else {
+                                viewModel.username.isEmpty || viewModel.password.isEmpty || AuthManager.shared.isSSOLoggingIn
+                            }
+                        } else {
+                            false
+                        }
+
+                    Button(asyncAction: { await viewModel.login { dismiss() } }) {
                         HStack {
                             Text("登录")
                             if authManager.isSSOLoggingIn {
@@ -74,7 +91,7 @@ struct SSOLoginView: View {
                             }
                         }
                     }
-                    .disabled(viewModel.selectedTab == .account ? (viewModel.username.isEmpty || viewModel.password.isEmpty || AuthManager.shared.isSSOLoggingIn) : true)
+                    .disabled(disabled)
                 }
             }
             .errorToast($viewModel.errorToast)
@@ -90,11 +107,49 @@ struct SSOLoginView: View {
     private var accountLoginSection: some View {
         Section {
             TextField("账号", text: $viewModel.username)
+                .focused($isUsernameFocused)
                 .textContentType(.username)
+                .autocorrectionDisabled(true)
                 #if os(iOS)
             .textInputAutocapitalization(.never)
                 #endif
-                .autocorrectionDisabled(true)
+
+            if viewModel.isNeedCaptcha {
+                HStack {
+                    TextField("验证码", text: $viewModel.captcha)
+                        .textContentType(.none)
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                        #endif
+
+                    if let data = viewModel.captchaImageData {
+                        #if os(macOS)
+                        if let nsImage = NSImage(data: data) {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 28)
+                                .contentShape(.rect)
+                                .onTapGesture { Task { await viewModel.refreshCaptcha() } }
+                        }
+                        #else
+                        if let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 28)
+                                .contentShape(.rect)
+                                .onTapGesture { Task { await viewModel.refreshCaptcha() } }
+                        }
+                        #endif
+                    } else {
+                        ProgressView()
+                            .smallControlSizeOnMac()
+                            .frame(width: 100)
+                    }
+                }
+            }
 
             HStack {
                 Group {

@@ -17,34 +17,45 @@ class SSOLoginViewModel {
         case web
     }
 
-    var isBrowserPresented: Bool = false
     var selectedTab: LoginTab = .account
 
     var username: String = KeychainUtil.ssoUsername ?? ""
     var password: String = KeychainUtil.ssoPassword ?? ""
+    var captcha: String = ""
+
+    var isNeedCaptcha: Bool = false
     var isPasswordVisible: Bool = false
 
     var captchaImageData: Data? = nil
-    var captcha: String = ""
 
     var errorToast: ToastState = .errorTitle
 
-    func handleAccountLogin(_ done: () -> Void) async {
+    func login(_ done: () -> Void) async {
         guard !username.isEmpty, !password.isEmpty else {
             errorToast.show(message: "请输入用户名或密码")
             return
         }
 
         do {
-            let loginForm = try await AuthManager.shared.ssoGetLoginForm()
-            try await AuthManager.shared.ssoLogin(loginForm: loginForm, username: username, password: password)
+            let loginForm = try await AuthManager.shared.ssoHelper.getLoginForm()
+            try await AuthManager.shared.ssoLogin(loginForm: loginForm, username: username, password: password, captcha: captcha)
             done()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
     }
 
-    func handleRefreshCaptcha() async {
+    func checkNeedCaptcha() {
+        Task {
+            let isNeedCaptcha = (try? await AuthManager.shared.ssoCheckNeedCaptcha(username: username)) ?? false
+            if isNeedCaptcha {
+                captchaImageData = try await AuthManager.shared.ssoGetCaptcha()
+                withAnimation { self.isNeedCaptcha = true }
+            }
+        }
+    }
+
+    func refreshCaptcha() async {
         do {
             captchaImageData = try await AuthManager.shared.ssoGetCaptcha()
         } catch {

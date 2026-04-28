@@ -47,9 +47,9 @@ class AuthManager {
 
     // MARK: - Helpers
 
-    var ssoHelper: SSOHelper
-    var eduHelper: EduHelper
-    var moocHelper: MoocHelper
+    private(set) var ssoHelper: SSOHelper
+    private(set) var eduHelper: EduHelper
+    private(set) var moocHelper: MoocHelper
 
     private let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
     private let session: Session = CookieHelper.shared.session
@@ -95,14 +95,22 @@ class AuthManager {
         return try await ssoHelper.getLoginForm()
     }
 
+    func ssoCheckNeedCaptcha(username: String) async throws -> Bool {
+        return try await ssoHelper.checkNeedCaptcha(username: username)
+    }
+
+    func ssoGetCaptcha() async throws -> Data {
+        return try await ssoHelper.getCaptcha()
+    }
+
     // 用于登录界面的ViewModel调用
-    func ssoLogin(loginForm: SSOHelper.LoginForm, username: String, password: String) async throws {
+    func ssoLogin(loginForm: SSOHelper.LoginForm, username: String, password: String, captcha: String?) async throws {
         guard !isSSOLoggedIn else { return }
         isSSOLoggingIn = true
         defer { isSSOLoggingIn = false }
 
-        CookieHelper.shared.clearCookies()
-        try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)
+        // CookieHelper.shared.clearCookies()
+        try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: captcha)
         saveCredentials(credentials: (username, password))
 
         let profile = try await ssoHelper.getLoginUser()
@@ -133,10 +141,6 @@ class AuthManager {
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
         }
-    }
-
-    func ssoGetCaptcha() async throws -> Data {
-        return try await ssoHelper.getCaptcha()
     }
 
     func ssoBrowserLogin(username: String, password: String, shouldPersistCredentials: Bool, cookies: [HTTPCookie]) async throws {
