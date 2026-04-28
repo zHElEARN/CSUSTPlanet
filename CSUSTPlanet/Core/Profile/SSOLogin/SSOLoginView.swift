@@ -8,177 +8,83 @@
 import SwiftUI
 
 struct SSOLoginView: View {
-    private struct LoginTabItem: Identifiable {
-        let id: Int
-        let title: String
-        let systemImage: String
-    }
-
-    private static let loginTabItems: [LoginTabItem] = [
-        LoginTabItem(id: 0, title: "账号登录", systemImage: "person.text.rectangle"),
-        LoginTabItem(id: 2, title: "网页登录", systemImage: "safari"),
-    ]
-
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
 
     @State var viewModel = SSOLoginViewModel()
     @Bindable var authManager = AuthManager.shared
 
-    #if os(macOS)
-    private let isCompactEnv = false
-    #else
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    private var isCompactEnv: Bool { horizontalSizeClass == .compact }
-    #endif
-
     var body: some View {
         NavigationStack {
             Group {
-                #if os(macOS)
-                legacyLayout
-                #else
-                if #available(iOS 18.0, *) {
-                    modernLayout
-                } else {
-                    legacyLayout
+                #if os(iOS)
+                TabView(selection: $viewModel.selectedTab) {
+                    Form {
+                        accountLoginSection
+                    }
+                    .tag(SSOLoginViewModel.LoginTab.account)
+
+                    webLoginSection.tag(SSOLoginViewModel.LoginTab.web)
+                }
+                .tabViewStyle(.page)
+                #elseif os(macOS)
+                NavigationSplitView {
+                    List(selection: $viewModel.selectedTab) {
+                        Label("账号登录", systemImage: "person").tag(SSOLoginViewModel.LoginTab.account)
+                        Label("网页登录", systemImage: "globe").tag(SSOLoginViewModel.LoginTab.web)
+                    }
+                } detail: {
+                    switch viewModel.selectedTab {
+                    case .account:
+                        Form { accountLoginSection }
+                    case .web:
+                        webLoginSection
+                    }
                 }
                 #endif
             }
-            #if os(macOS)
-            .frame(minWidth: 350, minHeight: 400)
-            #endif
+            .formStyle(.grouped)
             #if os(iOS)
             .navigationTitle("统一身份认证登录")
             .inlineToolbarTitle()
+            .background(Color(PlatformColor.systemGroupedBackground))
             #endif
             .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .principal) {
+                    Picker("登录方式", selection: $viewModel.selectedTab) {
+                        Text("账号登录").tag(SSOLoginViewModel.LoginTab.account)
+                        Text("网页登录").tag(SSOLoginViewModel.LoginTab.web)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }
+                #endif
+
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        isPresented = false
+                        dismiss()
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button(asyncAction: { await viewModel.handleToolbarLogin(isLoginSheetPresented: $isPresented) }) {
+                    Button(asyncAction: { await viewModel.handleAccountLogin { dismiss() } }) {
                         HStack {
                             Text("登录")
                             if authManager.isSSOLoggingIn {
-                                ProgressView()
-                                    .smallControlSizeOnMac()
+                                ProgressView().smallControlSizeOnMac()
                             }
                         }
                     }
-                    .disabled(viewModel.isToolbarLoginDisabled)
+                    .disabled(viewModel.selectedTab == .account ? (viewModel.username.isEmpty || viewModel.password.isEmpty || AuthManager.shared.isSSOLoggingIn) : true)
                 }
             }
             .errorToast($viewModel.errorToast)
-            .alert("警告", isPresented: $viewModel.isWebVPNAlertPresented) {
-                Button("确定", role: .cancel) {}
-            } message: {
-                Text("WebVPN模式下无法使用网页登录，请关闭WebVPN模式后重试。")
-            }
-            .sheet(isPresented: $viewModel.isBrowserPresented) {
-                SSOBrowserView(isPresented: $viewModel.isBrowserPresented) { username, password, loginMode, cookies in
-                    viewModel.onBrowserLoginSuccess(username, password, loginMode, cookies, $isPresented)
-                }
-            }
         }
+        #if os(macOS)
+        .frame(minWidth: 720, minHeight: 540)
+        #endif
     }
 
-    // MARK: - Modern Layout
-
-    @available(iOS 18.0, macOS 15.0, *)
-    @ViewBuilder
-    private var modernLayout: some View {
-        if isCompactEnv {
-            TabView(selection: $viewModel.selectedTab) {
-                Tab("账号登录", systemImage: "person.text.rectangle", value: 0) {
-                    loginForm(for: 0)
-                }
-
-                Tab("验证码登录", systemImage: "message.badge", value: 1) {
-                    loginForm(for: 1)
-                }
-
-                Tab("网页登录", systemImage: "safari", value: 2) {
-                    loginForm(for: 2)
-                }
-            }
-        } else {
-            splitLayout
-        }
-    }
-
-    // MARK: - Legacy Layout
-
-    @ViewBuilder
-    private var legacyLayout: some View {
-        if isCompactEnv {
-            TabView(selection: $viewModel.selectedTab) {
-                loginForm(for: 0)
-                    .tabItem {
-                        Label("账号登录", systemImage: "person.text.rectangle")
-                    }
-                    .tag(0)
-
-                loginForm(for: 1)
-                    .tabItem {
-                        Label("验证码登录", systemImage: "message.badge")
-                    }
-                    .tag(1)
-
-                loginForm(for: 2)
-                    .tabItem {
-                        Label("网页登录", systemImage: "safari")
-                    }
-                    .tag(2)
-            }
-        } else {
-            splitLayout
-        }
-    }
-
-    @ViewBuilder
-    private var splitLayout: some View {
-        NavigationSplitView {
-            List(
-                selection: Binding<Int?>(
-                    get: { viewModel.selectedTab },
-                    set: { newValue in
-                        if let newValue {
-                            viewModel.selectedTab = newValue
-                        }
-                    }
-                )
-            ) {
-                ForEach(Self.loginTabItems) { item in
-                    Label(item.title, systemImage: item.systemImage)
-                        .tag(item.id)
-                }
-            }
-            #if os(macOS)
-            .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 240)
-            #endif
-        } detail: {
-            loginForm(for: viewModel.selectedTab)
-        }
-    }
-
-    @ViewBuilder
-    private func loginForm(for tab: Int) -> some View {
-        Form {
-            switch tab {
-            case 0:
-                accountLoginSection
-            case 2:
-                webLoginSection
-            default:
-                accountLoginSection
-            }
-        }
-        .formStyle(.grouped)
-    }
-
-    // MARK: - Account Login View
+    // MARK: - Account Login Section
 
     @ViewBuilder
     private var accountLoginSection: some View {
@@ -210,25 +116,19 @@ struct SSOLoginView: View {
         } header: {
             Text("账号信息")
         } footer: {
-            Text("如果您不记得账号或密码，可以切换到“网页登录”尝试找回。\n\n账号密码将安全地保存在您的设备本地。当登录状态失效时，程序会自动帮您重新登录，无需反复手动输入。")
+            Text("如果您不记得账号或密码，可以切换到 **“网页登录”** 尝试找回。\n\n账号密码将安全地保存在您的设备本地。当登录状态失效时，程序会自动帮您重新登录，无需反复手动输入。")
         }
     }
 
-    // MARK: - Web Login View
+    // MARK: - Web Login Section
 
     @ViewBuilder
     private var webLoginSection: some View {
-        Section {
-            Button("打开网页登录") {
-                if GlobalManager.shared.isWebVPNModeEnabled {
-                    viewModel.isWebVPNAlertPresented = true
-                } else {
-                    viewModel.isBrowserPresented = true
-                }
+        SSOBrowserView { username, password, loginMode, cookies in
+            viewModel.onBrowserLoginSuccess(username, password, loginMode, cookies) {
+                dismiss()
             }
-            .frame(maxWidth: .infinity, alignment: .center)
-        } footer: {
-            Text("将打开学校官网进行登录，您也可以在官网页面中找回忘记的密码。\n\n建议您在网页中选择“账号密码登录”方式。这样系统可以在本地安全地保存您的账号密码，未来登录状态丢失时可为您自动恢复，免去频繁手动登录的烦恼。")
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

@@ -27,7 +27,7 @@ struct OnboardingLoginPage: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .sheet(isPresented: $isLoginSheetPresented) {
-            SSOLoginView(isPresented: $isLoginSheetPresented)
+            SSOLoginView()
         }
     }
 

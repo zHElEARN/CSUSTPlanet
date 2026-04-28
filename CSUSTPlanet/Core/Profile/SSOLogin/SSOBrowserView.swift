@@ -7,74 +7,33 @@
 import SwiftUI
 import WebKit
 
-struct SSOBrowserView: View {
+struct SSOBrowserView: PlatformViewRepresentable {
     enum LoginMode {
         case username
         case dynamic
     }
 
-    @State private var username: String = ""
-    @State private var password: String = ""
-    @State private var loginMode: LoginMode = .username
-    @Binding var isPresented: Bool
-    var onLoginSuccess: (String, String, LoginMode, [HTTPCookie]) -> Void
-
-    var body: some View {
-        NavigationStack {
-            BrowserRepresentable(
-                username: $username,
-                password: $password,
-                loginMode: $loginMode,
-                isPresented: $isPresented,
-                onLoginSuccess: onLoginSuccess
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle("网页登录")
-            .inlineToolbarTitle()
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭") {
-                        isPresented = false
-                    }
-                }
-            }
-        }
-        #if os(macOS)
-        .frame(minWidth: 960, minHeight: 640)
-        #endif
-    }
-}
-
-private struct BrowserRepresentable {
-    @Binding var username: String
-    @Binding var password: String
-    @Binding var loginMode: SSOBrowserView.LoginMode
-    @Binding var isPresented: Bool
-    var onLoginSuccess: (String, String, SSOBrowserView.LoginMode, [HTTPCookie]) -> Void
+    var onSuccess: (String, String, LoginMode, [HTTPCookie]) -> Void
 
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
-        @Binding var username: String
-        @Binding var password: String
-        @Binding var loginMode: SSOBrowserView.LoginMode
-        @Binding var isPresented: Bool
-        let onLoginSuccess: (String, String, SSOBrowserView.LoginMode, [HTTPCookie]) -> Void
+        var username: String = KeychainUtil.ssoUsername ?? ""
+        var password: String = KeychainUtil.ssoPassword ?? ""
+        var loginMode: LoginMode = .username
 
-        init(
-            username: Binding<String>,
-            password: Binding<String>,
-            loginMode: Binding<SSOBrowserView.LoginMode>,
-            isPresented: Binding<Bool>,
-            onLoginSuccess: @escaping (String, String, SSOBrowserView.LoginMode, [HTTPCookie]) -> Void
-        ) {
-            _username = username
-            _password = password
-            _loginMode = loginMode
-            _isPresented = isPresented
-            self.onLoginSuccess = onLoginSuccess
+        let onSuccess: (String, String, LoginMode, [HTTPCookie]) -> Void
+
+        init(onSuccess: @escaping (String, String, LoginMode, [HTTPCookie]) -> Void) {
+            self.onSuccess = onSuccess
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            let js = """
+            let injectionScript = """
+                document.getElementById('username').value = '\(username)';
+                document.getElementById('password').value = '\(password)';
+                """
+            webView.evaluateJavaScript(injectionScript)
+
+            let observationScript = """
                 (function() {
                     function watchInput(id, fieldName) {
                         const input = document.getElementById(id);
@@ -93,7 +52,7 @@ private struct BrowserRepresentable {
                     watchInput('password', 'password');
                 })();
                 """
-            webView.evaluateJavaScript(js)
+            webView.evaluateJavaScript(observationScript)
         }
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -111,10 +70,7 @@ private struct BrowserRepresentable {
             if url == URL(string: "https://ehall.csust.edu.cn/index.html") || url == URL(string: "https://ehall.csust.edu.cn/default/index.html") {
                 webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { [weak self] cookies in
                     guard let self else { return }
-                    DispatchQueue.main.async {
-                        self.isPresented = false
-                    }
-                    onLoginSuccess(username, password, loginMode, cookies)
+                    onSuccess(username, password, loginMode, cookies)
                 }
             }
             decisionHandler(.allow)
@@ -126,29 +82,20 @@ private struct BrowserRepresentable {
                 let field = body["field"],
                 let value = body["value"]
             {
-
-                DispatchQueue.main.async {
-                    switch field {
-                    case "username":
-                        self.username = value
-                    case "password":
-                        self.password = value
-                    default:
-                        break
-                    }
+                switch field {
+                case "username":
+                    self.username = value
+                case "password":
+                    self.password = value
+                default:
+                    break
                 }
             }
         }
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(
-            username: $username,
-            password: $password,
-            loginMode: $loginMode,
-            isPresented: $isPresented,
-            onLoginSuccess: onLoginSuccess
-        )
+        Coordinator(onSuccess: onSuccess)
     }
 
     private func makeWebView(coordinator: Coordinator) -> WKWebView {
@@ -158,26 +105,23 @@ private struct BrowserRepresentable {
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = coordinator
         webView.load(URLRequest(url: URL(string: "https://authserver.csust.edu.cn/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin")!))
+
         return webView
     }
-}
 
-#if os(iOS)
-extension BrowserRepresentable: UIViewRepresentable {
+    #if os(iOS)
     func makeUIView(context: Context) -> WKWebView {
         makeWebView(coordinator: context.coordinator)
     }
 
     func updateUIView(_ uiView: WKWebView, context: Context) {}
-}
-#endif
+    #endif
 
-#if os(macOS)
-extension BrowserRepresentable: NSViewRepresentable {
+    #if os(macOS)
     func makeNSView(context: Context) -> WKWebView {
         makeWebView(coordinator: context.coordinator)
     }
 
     func updateNSView(_ nsView: WKWebView, context: Context) {}
+    #endif
 }
-#endif

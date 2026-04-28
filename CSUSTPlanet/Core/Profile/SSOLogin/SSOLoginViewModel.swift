@@ -12,9 +12,13 @@ import SwiftUI
 @MainActor
 @Observable
 class SSOLoginViewModel {
+    enum LoginTab {
+        case account
+        case web
+    }
+
     var isBrowserPresented: Bool = false
-    var isWebVPNAlertPresented: Bool = false
-    var selectedTab: Int = 0
+    var selectedTab: LoginTab = .account
 
     var username: String = KeychainUtil.ssoUsername ?? ""
     var password: String = KeychainUtil.ssoPassword ?? ""
@@ -22,39 +26,10 @@ class SSOLoginViewModel {
 
     var captchaImageData: Data? = nil
     var captcha: String = ""
-    var smsCode: String = ""
 
     var errorToast: ToastState = .errorTitle
 
-    var countdown = 0
-
-    var isAccountLoginDisabled: Bool {
-        return username.isEmpty || password.isEmpty || AuthManager.shared.isSSOLoggingIn
-    }
-
-    var isToolbarLoginDisabled: Bool {
-        switch selectedTab {
-        case 0:
-            isAccountLoginDisabled
-        case 2:
-            true
-        default:
-            true
-        }
-    }
-
-    func handleToolbarLogin(isLoginSheetPresented: Binding<Bool>) async {
-        switch selectedTab {
-        case 0:
-            await handleAccountLogin(isLoginSheetPresented: isLoginSheetPresented)
-        case 2:
-            break
-        default:
-            break
-        }
-    }
-
-    func handleAccountLogin(isLoginSheetPresented: Binding<Bool>) async {
+    func handleAccountLogin(_ done: () -> Void) async {
         guard !username.isEmpty, !password.isEmpty else {
             errorToast.show(message: "请输入用户名或密码")
             return
@@ -63,7 +38,7 @@ class SSOLoginViewModel {
         do {
             let loginForm = try await AuthManager.shared.ssoGetLoginForm()
             try await AuthManager.shared.ssoLogin(loginForm: loginForm, username: username, password: password)
-            isLoginSheetPresented.wrappedValue = false
+            done()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -77,11 +52,11 @@ class SSOLoginViewModel {
         }
     }
 
-    func onBrowserLoginSuccess(_ username: String, _ password: String, _ mode: SSOBrowserView.LoginMode, _ cookies: [HTTPCookie], _ isLoginSheetPresented: Binding<Bool>) {
+    func onBrowserLoginSuccess(_ username: String, _ password: String, _ mode: SSOBrowserView.LoginMode, _ cookies: [HTTPCookie], _ done: @escaping () -> Void) {
         Task {
             do {
                 try await AuthManager.shared.ssoBrowserLogin(username: username, password: password, shouldPersistCredentials: mode == .username, cookies: cookies)
-                isLoginSheetPresented.wrappedValue = false
+                done()
             } catch {
                 errorToast.show(message: "通过网页登录失败: \(error.localizedDescription)")
             }
