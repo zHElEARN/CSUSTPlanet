@@ -4,6 +4,8 @@
 //
 //  Created by Zhe_Learn on 2025/10/9.
 //
+
+import CSUSTKit
 import SwiftUI
 import WebKit
 
@@ -14,6 +16,8 @@ struct SSOBrowserView: PlatformViewRepresentable {
     }
 
     var onSuccess: (String, String, LoginMode, [HTTPCookie]) -> Void
+
+    static let factory = URLFactory(mode: AuthManager.shared.mode)
 
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var username: String = KeychainUtil.ssoUsername ?? ""
@@ -67,7 +71,7 @@ struct SSOBrowserView: PlatformViewRepresentable {
                 loginMode = .dynamic
             }
 
-            if url == URL(string: "https://ehall.csust.edu.cn/index.html") || url == URL(string: "https://ehall.csust.edu.cn/default/index.html") {
+            if url == URL(string: factory.make(.ehall, "/index.html")) || url == URL(string: factory.make(.ehall, "/default/index.html")) {
                 webView.configuration.websiteDataStore.httpCookieStore.getAllCookies { [weak self] cookies in
                     guard let self else { return }
                     onSuccess(username, password, loginMode, cookies)
@@ -104,7 +108,7 @@ struct SSOBrowserView: PlatformViewRepresentable {
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = coordinator
-        webView.load(URLRequest(url: URL(string: "https://authserver.csust.edu.cn/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin")!))
+        webView.load(URLRequest(url: URL(string: Self.factory.make(.authServer, "/authserver/login?service=https%3A%2F%2Fehall.csust.edu.cn%2Flogin"))!))
 
         return webView
     }

@@ -65,7 +65,7 @@ class AuthManager {
     private(set) var eduHelper: EduHelper
     private(set) var moocHelper: MoocHelper
 
-    private let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
+    let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
     private let session: Session = CookieHelper.shared.session
 
     @ObservationIgnored private var ssoLoginTask: Task<Void, Error>?
