@@ -29,6 +29,11 @@ struct CourseOverviewView: View {
                 course: courseInfo.course,
                 session: courseInfo.session,
                 isShowingToolbar: true,
+                showsCustomizationActions: false,
+                isCustomCourse: false,
+                onHideOfficialCourse: {},
+                onEditCustomCourse: {},
+                onDeleteCustomCourse: {},
                 isPresented: courseDetailBinding
             )
         }

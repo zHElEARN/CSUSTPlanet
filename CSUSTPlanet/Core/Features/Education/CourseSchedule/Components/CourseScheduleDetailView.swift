@@ -22,28 +22,6 @@ struct CourseScheduleDetailView: View {
     @State private var isHideConfirmationPresented = false
     @State private var isDeleteConfirmationPresented = false
 
-    init(
-        course: EduHelper.Course,
-        session: EduHelper.ScheduleSession,
-        isShowingToolbar: Bool,
-        showsCustomizationActions: Bool = false,
-        isCustomCourse: Bool = false,
-        onHideOfficialCourse: @escaping () -> Void = {},
-        onEditCustomCourse: @escaping () -> Void = {},
-        onDeleteCustomCourse: @escaping () -> Void = {},
-        isPresented: Binding<Bool>
-    ) {
-        self.course = course
-        self.session = session
-        self.isShowingToolbar = isShowingToolbar
-        self.showsCustomizationActions = showsCustomizationActions
-        self.isCustomCourse = isCustomCourse
-        self.onHideOfficialCourse = onHideOfficialCourse
-        self.onEditCustomCourse = onEditCustomCourse
-        self.onDeleteCustomCourse = onDeleteCustomCourse
-        self._isPresented = isPresented
-    }
-
     private var otherSessions: [EduHelper.ScheduleSession] {
         course.sessions.filter { $0 != session }
     }
