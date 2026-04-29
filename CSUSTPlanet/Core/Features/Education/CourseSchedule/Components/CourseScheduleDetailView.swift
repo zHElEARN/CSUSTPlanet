@@ -122,16 +122,18 @@ struct CourseScheduleDetailView: View {
                                 Label("编辑课程", systemImage: "pencil")
                             }
 
-                            Button(role: .destructive) {
+                            Button {
                                 isDeleteConfirmationPresented = true
                             } label: {
                                 Label("删除课程", systemImage: "trash")
+                                    .foregroundColor(.red)
                             }
                         } else {
-                            Button(role: .destructive) {
+                            Button {
                                 isHideConfirmationPresented = true
                             } label: {
                                 Label("隐藏此课程", systemImage: "eye.slash")
+                                    .foregroundColor(.red)
                             }
                         }
                     }
