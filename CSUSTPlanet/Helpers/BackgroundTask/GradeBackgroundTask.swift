@@ -33,7 +33,8 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
                     Logger.gradeBackgroundTask.warning("获取成绩失败: 统一身份认证登录失败，密码未保存")
                     return false
                 }
-                try await ssoHelper.login(username: username, password: password)
+                let loginForm = try await ssoHelper.getLoginForm()
+                try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)
                 Logger.gradeBackgroundTask.debug("统一身份认证登录成功")
                 _ = try await ssoHelper.loginToEducation()
                 Logger.gradeBackgroundTask.debug("教务系统登录成功")
