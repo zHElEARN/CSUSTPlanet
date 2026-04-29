@@ -63,7 +63,7 @@ struct FeaturesView: View {
         .background(Color(PlatformColor.systemGroupedBackground))
         #endif
         .sheet(isPresented: $isPhysicsExperimentLoginPresented) {
-            PhysicsExperimentLoginView(isPresented: $isPhysicsExperimentLoginPresented)
+            PhysicsExperimentLoginView()
         }
         // #if os(iOS)
         // .fullScreenCover(isPresented: $isAnnualReviewPresented) {

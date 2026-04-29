@@ -33,8 +33,7 @@ struct CourseOverviewView: View {
                 isCustomCourse: false,
                 onHideOfficialCourse: {},
                 onEditCustomCourse: {},
-                onDeleteCustomCourse: {},
-                isPresented: courseDetailBinding
+                onDeleteCustomCourse: {}
             )
         }
     }

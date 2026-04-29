@@ -51,7 +51,7 @@ struct PhysicsExperimentScheduleView: View {
             }
         }
         .sheet(isPresented: $isLoginPresented) {
-            PhysicsExperimentLoginView(isPresented: $isLoginPresented)
+            PhysicsExperimentLoginView()
         }
         .errorToast($viewModel.errorToast)
         .warningToast($viewModel.warningToast)

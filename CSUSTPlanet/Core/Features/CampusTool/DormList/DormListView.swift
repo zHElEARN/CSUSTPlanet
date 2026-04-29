@@ -54,18 +54,17 @@ struct DormListView: View {
             }
         }
         .sheet(isPresented: $viewModel.isAddDormSheetPresented) {
-            AddDormView(isPresented: $viewModel.isAddDormSheetPresented) { building, room in
+            AddDormView { building, room in
                 viewModel.addDorm(building: building, room: room)
             }
         }
         .sheet(isPresented: scheduleConfigPresentedBinding) {
             if let dorm = scheduleConfigTargetDorm {
-                DormScheduleConfigView(
-                    initialHour: dorm.scheduleHour ?? 20,
-                    initialMinute: dorm.scheduleMinute ?? 0,
-                    onConfirm: { hour, minute in Task { await viewModel.configureSchedule(for: dorm, hour: hour, minute: minute) } },
-                    isPresented: scheduleConfigPresentedBinding
-                )
+                DormScheduleConfigView(initialHour: dorm.scheduleHour ?? 20, initialMinute: dorm.scheduleMinute ?? 0) { hour, minute in
+                    Task {
+                        await viewModel.configureSchedule(for: dorm, hour: hour, minute: minute)
+                    }
+                }
             }
         }
         .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {

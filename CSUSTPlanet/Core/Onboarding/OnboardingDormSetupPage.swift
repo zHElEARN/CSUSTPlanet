@@ -37,7 +37,7 @@ struct OnboardingDormSetupPage: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .sheet(isPresented: $viewModel.isAddDormSheetPresented) {
-            AddDormView(isPresented: $viewModel.isAddDormSheetPresented) { building, room in
+            AddDormView { building, room in
                 viewModel.addDormAndQuery(building: building, room: room)
             }
         }

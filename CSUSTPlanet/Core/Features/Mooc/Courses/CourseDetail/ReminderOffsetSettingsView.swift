@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ReminderOffsetSettingsView: View {
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
 
     @State private var selectedHourOffset: Int = 2
     @State private var selectedMinuteOffset: Int = 0
@@ -53,12 +53,12 @@ struct ReminderOffsetSettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        isPresented = false
+                        dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("确认") {
-                        isPresented = false
+                        dismiss()
                         onConfirm(selectedHourOffset, selectedMinuteOffset)
                     }
                 }
@@ -88,7 +88,6 @@ struct ReminderOffsetSettingsView: View {
 #Preview {
     NavigationStack {
         ReminderOffsetSettingsView(
-            isPresented: .constant(true),
             onConfirm: { _, _ in }
         )
     }

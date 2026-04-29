@@ -31,7 +31,7 @@ struct PhysicsExperimentGradeView: View {
         }
         .errorToast($viewModel.errorToast)
         .sheet(isPresented: $isLoginPresented) {
-            PhysicsExperimentLoginView(isPresented: $isLoginPresented)
+            PhysicsExperimentLoginView()
         }
         .onChange(of: isLoginPresented) { _, newValue in
             if !newValue { Task { await viewModel.loadGrades() } }

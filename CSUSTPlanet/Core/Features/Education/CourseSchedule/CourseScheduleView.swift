@@ -217,8 +217,7 @@ struct CourseScheduleView: View {
                     if case .custom(let id) = courseInfo.source {
                         viewModel.deleteCustomCourse(id: id)
                     }
-                },
-                isPresented: courseDetailSheetBinding
+                }
             )
         } else {
             ContentUnavailableView("请选择课程查看详情", systemImage: "doc.text.magnifyingglass")

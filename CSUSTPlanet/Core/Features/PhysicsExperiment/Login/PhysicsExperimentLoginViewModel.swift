@@ -20,7 +20,7 @@ final class PhysicsExperimentLoginViewModel {
         username.isEmpty || password.isEmpty || PhysicsExperimentManager.shared.isLoggingIn
     }
 
-    func login(_ isPresented: Binding<Bool>) async {
+    func login(_ done: () -> Void) async {
         guard !username.isEmpty, !password.isEmpty else {
             errorToast.show(message: "请输入用户名和密码")
             return
@@ -28,7 +28,7 @@ final class PhysicsExperimentLoginViewModel {
 
         do {
             try await PhysicsExperimentManager.shared.login(username: username, password: password)
-            isPresented.wrappedValue = false
+            done()
         } catch {
             errorToast.show(message: error.localizedDescription)
         }

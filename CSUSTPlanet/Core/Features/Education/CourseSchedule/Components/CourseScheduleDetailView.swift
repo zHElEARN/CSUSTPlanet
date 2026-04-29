@@ -17,7 +17,8 @@ struct CourseScheduleDetailView: View {
     let onHideOfficialCourse: () -> Void
     let onEditCustomCourse: () -> Void
     let onDeleteCustomCourse: () -> Void
-    @Binding var isPresented: Bool
+
+    @Environment(\.dismiss) private var dismiss
 
     @State private var isHideConfirmationPresented = false
     @State private var isDeleteConfirmationPresented = false
@@ -141,7 +142,7 @@ struct CourseScheduleDetailView: View {
                     view.toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("关闭") {
-                                isPresented = false
+                                dismiss()
                             }
                         }
                     }

@@ -33,7 +33,7 @@ struct NetworkSettingsView: View {
         .formStyle(.grouped)
         .navigationTitle("网络设置")
         .sheet(isPresented: $isWebVPNSheetPresented) {
-            WebVPNGuideView(isPresented: $isWebVPNSheetPresented)
+            WebVPNGuideView()
         }
         .alert("关闭 WebVPN 模式", isPresented: $isWebVPNDisableAlertPresented) {
             Button("取消", role: .cancel) {}

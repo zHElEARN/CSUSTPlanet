@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct WebVPNGuideView: View {
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
     @Bindable var globalManager = GlobalManager.shared
 
     var body: some View {
@@ -47,7 +47,7 @@ struct WebVPNGuideView: View {
                 .buttonStyle(.plain)
 
                 Button(action: {
-                    isPresented = false
+                    dismiss()
                 }) {
                     Text("取消")
                         .font(.headline)
