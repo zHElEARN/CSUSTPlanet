@@ -73,6 +73,7 @@ struct TodoAssignmentsEntryView: View {
             .flatMap { group in
                 group.assignments
                     .filter { $0.deadline >= referenceDate }
+                    .filter { $0.canSubmit && !$0.submitStatus }
                     .map { DisplayAssignmentItem(courseName: group.course.name, assignment: $0) }
             }
             .sorted { $0.assignment.deadline < $1.assignment.deadline }
