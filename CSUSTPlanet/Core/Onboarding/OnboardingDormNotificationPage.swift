@@ -73,20 +73,17 @@ struct OnboardingDormNotificationPage: View {
             syncSelectedDorm(with: newDorms)
         }
         .sheet(isPresented: $viewModel.isAddDormSheetPresented) {
-            AddDormView(isPresented: $viewModel.isAddDormSheetPresented) { building, room in
+            AddDormView { building, room in
                 viewModel.addDormAndQuery(building: building, room: room)
             }
         }
         .sheet(isPresented: $isScheduleConfigPresented) {
             if let selectedDorm {
-                DormScheduleConfigView(
-                    initialHour: selectedDorm.scheduleHour ?? 20,
-                    initialMinute: selectedDorm.scheduleMinute ?? 0,
-                    onConfirm: { hour, minute in
-                        Task { await viewModel.configureSchedule(for: selectedDorm, hour: hour, minute: minute) }
-                    },
-                    isPresented: $isScheduleConfigPresented
-                )
+                DormScheduleConfigView(initialHour: selectedDorm.scheduleHour ?? 20, initialMinute: selectedDorm.scheduleMinute ?? 0) { hour, minute in
+                    Task {
+                        await viewModel.configureSchedule(for: selectedDorm, hour: hour, minute: minute)
+                    }
+                }
             }
         }
         .alert("通知权限被拒绝", isPresented: $viewModel.isNotificationDeniedAlertPresented) {

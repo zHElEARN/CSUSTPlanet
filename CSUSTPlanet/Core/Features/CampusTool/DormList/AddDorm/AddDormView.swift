@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct AddDormView: View {
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
     var onConfirm: (_ building: CampusCardHelper.Building, _ room: String) -> Void
     @State var viewModel = AddDormViewModel()
 
@@ -82,13 +82,13 @@ struct AddDormView: View {
                             return
                         }
                         onConfirm(building, viewModel.trimmedRoom)
-                        isPresented = false
+                        dismiss()
                     }
                     .disabled(viewModel.selectedBuildingID.isEmpty || viewModel.trimmedRoom.isEmpty)
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        isPresented = false
+                        dismiss()
                     }
                 }
             }

@@ -45,18 +45,32 @@ class AuthManager {
     var moocInfo: String = ""
     var moocError: String = ""
 
+    // MARK: - Captcha Properties
+
+    var isCaptchaPresented: Bool = false {
+        didSet {
+            if oldValue == true && isCaptchaPresented == false {
+                captchaContinuation?.resume()
+                captchaContinuation = nil
+            }
+        }
+    }
+    var captchaImageData: Data?
+    var captcha: String = ""
+    @ObservationIgnored private var captchaContinuation: CheckedContinuation<Void, Never>?
+
     // MARK: - Helpers
 
-    var ssoHelper: SSOHelper
-    var eduHelper: EduHelper
-    var moocHelper: MoocHelper
+    private(set) var ssoHelper: SSOHelper
+    private(set) var eduHelper: EduHelper
+    private(set) var moocHelper: MoocHelper
 
-    private let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
+    let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
     private let session: Session = CookieHelper.shared.session
 
-    private var ssoLoginTask: Task<Void, Error>?
-    private var eduLoginTask: Task<Void, Error>?
-    private var moocLoginTask: Task<Void, Error>?
+    @ObservationIgnored private var ssoLoginTask: Task<Void, Error>?
+    @ObservationIgnored private var eduLoginTask: Task<Void, Error>?
+    @ObservationIgnored private var moocLoginTask: Task<Void, Error>?
 
     // MARK: - Initializer
 
@@ -89,16 +103,44 @@ class AuthManager {
             .store(in: &cancellables)
     }
 
+    private func waitForCaptchaInput() async {
+        if let existingContinuation = captchaContinuation {
+            existingContinuation.resume()
+            captchaContinuation = nil
+        }
+
+        return await withCheckedContinuation { newContinuation in
+            self.captcha = ""
+            self.captchaContinuation = newContinuation
+            self.isCaptchaPresented = true
+        }
+    }
+
     // MARK: - SSO Login
 
+    func ssoGetLoginForm() async throws -> SSOHelper.LoginForm {
+        return try await ssoHelper.getLoginForm()
+    }
+
+    func ssoCheckNeedCaptcha(username: String) async throws -> Bool {
+        return try await ssoHelper.checkNeedCaptcha(username: username)
+    }
+
+    func ssoGetCaptcha() async throws -> Data {
+        return try await ssoHelper.getCaptcha()
+    }
+
+    func ssoRefreshCaptcha() async throws {
+        captchaImageData = try await ssoHelper.getCaptcha()
+    }
+
     // 用于登录界面的ViewModel调用
-    func ssoLogin(username: String, password: String) async throws {
+    func ssoLogin(loginForm: SSOHelper.LoginForm, username: String, password: String, captcha: String?) async throws {
         guard !isSSOLoggedIn else { return }
         isSSOLoggingIn = true
         defer { isSSOLoggingIn = false }
 
-        CookieHelper.shared.clearCookies()
-        try await ssoHelper.login(username: username, password: password)
+        try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: captcha)
         saveCredentials(credentials: (username, password))
 
         let profile = try await ssoHelper.getLoginUser()
@@ -129,32 +171,6 @@ class AuthManager {
             TrackHelper.shared.updateUserID(nil)
             ssoProfile = nil
         }
-    }
-
-    func ssoGetCaptcha() async throws -> Data {
-        return try await ssoHelper.getCaptcha()
-    }
-
-    func ssoGetDynamicCode(username: String, captcha: String) async throws {
-        try await ssoHelper.getDynamicCode(mobile: username, captcha: captcha)
-    }
-
-    func ssoDynamicLogin(username: String, captcha: String, dynamicCode: String) async throws {
-        guard !isSSOLoggedIn else { return }
-        isSSOLoggingIn = true
-        defer { isSSOLoggingIn = false }
-
-        try await ssoHelper.dynamicLogin(username: username, dynamicCode: dynamicCode, captcha: captcha)
-
-        let profile = try await ssoHelper.getLoginUser()
-        updateLocalProfile(with: profile)
-
-        await PlanetAuthService.shared.authenticate(with: profile.userAccount, session: self.session)
-
-        ssoInfo = "统一身份认证登录成功"
-        isSSOInfoPresented = true
-
-        allLogin(isSilent: false)
     }
 
     func ssoBrowserLogin(username: String, password: String, shouldPersistCredentials: Bool, cookies: [HTTPCookie]) async throws {
@@ -204,7 +220,14 @@ class AuthManager {
             }
 
             do {
-                try await ssoHelper.login(username: username, password: password)
+                let loginForm = try await ssoGetLoginForm()
+                let isNeedCaptcha = try await ssoCheckNeedCaptcha(username: username)
+                if isNeedCaptcha {
+                    try await ssoRefreshCaptcha()
+                    isCaptchaPresented = true
+                    await waitForCaptchaInput()
+                }
+                try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: captcha)
             } catch {
                 Logger.authManager.error("ssoRelogin: 统一身份认证登录失败, \(error)")
 
