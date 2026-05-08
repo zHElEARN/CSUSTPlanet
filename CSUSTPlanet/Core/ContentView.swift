@@ -188,6 +188,12 @@ struct ContentView: View {
         }
         #endif
 
+        // MARK: - 验证码输入弹窗
+
+        .sheet(isPresented: $authManager.isCaptchaPresented) {
+            CaptchaInputView()
+        }
+
         // MARK: 全局Toast状态
 
         .toast(isPresenting: $authManager.isSSOInfoPresented) {
@@ -218,7 +224,10 @@ struct ContentView: View {
             OnboardingView(onSkip: globalManager.completeOnboarding, presentingColorScheme: colorScheme)
         }
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
-            UserAgreementView(isButtonPresented: true).interactiveDismissDisabled(true)
+            NavigationStack {
+                UserAgreementView(isButtonPresented: true)
+            }
+            .interactiveDismissDisabled(true)
         }
         .sheet(isPresented: $globalManager.isAppUpdateSheetPresented) {
             AppUpdateSheetView()

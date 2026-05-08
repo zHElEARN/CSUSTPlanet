@@ -68,12 +68,11 @@ struct DormDetailView: View {
             Text("需要开启通知权限以使用定时查询功能，请前往系统设置开启通知权限")
         }
         .sheet(isPresented: $viewModel.isScheduleConfigSheetPresented) {
-            DormScheduleConfigView(
-                initialHour: viewModel.dorm.scheduleHour ?? 20,
-                initialMinute: viewModel.dorm.scheduleMinute ?? 0,
-                onConfirm: { hour, minute in Task { await viewModel.configureSchedule(hour: hour, minute: minute) } },
-                isPresented: $viewModel.isScheduleConfigSheetPresented
-            )
+            DormScheduleConfigView(initialHour: viewModel.dorm.scheduleHour ?? 20, initialMinute: viewModel.dorm.scheduleMinute ?? 0) { hour, minute in
+                Task {
+                    await viewModel.configureSchedule(hour: hour, minute: minute)
+                }
+            }
         }
         .errorToast($viewModel.errorToast)
     }

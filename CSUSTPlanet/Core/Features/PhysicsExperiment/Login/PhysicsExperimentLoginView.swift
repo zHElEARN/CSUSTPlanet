@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PhysicsExperimentLoginView: View {
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel = PhysicsExperimentLoginViewModel()
     @Bindable var physicsExperimentManager = PhysicsExperimentManager.shared
@@ -52,12 +52,16 @@ struct PhysicsExperimentLoginView: View {
             .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(action: { isPresented = false }) {
+                    Button(action: { dismiss() }) {
                         Text("关闭")
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(asyncAction: { await viewModel.login($isPresented) }) {
+                    Button(asyncAction: {
+                        await viewModel.login {
+                            dismiss()
+                        }
+                    }) {
                         if physicsExperimentManager.isLoggingIn {
                             ProgressView()
                                 .smallControlSizeOnMac()
@@ -74,5 +78,5 @@ struct PhysicsExperimentLoginView: View {
 }
 
 #Preview {
-    PhysicsExperimentLoginView(isPresented: .constant(true))
+    PhysicsExperimentLoginView()
 }

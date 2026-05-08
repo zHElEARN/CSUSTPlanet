@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DormScheduleConfigView: View {
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
 
     @State private var selectedHour: Int
     @State private var selectedMinute: Int
@@ -19,12 +19,10 @@ struct DormScheduleConfigView: View {
         initialHour: Int = 20,
         initialMinute: Int = 0,
         onConfirm: @escaping (Int, Int) -> Void,
-        isPresented: Binding<Bool>
     ) {
         _selectedHour = State(initialValue: min(max(initialHour, 0), 23))
         _selectedMinute = State(initialValue: min(max(initialMinute, 0), 59))
         self.onConfirm = onConfirm
-        self._isPresented = isPresented
     }
 
     var body: some View {
@@ -80,13 +78,13 @@ struct DormScheduleConfigView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        isPresented = false
+                        dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         onConfirm(selectedHour, selectedMinute)
-                        isPresented = false
+                        dismiss()
                     }
                 }
             }

@@ -8,92 +8,150 @@
 import SwiftUI
 
 struct SSOLoginView: View {
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
 
     @State var viewModel = SSOLoginViewModel()
     @Bindable var authManager = AuthManager.shared
+    @FocusState private var isUsernameFocused: Bool
+
+    // MARK: - Body
 
     var body: some View {
         NavigationStack {
-            TabView(selection: $viewModel.selectedTab) {
-                Form {
-                    accountLoginSection
-                }
-                .formStyle(.grouped)
-                .tabItem {
-                    Label("账号登录", systemImage: "person.text.rectangle")
-                }
-                .tag(0)
+            Group {
+                #if os(iOS)
+                TabView(selection: $viewModel.selectedTab) {
+                    Form {
+                        accountLoginSection
+                    }
+                    .tag(SSOLoginViewModel.LoginTab.account)
 
-                Form {
-                    verificationCodeLoginSection
+                    webLoginSection.tag(SSOLoginViewModel.LoginTab.web)
                 }
-                .formStyle(.grouped)
-                .tabItem {
-                    Label("验证码登录", systemImage: "message.badge")
+                .tabViewStyle(.page)
+                #elseif os(macOS)
+                NavigationSplitView {
+                    List(selection: $viewModel.selectedTab) {
+                        Label("账号登录", systemImage: "person").tag(SSOLoginViewModel.LoginTab.account)
+                        Label("网页登录", systemImage: "globe").tag(SSOLoginViewModel.LoginTab.web)
+                    }
+                } detail: {
+                    switch viewModel.selectedTab {
+                    case .account:
+                        Form { accountLoginSection }
+                    case .web:
+                        webLoginSection
+                    }
                 }
-                .tag(1)
-
-                Form {
-                    webLoginSection
-                }
-                .formStyle(.grouped)
-                .tabItem {
-                    Label("网页登录", systemImage: "safari")
-                }
-                .tag(2)
+                #endif
             }
-            #if os(macOS)
-            .frame(minWidth: 350, minHeight: 400)
-            #endif
+            .formStyle(.grouped)
+            .onChange(of: isUsernameFocused) { _, newValue in
+                if !newValue {
+                    Task { await viewModel.checkNeedCaptcha() }
+                }
+            }
             #if os(iOS)
             .navigationTitle("统一身份认证登录")
             .inlineToolbarTitle()
+            .background(Color(PlatformColor.systemGroupedBackground))
             #endif
             .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .principal) {
+                    Picker("登录方式", selection: $viewModel.selectedTab) {
+                        Text("账号登录").tag(SSOLoginViewModel.LoginTab.account)
+                        Text("网页登录").tag(SSOLoginViewModel.LoginTab.web)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                }
+                #endif
+
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        isPresented = false
+                        dismiss()
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button(asyncAction: { await viewModel.handleToolbarLogin(isLoginSheetPresented: $isPresented) }) {
+                    let disabled =
+                        if viewModel.selectedTab == .account {
+                            if viewModel.isNeedCaptcha {
+                                viewModel.username.isEmpty || viewModel.password.isEmpty || viewModel.captcha.isEmpty || AuthManager.shared.isSSOLoggingIn
+                            } else {
+                                viewModel.username.isEmpty || viewModel.password.isEmpty || AuthManager.shared.isSSOLoggingIn
+                            }
+                        } else {
+                            false
+                        }
+
+                    Button(asyncAction: { await viewModel.login { dismiss() } }) {
                         HStack {
                             Text("登录")
                             if authManager.isSSOLoggingIn {
-                                ProgressView()
-                                    .smallControlSizeOnMac()
+                                ProgressView().smallControlSizeOnMac()
                             }
                         }
                     }
-                    .disabled(viewModel.isToolbarLoginDisabled)
+                    .disabled(disabled)
                 }
             }
             .errorToast($viewModel.errorToast)
-            .alert("警告", isPresented: $viewModel.isWebVPNAlertPresented) {
-                Button("确定", role: .cancel) {}
-            } message: {
-                Text("WebVPN模式下无法使用网页登录，请关闭WebVPN模式后重试。")
-            }
-            .sheet(isPresented: $viewModel.isBrowserPresented) {
-                SSOBrowserView(isPresented: $viewModel.isBrowserPresented) { username, password, loginMode, cookies in
-                    viewModel.onBrowserLoginSuccess(username, password, loginMode, cookies, $isPresented)
-                }
-            }
         }
+        #if os(macOS)
+        .frame(minWidth: 720, minHeight: 540)
+        #endif
     }
 
-    // MARK: - Account Login View
+    // MARK: - Account Login Section
 
     @ViewBuilder
     private var accountLoginSection: some View {
         Section {
             TextField("账号", text: $viewModel.username)
+                .focused($isUsernameFocused)
                 .textContentType(.username)
+                .autocorrectionDisabled(true)
                 #if os(iOS)
             .textInputAutocapitalization(.never)
                 #endif
-                .autocorrectionDisabled(true)
+
+            if viewModel.isNeedCaptcha {
+                HStack {
+                    TextField("验证码", text: $viewModel.captcha)
+                        .textContentType(.none)
+                        .autocorrectionDisabled()
+                        #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                        #endif
+
+                    if let data = viewModel.captchaImageData {
+                        #if os(macOS)
+                        if let nsImage = NSImage(data: data) {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 28)
+                                .contentShape(.rect)
+                                .onTapGesture { Task { await viewModel.refreshCaptcha() } }
+                        }
+                        #else
+                        if let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 28)
+                                .contentShape(.rect)
+                                .onTapGesture { Task { await viewModel.refreshCaptcha() } }
+                        }
+                        #endif
+                    } else {
+                        ProgressView()
+                            .smallControlSizeOnMac()
+                            .frame(width: 100)
+                    }
+                }
+            }
 
             HStack {
                 Group {
@@ -115,92 +173,19 @@ struct SSOLoginView: View {
         } header: {
             Text("账号信息")
         } footer: {
-            Text("如果您不记得账号或密码，可以切换到“网页登录”尝试找回。\n\n账号密码将安全地保存在您的设备本地。当登录状态失效时，程序会自动帮您重新登录，无需反复手动输入。")
+            Text("如果您不记得账号或密码，可以切换到 **“网页登录”** 尝试找回。\n\n账号密码将安全地保存在您的设备本地。当登录状态失效时，程序会自动帮您重新登录，无需反复手动输入。")
         }
     }
 
-    // MARK: - Verification Code Login View
-
-    @ViewBuilder
-    private var verificationCodeLoginSection: some View {
-        Section {
-            TextField("账号", text: $viewModel.username)
-                .textContentType(.username)
-                #if os(iOS)
-            .textInputAutocapitalization(.never)
-                #endif
-                .autocorrectionDisabled(true)
-
-            HStack {
-                TextField("图片验证码", text: $viewModel.captcha)
-                    #if os(iOS)
-                .textInputAutocapitalization(.never)
-                    #endif
-                    .autocorrectionDisabled(true)
-
-                if let data = viewModel.captchaImageData {
-                    #if os(macOS)
-                    if let nsImage = NSImage(data: data) {
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 28)
-                            .contentShape(.rect)
-                            .onTapGesture { Task { await viewModel.handleRefreshCaptcha() } }
-                    }
-                    #else
-                    if let uiImage = UIImage(data: data) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 28)
-                            .contentShape(.rect)
-                            .onTapGesture { Task { await viewModel.handleRefreshCaptcha() } }
-                    }
-                    #endif
-                } else {
-                    ProgressView()
-                        .smallControlSizeOnMac()
-                        .frame(width: 100)
-                }
-            }
-
-            HStack {
-                TextField("短信验证码", text: $viewModel.smsCode)
-                    .textContentType(.oneTimeCode)
-                    #if os(iOS)
-                .textInputAutocapitalization(.never)
-                    #endif
-                    .autocorrectionDisabled(true)
-
-                Button(asyncAction: viewModel.handleGetDynamicCode) {
-                    Text(viewModel.countdown > 0 ? "\(viewModel.countdown)秒后重新获取" : "获取验证码")
-                }
-                .disabled(viewModel.isGetDynamicCodeDisabled)
-            }
-        } header: {
-            Text("验证码登录")
-        } footer: {
-            Text("点击图片验证码可刷新。\n\n注意：使用验证码登录时，系统无法保存您的密码凭证。一旦一段时间后登录状态失效，您将需要再次手动获取验证码登录。\n\n推荐：为了更省心的体验，建议优先使用“账号登录”或“网页登录”中的密码方式，它们支持在失效后为您自动重新登录。")
-        }
-        .task { await viewModel.handleRefreshCaptcha() }
-    }
-
-    // MARK: - Web Login View
+    // MARK: - Web Login Section
 
     @ViewBuilder
     private var webLoginSection: some View {
-        Section {
-            Button("打开网页登录") {
-                if GlobalManager.shared.isWebVPNModeEnabled {
-                    viewModel.isWebVPNAlertPresented = true
-                } else {
-                    viewModel.isBrowserPresented = true
-                }
+        SSOBrowserView { username, password, loginMode, cookies in
+            viewModel.onBrowserLoginSuccess(username, password, loginMode, cookies) {
+                dismiss()
             }
-            .frame(maxWidth: .infinity, alignment: .center)
-        } footer: {
-            Text("将打开学校官网进行登录，您也可以在官网页面中找回忘记的密码。\n\n建议您在网页中选择“账号密码登录”方式。这样系统可以在本地安全地保存您的账号密码，未来登录状态丢失时可为您自动恢复，免去频繁手动登录的烦恼。")
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

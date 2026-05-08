@@ -31,12 +31,11 @@ struct CourseDetailView: View {
         .errorToast($viewModel.errorToast)
         .successToast($viewModel.successToast)
         .sheet(isPresented: $viewModel.isRemindersSettingsPresented) {
-            ReminderOffsetSettingsView(
-                isPresented: $viewModel.isRemindersSettingsPresented,
-                onConfirm: { hourOffset, minuteOffset in
-                    Task { await viewModel.addAssignmentsToReminders(hourOffset, minuteOffset) }
+            ReminderOffsetSettingsView { hourOffset, minuteOffset in
+                Task {
+                    await viewModel.addAssignmentsToReminders(hourOffset, minuteOffset)
                 }
-            )
+            }
         }
         #if os(iOS)
         .sheet(isPresented: $isCoursePagePresented) {
