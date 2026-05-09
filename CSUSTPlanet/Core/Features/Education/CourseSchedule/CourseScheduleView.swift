@@ -103,7 +103,9 @@ struct CourseScheduleView: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .ignoresSafeArea(.container, edges: .bottom)
+                .applyIf(!isPad) { view in
+                    view.ignoresSafeArea(.container, edges: .bottom)
+                }
                 #endif
             } else {
                 ContentUnavailableView("暂无课表数据", systemImage: "doc.text.magnifyingglass", description: Text("当前筛选条件下没有找到课程"))
