@@ -38,9 +38,7 @@ final class TrackHelper {
 
     private lazy var tracker: MatomoTracker = {
         let instance = MatomoTracker(siteId: Constants.matomoSiteID, baseURL: URL(string: Constants.matomoURL)!)
-        #if DEBUG
-        instance.logger = DefaultLogger(minLevel: .debug)
-        #endif
+        instance.logger = MatomoLogger(minLevel: .debug)
 
         if let index = Int(Constants.matomoDimensionIDAppVersion),
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
@@ -64,7 +62,7 @@ final class TrackHelper {
 
     func views(path: [String]) {
         tracker.track(view: path)
-        Logger.trackHelper.debug("跟踪页面: \(path.joined(separator: "/"))")
+        Logger.trackHelper.debug("跟踪页面: \(path.joined(separator: "/"), privacy: .public)")
     }
 
     func event(category: String, action: String, name: String? = nil, value: NSNumber? = nil, path: [String]? = nil) {
@@ -96,7 +94,7 @@ final class TrackHelper {
 
     func updateIsOptedOut(_ isOptedOut: Bool) {
         tracker.isOptedOut = isOptedOut
-        Logger.trackHelper.debug("更新用户是否拒绝跟踪: \(isOptedOut)")
+        Logger.trackHelper.debug("更新用户是否拒绝跟踪: \(isOptedOut, privacy: .public)")
     }
 }
 
