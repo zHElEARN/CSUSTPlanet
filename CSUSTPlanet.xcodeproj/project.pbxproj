@@ -13,6 +13,7 @@
 		005122312F7B586B00E1595D /* MMKVAppExtension-static in Frameworks */ = {isa = PBXBuildFile; productRef = 005122302F7B586B00E1595D /* MMKVAppExtension-static */; };
 		005584402F7C17F100F703BC /* LookinServer in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = 0055843F2F7C17F100F703BC /* LookinServer */; };
 		005FBABA2F72E1BE00D7B07C /* JWTDecode in Frameworks */ = {isa = PBXBuildFile; productRef = 005FBAB92F72E1BE00D7B07C /* JWTDecode */; };
+		0061DF602FB5768A006039EF /* UmamiTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 0061DF5F2FB5768A006039EF /* UmamiTracker */; };
 		0080865B2F7AA250008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865A2F7AA250008CB508 /* CSUSTKit */; };
 		0080865D2F7AA255008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865C2F7AA255008CB508 /* GRDB */; };
 		0080865F2F7AA25B008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865E2F7AA25B008CB508 /* CSUSTKit */; };
@@ -184,6 +185,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				00326DF62F7A15DF003A4BD1 /* AlertToast in Frameworks */,
+				0061DF602FB5768A006039EF /* UmamiTracker in Frameworks */,
 				0041FC6D2E2AA269007F383F /* MarkdownUI in Frameworks */,
 				008086612F7AA25F008CB508 /* GRDB in Frameworks */,
 				0080865F2F7AA25B008CB508 /* CSUSTKit in Frameworks */,
@@ -273,6 +275,7 @@
 				008086602F7AA25F008CB508 /* GRDB */,
 				0051222E2F7B586B00E1595D /* MMKV */,
 				0055843F2F7C17F100F703BC /* LookinServer */,
+				0061DF5F2FB5768A006039EF /* UmamiTracker */,
 			);
 			productName = CSUSTPlanet;
 			productReference = 007CF85B2E1BD68900E319F2 /* CSUSTPlanet.app */;
@@ -336,6 +339,7 @@
 				005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */,
 				0051222D2F7B586B00E1595D /* XCRemoteSwiftPackageReference "MMKV" */,
 				0055843E2F7C17F100F703BC /* XCRemoteSwiftPackageReference "LookinServer" */,
+				0061DF5E2FB5768A006039EF /* XCRemoteSwiftPackageReference "swift-umami" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 007CF85C2E1BD68900E319F2 /* Products */;
@@ -875,6 +879,14 @@
 				minimumVersion = 4.0.0;
 			};
 		};
+		0061DF5E2FB5768A006039EF /* XCRemoteSwiftPackageReference "swift-umami" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/wiedymi/swift-umami.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		00E573572F1F4E3A00440D8D /* XCRemoteSwiftPackageReference "CSUSTKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/zHElEARN/CSUSTKit.git";
@@ -931,6 +943,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 005FBAB82F72E1BE00D7B07C /* XCRemoteSwiftPackageReference "JWTDecode" */;
 			productName = JWTDecode;
+		};
+		0061DF5F2FB5768A006039EF /* UmamiTracker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0061DF5E2FB5768A006039EF /* XCRemoteSwiftPackageReference "swift-umami" */;
+			productName = UmamiTracker;
 		};
 		0080865A2F7AA250008CB508 /* CSUSTKit */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -1,5 +1,5 @@
 {
-  "originHash" : "8a13aa6ee810068be2edead2f7efd1e7616cb9c09b948042c3b4b31f1fc91c0b",
+  "originHash" : "08c47c0a083aeba8fdecf8cd6ce0fa731037f64db69fabe18da700ab31a0c683",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -134,6 +134,15 @@
       "state" : {
         "revision" : "5f613358148239d0292c0cef674a3c2314737f9e",
         "version" : "2.4.1"
+      }
+    },
+    {
+      "identity" : "swift-umami",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wiedymi/swift-umami.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "e7a14c16d745ec1d7e4355f35407f8407808475a"
       }
     },
     {
