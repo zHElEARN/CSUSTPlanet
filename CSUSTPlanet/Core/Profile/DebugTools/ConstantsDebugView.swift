@@ -23,8 +23,8 @@ struct ConstantsDebugView: View {
             ("grdbDatabaseURL", Constants.grdbDatabaseURL.path),
             ("backendHost", Constants.backendHost),
             ("matomoURL", Constants.matomoURL),
-            ("matomoUserIDSalt", Constants.matomoUserIDSalt),
-            ("matomoDimensionIDAppFullVersion", Constants.matomoDimensionIDAppFullVersion),
+            ("matomoDimensionIDAppVersion", Constants.matomoDimensionIDAppVersion),
+            ("matomoDimensionIDAppEnvironment", Constants.matomoDimensionIDAppEnvironment),
             ("matomoSiteID", Constants.matomoSiteID),
             ("backgroundID", Constants.backgroundID),
         ]

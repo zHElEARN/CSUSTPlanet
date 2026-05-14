@@ -41,12 +41,18 @@ final class TrackHelper {
         #if DEBUG
         instance.logger = DefaultLogger(minLevel: .debug)
         #endif
-        if let index = Int(Constants.matomoDimensionIDAppFullVersion),
+
+        if let index = Int(Constants.matomoDimensionIDAppVersion),
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         {
             instance.setDimension("\(version) (\(buildNumber))", forIndex: index)
         }
+
+        if let index = Int(Constants.matomoDimensionIDAppEnvironment) {
+            instance.setDimension(EnvironmentUtil.environment.rawValue, forIndex: index)
+        }
+
         instance.dispatchInterval = 60
         Logger.trackHelper.debug("初始化 MatomoTracker 完成")
         if let currentUserId = MMKVHelper.Track.userId {
