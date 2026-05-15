@@ -47,3 +47,7 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
         return Timeline(entries: [entry], policy: .never)
     }
 }
+
+extension Logger {
+    static let gradeAnalysisWidget = Logger(widgetCategory: "GradeAnalysisWidget")
+}

@@ -21,21 +21,19 @@ extension MMKVHelper {
             let functionStr = funcname != nil ? String(cString: funcname) : "Unknown"
             let logMsg = "<\(fileName):\(line)::\(functionStr)> \(message ?? "")"
 
-            let logger = Logger.mmkv
-
             switch level {
             case .debug:
-                logger.debug("\(logMsg, privacy: .public)")
+                Logger.mmkv.debug("\(logMsg, privacy: .public)")
             case .info:
-                logger.info("\(logMsg, privacy: .public)")
+                Logger.mmkv.info("\(logMsg, privacy: .public)")
             case .warning:
-                logger.warning("\(logMsg, privacy: .public)")
+                Logger.mmkv.warning("\(logMsg, privacy: .public)")
             case .error:
-                logger.error("\(logMsg, privacy: .public)")
+                Logger.mmkv.error("\(logMsg, privacy: .public)")
             case .none:
                 break
             @unknown default:
-                logger.log("\(logMsg, privacy: .public)")
+                Logger.mmkv.log("\(logMsg, privacy: .public)")
             }
         }
 

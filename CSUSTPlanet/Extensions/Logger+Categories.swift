@@ -12,32 +12,11 @@ extension Logger {
     private static var appSubsystem = Constants.appBundleID
     private static var widgetSubsystem = Constants.widgetBundleID
 
-    static let app = Logger(subsystem: appSubsystem, category: "App")
-    static let appDelegate = Logger(subsystem: appSubsystem, category: "AppDelegate")
-    static let appLifecycleManager = Logger(subsystem: appSubsystem, category: "AppLifecycleManager")
-    static let globalManager = Logger(subsystem: appSubsystem, category: "GlobalManager")
-    static let authManager = Logger(subsystem: appSubsystem, category: "AuthManager")
-    static let planetAuthService = Logger(subsystem: appSubsystem, category: "PlanetAuthService")
-    static let planetTaskService = Logger(subsystem: appSubsystem, category: "PlanetTaskService")
-    static let activityManager = Logger(subsystem: appSubsystem, category: "ActivityManager")
-    static let notificationManager = Logger(subsystem: appSubsystem, category: "NotificationManager")
-    static let sharedModel = Logger(subsystem: appSubsystem, category: "SharedModel")
-    static let electricityBindingUtil = Logger(subsystem: appSubsystem, category: "ElectricityBindingUtil")
-    static let trackHelper = Logger(subsystem: appSubsystem, category: "TrackHelper")
-    static let backgroundTaskHelper = Logger(subsystem: appSubsystem, category: "BackgroundTaskHelper")
-    static let electricityRecordCleaner = Logger(subsystem: appSubsystem, category: "ElectricityRecordCleaner")
+    init(appCategory: String) {
+        self.init(subsystem: Self.appSubsystem, category: appCategory)
+    }
 
-    static let gradeBackgroundTask = Logger(subsystem: appSubsystem, category: "GradeBackgroundTask")
-    static let electricityBackgroundTask = Logger(subsystem: appSubsystem, category: "ElectricityBackgroundTask")
-
-    static let dormElectricityWidget = Logger(subsystem: widgetSubsystem, category: "DormElectricityWidget")
-    static let gradeAnalysisWidget = Logger(subsystem: widgetSubsystem, category: "GradeAnalysisWidget")
-    static let todoAssignmentsWidget = Logger(subsystem: widgetSubsystem, category: "TodoAssignmentsWidget")
-
-    #if WIDGET
-    static let mmkv = Logger(subsystem: widgetSubsystem, category: "MMKV")
-    #else
-    static let mmkv = Logger(subsystem: appSubsystem, category: "MMKV")
-    #endif
-    static let mmkvIPCNotifier = Logger(subsystem: appSubsystem, category: "MMKVIPCNotifier")
+    init(widgetCategory: String) {
+        self.init(subsystem: Self.widgetSubsystem, category: widgetCategory)
+    }
 }

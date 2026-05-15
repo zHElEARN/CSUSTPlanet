@@ -69,3 +69,7 @@ struct TodoAssignmentsProvider: TimelineProvider {
             }
     }
 }
+
+extension Logger {
+    static let todoAssignmentsWidget = Logger(widgetCategory: "TodoAssignmentsWidget")
+}

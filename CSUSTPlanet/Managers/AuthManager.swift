@@ -13,7 +13,7 @@ import OSLog
 
 @MainActor
 @Observable
-class AuthManager {
+final class AuthManager {
     static let shared = AuthManager()
 
     private var cancellables = Set<AnyCancellable>()
@@ -447,4 +447,8 @@ class AuthManager {
             KeychainUtil.ssoPassword = nil
         }
     }
+}
+
+extension Logger {
+    static let authManager = Logger(appCategory: "AuthManager")
 }

@@ -155,6 +155,10 @@ final class ActivityManager {
     }
 }
 
+extension Logger {
+    static let activityManager = Logger(appCategory: "ActivityManager")
+}
+
 #endif
 
 extension MMKVHelper {

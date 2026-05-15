@@ -75,6 +75,10 @@ final class TrackHelper {
     }
 }
 
+extension os.Logger {
+    static let trackHelper = Logger(appCategory: "TrackHelper")
+}
+
 extension MMKVHelper {
     enum Track {
         @MMKVOptionalStorage(key: "GlobalVars.userId")

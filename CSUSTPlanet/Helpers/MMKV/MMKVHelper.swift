@@ -378,3 +378,12 @@ final class MMKVOptionalStorage<T: MMKVValueType> {
         subject.eraseToAnyPublisher()
     }
 }
+
+extension Logger {
+    #if WIDGET
+    static let mmkv = Logger(widgetCategory: "MMKV")
+    #else
+    static let mmkv = Logger(appCategory: "MMKV")
+    #endif
+    static let mmkvIPCNotifier = Logger(appCategory: "MMKVIPCNotifier")
+}

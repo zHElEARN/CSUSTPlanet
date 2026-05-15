@@ -110,4 +110,9 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
         }
     }
 }
+
+extension Logger {
+    static let electricityBackgroundTask = Logger(appCategory: "ElectricityBackgroundTask")
+}
+
 #endif

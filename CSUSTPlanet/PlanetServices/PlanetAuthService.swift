@@ -166,6 +166,10 @@ final class PlanetAuthService {
     }
 }
 
+extension Logger {
+    static let planetAuthService = Logger(appCategory: "PlanetAuthService")
+}
+
 extension MMKVHelper {
     enum PlanetService {
         @MMKVOptionalStorage(key: "PlanetService.authToken")
