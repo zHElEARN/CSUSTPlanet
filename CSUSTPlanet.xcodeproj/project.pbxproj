@@ -17,6 +17,7 @@
 		0080865D2F7AA255008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865C2F7AA255008CB508 /* GRDB */; };
 		0080865F2F7AA25B008CB508 /* CSUSTKit in Frameworks */ = {isa = PBXBuildFile; productRef = 0080865E2F7AA25B008CB508 /* CSUSTKit */; };
 		008086612F7AA25F008CB508 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 008086602F7AA25F008CB508 /* GRDB */; };
+		00D9F5DD2FB6A5EE001ECBA4 /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 00D9F5DC2FB6A5EE001ECBA4 /* MatomoTracker */; };
 		00E574AB2F1F4F0400440D8D /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = 00E574AA2F1F4F0400440D8D /* MatomoTracker */; };
 		00E575FB2F1F4F6B00440D8D /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 00E575FA2F1F4F6B00440D8D /* Kingfisher */; };
 		00E89C632E2C88D800B43162 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E89C622E2C88D800B43162 /* WidgetKit.framework */; };
@@ -82,6 +83,7 @@
 				Database/DatabaseManager.swift,
 				Database/Models/Dorm.swift,
 				Database/Models/ElectricityRecord.swift,
+				Database/Models/MatomoEvent.swift,
 				"Extensions/Color+Hex.swift",
 				"Extensions/DayOfWeek+Formatter.swift",
 				"Extensions/Logger+Categories.swift",
@@ -91,6 +93,9 @@
 				Helpers/MMKV/MMKVHelper.swift,
 				"Helpers/MMKV/MMKVHelper+LogHandler.swift",
 				"Helpers/MMKV/MMKVHelper+Storage.swift",
+				Helpers/Track/MatomoGRDBQueue.swift,
+				Helpers/Track/MatomoLogger.swift,
+				Helpers/Track/TrackHelper.swift,
 				Models/Cached.swift,
 				Models/CourseScheduleData.swift,
 				Models/GradeAnalysisData.swift,
@@ -199,6 +204,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				00D9F5DD2FB6A5EE001ECBA4 /* MatomoTracker in Frameworks */,
 				00E89C652E2C88D800B43162 /* SwiftUI.framework in Frameworks */,
 				0080865D2F7AA255008CB508 /* GRDB in Frameworks */,
 				005122312F7B586B00E1595D /* MMKVAppExtension-static in Frameworks */,
@@ -951,6 +957,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 003FEF022F6E77D2004CF00C /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
+		};
+		00D9F5DC2FB6A5EE001ECBA4 /* MatomoTracker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00E574A92F1F4F0400440D8D /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */;
+			productName = MatomoTracker;
 		};
 		00E574AA2F1F4F0400440D8D /* MatomoTracker */ = {
 			isa = XCSwiftPackageProductDependency;

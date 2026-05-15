@@ -11,10 +11,35 @@ import GRDB
 import OSLog
 import os
 
+enum DatabaseManagerError: Error, LocalizedError {
+    case databaseUnavailable
+
+    var errorDescription: String? {
+        switch self {
+        case .databaseUnavailable:
+            return "数据库不可用"
+        }
+    }
+}
+
 final class DatabaseManager {
     static let shared = DatabaseManager()
 
-    private(set) var pool: DatabasePool?
+    @available(*, deprecated, message: "请使用poolThrows")
+    var pool: DatabasePool? {
+        databasePool
+    }
+
+    private var databasePool: DatabasePool?
+
+    var poolThrows: DatabasePool {
+        get throws {
+            guard let databasePool else {
+                throw DatabaseManagerError.databaseUnavailable
+            }
+            return databasePool
+        }
+    }
 
     private(set) var hasFatalError = false
     private(set) var fatalErrorMessage: String = ""
@@ -28,9 +53,9 @@ final class DatabaseManager {
 
             let databasePool = try DatabasePool(path: Constants.grdbDatabaseURL.path, configuration: configuration)
             try Self.migrator.migrate(databasePool)
-            self.pool = databasePool
+            self.databasePool = databasePool
         } catch {
-            self.pool = nil
+            self.databasePool = nil
             self.hasFatalError = true
             self.fatalErrorMessage = "数据库初始化失败：\(error.localizedDescription)"
         }
@@ -74,6 +99,16 @@ final class DatabaseManager {
 
             try db.drop(index: "idx_dorm_isFavorite")
             try db.execute(sql: "CREATE UNIQUE INDEX idx_dorm_isFavorite_unique ON \(dormTable) (\(isFavoriteColumn)) WHERE \(isFavoriteColumn) = 1")
+        }
+
+        migrator.registerMigration("v3_create_matomo_events") { db in
+            try db.create(table: MatomoEventGRDB.databaseTableName) { t in
+                t.column(MatomoEventGRDB.Columns.id.name, .blob).notNull().primaryKey()
+                t.column(MatomoEventGRDB.Columns.payload.name, .blob).notNull()
+                t.column(MatomoEventGRDB.Columns.createdAt.name, .datetime).notNull()
+            }
+
+            try db.create(index: "idx_matomo_events_createdAt", on: MatomoEventGRDB.databaseTableName, columns: [MatomoEventGRDB.Columns.createdAt.name])
         }
 
         return migrator

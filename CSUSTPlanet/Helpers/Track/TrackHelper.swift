@@ -14,8 +14,12 @@ final class TrackHelper {
     static let shared = TrackHelper()
 
     private lazy var tracker: MatomoTracker = {
-        let instance = MatomoTracker(siteId: Constants.matomoSiteID, baseURL: URL(string: Constants.matomoURL)!)
-        instance.logger = MatomoLogger(minLevel: .debug)
+        let dispatcher = URLSessionDispatcher(baseURL: URL(string: Constants.matomoURL)!)
+        let queue = MatomoGRDBQueue()
+        let logger = MatomoLogger(minLevel: .debug)
+
+        let instance = MatomoTracker(siteId: Constants.matomoSiteID, queue: queue, dispatcher: dispatcher)
+        instance.logger = logger
 
         if let index = Int(Constants.matomoDimensionIDAppVersion),
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
@@ -28,8 +32,10 @@ final class TrackHelper {
             instance.setDimension(EnvironmentUtil.environment.rawValue, forIndex: index)
         }
 
-        instance.dispatchInterval = 60
+        instance.dispatchInterval = 30
+
         Logger.trackHelper.debug("初始化 MatomoTracker 完成")
+
         if let currentUserId = MMKVHelper.Track.userId {
             instance.userId = currentUserId
             Logger.trackHelper.debug("初始化时同步用户ID: \(currentUserId)")
