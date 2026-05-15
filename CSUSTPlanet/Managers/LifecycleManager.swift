@@ -47,14 +47,6 @@ final class LifecycleManager {
         #endif
     }
 
-    var currentScenePhase: ScenePhase? {
-        scenePhaseSubject.value
-    }
-
-    var scenePhases: AnyPublisher<ScenePhase?, Never> {
-        scenePhaseSubject.eraseToAnyPublisher()
-    }
-
     var events: AnyPublisher<Event, Never> {
         eventSubject.eraseToAnyPublisher()
     }

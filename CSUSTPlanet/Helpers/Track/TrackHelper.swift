@@ -10,31 +10,8 @@ import CryptoKit
 import MatomoTracker
 import OSLog
 
-@MainActor
 final class TrackHelper {
     static let shared = TrackHelper()
-
-    private var cancellables = Set<AnyCancellable>()
-
-    private init() {
-        startObservingLifecycle()
-    }
-
-    private func startObservingLifecycle() {
-        LifecycleManager.shared.events
-            .sink { [weak self] event in
-                guard let self = self else { return }
-                switch event {
-                case .didBecomeActive:
-                    self.event(category: "Lifecycle", action: "Active")
-                case .didBecomeInactive:
-                    self.event(category: "Lifecycle", action: "Inactive")
-                case .didEnterBackground:
-                    self.event(category: "Lifecycle", action: "Background")
-                }
-            }
-            .store(in: &self.cancellables)
-    }
 
     private lazy var tracker: MatomoTracker = {
         let instance = MatomoTracker(siteId: Constants.matomoSiteID, baseURL: URL(string: Constants.matomoURL)!)

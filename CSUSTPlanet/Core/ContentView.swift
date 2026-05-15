@@ -188,6 +188,17 @@ struct ContentView: View {
         }
         #endif
 
+        .onReceive(LifecycleManager.shared.events) { event in
+            switch event {
+            case .didBecomeActive:
+                TrackHelper.shared.event(category: "Lifecycle", action: "Active")
+            case .didBecomeInactive:
+                TrackHelper.shared.event(category: "Lifecycle", action: "Inactive")
+            case .didEnterBackground:
+                TrackHelper.shared.event(category: "Lifecycle", action: "Background")
+            }
+        }
+
         // MARK: - 验证码输入弹窗
 
         .sheet(isPresented: $authManager.isCaptchaPresented) {
