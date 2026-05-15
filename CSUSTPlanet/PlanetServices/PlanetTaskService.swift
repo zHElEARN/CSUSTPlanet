@@ -135,3 +135,7 @@ final class PlanetTaskService {
         .value
     }
 }
+
+extension Logger {
+    static let planetTaskService = Logger(appCategory: "PlanetTaskService")
+}

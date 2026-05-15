@@ -210,6 +210,10 @@ final class GlobalManager {
     }
 }
 
+extension Logger {
+    static let globalManager = Logger(appCategory: "GlobalManager")
+}
+
 extension MMKVHelper {
     enum GlobalManager {
         @MMKVStorage(key: "GlobalVars.appearance", defaultValue: "system")

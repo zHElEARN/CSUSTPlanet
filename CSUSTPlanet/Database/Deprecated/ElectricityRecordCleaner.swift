@@ -57,3 +57,7 @@ actor ElectricityRecordCleaner {
         }
     }
 }
+
+extension Logger {
+    static let electricityRecordCleaner = Logger(appCategory: "ElectricityRecordCleaner")
+}

@@ -107,3 +107,7 @@ enum SharedModelUtil {
         }
     }
 }
+
+extension Logger {
+    static let sharedModel = Logger(appCategory: "SharedModel")
+}

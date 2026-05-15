@@ -118,4 +118,9 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
         }
     }
 }
+
+extension Logger {
+    static let gradeBackgroundTask = Logger(appCategory: "GradeBackgroundTask")
+}
+
 #endif

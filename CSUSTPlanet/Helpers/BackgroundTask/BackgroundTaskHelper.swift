@@ -208,6 +208,11 @@ final class BackgroundTaskHelper {
         MMKVHelper.BackgroundTask.enabledTaskIdentifiers = Array(enabledTaskIdentifiers)
     }
 }
+
+extension Logger {
+    static let backgroundTaskHelper = Logger(appCategory: "BackgroundTaskHelper")
+}
+
 #endif
 
 extension MMKVHelper {

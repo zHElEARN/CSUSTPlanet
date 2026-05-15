@@ -113,3 +113,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
         )
     }
 }
+
+extension Logger {
+    static let dormElectricityWidget = Logger(widgetCategory: "DormElectricityWidget")
+}
