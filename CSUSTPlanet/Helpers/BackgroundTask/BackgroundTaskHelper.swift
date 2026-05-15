@@ -86,7 +86,10 @@ final class BackgroundTaskHelper {
                 let overallSuccess = await withTaskGroup(of: Bool.self) { group in
                     for provider in providers {
                         group.addTask {
-                            return await provider.perform()
+                            TrackHelper.shared.event(category: "BackgroundTask", action: "Start", name: provider.identifier)
+                            let result = await provider.perform()
+                            TrackHelper.shared.event(category: "BackgroundTask", action: "End", name: provider.identifier, value: result ? 1 : 0)
+                            return result
                         }
                     }
 

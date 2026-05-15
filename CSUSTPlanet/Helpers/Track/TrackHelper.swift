@@ -32,7 +32,11 @@ final class TrackHelper {
             instance.setDimension(EnvironmentUtil.environment.rawValue, forIndex: index)
         }
 
-        instance.dispatchInterval = 30
+        #if WIDGET
+        instance.dispatchInterval = 0
+        #else
+        instance.dispatchInterval = 10
+        #endif
 
         Logger.trackHelper.debug("初始化 MatomoTracker 完成")
 
@@ -48,16 +52,22 @@ final class TrackHelper {
         Logger.trackHelper.debug("跟踪页面: \(path.joined(separator: "/"), privacy: .public)")
     }
 
-    func event(category: String, action: String, name: String? = nil, value: NSNumber? = nil, path: [String]? = nil) {
-        let virtualURL = path.flatMap { URL(string: "http://\(Constants.appBundleID.lowercased())/" + $0.joined(separator: "/")) }
+    func event(category: String, action: String, name: String? = nil, value: Int? = nil) {
+        let number: NSNumber? =
+            if let value {
+                NSNumber(value: value)
+            } else {
+                nil
+            }
+
         tracker.track(
             eventWithCategory: category,
             action: action,
             name: name,
-            number: value,
-            url: virtualURL
+            number: number,
+            url: nil
         )
-        Logger.trackHelper.debug("跟踪事件: \(category) - \(action) - \(name ?? "nil") - \(String(describing: value)) - \(String(describing: virtualURL))")
+        Logger.trackHelper.debug("跟踪事件: \(category, privacy: .public) - \(action, privacy: .public) - \(name ?? "nil", privacy: .public) - \(String(describing: value), privacy: .public)")
     }
 
     func flush() {
