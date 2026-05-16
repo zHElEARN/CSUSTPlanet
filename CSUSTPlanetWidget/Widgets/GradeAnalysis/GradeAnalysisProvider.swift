@@ -26,28 +26,33 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: GradeAnalysisAppIntent, in context: Context) async -> Timeline<GradeAnalysisEntry> {
-        Logger.gradeAnalysisWidget.info("Timeline 开始读取成绩缓存数据")
+        let isAutoRefresh = MMKVHelper.WidgetSettings.GradeAnalysis.isAutoRefresh
+        let refreshInterval = MMKVHelper.WidgetSettings.GradeAnalysis.refreshFrequency  // hours
 
-        var finalData: Cached<[EduHelper.CourseGrade]>? = nil
+        let policy: TimelineReloadPolicy = isAutoRefresh ? .after(.now.addingTimeInterval(Double(refreshInterval) * 3600)) : .never
 
-        if let gradeAnalysis = MMKVHelper.CourseGrades.cache {
-            Logger.gradeAnalysisWidget.info("成功从缓存获取成绩分析数据")
-            finalData = gradeAnalysis
-        } else {
-            Logger.gradeAnalysisWidget.info("缓存中无数据，将显示空视图")
+        if isAutoRefresh {
+            if let cache = MMKVHelper.CourseGrades.cache, cache.cachedAt.addingTimeInterval(30 * 60) < .now {
+                await RefreshGradeAnalysisTimelineIntent.update()
+            } else if MMKVHelper.CourseGrades.cache == nil {
+                await RefreshGradeAnalysisTimelineIntent.update()
+            }
         }
 
-        let entry = GradeAnalysisEntry(
-            date: .now,
-            configuration: configuration,
-            data: GradeAnalysisData.fromCourseGrades(finalData?.value ?? []),
-            lastUpdated: finalData?.cachedAt
+        guard let cache = MMKVHelper.CourseGrades.cache else {
+            return Timeline(entries: [GradeAnalysisEntry(date: .now, configuration: configuration, data: nil, lastUpdated: nil)], policy: policy)
+        }
+
+        return Timeline(
+            entries: [
+                GradeAnalysisEntry(
+                    date: .now,
+                    configuration: configuration,
+                    data: GradeAnalysisData.fromCourseGrades(cache.value),
+                    lastUpdated: cache.cachedAt
+                )
+            ],
+            policy: policy
         )
-
-        return Timeline(entries: [entry], policy: .never)
     }
-}
-
-extension Logger {
-    static let gradeAnalysisWidget = Logger(widgetCategory: "GradeAnalysisWidget")
 }
