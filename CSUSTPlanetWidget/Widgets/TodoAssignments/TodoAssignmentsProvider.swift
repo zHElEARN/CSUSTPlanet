@@ -28,6 +28,8 @@ struct TodoAssignmentsProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodoAssignmentsEntry>) -> Void) {
         Task {
+            TrackHelper.shared.views(path: ["Widget", "TodoAssignmentsWidget", "Timeline"])
+
             let isAutoRefresh = MMKVHelper.WidgetSettings.TodoAssignments.isAutoRefresh
             let refreshInterval = MMKVHelper.WidgetSettings.TodoAssignments.refreshFrequency  // hours
 

@@ -15,6 +15,7 @@ struct RefreshTodoAssignmentsTimelineIntent: AppIntent {
     static var isDiscoverable: Bool = false
 
     func perform() async throws -> some IntentResult {
+        TrackHelper.shared.event(category: "Widget", action: "Refresh", name: "TodoAssignmentsWidget")
         await Self.update()
         return .result()
     }

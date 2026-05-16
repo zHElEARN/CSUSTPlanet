@@ -15,6 +15,7 @@ struct RefreshGradeAnalysisTimelineIntent: AppIntent {
     static var isDiscoverable: Bool = false
 
     func perform() async throws -> some IntentResult {
+        TrackHelper.shared.event(category: "Widget", action: "Refresh", name: "GradeAnalysisWidget")
         await Self.update()
         return .result()
     }

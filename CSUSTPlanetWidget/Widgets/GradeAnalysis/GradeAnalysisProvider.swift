@@ -26,6 +26,8 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: GradeAnalysisAppIntent, in context: Context) async -> Timeline<GradeAnalysisEntry> {
+        TrackHelper.shared.views(path: ["Widget", "GradeAnalysisWidget", "Timeline"])
+
         let isAutoRefresh = MMKVHelper.WidgetSettings.GradeAnalysis.isAutoRefresh
         let refreshInterval = MMKVHelper.WidgetSettings.GradeAnalysis.refreshFrequency  // hours
 

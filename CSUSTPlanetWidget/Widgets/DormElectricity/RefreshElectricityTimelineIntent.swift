@@ -24,6 +24,7 @@ struct RefreshElectricityTimelineIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
+        TrackHelper.shared.event(category: "Widget", action: "Refresh", name: "DormElectricityWidget")
         await Self.update(dorm: dorm)
         return .result()
     }

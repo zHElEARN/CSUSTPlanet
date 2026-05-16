@@ -16,6 +16,16 @@
 	<string>$(CSUSTPLANET_APP_BUNDLE_ID)</string>
 	<key>ConfigWidgetBundleID</key>
 	<string>$(CSUSTPLANET_WIDGET_BUNDLE_ID)</string>
+	<key>ConfigMatomoURL</key>
+	<string>$(CSUSTPLANET_MATOMO_URL)</string>
+	<key>ConfigMatomoSiteID</key>
+	<string>$(CSUSTPLANET_MATOMO_SITE_ID)</string>
+	<key>ConfigMatomoDimensionIDAppVersion</key>
+	<string>$(CSUSTPLANET_MATOMO_DIMENSION_ID_APP_VERSION)</string>
+	<key>ConfigMatomoDimensionIDAppEnvironment</key>
+	<string>$(CSUSTPLANET_MATOMO_DIMENSION_ID_APP_ENVIRONMENT)</string>
+	<key>ConfigBackgroundID</key>
+	<string>$(CSUSTPLANET_BACKGROUND_ID)</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>

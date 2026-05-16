@@ -43,6 +43,8 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: DormElectricityAppIntent, in context: Context) async -> Timeline<DormElectricityEntry> {
+        TrackHelper.shared.views(path: ["Widget", "DormElectricityWidget", "Timeline"])
+
         let isAutoRefresh = MMKVHelper.WidgetSettings.DormElectricity.isAutoRefresh
         let refreshInterval = MMKVHelper.WidgetSettings.DormElectricity.refreshFrequency  // hours
 
