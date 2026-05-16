@@ -119,6 +119,10 @@ struct ProfileView: View {
                     Label("通知设置", systemImage: "bell.badge")
                 }
 
+                NavigationLink(value: AppRoute.profile(.widgetSettings)) {
+                    Label("小组件设置", systemImage: "widget.small")
+                }
+
                 #if DEBUG
                 NavigationLink(destination: DebugToolsView()) {
                     Label("调试工具", systemImage: "ladybug")

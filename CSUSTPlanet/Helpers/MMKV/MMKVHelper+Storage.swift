@@ -38,4 +38,30 @@ extension MMKVHelper {
         @MMKVOptionalStorage(key: "Cached.physicsExperimentScheduleCache")
         static var scheduleCache: Cached<[PhysicsExperimentHelper.Course]>?
     }
+
+    enum WidgetSettings {
+        enum DormElectricity {
+            @MMKVStorage(key: "WidgetSettings.DormElectricity.isAutoRefresh", defaultValue: true)
+            static var isAutoRefresh: Bool
+
+            @MMKVStorage(key: "WidgetSettings.DormElectricity.refreshFrequency", defaultValue: 1)
+            static var refreshFrequency: Int
+        }
+
+        enum GradeAnalysis {
+            @MMKVStorage(key: "WidgetSettings.GradeAnalysis.isAutoRefresh", defaultValue: true)
+            static var isAutoRefresh: Bool
+
+            @MMKVStorage(key: "WidgetSettings.GradeAnalysis.refreshFrequency", defaultValue: 1)
+            static var refreshFrequency: Int
+        }
+
+        enum TodoAssignments {
+            @MMKVStorage(key: "WidgetSettings.TodoAssignments.isAutoRefresh", defaultValue: true)
+            static var isAutoRefresh: Bool
+
+            @MMKVStorage(key: "WidgetSettings.TodoAssignments.refreshFrequency", defaultValue: 1)
+            static var refreshFrequency: Int
+        }
+    }
 }
