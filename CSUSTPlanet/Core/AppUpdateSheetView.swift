@@ -108,16 +108,6 @@ struct AppUpdateSheetView: View {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("忽略本次", action: handleLater)
                     }
-                } else {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("退出应用") {
-                            #if os(iOS)
-                            exit(0)
-                            #elseif os(macOS)
-                            NSApplication.shared.terminate(nil)
-                            #endif
-                        }
-                    }
                 }
             }
         }

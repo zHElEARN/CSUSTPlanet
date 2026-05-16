@@ -134,11 +134,6 @@ struct ContentView: View {
                         #endif
                     }
                     .buttonStyle(.bordered)
-
-                    Button("退出应用") {
-                        exit(0)
-                    }
-                    .buttonStyle(.borderedProminent)
                 }
                 .padding()
             } else {

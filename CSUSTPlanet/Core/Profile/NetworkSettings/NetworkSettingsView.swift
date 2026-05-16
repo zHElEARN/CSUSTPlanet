@@ -37,9 +37,9 @@ struct NetworkSettingsView: View {
         }
         .alert("关闭 WebVPN 模式", isPresented: $isWebVPNDisableAlertPresented) {
             Button("取消", role: .cancel) {}
-            Button("关闭并重启", role: .destructive, action: dismissWebVPNDisableAlert)
+            Button("关闭", role: .destructive, action: dismissWebVPNDisableAlert)
         } message: {
-            Text("关闭 WebVPN 模式需要重启应用才能生效。")
+            Text("关闭 WebVPN 模式需要重启应用才会生效。")
         }
     }
 
@@ -56,7 +56,6 @@ struct NetworkSettingsView: View {
 
     func dismissWebVPNDisableAlert() {
         GlobalManager.shared.isWebVPNModeEnabled = false
-        exit(0)
     }
 
 }
