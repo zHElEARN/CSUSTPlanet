@@ -26,7 +26,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
 
         // Snapshot 应该尽量快，不进行网络请求，直接读取本地最新的缓存数据
         guard let dormID = configuration.dorm?.dormID,
-            let pool = DatabaseManager.shared.pool,
+            let pool = try? DatabaseManager.shared.poolThrows,
             let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool)
         else {
             return emptyEntry(for: configuration)
@@ -50,7 +50,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
 
         guard let selectedDormEntity = configuration.dorm,
             let dormID = selectedDormEntity.dormID,
-            let pool = DatabaseManager.shared.pool,
+            let pool = try? DatabaseManager.shared.poolThrows,
             let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool)
         else {
             return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)

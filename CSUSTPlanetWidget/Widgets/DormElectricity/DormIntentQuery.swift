@@ -11,9 +11,7 @@ import GRDB
 
 struct DormIntentQuery: EntityQuery {
     func suggestedEntities() async throws -> [DormIntentEntity] {
-        guard let pool = DatabaseManager.shared.pool else { return [] }
-
-        return try await pool.read { db in
+        return try await DatabaseManager.shared.poolThrows.read { db in
             let dorms = try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
             return dorms.compactMap { dorm in
                 guard let dormID = dorm.id else { return nil }
@@ -25,9 +23,8 @@ struct DormIntentQuery: EntityQuery {
     func entities(for identifiers: [String]) async throws -> [DormIntentEntity] {
         let dormIDs = identifiers.compactMap(Int64.init)
         guard !dormIDs.isEmpty else { return [] }
-        guard let pool = DatabaseManager.shared.pool else { return [] }
 
-        return try await pool.read { db in
+        return try await DatabaseManager.shared.poolThrows.read { db in
             let dorms = try DormGRDB.filter(dormIDs.contains(DormGRDB.Columns.id)).fetchAll(db)
             return dorms.compactMap { dorm in
                 guard let dormID = dorm.id else { return nil }
