@@ -28,19 +28,10 @@ struct UserAgreementView: View {
 
             if isButtonPresented {
                 Section {
-                    Button(action: {
-                        globalManager.isUserAgreementAccepted = true
-                    }) {
+                    Button(action: { globalManager.isUserAgreementAccepted = true }) {
                         Text("同意并继续使用")
                     }
                     .tint(.blue)
-                    Button(action: {
-                        globalManager.isUserAgreementAccepted = false
-                        exit(0)
-                    }) {
-                        Text("不同意并退出")
-                    }
-                    .tint(.red)
                 }
             }
         }
