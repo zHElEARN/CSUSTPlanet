@@ -32,7 +32,10 @@ struct WebVPNGuideView: View {
             Spacer()
 
             VStack(spacing: 10) {
-                Button(action: { globalManager.isWebVPNModeEnabled = true }) {
+                Button(action: {
+                    globalManager.isWebVPNModeEnabled = true
+                    dismiss()
+                }) {
                     Text("开启")
                         .font(.headline)
                         .foregroundColor(.white)
