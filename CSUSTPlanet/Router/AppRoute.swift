@@ -376,6 +376,7 @@ enum AppRoute: Hashable {
         case networkSettings
         case backgroundTaskSettings
         case notificationSettings
+        case widgetSettings
         case about(AboutRoute)
         case feedback
         case userAgreement
@@ -390,6 +391,8 @@ enum AppRoute: Hashable {
                 return "BackgroundTaskSettings"
             case .notificationSettings:
                 return "NotificationSettings"
+            case .widgetSettings:
+                return "WidgetSettings"
             case .about(let route):
                 return route.trackSegment
             case .feedback:
@@ -414,6 +417,8 @@ enum AppRoute: Hashable {
                 #endif
             case .notificationSettings:
                 NotificationSettingsView()
+            case .widgetSettings:
+                WidgetSettingsView()
             case .about(let route):
                 route.destinationView
             case .feedback:

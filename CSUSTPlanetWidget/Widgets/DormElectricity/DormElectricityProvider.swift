@@ -25,15 +25,10 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
         }
 
         // Snapshot 应该尽量快，不进行网络请求，直接读取本地最新的缓存数据
-        guard let dormID = configuration.dorm?.dormID else {
-            return emptyEntry(for: configuration)
-        }
-
-        guard let pool = DatabaseManager.shared.pool else {
-            return emptyEntry(for: configuration)
-        }
-
-        guard let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) else {
+        guard let dormID = configuration.dorm?.dormID,
+            let pool = DatabaseManager.shared.pool,
+            let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool)
+        else {
             return emptyEntry(for: configuration)
         }
 
@@ -48,25 +43,34 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
     }
 
     func timeline(for configuration: DormElectricityAppIntent, in context: Context) async -> Timeline<DormElectricityEntry> {
-        Logger.dormElectricityWidget.info("开始生成 timeline (仅读取本地缓存)")
+        let isAutoRefresh = MMKVHelper.WidgetSettings.DormElectricity.isAutoRefresh
+        let refreshInterval = MMKVHelper.WidgetSettings.DormElectricity.refreshFrequency  // hours
+
+        let policy: TimelineReloadPolicy = isAutoRefresh ? .after(.now.addingTimeInterval(Double(refreshInterval) * 3600)) : .never
 
         guard let selectedDormEntity = configuration.dorm,
             let dormID = selectedDormEntity.dormID,
-            let pool = DatabaseManager.shared.pool
+            let pool = DatabaseManager.shared.pool,
+            let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool)
         else {
-            Logger.dormElectricityWidget.warning("配置不完整或数据库连接失败")
-            return Timeline(entries: [emptyEntry(for: configuration)], policy: .never)
+            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
+        }
+
+        if isAutoRefresh {
+            if let lastFetchDate = dorm.lastFetchDate, lastFetchDate.addingTimeInterval(30 * 60) < .now {
+                await RefreshElectricityTimelineIntent.update(dorm: configuration.dorm)
+            } else if dorm.lastFetchDate == nil {
+                await RefreshElectricityTimelineIntent.update(dorm: configuration.dorm)
+            }
         }
 
         guard let dorm = try? await fetchLocalDorm(dormID: dormID, pool: pool) else {
-            Logger.dormElectricityWidget.warning("未在数据库中找到对应的宿舍记录")
-            return Timeline(entries: [emptyEntry(for: configuration)], policy: .never)
+            return Timeline(entries: [emptyEntry(for: configuration)], policy: policy)
         }
 
         let entry = (try? await buildEntry(dorm: dorm, configuration: configuration, pool: pool)) ?? emptyEntry(for: configuration)
-        Logger.dormElectricityWidget.info("timeline 生成完成")
 
-        return Timeline(entries: [entry], policy: .never)
+        return Timeline(entries: [entry], policy: policy)
     }
 
     // MARK: - Helper Methods
@@ -112,8 +116,4 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
             lastFetchElectricity: dorm.lastFetchElectricity
         )
     }
-}
-
-extension Logger {
-    static let dormElectricityWidget = Logger(widgetCategory: "DormElectricityWidget")
 }
