@@ -13,54 +13,18 @@ import SwiftUI
 import AppKit
 #endif
 
-enum TabItem: String {
-    case overview
-    case features
-    case profile
-
-    // 以下部分仅在horizontalSizeClass为.regular的情况下会被使用
-
-    // 教务系统
-    case courseSchedule
-    case gradeQuery
-    case examSchedule
-    case gradeAnalysis
-
-    // 网络课程中心
-    case courses
-    case urgentCourses
-
-    // 校园工具
-    case electricityQuery
-    case availableClassroom
-    case campusMap
-    case schoolCalendar
-    case electricityRecharge
-    case webVPNConverter
-
-    // 大学物理实验
-    case physicsExperimentSchedule
-    case physicsExperimentGrade
-
-    // 其他考试查询
-    case cet
-    case mandarin
-}
-
 @Observable
 @MainActor
 final class GlobalManager {
     static let shared = GlobalManager()
 
     @ObservationIgnored private var isCheckingAppVersion = false
-    @ObservationIgnored private var isMigratingDatabase = false
 
     private init() {
         appearance = MMKVHelper.GlobalManager.appearance
         isUserAgreementAccepted = MMKVHelper.GlobalManager.isUserAgreementAccepted
         isWebVPNModeEnabled = MMKVHelper.GlobalManager.isWebVPNModeEnabled
         isOnboardingPresented = !MMKVHelper.GlobalManager.hasCompletedOnboarding
-        isMigratingToGRDB = !MMKVHelper.SwiftData.hasMigratedToGRDB
 
         #if os(macOS)
         applyMacOSAppearance(appearance)
@@ -71,7 +35,6 @@ final class GlobalManager {
         Task { await checkAppVersion() }
     }
 
-    var selectedTab: TabItem? = .overview
     var appearance: String {
         didSet {
             MMKVHelper.GlobalManager.appearance = appearance
@@ -101,9 +64,7 @@ final class GlobalManager {
     }
     var isOnboardingSheetShowing: Binding<Bool> {
         Binding(
-            get: {
-                self.isOnboardingPresented && !self.hasDatabaseFatalError && !self.isMigratingToGRDB && self.isUserAgreementAccepted && !self.isAppUpdateSheetPresented
-            },
+            get: { self.isOnboardingPresented && !self.hasDatabaseFatalError && self.isUserAgreementAccepted && !self.isAppUpdateSheetPresented },
             set: { self.isOnboardingPresented = $0 }
         )
     }
@@ -116,18 +77,12 @@ final class GlobalManager {
 
     var hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
     var databaseFatalErrorMessage: String = DatabaseManager.shared.fatalErrorMessage
-    var isMigratingToGRDB: Bool
 
     var latestAppVersion: PlanetConfigService.AppVersion?
     var isAppUpdateSheetPresented: Bool = false
     var isForceUpdateRequired: Bool = false
 
     var unreadAnnouncementsCount: Int = 0
-
-    var isFromElectricityWidget: Bool = false
-    var isFromGradeAnalysisWidget: Bool = false
-    var isFromCourseScheduleWidget: Bool = false
-    var isFromTodoAssignmentsWidget: Bool = false
 
     private func checkAppVersion() async {
         guard !isCheckingAppVersion else { return }
@@ -175,18 +130,6 @@ final class GlobalManager {
     func completeOnboarding() {
         MMKVHelper.GlobalManager.hasCompletedOnboarding = true
         isOnboardingPresented = false
-    }
-
-    func migrateDatabaseIfNeeded() async {
-        guard isMigratingToGRDB, !isMigratingDatabase else { return }
-        isMigratingDatabase = true
-        defer { isMigratingDatabase = false }
-
-        await SwiftDataToGRDBMigrator.migrateIfNeeded()
-
-        withAnimation {
-            isMigratingToGRDB = false
-        }
     }
 
     #if os(macOS)

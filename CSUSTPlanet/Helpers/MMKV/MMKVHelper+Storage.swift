@@ -13,14 +13,6 @@ extension MMKVHelper {
         static var cache: Cached<[TodoAssignmentsData]>?
     }
 
-    enum SwiftData {
-        @MMKVStorage(key: "SwiftData.databaseVersion", defaultValue: 0)
-        static var databaseVersion: Int
-
-        @MMKVStorage(key: "SwiftData.hasMigratedToGRDB", defaultValue: false)
-        static var hasMigratedToGRDB: Bool
-    }
-
     enum CourseGrades {
         @MMKVOptionalStorage(key: "Cached.courseGradesCache")
         static var cache: Cached<[EduHelper.CourseGrade]>?

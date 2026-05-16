@@ -141,18 +141,6 @@ struct ContentView: View {
                     .buttonStyle(.borderedProminent)
                 }
                 .padding()
-            } else if globalManager.isMigratingToGRDB {
-                VStack(spacing: 20) {
-                    ProgressView()
-                        .controlSize(.large)
-                    Text("正在优化本地数据库...")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .task {
-                    await globalManager.migrateDatabaseIfNeeded()
-                }
             } else {
                 Group {
                     #if os(macOS)
