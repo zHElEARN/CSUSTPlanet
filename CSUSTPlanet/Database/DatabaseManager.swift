@@ -25,13 +25,8 @@ enum DatabaseManagerError: Error, LocalizedError {
 final class DatabaseManager {
     static let shared = DatabaseManager()
 
-    @available(*, deprecated, message: "请使用poolThrows")
-    var pool: DatabasePool? {
-        databasePool
-    }
-
     private var databasePool: DatabasePool?
-
+    var pool: DatabasePool? { databasePool }
     var poolThrows: DatabasePool {
         get throws {
             guard let databasePool else {
