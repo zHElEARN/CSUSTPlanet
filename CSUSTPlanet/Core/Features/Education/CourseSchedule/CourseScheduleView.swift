@@ -137,13 +137,8 @@ struct CourseScheduleView: View {
         .inlineToolbarTitle()
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
-                Button(action: viewModel.presentAddCustomCourseEditor) {
-                    Label("添加课程", systemImage: "plus")
-                }
-                .disabled(viewModel.courseScheduleData == nil)
-
                 Button(action: { viewModel.isCustomizationManagementSheetPresented = true }) {
-                    Label("自定义管理", systemImage: "slider.horizontal.3")
+                    Label("自定义课程管理", systemImage: "slider.horizontal.3")
                 }
                 .disabled(viewModel.courseScheduleData == nil)
 
@@ -153,7 +148,7 @@ struct CourseScheduleView: View {
                 .disabled(viewModel.isSemestersLoading)
 
                 Button(action: { viewModel.isCalendarSettingsSheetPresented = true }) {
-                    Label("添加课表到系统日历", systemImage: "calendar.badge.plus")
+                    Label("添加课表到系统日历", systemImage: "square.and.arrow.up")
                 }
                 .disabled(viewModel.isSemestersLoading || viewModel.courseScheduleData?.value.courses.isEmpty == true)
             }

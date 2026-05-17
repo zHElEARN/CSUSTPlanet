@@ -46,13 +46,19 @@ struct CourseScheduleCustomizationManagementView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle("自定义管理")
+            .navigationTitle("自定义课程管理")
             .inlineToolbarTitle()
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("完成") {
                         dismiss()
                     }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: viewModel.presentAddCustomCourseEditor) {
+                        Label("添加课程", systemImage: "plus")
+                    }
+                    .disabled(viewModel.courseScheduleData == nil)
                 }
             }
         }
