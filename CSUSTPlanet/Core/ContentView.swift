@@ -85,7 +85,7 @@ private let featureSections: [FeatureSection] = [
 @MainActor
 private let primarySidebarItems: [SidebarPrimaryItem] = [
     SidebarPrimaryItem(tab: .overview, title: "概览", systemImage: "rectangle.stack"),
-    SidebarPrimaryItem(tab: .schedule, title: "日程", systemImage: "calendar"),
+    SidebarPrimaryItem(tab: .schedule, title: "日程 (Beta)", systemImage: "calendar"),
     SidebarPrimaryItem(tab: .profile, title: "我的", systemImage: "person"),
 ]
 
@@ -225,7 +225,7 @@ struct ContentView: View {
             }
             .badge(globalManager.unreadAnnouncementsCount)
 
-            Tab("日程", systemImage: "calendar", value: AppTabItem.schedule) {
+            Tab("日程 (Beta)", systemImage: "calendar", value: AppTabItem.schedule) {
                 navigationStack(for: .schedule) {
                     ScheduleView()
                 }
@@ -293,7 +293,7 @@ struct ContentView: View {
                 navigationStack(for: .schedule) {
                     ScheduleView()
                 }
-                .tabItem { Label("日程", systemImage: "calendar") }
+                .tabItem { Label("日程 (Beta)", systemImage: "calendar") }
                 .tag(AppTabItem.schedule)
 
                 navigationStack(for: .features) {
