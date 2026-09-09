@@ -159,7 +159,7 @@ struct ContentView: View {
                 .onChange(of: router.currentTrackPath) { oldValue, newValue in
                     TrackHelper.shared.views(path: newValue)
                 }
-            }
+                            }
         }
         .environment(router)
 
@@ -225,9 +225,11 @@ struct ContentView: View {
             }
             .badge(globalManager.unreadAnnouncementsCount)
 
-            Tab("日程 (Beta)", systemImage: "calendar", value: AppTabItem.schedule) {
-                navigationStack(for: .schedule) {
-                    ScheduleView()
+            if globalManager.isScheduleTabEnabled {
+                Tab("日程 (Beta)", systemImage: "calendar", value: AppTabItem.schedule) {
+                    navigationStack(for: .schedule) {
+                        ScheduleView()
+                    }
                 }
             }
 
@@ -290,11 +292,13 @@ struct ContentView: View {
                 .tag(AppTabItem.overview)
                 .badge(globalManager.unreadAnnouncementsCount)
 
-                navigationStack(for: .schedule) {
-                    ScheduleView()
+                if globalManager.isScheduleTabEnabled {
+                    navigationStack(for: .schedule) {
+                        ScheduleView()
+                    }
+                    .tabItem { Label("日程 (Beta)", systemImage: "calendar") }
+                    .tag(AppTabItem.schedule)
                 }
-                .tabItem { Label("日程 (Beta)", systemImage: "calendar") }
-                .tag(AppTabItem.schedule)
 
                 navigationStack(for: .features) {
                     FeaturesView()
@@ -321,7 +325,7 @@ struct ContentView: View {
                     )
                 ) {
                     Section {
-                        ForEach(primarySidebarItems) { item in
+                        ForEach(primarySidebarItems.filter { $0.tab != .schedule || globalManager.isScheduleTabEnabled }) { item in
                             sidebarRow(
                                 title: item.title,
                                 systemImage: item.systemImage,
@@ -354,8 +358,10 @@ struct ContentView: View {
                         OverviewView()
                     }
                 case .schedule:
-                    navigationStack(for: .schedule) {
-                        ScheduleView()
+                    if globalManager.isScheduleTabEnabled {
+                        navigationStack(for: .schedule) {
+                            ScheduleView()
+                        }
                     }
                 case .profile:
                     navigationStack(for: .profile) {

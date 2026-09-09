@@ -72,6 +72,8 @@ struct ProfileView: View {
                     Text("跟随系统").tag("system")
                 }
 
+                Toggle("日程 (Beta)", isOn: $globalManager.isScheduleTabEnabled)
+
                 NavigationLink(value: AppRoute.profile(.networkSettings)) {
                     Label("网络设置", systemImage: "network")
                 }

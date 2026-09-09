@@ -46,6 +46,9 @@ extension MMKVHelper {
         @MMKVStorage(key: "GlobalVars.isWebVPNModeEnabled", defaultValue: false)
         static var isWebVPNModeEnabled: Bool
 
+        @MMKVStorage(key: "GlobalVars.isScheduleTabEnabled", defaultValue: false)
+        static var isScheduleTabEnabled: Bool
+
         @MMKVStorage(key: "GlobalVars.hasCompletedOnboarding", defaultValue: false)
         static var hasCompletedOnboarding: Bool
 
