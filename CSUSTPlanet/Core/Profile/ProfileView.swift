@@ -104,6 +104,11 @@ struct ProfileView: View {
                     Text("关于 云岭星球")
                 }
 
+                Link(destination: URL(string: "https://apps.apple.com/cn/app/id6748840801?action=write-review")!) {
+                    Text("去 App Store 评分")
+                        .foregroundColor(.primary)
+                }
+
                 NavigationLink(value: AppRoute.profile(.feedback)) {
                     Text("意见反馈")
                 }
