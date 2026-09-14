@@ -159,7 +159,7 @@ struct ContentView: View {
                 .onChange(of: router.currentTrackPath) { oldValue, newValue in
                     TrackHelper.shared.views(path: newValue)
                 }
-                            }
+            }
         }
         .environment(router)
 
