@@ -12,6 +12,15 @@ import Combine
 import Foundation
 import OSLog
 
+/// 课程实时活动的编排
+///
+/// iOS 26 起把触发时间最近的课程预约给系统托管（上课前 20 分钟自动启动并提醒），预约数量受
+/// `CourseLiveActivityPlanner.scheduledActivityLimit` 限制，其余课程在 App 每次进入前台时补齐；
+/// 更早的系统只保留“App 位于前台时启动当前课程”的回退逻辑。两条路径的相位切换与清理规则一致。
+///
+/// 系统只负责按时间启动活动：「已下课」相位与 `dismissDate` 清理没有对应的系统 API，均由 App
+/// 补正（见 `CourseActivityReconciler`）：进入前台时的对账，以及用户开启「课程实时活动」后台任务后
+/// 的后台对账。
 @MainActor
 @Observable
 final class ActivityManager {
@@ -19,7 +28,10 @@ final class ActivityManager {
 
     private var cancellables = Set<AnyCancellable>()
 
-    var activity: Activity<CourseStatusWidgetAttributes>? = nil
+    /// 是否正在对齐系统内的实时活动，避免并发请求造成重复预约
+    private var isReconciling = false
+    /// 对齐过程中是否又收到了新的对齐请求
+    private var needsReconcile = false
 
     var isEnabled: Bool {
         didSet {
@@ -32,10 +44,7 @@ final class ActivityManager {
         isEnabled = MMKVHelper.ActivityManager.isEnabled
         startObservingLifecycle()
 
-        guard activity == nil, let existingActivity = Activity<CourseStatusWidgetAttributes>.activities.first else { return }
-        self.activity = existingActivity
-
-        Logger.activityManager.info("已恢复现有的实时活动")
+        Logger.activityManager.info("ActivityManager 已初始化")
         autoUpdateActivity()
     }
 
@@ -53,106 +62,77 @@ final class ActivityManager {
             .store(in: &cancellables)
     }
 
+    /// 按最新课表对齐系统内的课程实时活动
+    ///
+    /// 调用时机：App 进入前台/退到后台、课表数据变化、实时活动开关切换。
+    /// 每次对齐都会补足本轮预约名额（见 `CourseLiveActivityPlanner.schedulingCandidates`）。
     func autoUpdateActivity() {
-        guard isEnabled else {
-            Logger.activityManager.info("实时活动已禁用。正在停止所有活跃活动")
-            stopActivity()
+        guard !isReconciling else {
+            needsReconcile = true
             return
         }
 
-        let currentDate = Date()
-        guard let data = MMKVHelper.CourseSchedule.activeCourseSchedule?.value.data else {
-            stopActivity()
-            return
-        }
-
-        if let courseDisplayInfo = CourseScheduleUtil.getRelevantCourseForStatus(
-            semesterStartDate: data.semesterStartDate,
-            now: currentDate,
-            courses: data.courses,
-            weekCount: data.weekCount
-        ), let courseDates = getCourseDates(from: courseDisplayInfo.session.startSection, to: courseDisplayInfo.session.endSection, now: currentDate) {
-
-            let attributes = CourseStatusWidgetAttributes(
-                courseName: courseDisplayInfo.course.courseName,
-                teacher: courseDisplayInfo.course.teacher ?? "无老师",
-                classroom: courseDisplayInfo.session.classroom,
-                startDate: courseDates.startDate,
-                endDate: courseDates.endDate
-            )
-
-            if let existingActivity = self.activity, existingActivity.activityState == .active {
-                if existingActivity.attributes == attributes {
-                    Logger.activityManager.info("实时活动状态正确。正在强制刷新 UI")
-                    Task {
-                        let content = ActivityContent(state: CourseStatusWidgetAttributes.ContentState(now: .now), staleDate: nil)
-                        await existingActivity.update(content)
-                    }
-                } else {
-                    Logger.activityManager.info("发现过期的活动。正在替换为新活动")
-                    try? startActivity(attributes)
-                }
-            } else {
-                Logger.activityManager.info("未找到活跃活动。正在启动新活动")
-                try? startActivity(attributes)
-            }
-        } else {
-            Logger.activityManager.info("未找到相关课程。正在停止所有活跃活动")
-            stopActivity()
-        }
-    }
-
-    private func startActivity(_ attributes: CourseStatusWidgetAttributes) throws {
-        stopActivity()
-
-        let content = ActivityContent(state: CourseStatusWidgetAttributes.ContentState(now: .now), staleDate: nil)
-
-        do {
-            let newActivity = try Activity.request(
-                attributes: attributes,
-                content: content
-            )
-            self.activity = newActivity
-            Logger.activityManager.info("已为课程启动实时活动：\(attributes.courseName)")
-        } catch {
-            Logger.activityManager.error("启动实时活动失败: \(error.localizedDescription)")
-            throw error
-        }
-    }
-
-    private func stopActivity() {
-        guard let activityToStop = activity else { return }
+        isReconciling = true
 
         Task {
-            await activityToStop.end(nil, dismissalPolicy: .immediate)
-            if self.activity?.id == activityToStop.id {
-                self.activity = nil
-                Logger.activityManager.info("实时活动已停止")
+            await reconcile()
+            isReconciling = false
+
+            if needsReconcile {
+                needsReconcile = false
+                autoUpdateActivity()
             }
         }
     }
 
-    private func getCourseDates(from startSection: Int, to endSection: Int, now: Date) -> (startDate: Date, endDate: Date)? {
-        let calendar = Calendar.current
-        let startIndex = startSection - 1
-        let endIndex = endSection - 1
-        guard startIndex >= 0, startIndex < CourseScheduleUtil.sectionTimeString.count,
-            endIndex >= 0, endIndex < CourseScheduleUtil.sectionTimeString.count
-        else { return nil }
-        let startTimeString = CourseScheduleUtil.sectionTimeString[startIndex].0
-        let endTimeString = CourseScheduleUtil.sectionTimeString[endIndex].1
-        let startComponents = startTimeString.split(separator: ":").compactMap { Int($0) }
-        guard startComponents.count == 2 else { return nil }
-        let startHour = startComponents[0]
-        let startMinute = startComponents[1]
-        let endComponents = endTimeString.split(separator: ":").compactMap { Int($0) }
-        guard endComponents.count == 2 else { return nil }
-        let endHour = endComponents[0]
-        let endMinute = endComponents[1]
-        guard let startDate = calendar.date(bySettingHour: startHour, minute: startMinute, second: 0, of: now),
-            let endDate = calendar.date(bySettingHour: endHour, minute: endMinute, second: 0, of: now)
-        else { return nil }
-        return (startDate, endDate)
+    // MARK: - Private
+
+    private func reconcile() async {
+        guard isEnabled else {
+            Logger.activityManager.info("实时活动已禁用。正在停止所有实时活动")
+            await stopAllActivities()
+            return
+        }
+
+        guard let data = MMKVHelper.CourseSchedule.activeCourseSchedule?.value.data else {
+            Logger.activityManager.info("未找到课表数据。正在停止所有实时活动")
+            await stopAllActivities()
+            return
+        }
+
+        let now = Date()
+        let plans = CourseLiveActivityPlanner.makePlans(
+            semesterStartDate: data.semesterStartDate,
+            now: now,
+            courses: data.courses,
+            weekCount: data.weekCount
+        )
+
+        Logger.activityManager.info("开始对齐课程实时活动，共 \(plans.count) 条排期")
+        await makeStrategy().reconcile(plans: plans, now: now)
+    }
+
+    /// 结束所有实时活动（包含尚未触发的预约）
+    ///
+    /// 与 `hasActivity` / 并发名额核算（`isOngoing`）不同，这里要连 `.ended` 的活动一起结束：
+    /// 按 `dismissalPolicy: .after(...)` 结束的卡片（「已下课」相位）仍会停留在锁屏上直到
+    /// `dismissDate`，而关闭开关或清空课表时用户期望卡片立即消失；只有已经被用户划掉的
+    /// `.dismissed` 活动完全由系统移除，无需重复结束。
+    private func stopAllActivities() async {
+        let activities = Activity<CourseStatusWidgetAttributes>.activities.filter { $0.activityState != .dismissed }
+        guard !activities.isEmpty else { return }
+
+        for activity in activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
+        }
+        Logger.activityManager.info("已结束 \(activities.count) 个实时活动")
+    }
+
+    private func makeStrategy() -> ActivitySchedulingStrategy {
+        if #available(iOS 26.0, *) {
+            return ScheduledActivityStrategy()
+        }
+        return ForegroundActivityStrategy()
     }
 }
 

@@ -52,6 +52,7 @@ final class BackgroundTaskHelper {
     let tasks: [BackgroundTaskProvider] = [
         GradeBackgroundTask(),
         ElectricityBackgroundTask(),
+        CourseActivityBackgroundTask(),
     ]
 
     var enabledTasks: [BackgroundTaskProvider] {

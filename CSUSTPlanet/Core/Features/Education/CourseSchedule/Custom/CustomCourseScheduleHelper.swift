@@ -277,6 +277,12 @@ enum CustomCourseScheduleHelper {
             value: schedule
         )
         WidgetTimelineRefreshHelper.reloadCourseScheduleWidgets()
+
+        #if os(iOS)
+        Task { @MainActor in
+            ActivityManager.shared.autoUpdateActivity()
+        }
+        #endif
     }
 
     // MARK: - 读取
