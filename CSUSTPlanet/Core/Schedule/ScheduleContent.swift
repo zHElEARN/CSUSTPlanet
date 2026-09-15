@@ -61,7 +61,7 @@ struct ScheduleContent: View {
             }
             .scrollTargetLayout()
             #if os(iOS)
-            .introspect(.scrollView, on: .iOS(.v17, .v18, .v26), scope: .ancestor) { scrollView in
+            .introspect(.scrollView, on: .iOS(.v17...), scope: .ancestor) { scrollView in
                 scheduleScrollViewReference.scrollView = scrollView
             }
             #endif
