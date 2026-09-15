@@ -172,9 +172,14 @@ struct CourseStatusWidgetLiveActivity: Widget {
             } compactTrailing: {
                 CourseStatusCompactTrailingView(context: context)
             } minimal: {
-                Image("MinimalLogo")
-                    .resizable()
-                    .scaledToFit()
+                ProgressView(timerInterval: context.attributes.inClassInterval, countsDown: true) {
+                } currentValueLabel: {
+                    Image(systemName: "timer")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.tint)
+                }
+                .progressViewStyle(.circular)
+                .tint(.accentColor)
             }
         }
     }
@@ -234,7 +239,7 @@ struct CourseStatusDynamicIslandExpandedView: View {
 /// 灵动岛紧凑视图的计时器
 struct CourseStatusCompactTrailingView: View {
     let context: ActivityViewContext<CourseStatusWidgetAttributes>
-
+    
     var body: some View {
         switch context.courseStatusPhase {
         case .upcoming:
@@ -250,12 +255,12 @@ struct CourseStatusCompactTrailingView: View {
                 .font(.caption2)
         }
     }
-
+    
     /// 上课时长达到 1 小时时预留更宽的位置，避免灵动岛宽度跳动
     private var inClassPlaceholder: String {
         context.attributes.endDate.timeIntervalSince(context.attributes.startDate) >= 3600 ? "00:00:00" : "00:00"
     }
-
+    
     private func timer<Content: View>(_ placeholder: String, @ViewBuilder content: () -> Content) -> some View {
         Text(placeholder)
             .font(.caption2)
