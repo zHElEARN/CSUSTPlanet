@@ -29,9 +29,9 @@ struct GradeDetailContent: View {
     var body: some View {
         CustomScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                GradeDetailScoreSummary(courseGrade: courseGrade)
-                GradeDetailDistributionSection(detail: detail, renderMode: $renderMode)
-                GradeDetailInfoSection(courseGrade: courseGrade)
+                GradeDetailScoreSummary(courseGrade: courseGrade)  //课程标题、学分等具体信息
+                GradeDetailDistributionSection(detail: detail, renderMode: $renderMode)  //具体得分图表
+                GradeDetailInfoSection(courseGrade: courseGrade)  //课程信息
             }
             .padding()
         }
