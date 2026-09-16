@@ -6,119 +6,96 @@
 //
 
 import CSUSTKit
-import Charts
 import SwiftUI
 
 struct GradeDetailDistributionSection: View {
     let detail: EduHelper.GradeDetail?
-    @Binding var renderMode: GradeDetailRenderMode
+
+    private let ringDiameter: CGFloat = 140
 
     var body: some View {
         if let detail {
+            // 权重 ≤ 0 的组成项不参与绘制，环与下方列表基于同一份数据，颜色才不会错位
+            let components = detail.components.filter { $0.ratio > 0 }
+
             VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .center, spacing: 12) {
-                    Text("成绩分布")
-                        .font(.headline)
-                    Spacer()
-                    Picker("显示方式", selection: $renderMode.withAnimation()) {
-                        ForEach(GradeDetailRenderMode.allCases) { mode in
-                            Text(mode.rawValue).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .fixedSize()
-                }
-                .padding(.horizontal)
+                Text("成绩分布")
+                    .font(.headline)
+                    .padding(.horizontal)
 
                 CustomGroupBox {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if renderMode == .pie {
-                            pieChart(detail)
-                        } else {
-                            progressList(detail)
+                    VStack(spacing: 0) {
+                        HStack(alignment: .center, spacing: 16) {
+                            ScoreRing(segments: segments(of: components))
+                                .frame(width: ringDiameter, height: ringDiameter)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("总成绩：")
+                                    .font(.subheadline)
+
+                                Text("\(detail.totalGrade)/100")
+                                    .font(.system(.title, design: .rounded))
+                                    .bold()
+                                    .monospacedDigit()
+                            }
+                            .frame(maxWidth: .infinity)
                         }
+                        .padding(.bottom, 12)
+
+                        Divider()
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(Array(components.enumerated()), id: \.offset) { index, component in
+                                componentRow(component, color: ScoreRing.color(at: index))
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 12)
                     }
                 }
             }
         }
     }
 
-    private func pieChart(_ detail: EduHelper.GradeDetail) -> some View {
-        Chart(detail.components, id: \.type) { component in
-            SectorMark(
-                angle: .value("占比", component.ratio),
-                innerRadius: .ratio(0.4),
-                angularInset: 1
-            )
-            .foregroundStyle(by: .value("类型", component.type))
-            .annotation(position: .overlay) {
-                VStack {
-                    Text(String(format: "%.1f", component.grade))
-                        .font(.subheadline)
-                        .foregroundStyle(.white)
-                        .bold()
-                    Text("(\(component.ratio)%)")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-            }
-        }
-        .frame(height: 250)
-        .chartLegend(position: .bottom, alignment: .center, spacing: 10)
-        .padding(.horizontal)
+    private func segments(of components: [EduHelper.GradeComponent]) -> [ScoreSegment] {
+        components.map { ScoreSegment(weight: Double($0.ratio), progress: $0.grade / 100) }
     }
 
-    private func progressList(_ detail: EduHelper.GradeDetail) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ForEach(detail.components, id: \.type) { component in
-                progressRow(
-                    title: "\(component.type) (\(component.ratio)%)",
-                    gradeText: "\(String(format: "%.1f", component.grade))/100",
-                    value: component.grade
-                )
-            }
+    private func componentRow(_ component: EduHelper.GradeComponent, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(color)
+                .frame(width: 10, height: 10)
 
-            progressRow(
-                title: "总成绩 (100%)",
-                gradeText: "\(String(format: "%.1f", Double(detail.totalGrade)))/100",
-                value: Double(detail.totalGrade)
-            )
-        }
-    }
+            Text("\(component.type) (\(component.ratio)%)")
+                .font(.callout)
 
-    private func progressRow(title: String, gradeText: String, value: Double) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(title)
-                    .font(.callout)
-                Spacer()
-                Text(gradeText)
-                    .font(.callout)
-                    .foregroundColor(.secondary)
-            }
+            Spacer(minLength: 8)
 
-            ProgressView(value: min(max(value, 0), 100), total: 100)
-                .tint(ColorUtil.dynamicColor(grade: value))
+            Text("\(String(format: "%.1f", component.grade))/100")
+                .font(.system(.callout, design: .rounded))
+                .monospacedDigit()
         }
     }
 }
 
-#Preview("GradeDetailDistributionSection Progress") {
-    @Previewable @State var renderMode = GradeDetailRenderMode.progress
-
-    GradeDetailDistributionSection(
-        detail: GradeQueryPreviewData.detail,
-        renderMode: $renderMode
-    )
-    .padding()
+#Preview("GradeDetailDistributionSection") {
+    GradeDetailDistributionSection(detail: GradeQueryPreviewData.detail)
+        .padding()
 }
 
-#Preview("GradeDetailDistributionSection Pie") {
-    @Previewable @State var renderMode = GradeDetailRenderMode.pie
-
+#Preview("GradeDetailDistributionSection 五段") {
     GradeDetailDistributionSection(
-        detail: GradeQueryPreviewData.detail,
-        renderMode: $renderMode
+        detail: EduHelper.GradeDetail(
+            components: [
+                EduHelper.GradeComponent(type: "考勤", grade: 80, ratio: 5),
+                EduHelper.GradeComponent(type: "平时作业", grade: 70, ratio: 15),
+                EduHelper.GradeComponent(type: "实验成绩", grade: 60, ratio: 20),
+                EduHelper.GradeComponent(type: "课程设计成绩", grade: 90, ratio: 20),
+                EduHelper.GradeComponent(type: "期末成绩", grade: 85, ratio: 40),
+            ],
+            totalGrade: 78
+        )
     )
     .padding()
 }

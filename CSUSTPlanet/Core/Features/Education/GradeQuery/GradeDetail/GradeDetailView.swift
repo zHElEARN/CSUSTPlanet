@@ -11,7 +11,6 @@ import SwiftUI
 struct GradeDetailView: View {
     let courseGrade: EduHelper.CourseGrade
 
-    @State private var renderMode: GradeDetailRenderMode = .progress
     @State private var detail: EduHelper.GradeDetail?
     @State private var isLoadingDetail = false
     @State private var errorToast: ToastState = .errorTitle
@@ -20,7 +19,6 @@ struct GradeDetailView: View {
         GradeDetailContent(
             courseGrade: courseGrade,
             detail: detail,
-            renderMode: $renderMode,
             isLoadingDetail: isLoadingDetail,
             errorToast: $errorToast,
             onRefresh: loadDetail

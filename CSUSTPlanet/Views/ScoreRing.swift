@@ -151,7 +151,7 @@ private struct ScoreRingGeometry {
             )
 
             return ScoreRingArc(
-                color: ColorUtil.courseColors[index % ColorUtil.courseColors.count],
+                color: ScoreRing.color(at: index),
                 startAngle: start,
                 endAngle: end,
                 innerRadius: innerRadius,
@@ -299,16 +299,17 @@ private struct RingAnnulusShape: Shape {
 
 // MARK: - 权重环
 
-/// 权重环：弧长表达权重，厚度表达得分率，环心显示总分。
+/// 权重环：弧长表达权重，厚度表达得分率。
 ///
-/// 全部几何都以 112pt 为基准等比缩放，尺寸完全由外部 frame 决定，调整大小只需要改外部那一个数字：
+/// 全部几何都以 112pt 为基准等比缩放，尺寸完全由外部 frame 决定，调整大小只需要改外部那一个数字。
+/// 环心默认留空，需要放总分时传入 `score`：
 ///
 /// ```swift
 /// ScoreRing(segments: [
 ///     ScoreSegment(weight: 30, progress: 0.92),
 ///     ScoreSegment(weight: 20, progress: 0.96),
 ///     ScoreSegment(weight: 50, progress: 0.90),
-/// ], score: 93)
+/// ])
 /// .frame(width: 140, height: 140)
 /// ```
 ///
@@ -318,7 +319,12 @@ private struct RingAnnulusShape: Shape {
 /// - `segments` 为空或总权重为 0 时只保留占位，不画环。
 struct ScoreRing: View {
     var segments: [ScoreSegment]
-    var score: Int
+    var score: Int? = nil
+
+    /// 第 index 段使用的颜色，外部画图例/圆点时用它保持一致
+    static func color(at index: Int) -> Color {
+        ColorUtil.courseColors[index % ColorUtil.courseColors.count]
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -333,9 +339,11 @@ struct ScoreRing: View {
                     }
                 }
 
-                Text("\(score)")
-                    .font(.system(size: geometry.scoreFontSize, weight: .bold))
-                    .foregroundStyle(.primary)
+                if let score {
+                    Text("\(score)")
+                        .font(.system(size: geometry.scoreFontSize, weight: .bold))
+                        .foregroundStyle(.primary)
+                }
             }
             .frame(width: side, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -497,4 +505,15 @@ private let scoreRingPreviewNormal: [ScoreSegment] = [
     ScoreRingPreviewItem(caption: "浅色层在深色模式下是暗色调，语义不变", segments: scoreRingPreviewNormal, score: 93)
         .padding()
         .preferredColorScheme(.dark)
+}
+
+#Preview("10 · 环心留空") {
+    VStack(alignment: .leading, spacing: 8) {
+        Text("不传 score 时环心为空")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        ScoreRing(segments: scoreRingPreviewNormal)
+            .frame(width: 140, height: 140)
+    }
+    .padding()
 }
