@@ -145,6 +145,7 @@ private struct ScoreRingGeometry {
                 : fullRingLimit
 
             let innerCorner = min(cornerRadius, cornerLimit)
+            let paleOuterCorner = min(cornerRadius, fullRingLimit)
             let solidOuterCorner = min(
                 max(solidThickness * ScoreRingDesign.solidOuterCornerRatio, ScoreRingDesign.minimumCornerRadius * scale),
                 cornerLimit
@@ -158,7 +159,7 @@ private struct ScoreRingGeometry {
                 outerRadius: outerRadius,
                 solidOuterRadius: solidOuterRadius,
                 innerCornerRadius: innerCorner,
-                outerCornerRadius: innerCorner,
+                outerCornerRadius: paleOuterCorner,
                 solidOuterCornerRadius: solidOuterCorner,
                 isFullCircle: isFullCircle
             )
