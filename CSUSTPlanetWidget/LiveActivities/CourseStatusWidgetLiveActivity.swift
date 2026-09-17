@@ -55,7 +55,7 @@ struct CourseStatusWidgetLiveActivity: Widget {
 
                         if context.state.now < context.attributes.startDate {
                             Text("距离上课还有")
-                                .font(.callout)
+                                .font(.caption2)
                             Text(timerInterval: context.state.now...context.attributes.startDate, countsDown: true)
                                 .font(.title2)
                                 .fontWeight(.bold)
@@ -73,22 +73,20 @@ struct CourseStatusWidgetLiveActivity: Widget {
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity)
                                 .foregroundStyle(.cyan)
+                            
+                            ProgressView(timerInterval: context.attributes.startDate...context.attributes.endDate, countsDown: false, label: {}, currentValueLabel: {})
+                                .progressViewStyle(.linear)
+                                .tint(.cyan)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
                         } else {
                             Text("已下课")
-                                .font(.title)
+                                .font(.title2)
                                 .fontWeight(.bold)
                                 .lineLimit(1)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: .infinity)
                                 .foregroundStyle(.green)
-                        }
-
-                        if context.state.now >= context.attributes.startDate && context.state.now <= context.attributes.endDate {
-                            ProgressView(timerInterval: context.attributes.startDate...context.attributes.endDate, countsDown: false)
-                                .progressViewStyle(.linear)
-                                .tint(.cyan)
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: .infinity)
                         }
                     }
                 }
