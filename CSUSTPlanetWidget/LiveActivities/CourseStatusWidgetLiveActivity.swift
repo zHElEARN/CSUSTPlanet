@@ -66,7 +66,7 @@ struct CourseStatusWidgetLiveActivity: Widget {
                         } else if context.state.now >= context.attributes.startDate && context.state.now <= context.attributes.endDate {
                             Text("距离下课还有")
                                 .font(.caption2)
-                            Text(timerInterval: context.state.now...context.attributes.endDate, countsDown: true)
+                            Text(timerInterval: context.attributes.startDate...context.attributes.endDate, countsDown: true)
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .lineLimit(1)
@@ -121,18 +121,37 @@ struct CourseStatusWidgetLiveActivity: Widget {
                         .font(.caption2)
                         .hidden()
                         .overlay(alignment: .trailing) {
-                            Text(timerInterval: context.state.now...context.attributes.endDate, countsDown: true)
+                            Text(timerInterval: context.attributes.startDate...context.attributes.endDate, countsDown: true)
                                 .font(.caption2)
                                 .monospacedDigit()
                         }
                 } else {
-                    Text("已下课")
-                        .font(.caption2)
+                    Image(systemName: "checkmark.circle")
+                        .foregroundStyle(.tint)
+                        .imageScale(.large)
                 }
             } minimal: {
-                Image("MinimalLogo")
-                    .resizable()
-                    .scaledToFit()
+                if context.state.now < context.attributes.startDate {
+                    ProgressView(timerInterval: context.state.now...context.attributes.startDate, countsDown: true) {
+                    } currentValueLabel: {
+                        Image(systemName: "timer")
+                            .foregroundStyle(.tint)
+                    }
+                    .progressViewStyle(.circular)
+                    .tint(.accentColor)
+                } else if context.state.now >= context.attributes.startDate && context.state.now <= context.attributes.endDate {
+                    ProgressView(timerInterval: context.attributes.startDate...context.attributes.endDate, countsDown: true) {
+                    } currentValueLabel: {
+                        Image(systemName: "hourglass")
+                            .foregroundStyle(.tint)
+                    }
+                    .progressViewStyle(.circular)
+                    .tint(.accentColor)
+                } else {
+                    Image(systemName: "checkmark.circle")
+                        .foregroundStyle(.tint)
+                        .imageScale(.large)
+                }
             }
         }
     }
@@ -145,7 +164,7 @@ struct LockScreenView: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(context.attributes.courseName)
-                    .font(.title2).bold()
+                    .font(.title3).bold().minimumScaleFactor(0.85)
 
                 Spacer()
 
@@ -172,7 +191,7 @@ struct LockScreenView: View {
                 VStack(alignment: .leading) {
                     Text("距离下课还有")
                         .font(.caption)
-                    Text(timerInterval: context.state.now...context.attributes.endDate)
+                    Text(timerInterval: context.attributes.startDate...context.attributes.endDate, countsDown: true)
                         .font(.largeTitle)
                         .bold()
                         .foregroundStyle(.cyan)
@@ -204,10 +223,86 @@ extension CourseStatusWidgetAttributes {
     }
 }
 
-#Preview("Notification", as: .content, using: CourseStatusWidgetAttributes.preview) {
+//#Preview("Notification", as: .content, using: CourseStatusWidgetAttributes.preview) {
+//    CourseStatusWidgetLiveActivity()
+//} contentStates: {
+//    CourseStatusWidgetAttributes.ContentState(now: .now)
+//}
+
+#Preview("LockScreen", as: .content, using: CourseStatusWidgetAttributes.preview) {
     CourseStatusWidgetLiveActivity()
 } contentStates: {
-    CourseStatusWidgetAttributes.ContentState(now: .now)
+    // 1. 上课前：设为开课前 10 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(-600)
+    )
+    
+    // 2. 上课中：设为开课后 30 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(1800)
+    )
+    
+    // 3. 已下课：设为结课后 5 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.endDate.addingTimeInterval(300)
+    )
+}
+
+#Preview("Expanded", as: .dynamicIsland(.expanded), using: CourseStatusWidgetAttributes.preview) {
+    CourseStatusWidgetLiveActivity()
+} contentStates: {
+    // 1. 上课前：设为开课前 10 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(-600)
+    )
+    
+    // 2. 上课中：设为开课后 30 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(1800)
+    )
+    
+    // 3. 已下课：设为结课后 5 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.endDate.addingTimeInterval(300)
+    )
+}
+
+#Preview("compact", as: .dynamicIsland(.compact), using: CourseStatusWidgetAttributes.preview) {
+    CourseStatusWidgetLiveActivity()
+} contentStates: {
+    // 1. 上课前：设为开课前 10 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(-600)
+    )
+    
+    // 2. 上课中：设为开课后 30 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(1800)
+    )
+    
+    // 3. 已下课：设为结课后 5 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.endDate.addingTimeInterval(300)
+    )
+}
+
+#Preview("minimal", as: .dynamicIsland(.minimal), using: CourseStatusWidgetAttributes.preview) {
+    CourseStatusWidgetLiveActivity()
+} contentStates: {
+    // 1. 上课前：设为开课前 10 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(-600)
+    )
+    
+    // 2. 上课中：设为开课后 30 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.startDate.addingTimeInterval(1800)
+    )
+    
+    // 3. 已下课：设为结课后 5 分钟
+    CourseStatusWidgetAttributes.ContentState(
+        now: CourseStatusWidgetAttributes.preview.endDate.addingTimeInterval(300)
+    )
 }
 
 #endif
