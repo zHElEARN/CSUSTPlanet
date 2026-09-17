@@ -79,7 +79,7 @@ struct ScheduleContent: View {
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle("日程 (Beta)")
+        .navigationTitle("日程")
         .inlineToolbarTitle()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

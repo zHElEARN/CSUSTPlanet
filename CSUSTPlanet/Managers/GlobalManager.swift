@@ -24,7 +24,6 @@ final class GlobalManager {
         appearance = MMKVHelper.GlobalManager.appearance
         isUserAgreementAccepted = MMKVHelper.GlobalManager.isUserAgreementAccepted
         isWebVPNModeEnabled = MMKVHelper.GlobalManager.isWebVPNModeEnabled
-        isScheduleTabEnabled = MMKVHelper.GlobalManager.isScheduleTabEnabled
         isOnboardingPresented = !MMKVHelper.GlobalManager.hasCompletedOnboarding
 
         #if os(macOS)
@@ -72,11 +71,6 @@ final class GlobalManager {
     var isWebVPNModeEnabled: Bool {
         didSet {
             MMKVHelper.GlobalManager.isWebVPNModeEnabled = isWebVPNModeEnabled
-        }
-    }
-    var isScheduleTabEnabled: Bool {
-        didSet {
-            MMKVHelper.GlobalManager.isScheduleTabEnabled = isScheduleTabEnabled
         }
     }
     var isOnboardingPresented: Bool
