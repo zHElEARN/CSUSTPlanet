@@ -85,7 +85,7 @@ private let featureSections: [FeatureSection] = [
 @MainActor
 private let primarySidebarItems: [SidebarPrimaryItem] = [
     SidebarPrimaryItem(tab: .overview, title: "概览", systemImage: "rectangle.stack"),
-    SidebarPrimaryItem(tab: .schedule, title: "日程 (Beta)", systemImage: "calendar"),
+    SidebarPrimaryItem(tab: .schedule, title: "日程", systemImage: "calendar"),
     SidebarPrimaryItem(tab: .profile, title: "我的", systemImage: "person"),
 ]
 
@@ -225,11 +225,9 @@ struct ContentView: View {
             }
             .badge(globalManager.unreadAnnouncementsCount)
 
-            if globalManager.isScheduleTabEnabled {
-                Tab("日程 (Beta)", systemImage: "calendar", value: AppTabItem.schedule) {
-                    navigationStack(for: .schedule) {
-                        ScheduleView()
-                    }
+            Tab("日程", systemImage: "calendar", value: AppTabItem.schedule) {
+                navigationStack(for: .schedule) {
+                    ScheduleView()
                 }
             }
 
@@ -292,13 +290,11 @@ struct ContentView: View {
                 .tag(AppTabItem.overview)
                 .badge(globalManager.unreadAnnouncementsCount)
 
-                if globalManager.isScheduleTabEnabled {
-                    navigationStack(for: .schedule) {
-                        ScheduleView()
-                    }
-                    .tabItem { Label("日程 (Beta)", systemImage: "calendar") }
-                    .tag(AppTabItem.schedule)
+                navigationStack(for: .schedule) {
+                    ScheduleView()
                 }
+                .tabItem { Label("日程", systemImage: "calendar") }
+                .tag(AppTabItem.schedule)
 
                 navigationStack(for: .features) {
                     FeaturesView()
@@ -325,7 +321,7 @@ struct ContentView: View {
                     )
                 ) {
                     Section {
-                        ForEach(primarySidebarItems.filter { $0.tab != .schedule || globalManager.isScheduleTabEnabled }) { item in
+                        ForEach(primarySidebarItems.filter { $0.tab != .schedule }) { item in
                             sidebarRow(
                                 title: item.title,
                                 systemImage: item.systemImage,
@@ -358,10 +354,8 @@ struct ContentView: View {
                         OverviewView()
                     }
                 case .schedule:
-                    if globalManager.isScheduleTabEnabled {
-                        navigationStack(for: .schedule) {
-                            ScheduleView()
-                        }
+                    navigationStack(for: .schedule) {
+                        ScheduleView()
                     }
                 case .profile:
                     navigationStack(for: .profile) {

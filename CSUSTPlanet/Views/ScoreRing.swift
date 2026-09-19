@@ -33,7 +33,7 @@ private enum ScoreRingDesign {
     /// 设计基准直径
     static let baseDiameter: CGFloat = 112
     /// 环宽与直径之比
-    static let thicknessRatio: CGFloat = 22.3 / 112
+    static let thicknessRatio: CGFloat = 2.0 / 9.0
     /// 相邻两段之间的缺口（度），存在极小段时会收缩，见 `gap(minimumShare:)`
     static let maximumGap: Double = 3.9
     /// 第一段起点：-90° 为 12 点方向，顺时针为正
