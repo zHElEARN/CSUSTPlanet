@@ -11,6 +11,7 @@ struct OverviewSettingsView: View {
     @State private var isAutoSortEnabled = MMKVHelper.OverviewSettings.isAutoSortEnabled
     @State private var cardOrder = MMKVHelper.OverviewSettings.orderedCards
     @State private var isResetAlertPresented = false
+    @State private var isGradeHidden = MMKVHelper.OverviewSettings.isGradeHidden
     #if os(macOS)
     @State private var targetedCard: OverviewCard?
     #endif
@@ -43,8 +44,13 @@ struct OverviewSettingsView: View {
             } footer: {
                 Text("开启后，宽屏下按卡片高度自动排列（瀑布流）；关闭后按上方卡片顺序从左到右、从上到下依次排列。窄屏只有一列，始终按卡片顺序显示。")
             }
-            .onChange(of: isAutoSortEnabled) { _, newValue in
-                MMKVHelper.OverviewSettings.isAutoSortEnabled = newValue
+
+            Section {
+                Toggle("隐藏成绩", isOn: $isGradeHidden)
+            } header: {
+                Text("隐私")
+            } footer: {
+                Text("开启后，成绩查询卡片将隐藏 GPA、平均分与成绩趋势图。")
             }
 
             Section {
@@ -61,11 +67,17 @@ struct OverviewSettingsView: View {
         .onChange(of: cardOrder) { _, newValue in
             MMKVHelper.OverviewSettings.orderedCards = newValue
         }
+        .onChange(of: isAutoSortEnabled) { _, newValue in
+            MMKVHelper.OverviewSettings.isAutoSortEnabled = newValue
+        }
+        .onChange(of: isGradeHidden) { _, newValue in
+            MMKVHelper.OverviewSettings.isGradeHidden = newValue
+        }
         .alert("恢复默认设置", isPresented: $isResetAlertPresented) {
             Button("取消", role: .cancel) {}
             Button("恢复", role: .destructive, action: resetToDefault)
         } message: {
-            Text("将卡片顺序与自动排序开关恢复为默认设置。")
+            Text("将卡片顺序、自动排序与隐藏成绩恢复为默认设置。")
         }
     }
 
@@ -111,6 +123,7 @@ struct OverviewSettingsView: View {
         withAnimation {
             cardOrder = OverviewCard.allCases
             isAutoSortEnabled = true
+            isGradeHidden = false
         }
     }
 }

@@ -11,7 +11,10 @@ import SwiftUI
 
 struct GradeOverviewView: View {
     @State private var viewModel = GradeOverviewViewModel()
+    @State private var isGradeHidden = MMKVHelper.OverviewSettings.isGradeHidden
     @Environment(Router.self) private var router
+
+    private let chartHeight: CGFloat = 80
 
     var body: some View {
         Button(action: { router.deepLinkTo(feature: .gradeQuery) }) {
@@ -21,6 +24,9 @@ struct GradeOverviewView: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .onReceive(MMKVHelper.OverviewSettings.$isGradeHidden) { newValue in
+            isGradeHidden = newValue
+        }
     }
 
     @ViewBuilder
@@ -53,7 +59,15 @@ struct GradeOverviewView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Spacer()
 
-                    if let gradeAnalysis = viewModel.gradeAnalysis {
+                    if isGradeHidden {
+                        Text("-.-")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(.secondary)
+
+                        Text("成绩已隐藏")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else if let gradeAnalysis = viewModel.gradeAnalysis {
                         Text(String(format: "%.2f", gradeAnalysis.overallGPA))
                             .font(.system(size: 32, weight: .bold, design: .rounded))
                             .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.overallGPA))
@@ -75,10 +89,15 @@ struct GradeOverviewView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
-                gradeTrendChart
-                    .frame(minWidth: 120, maxWidth: .infinity, maxHeight: 80, alignment: .trailing)
+                if isGradeHidden {
+                    Color.clear
+                        .frame(minWidth: 120, maxWidth: .infinity, minHeight: chartHeight, maxHeight: chartHeight, alignment: .trailing)
+                } else {
+                    gradeTrendChart
+                        .frame(minWidth: 120, maxWidth: .infinity, maxHeight: chartHeight, alignment: .trailing)
+                }
             }
-            .redacted(reason: viewModel.isLoadingGrades ? .placeholder : [])
+            .redacted(reason: viewModel.isLoadingGrades && !isGradeHidden ? .placeholder : [])
         }
         .frame(maxWidth: .infinity)
     }

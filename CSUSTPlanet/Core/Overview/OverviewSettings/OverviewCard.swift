@@ -49,6 +49,9 @@ extension MMKVHelper {
         @MMKVStorage(key: "OverviewSettings.isAutoSortEnabled", defaultValue: true)
         static var isAutoSortEnabled: Bool
 
+        @MMKVStorage(key: "OverviewSettings.isGradeHidden", defaultValue: false)
+        static var isGradeHidden: Bool
+
         @MMKVStorage(key: "OverviewSettings.cardOrder", defaultValue: OverviewCard.allCases.map(\.rawValue))
         static var cardOrder: [String]
 
