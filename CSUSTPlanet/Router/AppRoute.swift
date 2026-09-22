@@ -41,11 +41,14 @@ enum AppRoute: Hashable {
 
     enum OverviewRoute: Hashable {
         case announcementList(viewModel: AnnouncementListViewModel)
+        case overviewSettings
 
         var trackSegment: String {
             switch self {
             case .announcementList:
                 return "AnnouncementList"
+            case .overviewSettings:
+                return "OverviewSettings"
             }
         }
 
@@ -54,6 +57,8 @@ enum AppRoute: Hashable {
             switch self {
             case .announcementList(let viewModel):
                 AnnouncementListView(viewModel: viewModel)
+            case .overviewSettings:
+                OverviewSettingsView()
             }
         }
     }

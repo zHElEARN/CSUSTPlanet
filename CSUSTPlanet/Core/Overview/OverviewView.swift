@@ -11,6 +11,8 @@ import SwiftUI
 struct OverviewView: View {
     @Bindable var globalManager = GlobalManager.shared
     @State private var activeCourseSchedule = MMKVHelper.CourseSchedule.activeCourseSchedule
+    @State private var isAutoSortEnabled = MMKVHelper.OverviewSettings.isAutoSortEnabled
+    @State private var cardOrder = MMKVHelper.OverviewSettings.orderedCards
 
     private let overviewSpacing: CGFloat = 24
     private let minimumColumnWidth: CGFloat = 320
@@ -56,19 +58,38 @@ struct OverviewView: View {
         }
         .navigationTitle("概览")
         .navigationSubtitleCompat(overviewSubtitle)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                NavigationLink(value: AppRoute.overview(.overviewSettings)) {
+                    Label("设置", systemImage: "gearshape")
+                }
+            }
+        }
         .onReceive(MMKVHelper.CourseSchedule.$activeCourseSchedule) { schedule in
             activeCourseSchedule = schedule
+        }
+        .onReceive(MMKVHelper.OverviewSettings.$isAutoSortEnabled) { newValue in
+            isAutoSortEnabled = newValue
+        }
+        .onReceive(MMKVHelper.OverviewSettings.$cardOrder) { newValue in
+            cardOrder = OverviewCard.sanitized(newValue)
         }
     }
 
     @ViewBuilder
     private var responsiveOverviewContent: some View {
         ViewThatFits(in: .horizontal) {
-            WaterfallLayout(columns: 2, spacing: overviewSpacing) {
-                overviewCards
+            if isAutoSortEnabled {
+                WaterfallLayout(columns: 2, spacing: overviewSpacing) {
+                    overviewCards
+                }
+                .frame(minWidth: minimumColumnWidth * 2 + overviewSpacing, alignment: .top)
+                .padding(.horizontal)
+            } else {
+                manualColumnsLayout
+                    .frame(minWidth: minimumColumnWidth * 2 + overviewSpacing, alignment: .top)
+                    .padding(.horizontal)
             }
-            .frame(minWidth: minimumColumnWidth * 2 + overviewSpacing, alignment: .top)
-            .padding(.horizontal)
 
             WaterfallLayout(columns: 1, spacing: overviewSpacing) {
                 overviewCards
@@ -77,14 +98,45 @@ struct OverviewView: View {
         }
     }
 
+    private var manualColumnsLayout: some View {
+        HStack(alignment: .top, spacing: overviewSpacing) {
+            overviewColumn {
+                ForEach(stride(from: 0, to: cardOrder.count, by: 2).map { cardOrder[$0] }, id: \.self) { card in
+                    overviewCardView(for: card)
+                }
+            }
+
+            overviewColumn {
+                ForEach(stride(from: 1, to: cardOrder.count, by: 2).map { cardOrder[$0] }, id: \.self) { card in
+                    overviewCardView(for: card)
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private var overviewCards: some View {
-        CourseOverviewView()
-        GradeOverviewView()
-        DormOverviewView()
-        AssignmentOverviewView()
-        ExamOverviewView()
-        AnnouncementOverviewView()
+        ForEach(cardOrder, id: \.self) { card in
+            overviewCardView(for: card)
+        }
+    }
+
+    @ViewBuilder
+    private func overviewCardView(for card: OverviewCard) -> some View {
+        switch card {
+        case .course:
+            CourseOverviewView()
+        case .grade:
+            GradeOverviewView()
+        case .dorm:
+            DormOverviewView()
+        case .assignment:
+            AssignmentOverviewView()
+        case .exam:
+            ExamOverviewView()
+        case .announcement:
+            AnnouncementOverviewView()
+        }
     }
 
     @ViewBuilder
