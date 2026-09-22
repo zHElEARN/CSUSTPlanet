@@ -52,6 +52,9 @@ extension MMKVHelper {
         @MMKVStorage(key: "OverviewSettings.isGradeHidden", defaultValue: false)
         static var isGradeHidden: Bool
 
+        @MMKVStorage(key: "OverviewSettings.isDormHidden", defaultValue: false)
+        static var isDormHidden: Bool
+
         @MMKVStorage(key: "OverviewSettings.cardOrder", defaultValue: OverviewCard.allCases.map(\.rawValue))
         static var cardOrder: [String]
 

@@ -11,7 +11,10 @@ import SwiftUI
 
 struct DormOverviewView: View {
     @State private var viewModel = DormOverviewViewModel()
+    @State private var isDormHidden = MMKVHelper.OverviewSettings.isDormHidden
     @Environment(Router.self) private var router
+
+    private let chartHeight: CGFloat = 120
 
     var body: some View {
         Button(action: { router.deepLinkTo(feature: .electricityQuery, path: dormNavigationPath) }) {
@@ -22,6 +25,9 @@ struct DormOverviewView: View {
         }
         .buttonStyle(.plain)
         .onAppear(perform: viewModel.onAppear)
+        .onReceive(MMKVHelper.OverviewSettings.$isDormHidden) { newValue in
+            isDormHidden = newValue
+        }
     }
 
     @ViewBuilder
@@ -34,7 +40,7 @@ struct DormOverviewView: View {
                     .fontDesign(.rounded)
 
                 if let dorm = viewModel.primaryDorm {
-                    Text(dorm.room)
+                    Text(isDormHidden ? "已隐藏" : dorm.room)
                         .font(.caption)
                         .fontWeight(.bold)
                         .foregroundStyle(.secondary)
@@ -67,7 +73,23 @@ struct DormOverviewView: View {
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 10) {
                     Spacer()
-                    if let dorm = viewModel.primaryDorm, let lastFetchElectricity = dorm.lastFetchElectricity {
+                    if viewModel.primaryDorm != nil, isDormHidden {
+                        HStack(alignment: .lastTextBaseline, spacing: 4) {
+                            Text("-.-")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundStyle(.secondary)
+                                .minimumScaleFactor(0.7)
+
+                            Text("kWh")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Text("电量已隐藏")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    } else if let dorm = viewModel.primaryDorm, let lastFetchElectricity = dorm.lastFetchElectricity {
                         HStack(alignment: .lastTextBaseline, spacing: 4) {
                             Text(String(format: "%.2f", lastFetchElectricity))
                                 .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -100,8 +122,13 @@ struct DormOverviewView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
-                dormTrendChart
-                    .frame(minWidth: 120, maxWidth: .infinity, maxHeight: 120, alignment: .trailing)
+                if viewModel.primaryDorm != nil, isDormHidden {
+                    Color.clear
+                        .frame(minWidth: 120, maxWidth: .infinity, minHeight: chartHeight, maxHeight: chartHeight, alignment: .trailing)
+                } else {
+                    dormTrendChart
+                        .frame(minWidth: 120, maxWidth: .infinity, maxHeight: chartHeight, alignment: .trailing)
+                }
             }
         }
         .frame(maxWidth: .infinity)

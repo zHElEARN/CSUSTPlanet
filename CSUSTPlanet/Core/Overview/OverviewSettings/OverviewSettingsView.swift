@@ -12,6 +12,7 @@ struct OverviewSettingsView: View {
     @State private var cardOrder = MMKVHelper.OverviewSettings.orderedCards
     @State private var isResetAlertPresented = false
     @State private var isGradeHidden = MMKVHelper.OverviewSettings.isGradeHidden
+    @State private var isDormHidden = MMKVHelper.OverviewSettings.isDormHidden
     #if os(macOS)
     @State private var targetedCard: OverviewCard?
     #endif
@@ -47,10 +48,11 @@ struct OverviewSettingsView: View {
 
             Section {
                 Toggle("隐藏成绩", isOn: $isGradeHidden)
+                Toggle("隐藏宿舍电量", isOn: $isDormHidden)
             } header: {
                 Text("隐私")
             } footer: {
-                Text("开启后，成绩查询卡片将隐藏 GPA、平均分与成绩趋势图。")
+                Text("开启后，成绩查询卡片将隐藏 GPA、平均分与成绩趋势图；宿舍电量卡片将隐藏房间号、电量数值与电量趋势图。")
             }
 
             Section {
@@ -73,11 +75,14 @@ struct OverviewSettingsView: View {
         .onChange(of: isGradeHidden) { _, newValue in
             MMKVHelper.OverviewSettings.isGradeHidden = newValue
         }
+        .onChange(of: isDormHidden) { _, newValue in
+            MMKVHelper.OverviewSettings.isDormHidden = newValue
+        }
         .alert("恢复默认设置", isPresented: $isResetAlertPresented) {
             Button("取消", role: .cancel) {}
             Button("恢复", role: .destructive, action: resetToDefault)
         } message: {
-            Text("将卡片顺序、自动排序与隐藏成绩恢复为默认设置。")
+            Text("将卡片顺序、自动排序、隐藏成绩与隐藏宿舍电量恢复为默认设置。")
         }
     }
 
@@ -124,6 +129,7 @@ struct OverviewSettingsView: View {
             cardOrder = OverviewCard.allCases
             isAutoSortEnabled = true
             isGradeHidden = false
+            isDormHidden = false
         }
     }
 }
