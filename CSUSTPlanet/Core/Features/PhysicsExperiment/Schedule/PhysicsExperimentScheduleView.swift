@@ -5,191 +5,75 @@
 //  Created by Zhe_Learn on 2025/11/3.
 //
 
-import AlertToast
 import CSUSTKit
 import SwiftUI
 
 struct PhysicsExperimentScheduleView: View {
-    @State var viewModel = PhysicsExperimentScheduleViewModel()
-    @State private var isLoginPresented: Bool = false
+    @State private var data: Cached<[PhysicsExperimentHelper.Course]>? = MMKVHelper.PhysicsExperiment.scheduleCache
+
+    @State private var isLoadingSchedules = false
+
+    @State private var errorToast: ToastState = .errorTitle
+    @State private var warningToast: ToastState = .warningTitle
+
+    @State private var isLoginPresented = false
+
+    @State private var isInitial = true
 
     var body: some View {
-        Group {
-            ScrollView {
-                if let data = viewModel.data, !data.value.isEmpty {
-                    LazyVStack(spacing: 16) {
-                        ForEach(data.value, id: \.id) { course in
-                            ExperimentCardView(course: course)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical)
-                } else {
-                    CustomGroupBox {
-                        ContentUnavailableView("暂无实验安排", systemImage: "flask", description: Text("没有找到任何大物实验安排信息"))
-                    }
-                    .padding()
-                }
-            }
+        PhysicsExperimentScheduleContent(
+            data: data,
+            isLoadingSchedules: isLoadingSchedules,
+            isLoginPresented: $isLoginPresented,
+            errorToast: $errorToast,
+            warningToast: $warningToast,
+            onRefreshSchedules: loadSchedules
+        )
+        .onReceive(MMKVHelper.PhysicsExperiment.$scheduleCache.dropFirst().receive(on: RunLoop.main)) { cachedData in
+            data = cachedData
         }
-        .navigationTitle("大物实验安排")
-        .navigationSubtitleCompat("共\(viewModel.data?.value.count ?? 0)个实验")
-        .toolbar {
-            ToolbarItem(placement: .navigation) {
-                Button(action: { isLoginPresented = true }) {
-                    Text("登录")
-                }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button(asyncAction: viewModel.loadSchedules) {
-                    if viewModel.isLoadingSchedules {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("刷新", systemImage: "arrow.clockwise")
-                    }
-                }
-            }
-        }
-        .sheet(isPresented: $isLoginPresented) {
-            PhysicsExperimentLoginView()
-        }
-        .errorToast($viewModel.errorToast)
-        .warningToast($viewModel.warningToast)
         .onChange(of: isLoginPresented) { _, newValue in
-            if !newValue { Task { await viewModel.loadSchedules() } }
+            if !newValue { Task { await loadSchedules() } }
         }
-        .task { await viewModel.loadInitial() }
-        .safeRefreshable { await viewModel.loadSchedules() }
-    }
-}
-
-private struct ExperimentCardView: View {
-    let course: PhysicsExperimentHelper.Course
-    let now: Date = .now
-
-    private var isFinished: Bool {
-        return now > course.endTime
+        .task {
+            guard isInitial else { return }
+            isInitial = false
+            await loadSchedules()
+        }
     }
 
-    private var daysUntil: Int {
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: now)
-        let courseDay = calendar.startOfDay(for: course.startTime)
-        let components = calendar.dateComponents([.day], from: startOfDay, to: courseDay)
-        return components.day ?? 0
-    }
+    // MARK: - Methods
 
-    var body: some View {
-        CustomGroupBox {
-            VStack(alignment: .leading, spacing: 0) {
-                // Header
-                HStack(alignment: .top, spacing: 12) {
-                    Text(course.name)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(isFinished ? .secondary : .primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineLimit(2)
+    private func loadSchedules() async {
+        guard !isLoadingSchedules else { return }
+        isLoadingSchedules = true
+        defer { isLoadingSchedules = false }
 
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 6) {
-                        if isFinished {
-                            Text("已结束")
-                                .font(.caption.bold())
-                                .foregroundColor(.gray)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.gray.opacity(0.15), in: Capsule())
-                        } else {
-                            if daysUntil == 0 {
-                                Text("今天")
-                                    .font(.caption.bold())
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.red, in: Capsule())
-                            } else if daysUntil == 1 {
-                                Text("明天")
-                                    .font(.caption.bold())
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.orange, in: Capsule())
-                            } else {
-                                Text("还有 \(daysUntil) 天")
-                                    .font(.caption.bold())
-                                    .foregroundColor(.blue)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.blue.opacity(0.1), in: Capsule())
-                            }
-                        }
-
-                        Text("批次 \(course.batch)")
-                            .font(.caption.bold())
-                            .foregroundStyle(isFinished ? .gray : .orange)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(isFinished ? Color.gray.opacity(0.15) : Color.orange.opacity(0.15))
-                            .clipShape(Capsule())
+        do {
+            let schedules = try await PhysicsExperimentManager.shared.getCourses()
+            let cachedData = Cached(cachedAt: .now, value: schedules)
+            MMKVHelper.PhysicsExperiment.scheduleCache = cachedData
+            data = cachedData
+        } catch {
+            if case PhysicsExperimentHelper.PhysicsExperimentError.notLoggedIn = error {
+                if let cachedData = MMKVHelper.PhysicsExperiment.scheduleCache {
+                    data = cachedData
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        warningToast.show(message: "未登录大物实验，\n已加载上次查询数据（\(cachedData.cachedAt.formatted(.relative(presentation: .named)))）")
                     }
+                } else {
+                    errorToast.show(message: error.localizedDescription)
                 }
-                .padding(.bottom, 12)
-
-                Divider()
-                    .padding(.bottom, 12)
-
-                // Info Rows
-                VStack(alignment: .leading, spacing: 10) {
-                    detailRow(icon: "calendar", color: .blue, text: formatTime(course: course), finished: isFinished)
-
-                    detailRow(icon: "mappin.and.ellipse", color: .red, text: course.location, finished: isFinished)
-
-                    HStack(spacing: 0) {
-                        detailRow(icon: "person.fill", color: .purple, text: course.teacher, finished: isFinished)
-                        Spacer()
-                        detailRow(icon: "clock", color: .orange, text: "\(course.classHours) 课时", finished: isFinished)
+            } else {
+                if let cachedData = MMKVHelper.PhysicsExperiment.scheduleCache {
+                    data = cachedData
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        warningToast.show(message: "错误：\(error.localizedDescription)，\n已加载上次查询数据（\(cachedData.cachedAt.formatted(.relative(presentation: .named)))）")
                     }
+                } else {
+                    errorToast.show(message: error.localizedDescription)
                 }
             }
         }
-        .opacity(isFinished ? 0.6 : 1.0)
-        .saturation(isFinished ? 0.0 : 1.0)
-    }
-
-    // 辅助视图：详情行
-    @ViewBuilder
-    private func detailRow(icon: String, color: Color, text: String, finished: Bool) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.caption)
-                .foregroundColor(finished ? .gray : color)
-                .frame(width: 16)
-
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(finished ? .secondary : .primary)
-                .lineLimit(1)
-        }
-    }
-
-    private func formatTime(course: PhysicsExperimentHelper.Course) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateStr = dateFormatter.string(from: course.startTime)
-
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
-        let startStr = timeFormatter.string(from: course.startTime)
-        let endStr = timeFormatter.string(from: course.endTime)
-
-        return "\(dateStr) 周\(course.dayOfWeek.stringValue) \(startStr)-\(endStr)"
-    }
-}
-
-#Preview {
-    NavigationStack {
-        PhysicsExperimentScheduleView()
     }
 }
