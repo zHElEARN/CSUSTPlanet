@@ -109,6 +109,12 @@ struct ProfileView: View {
                         .foregroundColor(.primary)
                 }
 
+                Link(destination: URL(string: "https://testflight.apple.com/join/xMbzN8aU")!) {
+                    Text("加入 TestFlight")
+                        .foregroundColor(EnvironmentUtil.environment == .testFlight ? .secondary : .primary)
+                }
+                .disabled(EnvironmentUtil.environment == .testFlight)
+
                 NavigationLink(value: AppRoute.profile(.feedback)) {
                     Text("意见反馈")
                 }
