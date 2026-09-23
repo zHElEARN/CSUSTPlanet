@@ -39,16 +39,10 @@ struct DormOverviewView: View {
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
 
-                if let dorm = viewModel.primaryDorm {
-                    Text(isDormHidden ? "已隐藏" : dorm.room)
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("未绑定")
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
+                if viewModel.primaryDorm != nil {
+                    OverviewHiddenToggleButton(isHidden: isDormHidden) {
+                        MMKVHelper.OverviewSettings.isDormHidden.toggle()
+                    }
                 }
 
                 Spacer()
@@ -72,6 +66,17 @@ struct DormOverviewView: View {
 
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 10) {
+                    Group {
+                        if let dorm = viewModel.primaryDorm {
+                            Text(isDormHidden ? "已隐藏" : dorm.room)
+                        } else {
+                            Text("未绑定")
+                        }
+                    }
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+
                     Spacer()
                     if viewModel.primaryDorm != nil, isDormHidden {
                         HStack(alignment: .lastTextBaseline, spacing: 4) {

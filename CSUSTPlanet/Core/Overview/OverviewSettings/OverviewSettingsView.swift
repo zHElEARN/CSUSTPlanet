@@ -78,6 +78,12 @@ struct OverviewSettingsView: View {
         .onChange(of: isDormHidden) { _, newValue in
             MMKVHelper.OverviewSettings.isDormHidden = newValue
         }
+        .onReceive(MMKVHelper.OverviewSettings.$isGradeHidden) { newValue in
+            isGradeHidden = newValue
+        }
+        .onReceive(MMKVHelper.OverviewSettings.$isDormHidden) { newValue in
+            isDormHidden = newValue
+        }
         .alert("恢复默认设置", isPresented: $isResetAlertPresented) {
             Button("取消", role: .cancel) {}
             Button("恢复", role: .destructive, action: resetToDefault)

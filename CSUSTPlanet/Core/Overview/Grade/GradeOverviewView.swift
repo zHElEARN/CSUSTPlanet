@@ -38,6 +38,10 @@ struct GradeOverviewView: View {
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
 
+                OverviewHiddenToggleButton(isHidden: isGradeHidden) {
+                    MMKVHelper.OverviewSettings.isGradeHidden.toggle()
+                }
+
                 Spacer()
 
                 if let lastUpdated = viewModel.cachedAt {
