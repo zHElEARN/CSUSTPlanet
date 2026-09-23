@@ -11,6 +11,7 @@ import SwiftUI
 /// 日程的业务类型
 enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
     case course
+    case physicsExperiment
     case exam
     case assignment
     case electricity
@@ -19,6 +20,8 @@ enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
         switch self {
         case .course:
             return "课程"
+        case .physicsExperiment:
+            return "大物实验"
         case .exam:
             return "考试"
         case .assignment:
@@ -32,6 +35,8 @@ enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
         switch self {
         case .course:
             return .blue
+        case .physicsExperiment:
+            return .teal
         case .exam:
             return .orange
         case .assignment:
@@ -45,12 +50,14 @@ enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
         switch self {
         case .course:
             return 0
-        case .exam:
+        case .physicsExperiment:
             return 1
-        case .assignment:
+        case .exam:
             return 2
-        case .electricity:
+        case .assignment:
             return 3
+        case .electricity:
+            return 4
         }
     }
 }

@@ -22,6 +22,7 @@ final class ScheduleEventStore {
     private var eventsByKind: [ScheduleEventKind: [ScheduleEvent]] = [:]
     private let initialEventKinds: Set<ScheduleEventKind> = [
         .course,
+        .physicsExperiment,
         .exam,
         .assignment,
         .electricity,
@@ -50,6 +51,17 @@ final class ScheduleEventStore {
                 self.replaceEvents(
                     for: .course,
                     with: Self.makeCourseEvents(from: cached?.value)
+                )
+            }
+            .store(in: &cancellables)
+
+        MMKVHelper.PhysicsExperiment.$scheduleCache
+            .receive(on: RunLoop.main)
+            .sink { [weak self] cached in
+                guard let self else { return }
+                self.replaceEvents(
+                    for: .physicsExperiment,
+                    with: Self.makePhysicsExperimentEvents(from: cached?.value ?? [])
                 )
             }
             .store(in: &cancellables)
@@ -258,6 +270,36 @@ final class ScheduleEventStore {
         }
 
         return events
+    }
+
+    private static func makePhysicsExperimentEvents(from courses: [PhysicsExperimentHelper.Course]) -> [ScheduleEvent] {
+        courses.compactMap { course in
+            guard course.endTime > course.startTime else { return nil }
+
+            let details = [
+                detail("批次", course.batch),
+                detail("周次", "第\(course.week)周"),
+                detail("星期", course.dayOfWeek.chineseLongString),
+                detail("课时", "\(course.classHours)课时"),
+            ].compactMap { $0 }
+
+            return ScheduleEvent(
+                id: stableID([
+                    "physicsExperiment",
+                    String(course.id),
+                    course.startTime.timeIntervalSince1970.description,
+                    course.endTime.timeIntervalSince1970.description,
+                ]),
+                kind: .physicsExperiment,
+                timing: .interval(start: course.startTime, end: course.endTime),
+                content: ScheduleEventContent(
+                    title: course.name,
+                    subtitle: course.teacher.nilIfEmpty,
+                    location: course.location.nilIfEmpty,
+                    details: details
+                )
+            )
+        }
     }
 
     private static func makeExamEvents(from exams: [EduHelper.Exam]) -> [ScheduleEvent] {

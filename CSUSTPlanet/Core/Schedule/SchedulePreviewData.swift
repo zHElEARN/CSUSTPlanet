@@ -33,6 +33,25 @@ enum SchedulePreviewData {
             )
         ),
         ScheduleEvent(
+            id: "preview-physics-experiment",
+            kind: .physicsExperiment,
+            timing: .interval(
+                start: date(dayOffset: 0, hour: 10, minute: 0),
+                end: date(dayOffset: 0, hour: 11, minute: 40)
+            ),
+            content: ScheduleEventContent(
+                title: "用示波器观测周期性电信号",
+                subtitle: "张三",
+                location: "工科楼 A301",
+                details: [
+                    ScheduleEventDetail(label: "批次", value: "周一第3批"),
+                    ScheduleEventDetail(label: "周次", value: "第 3 周"),
+                    ScheduleEventDetail(label: "星期", value: "星期一"),
+                    ScheduleEventDetail(label: "课时", value: "2 课时"),
+                ]
+            )
+        ),
+        ScheduleEvent(
             id: "preview-exam",
             kind: .exam,
             timing: .interval(
