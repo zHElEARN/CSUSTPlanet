@@ -321,7 +321,7 @@ struct ContentView: View {
                     )
                 ) {
                     Section {
-                        ForEach(primarySidebarItems.filter { $0.tab != .schedule }) { item in
+                        ForEach(primarySidebarItems) { item in
                             sidebarRow(
                                 title: item.title,
                                 systemImage: item.systemImage,
