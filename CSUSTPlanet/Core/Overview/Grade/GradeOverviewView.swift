@@ -93,13 +93,9 @@ struct GradeOverviewView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
-                if isGradeHidden {
-                    Color.clear
-                        .frame(minWidth: 120, maxWidth: .infinity, minHeight: chartHeight, maxHeight: chartHeight, alignment: .trailing)
-                } else {
-                    gradeTrendChart
-                        .frame(minWidth: 120, maxWidth: .infinity, maxHeight: chartHeight, alignment: .trailing)
-                }
+                gradeTrendChart
+                    .frame(minWidth: 120, maxWidth: .infinity, maxHeight: chartHeight, alignment: .trailing)
+                    .opacity(isGradeHidden ? 0 : 1)
             }
             .redacted(reason: viewModel.isLoadingGrades && !isGradeHidden ? .placeholder : [])
         }

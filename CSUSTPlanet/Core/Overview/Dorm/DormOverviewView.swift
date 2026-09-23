@@ -127,13 +127,9 @@ struct DormOverviewView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
-                if viewModel.primaryDorm != nil, isDormHidden {
-                    Color.clear
-                        .frame(minWidth: 120, maxWidth: .infinity, minHeight: chartHeight, maxHeight: chartHeight, alignment: .trailing)
-                } else {
-                    dormTrendChart
-                        .frame(minWidth: 120, maxWidth: .infinity, maxHeight: chartHeight, alignment: .trailing)
-                }
+                dormTrendChart
+                    .frame(minWidth: 120, maxWidth: .infinity, maxHeight: chartHeight, alignment: .trailing)
+                    .opacity(isDormHidden ? 0 : 1)
             }
         }
         .frame(maxWidth: .infinity)
