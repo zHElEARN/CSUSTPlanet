@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/zHElEARN/CSUSTKit.git",
       "state" : {
-        "revision" : "55accfde593ed8f27b90415089733651e58c814d",
-        "version" : "2.1.6"
+        "branch" : "feat/chaoxing-support",
+        "revision" : "cd3ea2c8beeea7cf0f89a108801b5f0a7c6e9240"
       }
     },
     {
