@@ -38,19 +38,19 @@ struct SidebarPrimaryItem: Identifiable {
 @MainActor
 private let featureSections: [FeatureSection] = [
     FeatureSection(
-        title: "教务系统",
+        title: "课程学习",
         items: [
             FeatureItem(id: .courseSchedule),
-            FeatureItem(id: .gradeQuery),
-            FeatureItem(id: .examSchedule),
-            FeatureItem(id: .gradeAnalysis),
+            FeatureItem(id: .courses),
+            FeatureItem(id: .assignments),
         ]
     ),
     FeatureSection(
-        title: "网络课程中心",
+        title: "成绩与考试",
         items: [
-            FeatureItem(id: .courses),
-            FeatureItem(id: .assignments),
+            FeatureItem(id: .gradeQuery),
+            FeatureItem(id: .gradeAnalysis),
+            FeatureItem(id: .examSchedule),
         ]
     ),
     FeatureSection(

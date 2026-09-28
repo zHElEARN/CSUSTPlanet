@@ -30,9 +30,9 @@ struct FeaturesView: View {
                         .padding(.top, 10)
                 }
 
-                educationalSystemSection
+                courseLearningSection
 
-                moocSection
+                gradeAndExamSection
 
                 VStack(spacing: spacing) {
                     campusToolsSection
@@ -62,27 +62,27 @@ struct FeaturesView: View {
 
     // MARK: - Extracted Subviews
 
-    private var educationalSystemSection: some View {
+    private var courseLearningSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "教务系统", color: .blue)
+            sectionHeader(title: "课程学习", color: .purple)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
                 HeroCard(route: .features(.education(.courseSchedule(.main))), title: "我的课表", icon: "calendar", color: .purple)
-                HeroCard(route: .features(.education(.gradeQuery(.main))), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
-                HeroCard(route: .features(.education(.examSchedule)), title: "考试安排", icon: "pencil.and.outline", color: .orange)
-                HeroCard(route: .features(.education(.gradeAnalysis)), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
+                HeroCard(route: .features(.mooc(.courses(.main))), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
+                HeroCard(route: .features(.mooc(.assignments)), title: "作业", icon: "list.bullet.clipboard", color: .red)
             }
         }
         .padding(.horizontal, horizontalPadding)
     }
 
-    private var moocSection: some View {
+    private var gradeAndExamSection: some View {
         VStack(spacing: spacing) {
-            sectionHeader(title: "网络课程中心", color: .indigo)
+            sectionHeader(title: "成绩与考试", color: .blue)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
-                HeroCard(route: .features(.mooc(.courses(.main))), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
-                HeroCard(route: .features(.mooc(.assignments)), title: "作业", icon: "list.bullet.clipboard", color: .red)
+                HeroCard(route: .features(.education(.gradeQuery(.main))), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
+                HeroCard(route: .features(.education(.gradeAnalysis)), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
+                HeroCard(route: .features(.education(.examSchedule)), title: "考试安排", icon: "pencil.and.outline", color: .orange)
             }
         }
         .padding(.horizontal, horizontalPadding)
