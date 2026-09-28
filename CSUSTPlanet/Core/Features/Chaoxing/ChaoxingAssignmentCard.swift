@@ -12,6 +12,16 @@ import SwiftUI
 struct ChaoxingAssignmentCard: View {
     let assignment: ChaoxingHelper.Assignment
 
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #else
+    @State private var isWebPagePresented = false
+    #endif
+
+    private var detailURL: URL? {
+        URL(string: assignment.detailURL)
+    }
+
     private var deadlineStyle: RelativeDateStyle? {
         assignment.deadline.map {
             RelativeDateStyle.assignment(deadline: $0, isSubmitted: assignment.isCompleted)
@@ -19,6 +29,38 @@ struct ChaoxingAssignmentCard: View {
     }
 
     var body: some View {
+        Group {
+            if let detailURL {
+                Button {
+                    openDetail(detailURL)
+                } label: {
+                    cardContent
+                }
+                .buttonStyle(.plain)
+                .contentShape(.rect)
+            } else {
+                cardContent
+            }
+        }
+        #if os(iOS)
+        .sheet(isPresented: $isWebPagePresented) {
+            if let detailURL {
+                NavigationStack {
+                    ChaoxingAssignmentDetailView(detailURL: detailURL)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("关闭") {
+                                isWebPagePresented = false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        #endif
+    }
+
+    private var cardContent: some View {
         CustomGroupBox {
             HStack(alignment: .top, spacing: 12) {
                 iconView
@@ -42,6 +84,14 @@ struct ChaoxingAssignmentCard: View {
                 }
             }
         }
+    }
+
+    private func openDetail(_ url: URL) {
+        #if os(macOS)
+        openWindow(id: ChaoxingAssignmentDetailScene.windowID, value: url)
+        #else
+        isWebPagePresented = true
+        #endif
     }
 
     @ViewBuilder
