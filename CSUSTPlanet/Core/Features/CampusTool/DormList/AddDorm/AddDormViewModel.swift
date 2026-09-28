@@ -12,8 +12,6 @@ import SwiftUI
 @MainActor
 @Observable
 final class AddDormViewModel: Observable {
-    @ObservationIgnored private let campusCardHelper = CampusCardHelper()
-
     var errorToast: ToastState = .errorTitle
 
     var selectedCampus: CampusCardHelper.Campus = .jinpenling {

@@ -21,8 +21,6 @@ final class DormOverviewViewModel {
         let chartYDomain: ClosedRange<Double>
     }
 
-    @ObservationIgnored let campusCardHelper = CampusCardHelper()
-
     var primaryDorm: DormGRDB?
     var electricityExhaustionInfo: String?
     var chartRecords: [ElectricityRecordGRDB] = []
