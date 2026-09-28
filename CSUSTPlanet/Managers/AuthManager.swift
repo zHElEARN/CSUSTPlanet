@@ -45,6 +45,7 @@ final class AuthManager {
     private(set) var eduHelper: EduHelper
     private(set) var moocHelper: MoocHelper
     private(set) var campusCardHelper: CampusCardHelper
+    private(set) var chaoxingHelper: ChaoxingHelper
 
     let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
     private let session: Session = CookieHelper.shared.session
@@ -53,6 +54,7 @@ final class AuthManager {
     @ObservationIgnored private var eduLoginTask: Task<Void, Error>?
     @ObservationIgnored private var moocLoginTask: Task<Void, Error>?
     @ObservationIgnored private var campusCardLoginTask: Task<Void, Error>?
+    @ObservationIgnored private var chaoxingLoginTask: Task<Void, Error>?
 
     // MARK: - Initializer
 
@@ -61,6 +63,7 @@ final class AuthManager {
         eduHelper = EduHelper(mode: mode, session: session)
         moocHelper = MoocHelper(mode: mode, session: session)
         campusCardHelper = CampusCardHelper(mode: mode, session: session)
+        chaoxingHelper = ChaoxingHelper(mode: mode, session: session)
         campusCardHelper.token = KeychainUtil.campusCardToken
         startObservingLifecycle()
         ssoRelogin()
@@ -143,7 +146,7 @@ final class AuthManager {
             try? await moocHelper.logout()
             try? await campusCardHelper.logout()
             try? await ssoHelper.logout()
-            CookieHelper.shared.save()
+            CookieHelper.shared.clearCookies()
             saveCredentials(credentials: nil)
             MMKVHelper.Track.userId = nil
             TrackHelper.shared.updateUserID(nil)
@@ -327,11 +330,49 @@ final class AuthManager {
         try await task.value
     }
 
+    // MARK: - Chaoxing Login Async
+
+    func chaoxingLoginAsync() async throws {
+        if let task = chaoxingLoginTask {
+            return try await task.value
+        }
+
+        let task = Task { @MainActor in
+            let tempChaoxingHelper = ChaoxingHelper(mode: mode, session: session)
+            if await tempChaoxingHelper.isLoggedIn() {
+                Logger.authManager.debug("chaoxingLogin: 学习通已登录")
+                self.chaoxingHelper = tempChaoxingHelper
+                return
+            }
+
+            do {
+                _ = try await ssoHelper.loginToChaoxing()
+            } catch {
+                Logger.authManager.error("chaoxingLogin: 学习通登录请求失败, \(error)")
+                throw error
+            }
+
+            if await tempChaoxingHelper.isLoggedIn() {
+                Logger.authManager.debug("chaoxingLogin: 验证学习通登录成功")
+                self.chaoxingHelper = tempChaoxingHelper
+                CookieHelper.shared.save()
+            } else {
+                Logger.authManager.debug("chaoxingLogin: 验证学习通登录失败")
+                throw ChaoxingHelper.ChaoxingHelperError.notLoggedIn
+            }
+        }
+
+        chaoxingLoginTask = task
+        defer { chaoxingLoginTask = nil }
+        try await task.value
+    }
+
     func allLoginAsync() async throws {
         async let edu: () = educationLoginAsync()
         async let mooc: () = moocLoginAsync()
         async let campusCard: () = campusCardLoginAsync()
-        _ = try await (edu, mooc, campusCard)
+        async let chaoxing: () = chaoxingLoginAsync()
+        _ = try await (edu, mooc, campusCard, chaoxing)
     }
 
     func allLogin() {

@@ -41,6 +41,8 @@ extension AuthManager: AuthRetryProvider {
                         try await moocLoginAsync()
                     case .campusCard:
                         try await campusCardLoginAsync()
+                    case .chaoxing:
+                        try await chaoxingLoginAsync()
                     }
                 } catch let loginError {
                     if isNotLoggedInError(error: loginError, system: system) {
@@ -73,6 +75,11 @@ extension AuthManager: AuthRetryProvider {
             return false
         case .campusCard:
             if let campusCardError = error as? CampusCardHelper.CampusCardHelperError, case .notLoggedIn = campusCardError {
+                return true
+            }
+            return false
+        case .chaoxing:
+            if let chaoxingError = error as? ChaoxingHelper.ChaoxingHelperError, case .notLoggedIn = chaoxingError {
                 return true
             }
             return false

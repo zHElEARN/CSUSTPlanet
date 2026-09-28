@@ -10,6 +10,7 @@ enum CampusSystem {
     case edu
     case mooc
     case campusCard
+    case chaoxing
 }
 
 protocol AuthRetryProvider {
