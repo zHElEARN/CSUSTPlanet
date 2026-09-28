@@ -68,6 +68,7 @@ enum AppRoute: Hashable {
     enum FeaturesRoute: Hashable {
         case education(EducationRoute)
         case mooc(MoocRoute)
+        case chaoxingAssignments
         case campusTool(CampusToolRoute)
         case physicsExperiment(PhysicsExperimentRoute)
         case examQuery(ExamQueryRoute)
@@ -78,6 +79,8 @@ enum AppRoute: Hashable {
                 return route.trackSegment
             case .mooc(let route):
                 return route.trackSegment
+            case .chaoxingAssignments:
+                return "ChaoxingAssignments"
             case .campusTool(let route):
                 return route.trackSegment
             case .physicsExperiment(let route):
@@ -94,6 +97,8 @@ enum AppRoute: Hashable {
                 route.destinationView
             case .mooc(let route):
                 route.destinationView
+            case .chaoxingAssignments:
+                ChaoxingAssignmentsView()
             case .campusTool(let route):
                 route.destinationView
             case .physicsExperiment(let route):

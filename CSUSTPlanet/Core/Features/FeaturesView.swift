@@ -70,6 +70,7 @@ struct FeaturesView: View {
                 HeroCard(route: .features(.education(.courseSchedule(.main))), title: "我的课表", icon: "calendar", color: .purple)
                 HeroCard(route: .features(.mooc(.courses(.main))), title: "课程", icon: "books.vertical.fill", color: .indigo)
                 HeroCard(route: .features(.mooc(.assignments)), title: "作业", icon: "list.bullet.clipboard", color: .red)
+                HeroCard(route: .features(.chaoxingAssignments), title: "学习通作业", icon: "list.bullet.clipboard", color: .teal)
             }
         }
         .padding(.horizontal, horizontalPadding)

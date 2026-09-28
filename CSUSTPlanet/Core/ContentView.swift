@@ -43,6 +43,7 @@ private let featureSections: [FeatureSection] = [
             FeatureItem(id: .courseSchedule),
             FeatureItem(id: .courses),
             FeatureItem(id: .assignments),
+            FeatureItem(id: .chaoxingAssignments),
         ]
     ),
     FeatureSection(

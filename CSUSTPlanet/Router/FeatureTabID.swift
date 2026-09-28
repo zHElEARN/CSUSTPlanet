@@ -18,6 +18,7 @@ enum FeatureTabID: Hashable, CaseIterable {
 
     case courses
     case assignments
+    case chaoxingAssignments
 
     case electricityQuery
     case availableClassroom
@@ -42,6 +43,7 @@ enum FeatureTabID: Hashable, CaseIterable {
         case .gradeAnalysis: return "成绩分析"
         case .courses: return "课程"
         case .assignments: return "作业"
+        case .chaoxingAssignments: return "学习通作业"
         case .electricityQuery: return "电量查询"
         case .availableClassroom: return "空教室查询"
         case .campusMap: return "校园地图"
@@ -65,6 +67,7 @@ enum FeatureTabID: Hashable, CaseIterable {
         case .gradeAnalysis: return "GradeAnalysis"
         case .courses: return "Courses"
         case .assignments: return "Assignments"
+        case .chaoxingAssignments: return "ChaoxingAssignments"
         case .electricityQuery: return "DormList"
         case .availableClassroom: return "AvailableClassroom"
         case .campusMap: return "CampusMap"
@@ -88,6 +91,7 @@ enum FeatureTabID: Hashable, CaseIterable {
         case .gradeAnalysis: return "chart.bar.xaxis"
         case .courses: return "books.vertical.fill"
         case .assignments: return "list.bullet.clipboard"
+        case .chaoxingAssignments: return "list.bullet.clipboard"
         case .electricityQuery: return "bolt.fill"
         case .availableClassroom: return "building.2.fill"
         case .campusMap: return "map.fill"
@@ -117,6 +121,8 @@ enum FeatureTabID: Hashable, CaseIterable {
             return .features(.mooc(.courses(.main)))
         case .assignments:
             return .features(.mooc(.assignments))
+        case .chaoxingAssignments:
+            return .features(.chaoxingAssignments)
         case .electricityQuery:
             return .features(.campusTool(.dormList(.main)))
         case .availableClassroom:
