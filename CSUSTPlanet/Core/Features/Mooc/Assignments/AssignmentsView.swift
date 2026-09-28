@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct AssignmentsView: View {
-    @State private var courseGroups: [TodoAssignmentsData]?
+    @State private var courseGroups: [AssignmentsData]?
 
     @State private var isLoading = false
     @State private var errorToast: ToastState = .errorTitle
@@ -22,16 +22,16 @@ struct AssignmentsView: View {
         AssignmentsContent(
             courseGroups: courseGroups,
             isLoading: isLoading,
-            isNotificationEnabled: MMKVHelper.TodoAssignments.isNotificationEnabled,
-            notificationOffsetHour: MMKVHelper.TodoAssignments.notificationOffsetHour,
-            notificationOffsetMinute: MMKVHelper.TodoAssignments.notificationOffsetMinute,
+            isNotificationEnabled: MMKVHelper.Assignments.isNotificationEnabled,
+            notificationOffsetHour: MMKVHelper.Assignments.notificationOffsetHour,
+            notificationOffsetMinute: MMKVHelper.Assignments.notificationOffsetMinute,
             errorToast: $errorToast,
             isNotificationDeniedAlertPresented: $isNotificationDeniedAlertPresented,
             onRefreshAssignments: loadAssignments,
             onSaveNotificationSettings: saveNotificationSettings,
             onOpenNotificationSettings: openNotificationSettings
         )
-        .onReceive(MMKVHelper.TodoAssignments.$cache.dropFirst().receive(on: RunLoop.main)) { data in
+        .onReceive(MMKVHelper.Assignments.$cache.dropFirst().receive(on: RunLoop.main)) { data in
             applyData(data)
         }
         .task {
@@ -40,7 +40,7 @@ struct AssignmentsView: View {
             }
             isInitial = false
 
-            applyData(MMKVHelper.TodoAssignments.cache)
+            applyData(MMKVHelper.Assignments.cache)
 
             await syncTodoNotificationsSilently()
             await loadAssignments()
@@ -58,7 +58,7 @@ struct AssignmentsView: View {
             let courses = try await AuthManager.shared.withAuthRetry(system: .mooc) {
                 try await AuthManager.shared.moocHelper.getCoursesWithPendingAssignments()
             }
-            var newGroups: [TodoAssignmentsData] = []
+            var newGroups: [AssignmentsData] = []
 
             for course in courses {
                 let assignments = try await AuthManager.shared.withAuthRetry(system: .mooc) {
@@ -68,19 +68,19 @@ struct AssignmentsView: View {
             }
 
             let data = Cached(cachedAt: .now, value: newGroups)
-            MMKVHelper.TodoAssignments.cache = data
-            WidgetTimelineRefreshHelper.reloadTodoAssignments()
+            MMKVHelper.Assignments.cache = data
+            WidgetTimelineRefreshHelper.reloadAssignments()
 
-            let drafts = TodoAssignmentsNotificationHelper.buildLocalNotificationDrafts(
+            let drafts = AssignmentsNotificationHelper.buildLocalNotificationDrafts(
                 groups: data.value,
-                reminderOffsetHour: MMKVHelper.TodoAssignments.notificationOffsetHour,
-                reminderOffsetMinute: MMKVHelper.TodoAssignments.notificationOffsetMinute
+                reminderOffsetHour: MMKVHelper.Assignments.notificationOffsetHour,
+                reminderOffsetMinute: MMKVHelper.Assignments.notificationOffsetMinute
             )
-            await TodoAssignmentsNotificationHelper.syncTodoNotificationsSilently(
-                isNotificationEnabled: MMKVHelper.TodoAssignments.isNotificationEnabled,
+            await AssignmentsNotificationHelper.syncTodoNotificationsSilently(
+                isNotificationEnabled: MMKVHelper.Assignments.isNotificationEnabled,
                 drafts: drafts,
                 onPermissionDenied: {
-                    MMKVHelper.TodoAssignments.isNotificationEnabled = false
+                    MMKVHelper.Assignments.isNotificationEnabled = false
                 }
             )
         } catch {
@@ -88,7 +88,7 @@ struct AssignmentsView: View {
         }
     }
 
-    private func applyData(_ data: Cached<[TodoAssignmentsData]>?) {
+    private func applyData(_ data: Cached<[AssignmentsData]>?) {
         courseGroups = data?.value
     }
 
@@ -98,15 +98,15 @@ struct AssignmentsView: View {
     }
 
     private func saveNotificationSettings(enabled: Bool, hour: Int, minute: Int) async {
-        let wasNotificationEnabled = MMKVHelper.TodoAssignments.isNotificationEnabled
-        MMKVHelper.TodoAssignments.notificationOffsetHour = hour
-        MMKVHelper.TodoAssignments.notificationOffsetMinute = minute
+        let wasNotificationEnabled = MMKVHelper.Assignments.isNotificationEnabled
+        MMKVHelper.Assignments.notificationOffsetHour = hour
+        MMKVHelper.Assignments.notificationOffsetMinute = minute
 
         if enabled == wasNotificationEnabled {
             if enabled {
                 await syncTodoNotificationsInteractively()
             } else {
-                await NotificationManager.shared.clearLocalNotifications(prefix: TodoAssignmentsNotificationHelper.notificationPrefix)
+                await NotificationManager.shared.clearLocalNotifications(prefix: AssignmentsNotificationHelper.notificationPrefix)
             }
             return
         }
@@ -116,8 +116,8 @@ struct AssignmentsView: View {
 
     private func updateTodoNotificationEnabled(_ enabled: Bool) async {
         if !enabled {
-            MMKVHelper.TodoAssignments.isNotificationEnabled = false
-            await NotificationManager.shared.clearLocalNotifications(prefix: TodoAssignmentsNotificationHelper.notificationPrefix)
+            MMKVHelper.Assignments.isNotificationEnabled = false
+            await NotificationManager.shared.clearLocalNotifications(prefix: AssignmentsNotificationHelper.notificationPrefix)
             return
         }
 
@@ -127,38 +127,38 @@ struct AssignmentsView: View {
         do {
             switch permissionStatus {
             case .authorized:
-                MMKVHelper.TodoAssignments.isNotificationEnabled = true
+                MMKVHelper.Assignments.isNotificationEnabled = true
                 await syncTodoNotificationsInteractively()
             case .denied:
-                MMKVHelper.TodoAssignments.isNotificationEnabled = false
+                MMKVHelper.Assignments.isNotificationEnabled = false
                 isNotificationDeniedAlertPresented = true
             case .requestable:
                 guard try await NotificationManager.shared.requestPermission() else {
-                    MMKVHelper.TodoAssignments.isNotificationEnabled = false
+                    MMKVHelper.Assignments.isNotificationEnabled = false
                     isNotificationDeniedAlertPresented = true
                     return
                 }
-                MMKVHelper.TodoAssignments.isNotificationEnabled = true
+                MMKVHelper.Assignments.isNotificationEnabled = true
                 await syncTodoNotificationsInteractively()
             }
         } catch {
-            MMKVHelper.TodoAssignments.isNotificationEnabled = false
+            MMKVHelper.Assignments.isNotificationEnabled = false
             errorToast.show(message: error.localizedDescription)
         }
     }
 
     private func syncTodoNotificationsSilently() async {
-        let drafts = TodoAssignmentsNotificationHelper.buildLocalNotificationDrafts(
+        let drafts = AssignmentsNotificationHelper.buildLocalNotificationDrafts(
             groups: courseGroups ?? [],
-            reminderOffsetHour: MMKVHelper.TodoAssignments.notificationOffsetHour,
-            reminderOffsetMinute: MMKVHelper.TodoAssignments.notificationOffsetMinute
+            reminderOffsetHour: MMKVHelper.Assignments.notificationOffsetHour,
+            reminderOffsetMinute: MMKVHelper.Assignments.notificationOffsetMinute
         )
 
-        await TodoAssignmentsNotificationHelper.syncTodoNotificationsSilently(
-            isNotificationEnabled: MMKVHelper.TodoAssignments.isNotificationEnabled,
+        await AssignmentsNotificationHelper.syncTodoNotificationsSilently(
+            isNotificationEnabled: MMKVHelper.Assignments.isNotificationEnabled,
             drafts: drafts,
             onPermissionDenied: {
-                MMKVHelper.TodoAssignments.isNotificationEnabled = false
+                MMKVHelper.Assignments.isNotificationEnabled = false
             }
         )
     }
@@ -169,7 +169,7 @@ struct AssignmentsView: View {
             let permissionStatus = NotificationManager.shared.permissionStatus ?? .requestable
 
             if permissionStatus == .denied {
-                MMKVHelper.TodoAssignments.isNotificationEnabled = false
+                MMKVHelper.Assignments.isNotificationEnabled = false
                 isNotificationDeniedAlertPresented = true
                 return
             }
@@ -179,17 +179,17 @@ struct AssignmentsView: View {
                 return
             }
 
-            guard MMKVHelper.TodoAssignments.isNotificationEnabled else {
-                await NotificationManager.shared.clearLocalNotifications(prefix: TodoAssignmentsNotificationHelper.notificationPrefix)
+            guard MMKVHelper.Assignments.isNotificationEnabled else {
+                await NotificationManager.shared.clearLocalNotifications(prefix: AssignmentsNotificationHelper.notificationPrefix)
                 return
             }
 
-            let drafts = TodoAssignmentsNotificationHelper.buildLocalNotificationDrafts(
+            let drafts = AssignmentsNotificationHelper.buildLocalNotificationDrafts(
                 groups: courseGroups ?? [],
-                reminderOffsetHour: MMKVHelper.TodoAssignments.notificationOffsetHour,
-                reminderOffsetMinute: MMKVHelper.TodoAssignments.notificationOffsetMinute
+                reminderOffsetHour: MMKVHelper.Assignments.notificationOffsetHour,
+                reminderOffsetMinute: MMKVHelper.Assignments.notificationOffsetMinute
             )
-            try await NotificationManager.shared.syncLocalNotifications(prefix: TodoAssignmentsNotificationHelper.notificationPrefix, drafts: drafts)
+            try await NotificationManager.shared.syncLocalNotifications(prefix: AssignmentsNotificationHelper.notificationPrefix, drafts: drafts)
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
@@ -197,7 +197,7 @@ struct AssignmentsView: View {
 }
 
 @MainActor
-enum TodoAssignmentsNotificationHelper {
+enum AssignmentsNotificationHelper {
     static let notificationPrefix = "todo-assignments."
     private static let notificationThread = "todo-assignments.thread"
 
@@ -229,7 +229,7 @@ enum TodoAssignmentsNotificationHelper {
     }
 
     static func buildLocalNotificationDrafts(
-        groups: [TodoAssignmentsData],
+        groups: [AssignmentsData],
         reminderOffsetHour: Int,
         reminderOffsetMinute: Int
     ) -> [LocalNotificationDraft] {
@@ -268,7 +268,7 @@ enum TodoAssignmentsNotificationHelper {
     }
 }
 
-extension MMKVHelper.TodoAssignments {
+extension MMKVHelper.Assignments {
     @MMKVStorage(key: "TodoAssignments.isNotificationEnabled", defaultValue: false)
     static var isNotificationEnabled: Bool
 

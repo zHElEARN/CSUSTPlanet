@@ -130,8 +130,8 @@ struct OverviewView: View {
             GradeOverviewView()
         case .dorm:
             DormOverviewView()
-        case .assignment:
-            AssignmentOverviewView()
+        case .assignments:
+            AssignmentsOverviewView()
         case .exam:
             ExamOverviewView()
         case .announcement:

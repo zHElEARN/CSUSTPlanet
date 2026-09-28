@@ -199,14 +199,14 @@ enum AppRoute: Hashable {
 
         enum MoocRoute: Hashable {
             case courses(CoursesRoute)
-            case todoAssignments
+            case assignments
 
             var trackSegment: String {
                 switch self {
                 case .courses(let route):
                     return route.trackSegment
-                case .todoAssignments:
-                    return "TodoAssignments"
+                case .assignments:
+                    return "Assignments"
                 }
             }
 
@@ -215,7 +215,7 @@ enum AppRoute: Hashable {
                 switch self {
                 case .courses(let route):
                     route.destinationView
-                case .todoAssignments:
+                case .assignments:
                     AssignmentsView()
                 }
             }

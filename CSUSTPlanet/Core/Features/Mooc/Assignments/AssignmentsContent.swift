@@ -11,7 +11,7 @@ import SwiftUI
 struct AssignmentsContent: View {
     @State private var isNotificationSettingsPresented: Bool = false
 
-    let courseGroups: [TodoAssignmentsData]?
+    let courseGroups: [AssignmentsData]?
 
     let isLoading: Bool
 
@@ -43,7 +43,7 @@ struct AssignmentsContent: View {
                     .padding()
                 }
             } else {
-                ContentUnavailableView("暂无待提交作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
+                ContentUnavailableView("暂无作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
@@ -69,7 +69,7 @@ struct AssignmentsContent: View {
                 Text("前往设置")
             }
         } message: {
-            Text("需要开启通知权限以接收待提交作业提醒，请前往系统设置开启通知权限")
+            Text("需要开启通知权限以接收作业提醒，请前往系统设置开启通知权限")
         }
         .toolbar {
             ToolbarItem(placement: .secondaryAction) {
@@ -88,12 +88,12 @@ struct AssignmentsContent: View {
                 .disabled(isLoading)
             }
         }
-        .navigationTitle("待提交作业")
+        .navigationTitle("作业")
         .navigationSubtitleCompat("共\(submittableAssignmentsCount)个可提交作业")
     }
 }
 
-enum TodoAssignmentsPreviewData {
+enum AssignmentsPreviewData {
     static let referenceDate = Date.now
 
     static let mobileDevelopmentCourse = MoocHelper.Course(
@@ -143,7 +143,7 @@ enum TodoAssignmentsPreviewData {
     )
 
     static let groups = [
-        TodoAssignmentsData(
+        AssignmentsData(
             course: mobileDevelopmentCourse,
             assignments: [
                 unsubmittedAssignment,
@@ -151,7 +151,7 @@ enum TodoAssignmentsPreviewData {
                 expiredAssignment,
             ]
         ),
-        TodoAssignmentsData(
+        AssignmentsData(
             course: softwareEngineeringCourse,
             assignments: [
                 makeAssignment(
@@ -194,7 +194,7 @@ enum TodoAssignmentsPreviewData {
 
     NavigationStack {
         AssignmentsContent(
-            courseGroups: TodoAssignmentsPreviewData.groups,
+            courseGroups: AssignmentsPreviewData.groups,
             isLoading: false,
             isNotificationEnabled: false,
             notificationOffsetHour: 8,

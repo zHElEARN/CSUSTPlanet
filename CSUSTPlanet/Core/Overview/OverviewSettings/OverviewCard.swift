@@ -11,7 +11,7 @@ enum OverviewCard: String, CaseIterable {
     case course
     case grade
     case dorm
-    case assignment
+    case assignments = "assignment"
     case exam
     case announcement
 
@@ -20,7 +20,7 @@ enum OverviewCard: String, CaseIterable {
         case .course: return "我的课表"
         case .grade: return "成绩查询"
         case .dorm: return "宿舍电量"
-        case .assignment: return "待提交作业"
+        case .assignments: return "作业"
         case .exam: return "考试安排"
         case .announcement: return "App公告"
         }
@@ -31,7 +31,7 @@ enum OverviewCard: String, CaseIterable {
         case .course: return "calendar"
         case .grade: return "doc.text.magnifyingglass"
         case .dorm: return "bolt.fill"
-        case .assignment: return "list.bullet.clipboard"
+        case .assignments: return "list.bullet.clipboard"
         case .exam: return "pencil.and.outline"
         case .announcement: return "megaphone"
         }

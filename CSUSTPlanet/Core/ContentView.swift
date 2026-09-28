@@ -50,7 +50,7 @@ private let featureSections: [FeatureSection] = [
         title: "网络课程中心",
         items: [
             FeatureItem(id: .courses),
-            FeatureItem(id: .urgentCourses),
+            FeatureItem(id: .assignments),
         ]
     ),
     FeatureSection(

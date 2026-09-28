@@ -1,5 +1,5 @@
 //
-//  RefreshTodoAssignmentsTimelineIntent.swift
+//  RefreshAssignmentsTimelineIntent.swift
 //  CSUSTPlanetWidgetExtension
 //
 //  Created by Zachary Liu on 2026/3/27.
@@ -10,8 +10,8 @@ import CSUSTKit
 import OSLog
 import WidgetKit
 
-struct RefreshTodoAssignmentsTimelineIntent: AppIntent {
-    static var title: LocalizedStringResource = "刷新待提交作业时间线"
+struct RefreshAssignmentsTimelineIntent: AppIntent {
+    static var title: LocalizedStringResource = "刷新作业时间线"
     static var isDiscoverable: Bool = false
 
     func perform() async throws -> some IntentResult {
@@ -45,14 +45,14 @@ struct RefreshTodoAssignmentsTimelineIntent: AppIntent {
             }
 
             let courses = try await moocHelper.getCoursesWithPendingAssignments()
-            var groups: [TodoAssignmentsData] = []
+            var groups: [AssignmentsData] = []
 
             for course in courses {
                 let assignments = try await moocHelper.getCourseAssignments(course: course)
                 groups.append(.init(course: course, assignments: assignments))
             }
 
-            MMKVHelper.TodoAssignments.cache = Cached(cachedAt: .now, value: groups)
+            MMKVHelper.Assignments.cache = Cached(cachedAt: .now, value: groups)
         } catch {
             return
         }

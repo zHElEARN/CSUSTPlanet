@@ -96,9 +96,9 @@ struct AssignmentInfo: View {
 
 #Preview("AssignmentInfo") {
     Form {
-        AssignmentInfo(assignment: TodoAssignmentsPreviewData.unsubmittedAssignment)
-        AssignmentInfo(assignment: TodoAssignmentsPreviewData.submittedAssignment)
-        AssignmentInfo(assignment: TodoAssignmentsPreviewData.expiredAssignment)
+        AssignmentInfo(assignment: AssignmentsPreviewData.unsubmittedAssignment)
+        AssignmentInfo(assignment: AssignmentsPreviewData.submittedAssignment)
+        AssignmentInfo(assignment: AssignmentsPreviewData.expiredAssignment)
     }
     .formStyle(.grouped)
 }

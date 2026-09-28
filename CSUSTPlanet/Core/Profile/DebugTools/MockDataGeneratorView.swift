@@ -14,21 +14,21 @@ struct MockDataGeneratorView: View {
     var body: some View {
         Form {
             Section {
-                Button("清空待提交作业数据（nil）") {
-                    viewModel.clearTodoAssignmentsCache()
+                Button("清空作业数据（nil）") {
+                    viewModel.clearAssignmentsCache()
                 }
 
-                Button("清空待提交作业数据（空数组）") {
-                    viewModel.setEmptyTodoAssignmentsCache()
+                Button("清空作业数据（空数组）") {
+                    viewModel.setEmptyAssignmentsCache()
                 }
 
-                Button("生成两个模拟待提交作业") {
-                    viewModel.generateMockTodoAssignments()
+                Button("生成两个模拟作业") {
+                    viewModel.generateMockAssignments()
                 }
             } header: {
-                Text("待提交作业")
+                Text("作业")
             } footer: {
-                Text(viewModel.todoAssignmentsCacheDescription)
+                Text(viewModel.assignmentsCacheDescription)
             }
 
             Section {

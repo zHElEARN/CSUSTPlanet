@@ -1,5 +1,5 @@
 //
-//  TodoAssignmentsEntryView.swift
+//  AssignmentsEntryView.swift
 //  CSUSTPlanetWidgetExtension
 //
 //  Created by Zachary Liu on 2026/3/27.
@@ -9,10 +9,10 @@ import CSUSTKit
 import SwiftUI
 import WidgetKit
 
-struct TodoAssignmentsEntryView: View {
+struct AssignmentsEntryView: View {
     @Environment(\.widgetFamily) private var family
 
-    var entry: TodoAssignmentsProvider.Entry
+    var entry: AssignmentsProvider.Entry
 
     var body: some View {
         Group {
@@ -27,12 +27,12 @@ struct TodoAssignmentsEntryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .widgetURL(URL(string: "csustplanet://features/todo-assignments"))
+        .widgetURL(URL(string: "csustplanet://features/assignments"))
         .containerBackground(.fill.tertiary, for: .widget)
     }
 
     @ViewBuilder
-    private func contentView(data: [TodoAssignmentsData], lastUpdated: Date) -> some View {
+    private func contentView(data: [AssignmentsData], lastUpdated: Date) -> some View {
         let summary = displaySummary(from: data)
 
         VStack(spacing: 0) {
@@ -66,7 +66,7 @@ struct TodoAssignmentsEntryView: View {
         }
     }
 
-    private func displaySummary(from data: [TodoAssignmentsData]) -> DisplaySummary {
+    private func displaySummary(from data: [AssignmentsData]) -> DisplaySummary {
         let referenceDate = Date.now
         let items =
             data
@@ -96,7 +96,7 @@ struct TodoAssignmentsEntryView: View {
     @ViewBuilder
     private func headerView(summary: DisplaySummary, lastUpdated: Date) -> some View {
         HStack(alignment: .center, spacing: 4) {
-            Text("待提交作业")
+            Text("作业")
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(.primary)
 
@@ -266,7 +266,7 @@ struct TodoAssignmentsEntryView: View {
     }
 
     var refreshButtonView: some View {
-        Button(intent: RefreshTodoAssignmentsTimelineIntent()) {
+        Button(intent: RefreshAssignmentsTimelineIntent()) {
             Image(systemName: "arrow.clockwise.circle")
         }
         .foregroundStyle(Color("AccentColor"))

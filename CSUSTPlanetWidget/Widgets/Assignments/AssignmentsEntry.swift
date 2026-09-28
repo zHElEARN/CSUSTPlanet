@@ -1,5 +1,5 @@
 //
-//  TodoAssignmentsEntry.swift
+//  AssignmentsEntry.swift
 //  CSUSTPlanet
 //
 //  Created by Zachary Liu on 2026/3/27.
@@ -8,16 +8,16 @@
 import CSUSTKit
 import WidgetKit
 
-struct TodoAssignmentsEntry: TimelineEntry {
+struct AssignmentsEntry: TimelineEntry {
     let date: Date
-    let data: [TodoAssignmentsData]?
+    let data: [AssignmentsData]?
     let lastUpdated: Date?
 
     static func mockEntry(
         scenario: MockScenario = .assignments(7),
         lastUpdated: Date = .now.addingTimeInterval(-1800)
-    ) -> TodoAssignmentsEntry {
-        TodoAssignmentsEntry(
+    ) -> AssignmentsEntry {
+        AssignmentsEntry(
             date: .now,
             data: mockData(for: scenario),
             lastUpdated: scenario == .emptyData ? nil : lastUpdated
@@ -25,7 +25,7 @@ struct TodoAssignmentsEntry: TimelineEntry {
     }
 }
 
-extension TodoAssignmentsEntry {
+extension AssignmentsEntry {
     enum MockScenario: Equatable {
         case emptyData
         case emptyAssignments
@@ -37,7 +37,7 @@ extension TodoAssignmentsEntry {
         let assignment: MoocHelper.Assignment
     }
 
-    private static func mockData(for scenario: MockScenario) -> [TodoAssignmentsData]? {
+    private static func mockData(for scenario: MockScenario) -> [AssignmentsData]? {
         switch scenario {
         case .emptyData:
             return nil
@@ -48,7 +48,7 @@ extension TodoAssignmentsEntry {
         }
     }
 
-    private static func buildGroupedData(from seeds: [MockAssignmentSeed]) -> [TodoAssignmentsData] {
+    private static func buildGroupedData(from seeds: [MockAssignmentSeed]) -> [AssignmentsData] {
         var groupedAssignments: [String: [MoocHelper.Assignment]] = [:]
         var coursesByID: [String: MoocHelper.Course] = [:]
         var orderedCourseIDs: [String] = []
@@ -63,7 +63,7 @@ extension TodoAssignmentsEntry {
 
         return orderedCourseIDs.compactMap { courseID in
             guard let course = coursesByID[courseID], let assignments = groupedAssignments[courseID] else { return nil }
-            return TodoAssignmentsData(course: course, assignments: assignments)
+            return AssignmentsData(course: course, assignments: assignments)
         }
     }
 

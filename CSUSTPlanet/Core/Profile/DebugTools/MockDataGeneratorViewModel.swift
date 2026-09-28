@@ -14,38 +14,38 @@ import Observation
 @MainActor
 @Observable
 final class MockDataGeneratorViewModel {
-    var todoAssignmentsCacheDescription = ""
+    var assignmentsCacheDescription = ""
     var examSchedulesCacheDescription = ""
     var courseScheduleCacheDescription = ""
     var electricityCacheDescription = ""
     var errorToast: ToastState = .errorTitle
 
     func onAppear() {
-        refreshTodoAssignmentsCacheDescription()
+        refreshAssignmentsCacheDescription()
         refreshExamSchedulesCacheDescription()
         refreshCourseScheduleCacheDescription()
         refreshElectricityCacheDescription()
     }
 
-    func clearTodoAssignmentsCache() {
-        MMKVHelper.TodoAssignments.cache = nil
-        WidgetTimelineRefreshHelper.reloadTodoAssignments()
-        refreshTodoAssignmentsCacheDescription()
+    func clearAssignmentsCache() {
+        MMKVHelper.Assignments.cache = nil
+        WidgetTimelineRefreshHelper.reloadAssignments()
+        refreshAssignmentsCacheDescription()
     }
 
-    func setEmptyTodoAssignmentsCache() {
-        MMKVHelper.TodoAssignments.cache = Cached(cachedAt: .now, value: [])
-        WidgetTimelineRefreshHelper.reloadTodoAssignments()
-        refreshTodoAssignmentsCacheDescription()
+    func setEmptyAssignmentsCache() {
+        MMKVHelper.Assignments.cache = Cached(cachedAt: .now, value: [])
+        WidgetTimelineRefreshHelper.reloadAssignments()
+        refreshAssignmentsCacheDescription()
     }
 
-    func generateMockTodoAssignments() {
-        MMKVHelper.TodoAssignments.cache = Cached(
+    func generateMockAssignments() {
+        MMKVHelper.Assignments.cache = Cached(
             cachedAt: .now,
-            value: MockTodoAssignmentsFactory.makeTwoAssignmentsData()
+            value: MockAssignmentsFactory.makeTwoAssignmentsData()
         )
-        WidgetTimelineRefreshHelper.reloadTodoAssignments()
-        refreshTodoAssignmentsCacheDescription()
+        WidgetTimelineRefreshHelper.reloadAssignments()
+        refreshAssignmentsCacheDescription()
     }
 
     func clearExamSchedulesCache() {
@@ -132,9 +132,9 @@ final class MockDataGeneratorViewModel {
         }
     }
 
-    private func refreshTodoAssignmentsCacheDescription() {
-        guard let cache = MMKVHelper.TodoAssignments.cache else {
-            todoAssignmentsCacheDescription = "当前状态：nil"
+    private func refreshAssignmentsCacheDescription() {
+        guard let cache = MMKVHelper.Assignments.cache else {
+            assignmentsCacheDescription = "当前状态：nil"
             return
         }
 
@@ -142,7 +142,7 @@ final class MockDataGeneratorViewModel {
             partialResult += item.assignments.count
         }
 
-        todoAssignmentsCacheDescription = "当前状态：\(cache.value.count) 门课程，\(assignmentCount) 个作业，缓存时间 \(cache.cachedAt.formatted(date: .abbreviated, time: .standard))"
+        assignmentsCacheDescription = "当前状态：\(cache.value.count) 门课程，\(assignmentCount) 个作业，缓存时间 \(cache.cachedAt.formatted(date: .abbreviated, time: .standard))"
     }
 
     private func refreshExamSchedulesCacheDescription() {
@@ -217,10 +217,10 @@ final class MockDataGeneratorViewModel {
     }
 }
 
-private enum MockTodoAssignmentsFactory {
-    static func makeTwoAssignmentsData(referenceDate: Date = .now) -> [TodoAssignmentsData] {
+private enum MockAssignmentsFactory {
+    static func makeTwoAssignmentsData(referenceDate: Date = .now) -> [AssignmentsData] {
         [
-            TodoAssignmentsData(
+            AssignmentsData(
                 course: .init(
                     id: "mock-course-todo-1",
                     name: "程序设计与算法分析",
@@ -240,7 +240,7 @@ private enum MockTodoAssignmentsFactory {
                     )
                 ]
             ),
-            TodoAssignmentsData(
+            AssignmentsData(
                 course: .init(
                     id: "mock-course-todo-2",
                     name: "大学物理实验",

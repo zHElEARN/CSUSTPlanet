@@ -1,5 +1,5 @@
 //
-//  AssignmentOverviewView.swift
+//  AssignmentsOverviewView.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/12/12.
@@ -8,12 +8,12 @@
 import CSUSTKit
 import SwiftUI
 
-struct AssignmentOverviewView: View {
-    @State private var viewModel = AssignmentOverviewViewModel()
+struct AssignmentsOverviewView: View {
+    @State private var viewModel = AssignmentsOverviewViewModel()
     @Environment(Router.self) private var router
 
     var body: some View {
-        Button(action: { router.deepLinkTo(feature: .urgentCourses) }) {
+        Button(action: { router.deepLinkTo(feature: .assignments) }) {
             CustomGroupBox {
                 cardContent(assignments: viewModel.submittableAssignments)
             }
@@ -26,7 +26,7 @@ struct AssignmentOverviewView: View {
     private func cardContent(assignments: [(courseName: String, assignment: MoocHelper.Assignment)]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("待提交作业")
+                Text("作业")
                     .font(.title3)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
@@ -126,7 +126,7 @@ private struct AssignmentRowView: View {
 
 private struct EmptyAssignmentContentView: View {
     var body: some View {
-        Text("暂无待提交作业")
+        Text("暂无作业")
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity)

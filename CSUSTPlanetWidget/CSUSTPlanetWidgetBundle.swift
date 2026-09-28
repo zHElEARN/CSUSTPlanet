@@ -14,7 +14,7 @@ struct CSUSTPlanetWidgetBundle: WidgetBundle {
     var body: some Widget {
         DormElectricityWidget()
         GradeAnalysisWidget()
-        TodoAssignmentsWidget()
+        AssignmentsWidget()
         TodayCoursesWidget()
         WeeklyCoursesWidget()
 

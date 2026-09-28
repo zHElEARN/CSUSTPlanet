@@ -1,5 +1,5 @@
 //
-//  AssignmentOverviewViewModel.swift
+//  AssignmentsOverviewViewModel.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/9/5.
@@ -12,15 +12,15 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class AssignmentOverviewViewModel {
+final class AssignmentsOverviewViewModel {
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
-    private var todoAssignmentsData: Cached<[TodoAssignmentsData]>?
+    private var assignmentsData: Cached<[AssignmentsData]>?
 
     @ObservationIgnored var isFirstObservation = true
     var isLoadingAssignments = false
 
     var submittableAssignments: [(courseName: String, assignment: MoocHelper.Assignment)] {
-        guard let groups = todoAssignmentsData?.value else { return [] }
+        guard let groups = assignmentsData?.value else { return [] }
 
         return
             groups
@@ -34,20 +34,20 @@ final class AssignmentOverviewViewModel {
     }
 
     var cachedAt: Date? {
-        todoAssignmentsData?.cachedAt
+        assignmentsData?.cachedAt
     }
 
     init() {
-        MMKVHelper.TodoAssignments.$cache
+        MMKVHelper.Assignments.$cache
             .receive(on: DispatchQueue.main)
             .sink { [weak self] data in
                 guard let self = self else { return }
                 if isFirstObservation {
-                    self.todoAssignmentsData = data
+                    self.assignmentsData = data
                     isFirstObservation = false
                 } else {
                     withAnimation {
-                        self.todoAssignmentsData = data
+                        self.assignmentsData = data
                     }
                 }
             }
@@ -63,7 +63,7 @@ final class AssignmentOverviewViewModel {
             let courses = try await AuthManager.shared.withAuthRetry(system: .mooc) {
                 try await AuthManager.shared.moocHelper.getCoursesWithPendingAssignments()
             }
-            var newGroups: [TodoAssignmentsData] = []
+            var newGroups: [AssignmentsData] = []
 
             for course in courses {
                 let assignments = try await AuthManager.shared.withAuthRetry(system: .mooc) {
@@ -73,18 +73,18 @@ final class AssignmentOverviewViewModel {
             }
 
             let data = Cached(cachedAt: .now, value: newGroups)
-            MMKVHelper.TodoAssignments.cache = data
-            WidgetTimelineRefreshHelper.reloadTodoAssignments()
-            let drafts = TodoAssignmentsNotificationHelper.buildLocalNotificationDrafts(
+            MMKVHelper.Assignments.cache = data
+            WidgetTimelineRefreshHelper.reloadAssignments()
+            let drafts = AssignmentsNotificationHelper.buildLocalNotificationDrafts(
                 groups: data.value,
-                reminderOffsetHour: MMKVHelper.TodoAssignments.notificationOffsetHour,
-                reminderOffsetMinute: MMKVHelper.TodoAssignments.notificationOffsetMinute
+                reminderOffsetHour: MMKVHelper.Assignments.notificationOffsetHour,
+                reminderOffsetMinute: MMKVHelper.Assignments.notificationOffsetMinute
             )
-            await TodoAssignmentsNotificationHelper.syncTodoNotificationsSilently(
-                isNotificationEnabled: MMKVHelper.TodoAssignments.isNotificationEnabled,
+            await AssignmentsNotificationHelper.syncTodoNotificationsSilently(
+                isNotificationEnabled: MMKVHelper.Assignments.isNotificationEnabled,
                 drafts: drafts,
                 onPermissionDenied: {
-                    MMKVHelper.TodoAssignments.isNotificationEnabled = false
+                    MMKVHelper.Assignments.isNotificationEnabled = false
                 }
             )
         } catch {

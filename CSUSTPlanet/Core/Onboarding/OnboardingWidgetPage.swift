@@ -32,7 +32,7 @@ struct OnboardingWidgetPage: View {
                 .font(.largeTitle.weight(.bold))
                 .multilineTextAlignment(.center)
 
-            Text("把课表、成绩、待提交作业和宿舍电量等信息放到桌面上，不打开 App 也能快速查看常用校园信息。")
+            Text("把课表、成绩、作业和宿舍电量等信息放到桌面上，不打开 App 也能快速查看常用校园信息。")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

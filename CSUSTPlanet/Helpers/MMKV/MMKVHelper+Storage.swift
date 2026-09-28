@@ -8,9 +8,9 @@
 import CSUSTKit
 
 extension MMKVHelper {
-    enum TodoAssignments {
+    enum Assignments {
         @MMKVOptionalStorage(key: "TodoAssignments.cache")
-        static var cache: Cached<[TodoAssignmentsData]>?
+        static var cache: Cached<[AssignmentsData]>?
     }
 
     enum CourseGrades {
@@ -70,7 +70,7 @@ extension MMKVHelper {
             static var refreshFrequency: Int
         }
 
-        enum TodoAssignments {
+        enum Assignments {
             @MMKVStorage(key: "WidgetSettings.TodoAssignments.isAutoRefresh", defaultValue: true)
             static var isAutoRefresh: Bool
 

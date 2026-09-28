@@ -77,7 +77,7 @@ final class ScheduleEventStore {
             }
             .store(in: &cancellables)
 
-        MMKVHelper.TodoAssignments.$cache
+        MMKVHelper.Assignments.$cache
             .receive(on: RunLoop.main)
             .sink { [weak self] cached in
                 guard let self else { return }
@@ -336,7 +336,7 @@ final class ScheduleEventStore {
         }
     }
 
-    private static func makeAssignmentEvents(from groups: [TodoAssignmentsData]) -> [ScheduleEvent] {
+    private static func makeAssignmentEvents(from groups: [AssignmentsData]) -> [ScheduleEvent] {
         groups.flatMap { group in
             group.assignments.compactMap { assignment in
                 guard assignment.canSubmit, !assignment.submitStatus else {

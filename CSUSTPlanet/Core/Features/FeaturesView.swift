@@ -82,7 +82,7 @@ struct FeaturesView: View {
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
                 HeroCard(route: .features(.mooc(.courses(.main))), title: "所有课程", icon: "books.vertical.fill", color: .indigo)
-                HeroCard(route: .features(.mooc(.todoAssignments)), title: "待提交作业", icon: "list.bullet.clipboard", color: .red)
+                HeroCard(route: .features(.mooc(.assignments)), title: "作业", icon: "list.bullet.clipboard", color: .red)
             }
         }
         .padding(.horizontal, horizontalPadding)

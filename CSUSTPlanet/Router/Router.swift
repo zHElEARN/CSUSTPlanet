@@ -96,8 +96,8 @@ final class Router {
         case ("features", "course-schedule"):
             deepLinkTo(feature: .courseSchedule)
 
-        case ("features", "todo-assignments"):
-            deepLinkTo(feature: .urgentCourses)
+        case ("features", "assignments"):
+            deepLinkTo(feature: .assignments)
 
         default:
             break

@@ -15,7 +15,7 @@ struct AssignmentsCourseSection: View {
     @State private var isCoursePagePresented = false
     #endif
 
-    let group: TodoAssignmentsData
+    let group: AssignmentsData
 
     @State private var isExpanded = true
     @State private var isAllAssignmentsPresented = false
@@ -139,7 +139,7 @@ extension MoocHelper.Assignment {
     NavigationStack {
         CustomScrollView {
             AssignmentsCourseSection(
-                group: TodoAssignmentsPreviewData.groups[0]
+                group: AssignmentsPreviewData.groups[0]
             )
             .padding()
         }

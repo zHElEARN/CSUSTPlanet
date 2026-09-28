@@ -10,15 +10,15 @@ import WidgetKit
 #endif
 
 enum WidgetTimelineRefreshHelper {
-    private static let todoAssignmentsWidgetKind = "TodoAssignmentsWidget"
+    private static let assignmentsWidgetKind = "TodoAssignmentsWidget"
     private static let gradeAnalysisWidgetKind = "GradeAnalysisWidget"
     private static let todayCoursesWidgetKind = "TodayCoursesWidget"
     private static let weeklyCoursesWidgetKind = "WeeklyCoursesWidget"
     private static let dormElectricityWidgetKind = "DormElectricityWidget"
 
-    static func reloadTodoAssignments() {
+    static func reloadAssignments() {
         #if canImport(WidgetKit)
-        WidgetCenter.shared.reloadTimelines(ofKind: todoAssignmentsWidgetKind)
+        WidgetCenter.shared.reloadTimelines(ofKind: assignmentsWidgetKind)
         #endif
     }
 

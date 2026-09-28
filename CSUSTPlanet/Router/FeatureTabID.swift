@@ -17,7 +17,7 @@ enum FeatureTabID: Hashable, CaseIterable {
     case gradeAnalysis
 
     case courses
-    case urgentCourses
+    case assignments
 
     case electricityQuery
     case availableClassroom
@@ -41,7 +41,7 @@ enum FeatureTabID: Hashable, CaseIterable {
         case .examSchedule: return "考试安排"
         case .gradeAnalysis: return "成绩分析"
         case .courses: return "所有课程"
-        case .urgentCourses: return "待提交作业"
+        case .assignments: return "作业"
         case .electricityQuery: return "电量查询"
         case .availableClassroom: return "空教室查询"
         case .campusMap: return "校园地图"
@@ -64,7 +64,7 @@ enum FeatureTabID: Hashable, CaseIterable {
         case .examSchedule: return "ExamSchedule"
         case .gradeAnalysis: return "GradeAnalysis"
         case .courses: return "Courses"
-        case .urgentCourses: return "TodoAssignments"
+        case .assignments: return "Assignments"
         case .electricityQuery: return "DormList"
         case .availableClassroom: return "AvailableClassroom"
         case .campusMap: return "CampusMap"
@@ -87,7 +87,7 @@ enum FeatureTabID: Hashable, CaseIterable {
         case .examSchedule: return "pencil.and.outline"
         case .gradeAnalysis: return "chart.bar.xaxis"
         case .courses: return "books.vertical.fill"
-        case .urgentCourses: return "list.bullet.clipboard"
+        case .assignments: return "list.bullet.clipboard"
         case .electricityQuery: return "bolt.fill"
         case .availableClassroom: return "building.2.fill"
         case .campusMap: return "map.fill"
@@ -115,8 +115,8 @@ enum FeatureTabID: Hashable, CaseIterable {
             return .features(.education(.gradeAnalysis))
         case .courses:
             return .features(.mooc(.courses(.main)))
-        case .urgentCourses:
-            return .features(.mooc(.todoAssignments))
+        case .assignments:
+            return .features(.mooc(.assignments))
         case .electricityQuery:
             return .features(.campusTool(.dormList(.main)))
         case .availableClassroom:

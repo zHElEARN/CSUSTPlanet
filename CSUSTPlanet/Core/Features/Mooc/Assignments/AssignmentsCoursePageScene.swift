@@ -9,7 +9,7 @@ import SwiftUI
 
 #if os(macOS)
 struct AssignmentsCoursePageScene: Scene {
-    static let windowID = "todo-assignments.course-page"
+    static let windowID = "assignments.course-page"
 
     var body: some Scene {
         WindowGroup("课程页面", id: Self.windowID, for: String.self) { $courseID in
@@ -17,7 +17,7 @@ struct AssignmentsCoursePageScene: Scene {
                 if let courseID {
                     AssignmentsCoursePage(courseID: courseID)
                 } else {
-                    ContentUnavailableView("未选择课程", systemImage: "book.closed", description: Text("请从待提交作业页面重新打开课程页面"))
+                    ContentUnavailableView("未选择课程", systemImage: "book.closed", description: Text("请从作业页面重新打开课程页面"))
                 }
             }
             .frame(minWidth: 960, minHeight: 540)
