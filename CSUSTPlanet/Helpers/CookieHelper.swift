@@ -10,12 +10,18 @@ import CSUSTKit
 import Foundation
 
 final class CookieHelper {
+    static let userAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1"
+
     static let shared = CookieHelper()
 
     let session: Session
 
     private init() {
         let configuration = URLSessionConfiguration.default
+        var additionalHeaders = configuration.httpAdditionalHeaders ?? [:]
+        additionalHeaders["User-Agent"] = Self.userAgent
+        configuration.httpAdditionalHeaders = additionalHeaders
+
         if let data = KeychainUtil.cookies {
             if let cookies = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSArray.self, HTTPCookie.self], from: data) as? [HTTPCookie] {
                 for cookie in cookies {
