@@ -40,7 +40,7 @@ enum FeatureTabID: Hashable, CaseIterable {
         case .gradeQuery: return "成绩查询"
         case .examSchedule: return "考试安排"
         case .gradeAnalysis: return "成绩分析"
-        case .courses: return "所有课程"
+        case .courses: return "课程"
         case .assignments: return "作业"
         case .electricityQuery: return "电量查询"
         case .availableClassroom: return "空教室查询"
