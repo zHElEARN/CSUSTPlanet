@@ -13,6 +13,11 @@ extension MMKVHelper {
         static var cache: Cached<[AssignmentsData]>?
     }
 
+    enum ChaoxingAssignments {
+        @MMKVOptionalStorage(key: "Cached.chaoxingAssignmentsCache")
+        static var cache: Cached<[ChaoxingHelper.Assignment]>?
+    }
+
     enum CourseGrades {
         @MMKVOptionalStorage(key: "Cached.courseGradesCache")
         static var cache: Cached<[EduHelper.CourseGrade]>?
