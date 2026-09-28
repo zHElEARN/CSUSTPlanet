@@ -34,7 +34,7 @@ struct AssignmentsCoursePage: View {
             if let url {
                 WebView(
                     url: url,
-                    cookies: CookieHelper.shared.session.session.configuration.httpCookieStorage?.cookies,
+                    cookies: CookieHelper.shared.currentCookies,
                     controller: webViewController
                 )
             } else {

@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2025/7/11.
 //
 
+import OSLog
 import SwiftUI
 import WebKit
 
@@ -40,14 +41,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     private func createWebView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
         let dataStore = WKWebsiteDataStore.nonPersistent()
-
-        if let cookies {
-            let cookieStore = dataStore.httpCookieStore
-            for cookie in cookies {
-                cookieStore.setCookie(cookie)
-            }
-        }
-
         configuration.websiteDataStore = dataStore
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
@@ -58,16 +51,21 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         controller?.webView = webView
         controller?.syncState()
 
+        let cookies = cookies ?? []
+        let cookieStore = dataStore.httpCookieStore
+
+        Task { @MainActor in
+            Logger.webView.debug("开始向 WKWebView 注入 \(cookies.count) 个 Cookie")
+            await cookieStore.setCookies(cookies)
+            Logger.webView.debug("WKWebView Cookie 注入完成，开始加载 \(url.absoluteString, privacy: .public)")
+            webView.load(URLRequest(url: url))
+        }
+
         return webView
     }
 
     private func updateWebView(_ webView: WKWebView, context: Context) {
         context.coordinator.controller = controller
         controller?.webView = webView
-
-        guard context.coordinator.lastRequestedURL != url else { return }
-
-        context.coordinator.lastRequestedURL = url
-        webView.load(URLRequest(url: url))
     }
 }

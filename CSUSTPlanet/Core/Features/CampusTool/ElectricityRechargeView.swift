@@ -25,7 +25,7 @@ struct ElectricityRechargeView: View {
     var body: some View {
         WebView(
             url: url,
-            cookies: CookieHelper.shared.session.sessionConfiguration.httpCookieStorage?.cookies,
+            cookies: CookieHelper.shared.currentCookies,
             controller: webViewController
         )
         .inlineToolbarTitle()

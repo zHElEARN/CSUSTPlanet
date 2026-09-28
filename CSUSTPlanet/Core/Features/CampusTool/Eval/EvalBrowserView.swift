@@ -6,6 +6,7 @@
 //
 
 import CSUSTKit
+import OSLog
 import SwiftUI
 import WebKit
 
@@ -97,19 +98,15 @@ struct EvalBrowserView: PlatformViewRepresentable {
         autofillController.webView = webView
         autofillController.updateAvailability(false)
 
-        let cookies = CookieHelper.shared.session.sessionConfiguration.httpCookieStorage?.cookies ?? []
+        let cookies = CookieHelper.shared.currentCookies
+        let targetURL = URL(string: Self.factory.make(.eval, "/api/manage/cas/toUrl?type=pc"))!
         let cookieStore = dataStore.httpCookieStore
-        let group = DispatchGroup()
 
-        for cookie in cookies {
-            group.enter()
-            cookieStore.setCookie(cookie) {
-                group.leave()
-            }
-        }
-
-        group.notify(queue: .main) {
-            webView.load(URLRequest(url: URL(string: Self.factory.make(.eval, "/api/manage/cas/toUrl?type=pc"))!))
+        Task { @MainActor in
+            Logger.webView.debug("开始向评教 WKWebView 注入 \(cookies.count) 个 Cookie")
+            await cookieStore.setCookies(cookies)
+            Logger.webView.debug("评教 WKWebView Cookie 注入完成，开始加载 \(targetURL.absoluteString, privacy: .public)")
+            webView.load(URLRequest(url: targetURL))
         }
 
         return webView
