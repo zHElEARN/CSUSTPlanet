@@ -69,6 +69,12 @@ struct ChaoxingAssignmentsContent: View {
         .safeRefreshable { await onRefreshAssignments() }
         .errorToast($errorToast)
         .toolbar {
+            ToolbarItem(placement: .secondaryAction) {
+                Button(action: openChaoxingApp) {
+                    Label("打开学习通", systemImage: "arrow.up.forward.app")
+                }
+            }
+
             ToolbarItem(placement: .primaryAction) {
                 Button(asyncAction: onRefreshAssignments) {
                     if isLoading {
@@ -82,6 +88,19 @@ struct ChaoxingAssignmentsContent: View {
         }
         .navigationTitle("学习通作业")
         .navigationSubtitleCompat("共\(assignmentCount)个作业，\(uncompletedCount)个未完成")
+    }
+
+    private func openChaoxingApp() {
+        #if os(iOS)
+        guard let url = URL(string: "cxStudy://") else { return }
+        PlatformApplication.shared.open(url) { success in
+            if !success {
+                errorToast.show(message: "打开失败，请检查是否已安装学习通")
+            }
+        }
+        #else
+        errorToast.show(message: "macOS 暂不支持打开学习通")
+        #endif
     }
 }
 
