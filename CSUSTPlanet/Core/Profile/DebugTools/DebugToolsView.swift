@@ -39,6 +39,9 @@ struct DebugToolsView: View {
                 NavigationLink(destination: NotificationDebugViewerView()) {
                     Label("通知查看器", systemImage: "bell.badge")
                 }
+                NavigationLink(destination: CookieDebugView()) {
+                    Label("Cookie管理", systemImage: "arrow.up.arrow.down.circle")
+                }
             }
         }
         .formStyle(.grouped)
