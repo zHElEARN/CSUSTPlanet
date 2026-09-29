@@ -1,0 +1,136 @@
+name: Bug 报告
+description: 报告 App 中的问题
+title: "[Bug] "
+labels: ["bug"]
+assignees: ["zHElEARN"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你花时间反馈问题！提交前请先搜索一下是否已有同类 issue，避免重复。
+
+        **请注意保护隐私**：issue 是公开可见的。请不要在正文、截图或附件中出现**学号、密码、验证码、Cookie**，成绩、课表、电量等截图请先打码。也请不要粘贴 `Configs/User.xcconfig` 或 `.env` 的内容。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 发生了什么？和你预期的不一样在哪里？
+      placeholder: 例如：进入某个页面后一直转圈，最后提示加载失败。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 如何复现
+      description: 请写出可以复现问题的具体步骤，写得越细越好。
+      placeholder: |
+        1. 打开 App，进入相关页面
+        2. 执行会触发问题的操作
+        3. 等待约 10 秒后出现报错
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+      description: 你原本期望看到什么？
+      placeholder: 例如：正常显示页面内容，而不是一直转圈。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 是否必现
+      description: 每次都出现选「必现」，偶尔出现选「偶现」。
+      options:
+        - 必现
+        - 偶现
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "### 环境信息"
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 设备平台
+      options:
+        - iPhone
+        - iPad
+        - Mac
+        - 其他
+    validations:
+      required: true
+
+  - type: input
+    id: os_version
+    attributes:
+      label: 系统版本
+      description: 例如 iOS 18.1 或 macOS 15.2。
+      placeholder: iOS 18.1
+    validations:
+      required: false
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App 版本与构建号
+      description: 在「我的 - 关于 云岭星球」里可以看到，形如 2.2.1（43）。
+      placeholder: 2.2.1（43）
+    validations:
+      required: true
+
+  - type: input
+    id: device_model
+    attributes:
+      label: 具体设备型号
+      description: 例如 iPhone 15 Pro、iPad Air (M2)。
+      placeholder: iPhone 15 Pro
+    validations:
+      required: false
+
+  - type: dropdown
+    id: campus_network
+    attributes:
+      label: 是否处于校园网内
+      description: 设备当前是否连接着学校校园网（含宿舍、教学楼的有线或无线网）。
+      options:
+        - 是
+        - 否
+        - 不确定
+    validations:
+      required: false
+
+  - type: dropdown
+    id: webvpn
+    attributes:
+      label: 是否已开启 WebVPN
+      description: 对应「我的 - 网络设置」里的 WebVPN 开关。
+      options:
+        - 是
+        - 否
+        - 不确定
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 补充信息
+      description: 可以贴截图、录屏链接，或任何你觉得有帮助的补充。截图中敏感信息注意打码。
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私确认
+      options:
+        - label: 我确认以上内容与附件中不包含学号、密码、验证码或 Cookie，截图中敏感信息已做打码处理
+          required: true

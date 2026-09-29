@@ -1,0 +1,44 @@
+name: 功能请求
+description: 提出一个新功能或改进建议
+title: "[Feature] "
+labels: ["enhancement"]
+assignees: ["zHElEARN"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你的建议！提交前请先搜索一下是否已有同类 issue，避免重复。
+
+        请不要在正文或截图中包含**学号、密码、验证码、Cookie**等个人敏感信息。
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景与痛点
+      description: 你是在做什么的时候觉得不方便？现在是怎么绕过这个问题的？
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望效果
+      description: 你希望它能变成什么样？有具体的交互想法也可以写在这里。
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 补充说明
+      description: 其他想补充的内容，比如参考截图、类似 App 的做法。
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: 参与实现
+      options:
+        - label: 我愿意尝试自己实现并提交 PR
+          required: false
