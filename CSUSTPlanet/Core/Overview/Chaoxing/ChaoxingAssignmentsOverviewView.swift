@@ -15,10 +15,10 @@ struct ChaoxingAssignmentsOverviewView: View {
 
     @Environment(Router.self) private var router
 
-    /// 未提交作业按截止时间升序排在前面，无截止时间排在最后
-    private var uncompletedAssignments: [ChaoxingHelper.Assignment] {
+    /// 有截止时间的作业按截止时间升序排在前面，无截止时间排在最后
+    private var assignmentsWithDeadline: [ChaoxingHelper.Assignment] {
         (cache?.value ?? [])
-            .filter { !$0.isCompleted }
+            .filter { $0.deadline != nil }
             .enumerated()
             .sorted { lhs, rhs in
                 let lhsDeadline = lhs.element.deadline
@@ -84,7 +84,7 @@ struct ChaoxingAssignmentsOverviewView: View {
                 .disabled(isLoading)
             }
 
-            if uncompletedAssignments.isEmpty {
+            if assignmentsWithDeadline.isEmpty {
                 Text("暂无作业")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -93,7 +93,7 @@ struct ChaoxingAssignmentsOverviewView: View {
                     .redacted(reason: isLoading ? .placeholder : [])
             } else {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(uncompletedAssignments, id: \.self) { assignment in
+                    ForEach(assignmentsWithDeadline, id: \.self) { assignment in
                         ChaoxingAssignmentOverviewRow(assignment: assignment)
                     }
                 }

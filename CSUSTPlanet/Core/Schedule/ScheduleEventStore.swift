@@ -382,12 +382,12 @@ final class ScheduleEventStore {
 
     private static func makeChaoxingAssignmentEvents(from assignments: [ChaoxingHelper.Assignment]) -> [ScheduleEvent] {
         assignments.compactMap { assignment in
-            guard !assignment.isCompleted, let deadline = assignment.deadline else {
+            guard let deadline = assignment.deadline else {
                 return nil
             }
 
             let details = [
-                detail("状态", "待提交")
+                detail("状态", assignment.status)
             ].compactMap { $0 }
 
             return ScheduleEvent(

@@ -59,7 +59,7 @@ struct ChaoxingAssignmentCard: View {
                 Spacer(minLength: 0)
 
                 VStack(alignment: .trailing, spacing: 6) {
-                    statusView
+                    statusBadge
                     deadlineView
                 }
             }
@@ -116,17 +116,15 @@ struct ChaoxingAssignmentCard: View {
         }
     }
 
-    @ViewBuilder
-    private var statusView: some View {
-        if assignment.isCompleted {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.footnote)
-                .foregroundColor(.green)
-        } else {
-            Image(systemName: "circle")
-                .font(.footnote)
-                .foregroundColor(.orange)
-        }
+    /// 作业状态，原样展示学习通返回的文本，统一使用中性色，不做状态配色
+    private var statusBadge: some View {
+        RelativeDateBadge(
+            text: assignment.status,
+            style: .secondary,
+            font: .caption2.bold(),
+            horizontalPadding: 6,
+            verticalPadding: 2
+        )
     }
 }
 
@@ -136,6 +134,7 @@ struct ChaoxingAssignmentCard: View {
         ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[1], onRequestOpen: { _ in })
         ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[2], onRequestOpen: { _ in })
         ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[3], onRequestOpen: { _ in })
+        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[4], onRequestOpen: { _ in })
     }
     .padding()
 }

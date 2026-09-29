@@ -42,5 +42,13 @@ enum ChaoxingAssignmentsPreviewData {
             iconURL: "https://p.ananas.chaoxing.com/star3/origin/example4.png",
             detailURL: "https://mooc1.chaoxing.com/work/4"
         ),
+        ChaoxingHelper.Assignment(
+            title: "第二章 关系代数 课后作业",
+            status: "已完成",
+            courseName: "数据库系统",
+            deadline: Date().addingTimeInterval(5 * 24 * 3600),
+            iconURL: "https://p.ananas.chaoxing.com/star3/origin/example5.png",
+            detailURL: "https://mooc1.chaoxing.com/work/5"
+        ),
     ]
 }

@@ -91,7 +91,7 @@ enum SchedulePreviewData {
                 subtitle: "数据库系统",
                 location: nil,
                 details: [
-                    ScheduleEventDetail(label: "状态", value: "待提交")
+                    ScheduleEventDetail(label: "状态", value: "未提交")
                 ]
             )
         ),
