@@ -132,6 +132,8 @@ struct OverviewView: View {
             DormOverviewView()
         case .assignments:
             AssignmentsOverviewView()
+        case .chaoxingAssignments:
+            ChaoxingAssignmentsOverviewView()
         case .exam:
             ExamOverviewView()
         case .announcement:
