@@ -135,6 +135,7 @@ struct ChaoxingAssignmentCard: View {
         ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[0], onRequestOpen: { _ in })
         ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[1], onRequestOpen: { _ in })
         ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[2], onRequestOpen: { _ in })
+        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[3], onRequestOpen: { _ in })
     }
     .padding()
 }
