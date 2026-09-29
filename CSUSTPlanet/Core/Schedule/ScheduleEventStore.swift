@@ -25,6 +25,7 @@ final class ScheduleEventStore {
         .physicsExperiment,
         .exam,
         .assignment,
+        .chaoxingAssignment,
         .electricity,
     ]
     private var receivedInitialEventKinds: Set<ScheduleEventKind> = []
@@ -84,6 +85,17 @@ final class ScheduleEventStore {
                 self.replaceEvents(
                     for: .assignment,
                     with: Self.makeAssignmentEvents(from: cached?.value ?? [])
+                )
+            }
+            .store(in: &cancellables)
+
+        MMKVHelper.ChaoxingAssignments.$cache
+            .receive(on: RunLoop.main)
+            .sink { [weak self] cached in
+                guard let self else { return }
+                self.replaceEvents(
+                    for: .chaoxingAssignment,
+                    with: Self.makeChaoxingAssignmentEvents(from: cached?.value ?? [])
                 )
             }
             .store(in: &cancellables)
@@ -365,6 +377,33 @@ final class ScheduleEventStore {
                     )
                 )
             }
+        }
+    }
+
+    private static func makeChaoxingAssignmentEvents(from assignments: [ChaoxingHelper.Assignment]) -> [ScheduleEvent] {
+        assignments.compactMap { assignment in
+            guard !assignment.isCompleted, let deadline = assignment.deadline else {
+                return nil
+            }
+
+            let details = [
+                detail("状态", "待提交")
+            ].compactMap { $0 }
+
+            return ScheduleEvent(
+                id: stableID([
+                    "chaoxingAssignment",
+                    assignment.detailURL,
+                ]),
+                kind: .chaoxingAssignment,
+                timing: .point(at: deadline),
+                content: ScheduleEventContent(
+                    title: assignment.title,
+                    subtitle: assignment.courseName.nilIfEmpty,
+                    location: nil,
+                    details: details
+                )
+            )
         }
     }
 

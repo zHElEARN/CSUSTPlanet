@@ -83,6 +83,19 @@ enum SchedulePreviewData {
             )
         ),
         ScheduleEvent(
+            id: "preview-chaoxing-assignment",
+            kind: .chaoxingAssignment,
+            timing: .point(at: date(dayOffset: 0, hour: 21, minute: 0)),
+            content: ScheduleEventContent(
+                title: "第三章 关系数据库设计 课后作业",
+                subtitle: "数据库系统",
+                location: nil,
+                details: [
+                    ScheduleEventDetail(label: "状态", value: "待提交")
+                ]
+            )
+        ),
+        ScheduleEvent(
             id: "preview-electricity",
             kind: .electricity,
             timing: .point(at: date(dayOffset: 1, hour: 18, minute: 20)),
