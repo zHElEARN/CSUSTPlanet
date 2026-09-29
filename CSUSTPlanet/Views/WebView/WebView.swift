@@ -7,18 +7,26 @@
 
 import Foundation
 import SwiftUI
+import WebKit
 
 struct WebView: View {
     let url: URL
     let cookies: [HTTPCookie]?
     let controller: WebViewController?
+    let userScripts: [WKUserScript]
 
     @State private var fallbackController = WebViewController()
 
-    init(url: URL, cookies: [HTTPCookie]? = nil, controller: WebViewController? = nil) {
+    init(
+        url: URL,
+        cookies: [HTTPCookie]? = nil,
+        controller: WebViewController? = nil,
+        userScripts: [WKUserScript] = []
+    ) {
         self.url = url
         self.cookies = cookies
         self.controller = controller
+        self.userScripts = userScripts
     }
 
     private var resolvedController: WebViewController {
@@ -59,7 +67,7 @@ struct WebView: View {
     var body: some View {
         let controller = resolvedController
 
-        WebViewRepresentable(url: url, cookies: cookies, controller: controller)
+        WebViewRepresentable(url: url, cookies: cookies, controller: controller, userScripts: userScripts)
             .overlay(alignment: .bottom) {
                 if let downloadState = controller.downloadState {
                     WebViewDownloadOverlay(downloadState: downloadState)

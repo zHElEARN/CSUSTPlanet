@@ -13,6 +13,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     let url: URL
     let cookies: [HTTPCookie]?
     let controller: WebViewController?
+    let userScripts: [WKUserScript]
 
     func makeCoordinator() -> WebViewCoordinator {
         WebViewCoordinator(controller: controller)
@@ -42,6 +43,9 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         let configuration = WKWebViewConfiguration()
         let dataStore = WKWebsiteDataStore.nonPersistent()
         configuration.websiteDataStore = dataStore
+        for script in userScripts {
+            configuration.userContentController.addUserScript(script)
+        }
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.uiDelegate = context.coordinator
