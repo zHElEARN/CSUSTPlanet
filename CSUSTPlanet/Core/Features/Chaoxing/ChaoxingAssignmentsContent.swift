@@ -17,6 +17,14 @@ struct ChaoxingAssignmentsContent: View {
 
     let onRefreshAssignments: () async -> Void
 
+    #if os(macOS)
+    @Environment(\.openWindow) private var openWindow
+    #else
+    @State private var presentedDetailURL: URL?
+    #endif
+
+    @State private var pendingDetailURL: URL?
+
     private var assignmentCount: Int {
         assignments?.count ?? 0
     }
@@ -57,7 +65,7 @@ struct ChaoxingAssignmentsContent: View {
             if !sortedAssignments.isEmpty {
                 CustomScrollView {
                     ForEach(sortedAssignments, id: \.self) { assignment in
-                        ChaoxingAssignmentCard(assignment: assignment)
+                        ChaoxingAssignmentCard(assignment: assignment, onRequestOpen: { pendingDetailURL = $0 })
                     }
                     .padding()
                 }
@@ -66,6 +74,32 @@ struct ChaoxingAssignmentsContent: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .alert("提交作业风险提示", isPresented: isDisclaimerPresented, presenting: pendingDetailURL) { url in
+            Button("取消", role: .cancel) {
+                pendingDetailURL = nil
+            }
+            Button("仍要打开", role: .destructive) {
+                presentDetail(url)
+            }
+        } message: { _ in
+            Text("应用内网页并非学习通官方App，作业可能提交失败或者错误提交，本应用无法保证正确提交作业。建议点击工具栏的「打开学习通」，前往官方学习通App中提交作业。")
+        }
+        #if os(iOS)
+        .sheet(isPresented: isDetailSheetPresented) {
+            if let presentedDetailURL {
+                NavigationStack {
+                    ChaoxingAssignmentDetailView(detailURL: presentedDetailURL)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("关闭") {
+                                self.presentedDetailURL = nil
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        #endif
         .safeRefreshable { await onRefreshAssignments() }
         .errorToast($errorToast)
         .toolbar {
@@ -89,6 +123,39 @@ struct ChaoxingAssignmentsContent: View {
         .navigationTitle("学习通作业")
         .navigationSubtitleCompat("共\(assignmentCount)个作业，\(uncompletedCount)个未完成")
     }
+
+    private var isDisclaimerPresented: Binding<Bool> {
+        Binding(
+            get: { pendingDetailURL != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingDetailURL = nil
+                }
+            }
+        )
+    }
+
+    private func presentDetail(_ url: URL) {
+        pendingDetailURL = nil
+        #if os(macOS)
+        openWindow(id: ChaoxingAssignmentDetailScene.windowID, value: url)
+        #else
+        presentedDetailURL = url
+        #endif
+    }
+
+    #if os(iOS)
+    private var isDetailSheetPresented: Binding<Bool> {
+        Binding(
+            get: { presentedDetailURL != nil },
+            set: { isPresented in
+                if !isPresented {
+                    presentedDetailURL = nil
+                }
+            }
+        )
+    }
+    #endif
 
     private func openChaoxingApp() {
         #if os(iOS)

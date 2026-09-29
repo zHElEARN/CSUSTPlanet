@@ -12,11 +12,7 @@ import SwiftUI
 struct ChaoxingAssignmentCard: View {
     let assignment: ChaoxingHelper.Assignment
 
-    #if os(macOS)
-    @Environment(\.openWindow) private var openWindow
-    #else
-    @State private var isWebPagePresented = false
-    #endif
+    let onRequestOpen: (URL) -> Void
 
     private var detailURL: URL? {
         URL(string: assignment.detailURL)
@@ -32,7 +28,7 @@ struct ChaoxingAssignmentCard: View {
         Group {
             if let detailURL {
                 Button {
-                    openDetail(detailURL)
+                    onRequestOpen(detailURL)
                 } label: {
                     cardContent
                 }
@@ -42,22 +38,6 @@ struct ChaoxingAssignmentCard: View {
                 cardContent
             }
         }
-        #if os(iOS)
-        .sheet(isPresented: $isWebPagePresented) {
-            if let detailURL {
-                NavigationStack {
-                    ChaoxingAssignmentDetailView(detailURL: detailURL)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("关闭") {
-                                isWebPagePresented = false
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        #endif
     }
 
     private var cardContent: some View {
@@ -84,14 +64,6 @@ struct ChaoxingAssignmentCard: View {
                 }
             }
         }
-    }
-
-    private func openDetail(_ url: URL) {
-        #if os(macOS)
-        openWindow(id: ChaoxingAssignmentDetailScene.windowID, value: url)
-        #else
-        isWebPagePresented = true
-        #endif
     }
 
     @ViewBuilder
@@ -160,9 +132,9 @@ struct ChaoxingAssignmentCard: View {
 
 #Preview("ChaoxingAssignmentCard") {
     CustomScrollView {
-        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[0])
-        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[1])
-        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[2])
+        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[0], onRequestOpen: { _ in })
+        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[1], onRequestOpen: { _ in })
+        ChaoxingAssignmentCard(assignment: ChaoxingAssignmentsPreviewData.assignments[2], onRequestOpen: { _ in })
     }
     .padding()
 }
