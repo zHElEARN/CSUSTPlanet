@@ -61,19 +61,19 @@ struct ChaoxingAssignmentsContent: View {
     }
 
     var body: some View {
-        Group {
-            if !sortedAssignments.isEmpty {
-                CustomScrollView {
-                    ForEach(sortedAssignments, id: \.self) { assignment in
-                        ChaoxingAssignmentCard(assignment: assignment, onRequestOpen: { pendingDetailURL = $0 })
-                    }
-                    .padding()
-                }
-            } else {
-                ContentUnavailableView("暂无作业", systemImage: "list.bullet.clipboard", description: Text("没有找到学习通作业"))
+        ListPageScaffold(
+            title: "学习通作业",
+            subtitle: "共\(assignmentCount)个作业，\(uncompletedCount)个未完成",
+            isEmpty: sortedAssignments.isEmpty,
+            isLoading: isLoading,
+            emptyNoun: "学习通作业",
+            errorToast: $errorToast,
+            onQuery: onRefreshAssignments
+        ) {
+            ForEach(sortedAssignments, id: \.self) { assignment in
+                ChaoxingAssignmentCard(assignment: assignment, onRequestOpen: { pendingDetailURL = $0 })
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .alert("提交作业风险提示", isPresented: isDisclaimerPresented, presenting: pendingDetailURL) { url in
             Button("取消", role: .cancel) {
                 pendingDetailURL = nil
@@ -100,28 +100,13 @@ struct ChaoxingAssignmentsContent: View {
             }
         }
         #endif
-        .safeRefreshable { await onRefreshAssignments() }
-        .errorToast($errorToast)
         .toolbar {
             ToolbarItem(placement: .secondaryAction) {
                 Button(action: openChaoxingApp) {
                     Label("打开学习通", systemImage: "arrow.up.forward.app")
                 }
             }
-
-            ToolbarItem(placement: .primaryAction) {
-                Button(asyncAction: onRefreshAssignments) {
-                    if isLoading {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("刷新", systemImage: "arrow.clockwise")
-                    }
-                }
-                .disabled(isLoading)
-            }
         }
-        .navigationTitle("学习通作业")
-        .navigationSubtitleCompat("共\(assignmentCount)个作业，\(uncompletedCount)个未完成")
     }
 
     private var isDisclaimerPresented: Binding<Bool> {
@@ -171,14 +156,23 @@ struct ChaoxingAssignmentsContent: View {
     }
 }
 
-#Preview("ChaoxingAssignmentsContent") {
-    @Previewable @State var errorToast = ToastState.errorTitle
-
+#Preview("Normal") {
     NavigationStack {
         ChaoxingAssignmentsContent(
             assignments: ChaoxingAssignmentsPreviewData.assignments,
             isLoading: false,
-            errorToast: $errorToast,
+            errorToast: .constant(.errorTitle),
+            onRefreshAssignments: {}
+        )
+    }
+}
+
+#Preview("Empty") {
+    NavigationStack {
+        ChaoxingAssignmentsContent(
+            assignments: [],
+            isLoading: false,
+            errorToast: .constant(.errorTitle),
             onRefreshAssignments: {}
         )
     }
