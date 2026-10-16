@@ -15,12 +15,8 @@ struct CourseDetailContent: View {
     let isLoading: Bool
 
     @Binding var errorToast: ToastState
-    @Binding var successToast: ToastState
 
     let onRefreshAssignments: () async -> Void
-    let onAddAssignmentsToReminders: (Int, Int) async -> Void
-
-    @State private var isRemindersSettingsPresented = false
 
     var body: some View {
         CustomScrollView {
@@ -38,27 +34,12 @@ struct CourseDetailContent: View {
         .background(Color(PlatformColor.systemGroupedBackground))
         #endif
         .errorToast($errorToast)
-        .successToast($successToast)
-        .sheet(isPresented: $isRemindersSettingsPresented) {
-            ReminderOffsetSettingsView { hourOffset, minuteOffset in
-                Task {
-                    await onAddAssignmentsToReminders(hourOffset, minuteOffset)
-                }
-            }
-        }
         .navigationTitle(course.name)
         .apply { view in
             if let teacher = course.teacher {
                 view.navigationSubtitleCompat("\(teacher)老师")
             } else {
                 view
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .secondaryAction) {
-                Button(action: { isRemindersSettingsPresented = true }) {
-                    Label("添加作业列表到提醒事项", systemImage: "list.bullet.rectangle")
-                }
             }
         }
     }
@@ -71,9 +52,7 @@ struct CourseDetailContent: View {
             assignments: MoocCoursesPreviewData.assignments,
             isLoading: false,
             errorToast: .constant(.errorTitle),
-            successToast: .constant(.successTitle),
-            onRefreshAssignments: {},
-            onAddAssignmentsToReminders: { _, _ in }
+            onRefreshAssignments: {}
         )
     }
 }
@@ -85,9 +64,7 @@ struct CourseDetailContent: View {
             assignments: [],
             isLoading: false,
             errorToast: .constant(.errorTitle),
-            successToast: .constant(.successTitle),
-            onRefreshAssignments: {},
-            onAddAssignmentsToReminders: { _, _ in }
+            onRefreshAssignments: {}
         )
     }
 }
