@@ -46,22 +46,27 @@ struct ChaoxingAssignmentCard: View {
                 iconView
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(assignment.title)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .lineLimit(2)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(assignment.title)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .lineLimit(2)
+                            .layoutPriority(1)
+
+                        Spacer(minLength: 0)
+
+                        statusBadge
+                            .fixedSize(horizontal: true, vertical: false)
+                    }
 
                     Text(assignment.courseName)
                         .font(.caption)
                         .foregroundColor(.secondary)
-                }
+                        .lineLimit(1)
 
-                Spacer(minLength: 0)
-
-                VStack(alignment: .trailing, spacing: 6) {
-                    statusBadge
                     deadlineView
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
@@ -100,6 +105,8 @@ struct ChaoxingAssignmentCard: View {
                 Text(deadline, format: .dateTime.year().month().day().hour().minute())
                     .font(.caption)
                     .foregroundColor(style.accentColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
 
                 RelativeDateBadge(
                     text: deadline.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)),
@@ -108,11 +115,13 @@ struct ChaoxingAssignmentCard: View {
                     horizontalPadding: 6,
                     verticalPadding: 2
                 )
+                .fixedSize(horizontal: true, vertical: false)
             }
         } else {
             Text("无截止时间")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .lineLimit(1)
         }
     }
 
