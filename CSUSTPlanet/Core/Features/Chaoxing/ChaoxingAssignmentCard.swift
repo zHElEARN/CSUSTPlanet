@@ -42,7 +42,7 @@ struct ChaoxingAssignmentCard: View {
 
     private var cardContent: some View {
         CustomGroupBox {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
                 iconView
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -83,19 +83,26 @@ struct ChaoxingAssignmentCard: View {
                 .placeholder {
                     ProgressView().smallControlSizeOnMac()
                 }
+                .onFailureView {
+                    fallbackIconView
+                }
                 .resizable()
                 .scaledToFill()
                 .frame(width: 40, height: 40)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         } else {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.secondary.opacity(0.15))
-                .frame(width: 40, height: 40)
-                .overlay {
-                    Image(systemName: "list.bullet.clipboard")
-                        .foregroundStyle(.secondary)
-                }
+            fallbackIconView
         }
+    }
+
+    private var fallbackIconView: some View {
+        RoundedRectangle(cornerRadius: 8)
+            .fill(Color.secondary.opacity(0.15))
+            .frame(width: 40, height: 40)
+            .overlay {
+                Image(systemName: "list.bullet.clipboard")
+                    .foregroundStyle(.secondary)
+            }
     }
 
     @ViewBuilder
