@@ -19,47 +19,27 @@ struct PhysicsExperimentGradeContent: View {
     let onRefreshGrades: () async -> Void
 
     var body: some View {
-        Group {
-            if let grades, !grades.isEmpty {
-                CustomScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(grades, id: \.itemName) { grade in
-                            GradeCardView(grade: grade)
-                        }
-                    }
-                    .padding()
-                }
-            } else {
-                ContentUnavailableView(
-                    "暂无成绩信息",
-                    systemImage: "chart.bar.doc.horizontal",
-                    description: Text("没有找到任何大物实验成绩信息")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        ListPageScaffold(
+            title: "大物实验成绩",
+            subtitle: "共\(grades?.count ?? 0)项成绩",
+            isEmpty: grades?.isEmpty ?? true,
+            isLoading: isLoadingGrades,
+            emptyNoun: "大物实验成绩",
+            errorToast: $errorToast,
+            onQuery: onRefreshGrades
+        ) {
+            ForEach(grades ?? [], id: \.itemName) { grade in
+                GradeCardView(grade: grade)
             }
         }
-        .errorToast($errorToast)
         .sheet(isPresented: $isLoginPresented) {
             PhysicsExperimentLoginView()
         }
-        .safeRefreshable { await onRefreshGrades() }
-        .navigationTitle("大物实验成绩")
-        .navigationSubtitleCompat("共\(grades?.count ?? 0)项成绩")
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 Button(action: { isLoginPresented = true }) {
                     Text("登录")
                 }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button(asyncAction: onRefreshGrades) {
-                    if isLoadingGrades {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("刷新", systemImage: "arrow.clockwise")
-                    }
-                }
-                .disabled(isLoadingGrades)
             }
         }
     }
@@ -131,31 +111,25 @@ struct GradeCardView: View {
     }
 }
 
-#Preview("PhysicsExperimentGradeContent") {
-    @Previewable @State var isLoginPresented = false
-    @Previewable @State var errorToast = ToastState.errorTitle
-
+#Preview("Normal") {
     NavigationStack {
         PhysicsExperimentGradeContent(
             grades: PhysicsExperimentGradePreviewData.grades,
             isLoadingGrades: false,
-            isLoginPresented: $isLoginPresented,
-            errorToast: $errorToast,
+            isLoginPresented: .constant(false),
+            errorToast: .constant(.errorTitle),
             onRefreshGrades: {}
         )
     }
 }
 
-#Preview("PhysicsExperimentGradeContent Empty") {
-    @Previewable @State var isLoginPresented = false
-    @Previewable @State var errorToast = ToastState.errorTitle
-
+#Preview("Empty") {
     NavigationStack {
         PhysicsExperimentGradeContent(
             grades: [],
             isLoadingGrades: false,
-            isLoginPresented: $isLoginPresented,
-            errorToast: $errorToast,
+            isLoginPresented: .constant(false),
+            errorToast: .constant(.errorTitle),
             onRefreshGrades: {}
         )
     }

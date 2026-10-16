@@ -16,25 +16,22 @@ struct ExamScheduleView: View {
     // MARK: - Body
 
     var body: some View {
-        Group {
-            if let data = viewModel.examData, !data.value.isEmpty {
-                CustomScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(data.value, id: \.courseID) { exam in
-                            examCard(exam: exam).id(exam.courseID)
-                        }
-                    }
-                    .padding()
-                }
-            } else {
-                ContentUnavailableView("暂无考试安排", systemImage: "calendar.badge.exclamationmark", description: Text("当前筛选条件下没有找到考试安排"))
+        ListPageScaffold(
+            title: "考试安排",
+            subtitle: "共 \(viewModel.examData?.value.count ?? 0) 门考试",
+            isEmpty: viewModel.examData?.value.isEmpty ?? true,
+            isLoading: viewModel.isLoadingExams,
+            emptyNoun: "考试安排",
+            errorToast: $viewModel.errorToast,
+            successToast: $viewModel.successToast,
+            loadingToast: $viewModel.loadingToast,
+            onQuery: viewModel.loadExams
+        ) {
+            ForEach(viewModel.examData?.value ?? [], id: \.courseID) { exam in
+                examCard(exam: exam).id(exam.courseID)
             }
         }
         .task { await viewModel.loadInitial() }
-        .safeRefreshable { await viewModel.loadExams() }
-        .errorToast($viewModel.errorToast)
-        .successToast($viewModel.successToast)
-        .loadingToast($viewModel.loadingToast)
         .sheet(isPresented: $viewModel.isFilterPresented) { filterView.presentationDetents([.medium, .large]) }
         .alert("添加日历", isPresented: $viewModel.isAddToCalendarAlertPresented) {
             Button(asyncAction: viewModel.addToCalendar) {
@@ -56,19 +53,7 @@ struct ExamScheduleView: View {
                 }
                 .disabled(viewModel.examData?.value.isEmpty == true || viewModel.isLoadingExams)
             }
-            ToolbarItem(placement: .primaryAction) {
-                Button(asyncAction: viewModel.loadExams) {
-                    if viewModel.isLoadingExams {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("查询", systemImage: "arrow.clockwise")
-                    }
-                }
-                .disabled(viewModel.isLoadingExams)
-            }
         }
-        .navigationTitle("考试安排")
-        .navigationSubtitleCompat("共 \(viewModel.examData?.value.count ?? 0) 门考试")
     }
 
     // MARK: - Exam Card

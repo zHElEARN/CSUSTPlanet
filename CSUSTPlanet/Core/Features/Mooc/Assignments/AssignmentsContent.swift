@@ -34,24 +34,19 @@ struct AssignmentsContent: View {
     }
 
     var body: some View {
-        Group {
-            if let courseGroups, !courseGroups.isEmpty {
-                CustomScrollView {
-                    ForEach(courseGroups, id: \.course.id) { group in
-                        AssignmentsCourseSection(group: group)
-                    }
-                    .padding()
-                }
-            } else {
-                ContentUnavailableView("暂无作业", systemImage: "book.closed", description: Text("当前没有需要提交的作业"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+        ListPageScaffold(
+            title: "作业列表",
+            subtitle: "共\(submittableAssignmentsCount)个可提交作业",
+            isEmpty: courseGroups?.isEmpty ?? true,
+            isLoading: isLoading,
+            emptyNoun: "作业",
+            errorToast: $errorToast,
+            onQuery: onRefreshAssignments
+        ) {
+            ForEach(courseGroups ?? [], id: \.course.id) { group in
+                AssignmentsCourseSection(group: group)
             }
         }
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
-        .safeRefreshable { await onRefreshAssignments() }
-        .errorToast($errorToast)
         .sheet(isPresented: $isNotificationSettingsPresented) {
             AssignmentsNotificationSettings(
                 isEnabled: isNotificationEnabled,
@@ -77,19 +72,7 @@ struct AssignmentsContent: View {
                     Label("作业提醒设置", systemImage: "bell.badge")
                 }
             }
-            ToolbarItem(placement: .primaryAction) {
-                Button(asyncAction: onRefreshAssignments) {
-                    if isLoading {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("刷新", systemImage: "arrow.clockwise")
-                    }
-                }
-                .disabled(isLoading)
-            }
         }
-        .navigationTitle("作业")
-        .navigationSubtitleCompat("共\(submittableAssignmentsCount)个可提交作业")
     }
 }
 
@@ -188,10 +171,7 @@ enum AssignmentsPreviewData {
     }
 }
 
-#Preview("AssignmentsContent") {
-    @Previewable @State var errorToast = ToastState.errorTitle
-    @Previewable @State var isNotificationDeniedAlertPresented = false
-
+#Preview("Normal") {
     NavigationStack {
         AssignmentsContent(
             courseGroups: AssignmentsPreviewData.groups,
@@ -199,8 +179,8 @@ enum AssignmentsPreviewData {
             isNotificationEnabled: false,
             notificationOffsetHour: 8,
             notificationOffsetMinute: 20,
-            errorToast: $errorToast,
-            isNotificationDeniedAlertPresented: $isNotificationDeniedAlertPresented,
+            errorToast: .constant(.errorTitle),
+            isNotificationDeniedAlertPresented: .constant(false),
             onRefreshAssignments: {},
             onSaveNotificationSettings: { _, _, _ in },
             onOpenNotificationSettings: {}
@@ -208,10 +188,7 @@ enum AssignmentsPreviewData {
     }
 }
 
-#Preview("AssignmentsContent Empty") {
-    @Previewable @State var errorToast = ToastState.errorTitle
-    @Previewable @State var isNotificationDeniedAlertPresented = false
-
+#Preview("Empty") {
     NavigationStack {
         AssignmentsContent(
             courseGroups: [],
@@ -219,8 +196,8 @@ enum AssignmentsPreviewData {
             isNotificationEnabled: false,
             notificationOffsetHour: 8,
             notificationOffsetMinute: 20,
-            errorToast: $errorToast,
-            isNotificationDeniedAlertPresented: $isNotificationDeniedAlertPresented,
+            errorToast: .constant(.errorTitle),
+            isNotificationDeniedAlertPresented: .constant(false),
             onRefreshAssignments: {},
             onSaveNotificationSettings: { _, _, _ in },
             onOpenNotificationSettings: {}

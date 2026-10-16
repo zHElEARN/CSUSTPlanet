@@ -24,54 +24,34 @@ struct PhysicsExperimentScheduleContent: View {
     }
 
     var body: some View {
-        Group {
-            if courses.isEmpty {
-                ContentUnavailableView(
-                    "暂无实验安排",
-                    systemImage: "flask",
-                    description: Text("没有找到任何大物实验安排信息")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                CustomScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(courses, id: \.id) { course in
-                            ScheduleCardView(course: course)
-                        }
-                    }
-                    .padding()
-                }
+        ListPageScaffold(
+            title: "大物实验安排",
+            subtitle: "共\(courses.count)个实验",
+            isEmpty: courses.isEmpty,
+            isLoading: isLoadingSchedules,
+            emptyNoun: "大物实验安排",
+            errorToast: $errorToast,
+            warningToast: $warningToast,
+            onQuery: onRefreshSchedules
+        ) {
+            ForEach(courses, id: \.id) { course in
+                ScheduleCardView(course: course)
             }
         }
-        .errorToast($errorToast)
-        .warningToast($warningToast)
         .sheet(isPresented: $isLoginPresented) {
             PhysicsExperimentLoginView()
         }
-        .safeRefreshable { await onRefreshSchedules() }
-        .navigationTitle("大物实验安排")
-        .navigationSubtitleCompat("共\(courses.count)个实验")
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 Button(action: { isLoginPresented = true }) {
                     Text("登录")
                 }
             }
-            ToolbarItem(placement: .primaryAction) {
-                Button(asyncAction: onRefreshSchedules) {
-                    if isLoadingSchedules {
-                        ProgressView().smallControlSizeOnMac()
-                    } else {
-                        Label("刷新", systemImage: "arrow.clockwise")
-                    }
-                }
-                .disabled(isLoadingSchedules)
-            }
         }
     }
 }
 
-struct ScheduleCardView: View {
+private struct ScheduleCardView: View {
     let course: PhysicsExperimentHelper.Course
     let now: Date = .now
 
@@ -196,35 +176,27 @@ struct ScheduleCardView: View {
     }
 }
 
-#Preview("PhysicsExperimentScheduleContent") {
-    @Previewable @State var isLoginPresented = false
-    @Previewable @State var errorToast = ToastState.errorTitle
-    @Previewable @State var warningToast = ToastState.warningTitle
-
+#Preview("Normal") {
     NavigationStack {
         PhysicsExperimentScheduleContent(
             data: Cached(cachedAt: .now, value: PhysicsExperimentSchedulePreviewData.courses),
             isLoadingSchedules: false,
-            isLoginPresented: $isLoginPresented,
-            errorToast: $errorToast,
-            warningToast: $warningToast,
+            isLoginPresented: .constant(false),
+            errorToast: .constant(.errorTitle),
+            warningToast: .constant(.warningTitle),
             onRefreshSchedules: {}
         )
     }
 }
 
-#Preview("PhysicsExperimentScheduleContent Empty") {
-    @Previewable @State var isLoginPresented = false
-    @Previewable @State var errorToast = ToastState.errorTitle
-    @Previewable @State var warningToast = ToastState.warningTitle
-
+#Preview("Empty") {
     NavigationStack {
         PhysicsExperimentScheduleContent(
             data: Cached(cachedAt: .now, value: []),
             isLoadingSchedules: false,
-            isLoginPresented: $isLoginPresented,
-            errorToast: $errorToast,
-            warningToast: $warningToast,
+            isLoginPresented: .constant(false),
+            errorToast: .constant(.errorTitle),
+            warningToast: .constant(.warningTitle),
             onRefreshSchedules: {}
         )
     }
