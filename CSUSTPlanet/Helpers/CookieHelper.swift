@@ -31,7 +31,11 @@ final class CookieHelper {
         }
         self.session = Session(
             configuration: configuration,
-            interceptor: EduHelper.EduRequestInterceptor(maxRetryCount: 5)
+            interceptor: EduHelper.EduRequestInterceptor(maxRetryCount: 5),
+            serverTrustManager: ServerTrustManager(
+                allHostsMustBeEvaluated: false,
+                evaluators: [WebVPNTrustHelper.host: WebVPNServerTrustEvaluator()]
+            )
         )
     }
 

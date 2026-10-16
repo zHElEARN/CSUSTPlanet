@@ -319,6 +319,25 @@ extension WebViewCoordinator {
 extension WebViewCoordinator: WKNavigationDelegate {
     func webView(
         _ webView: WKWebView,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        let protectionSpace = challenge.protectionSpace
+
+        guard
+            protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+            let serverTrust = protectionSpace.serverTrust,
+            WebVPNTrustHelper.isTrusted(serverTrust, forHost: protectionSpace.host)
+        else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+
+        completionHandler(.useCredential, URLCredential(trust: serverTrust))
+    }
+
+    func webView(
+        _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {

@@ -71,6 +71,13 @@
 				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
+			<key>vpn.csust.edu.cn</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
 			<key>passport2.chaoxing.com</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
