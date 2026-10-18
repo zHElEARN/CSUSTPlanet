@@ -137,3 +137,5 @@ enum PlanetConfigService {
         )
     }
 }
+
+typealias SchoolCalendar = PlanetConfigService.SchoolCalendar

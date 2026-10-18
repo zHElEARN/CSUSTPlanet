@@ -5,45 +5,36 @@
 //  Created by Zhe_Learn on 2025/7/23.
 //
 
-import AlertToast
 import SwiftUI
 
 struct SchoolCalendarListView: View {
-    @State var viewModel = SchoolCalendarListViewModel()
+    @State private var schoolCalendars: [SchoolCalendar] = []
+
+    @State private var isLoadingCalendars: Bool = false
+
+    @State private var errorToast: ToastState = .errorTitle
 
     var body: some View {
-        ListPageScaffold(
-            title: "校历列表",
-            isEmpty: viewModel.schoolCalendars.isEmpty,
-            isLoading: viewModel.isLoadingCalendars,
-            emptyNoun: "校历",
-            errorToast: $viewModel.errorToast,
-            onQuery: viewModel.loadSchoolCalendars
-        ) {
-            ForEach(viewModel.schoolCalendars) { calendar in
-                CustomGroupBox {
-                    NavigationLink(value: AppRoute.features(.campusTool(.schoolCalendarList(.detail(calendar))))) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(calendar.title)
-                                    .font(.headline)
-                                    .foregroundColor(.primary)
+        SchoolCalendarListContent(
+            schoolCalendars: schoolCalendars,
+            isLoadingCalendars: isLoadingCalendars,
+            errorToast: $errorToast,
+            onQuery: loadSchoolCalendars
+        )
+        .task { await loadSchoolCalendars() }
+    }
 
-                                Text(calendar.subtitle)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
+    // MARK: - Methods
 
-                            Spacer()
+    private func loadSchoolCalendars() async {
+        guard !isLoadingCalendars else { return }
+        isLoadingCalendars = true
+        defer { isLoadingCalendars = false }
 
-                            Image(systemName: "chevron.right").frame(width: 16)
-                        }
-                        .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
+        do {
+            schoolCalendars = try await PlanetConfigService.semesterCalendars().sorted { $0.semesterCode > $1.semesterCode }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
-        .task { await viewModel.loadSchoolCalendars() }
     }
 }
