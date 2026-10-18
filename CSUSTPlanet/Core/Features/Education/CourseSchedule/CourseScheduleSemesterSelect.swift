@@ -83,7 +83,7 @@ private struct CourseScheduleSemesterSelectContent: View {
 
             try? await Task.sleep(for: .seconds(1))
 
-            availableSemesters = ["2024-2025-1", "2024-2025-2"]
+            availableSemesters = CourseSchedulePreviewData.semesterOptions
         },
         onComplete: {}
     )

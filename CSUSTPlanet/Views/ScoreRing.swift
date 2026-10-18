@@ -414,28 +414,15 @@ private struct ScoreRingPreviewItem: View {
     }
 }
 
-/// 常规数据：三段 30 / 20 / 50
-private let scoreRingPreviewNormal: [ScoreSegment] = [
-    ScoreSegment(weight: 30, progress: 0.92),
-    ScoreSegment(weight: 20, progress: 0.96),
-    ScoreSegment(weight: 50, progress: 0.90),
-]
-
 #Preview("1 · 常规三段 30/20/50") {
-    ScoreRingPreviewItem(caption: "108° / 72° / 180°，厚度 = 得分率", segments: scoreRingPreviewNormal, score: 93)
+    ScoreRingPreviewItem(caption: "108° / 72° / 180°，厚度 = 得分率", segments: ScoreRingPreviewData.normalSegments, score: 93)
         .padding()
 }
 
 #Preview("2 · 含 5% 极小段") {
     ScoreRingPreviewItem(
         caption: "5% 段：缺口与端头圆角自动收紧",
-        segments: [
-            ScoreSegment(weight: 5, progress: 0.80),
-            ScoreSegment(weight: 15, progress: 0.70),
-            ScoreSegment(weight: 20, progress: 0.60),
-            ScoreSegment(weight: 20, progress: 0.90),
-            ScoreSegment(weight: 40, progress: 0.85),
-        ],
+        segments: ScoreRingPreviewData.tinySegments,
         score: 78
     )
     .padding()
@@ -444,11 +431,7 @@ private let scoreRingPreviewNormal: [ScoreSegment] = [
 #Preview("3 · 极端 1/1/98") {
     ScoreRingPreviewItem(
         caption: "1% 段：缺口收缩到 1.44°",
-        segments: [
-            ScoreSegment(weight: 1, progress: 0.50),
-            ScoreSegment(weight: 1, progress: 0.50),
-            ScoreSegment(weight: 98, progress: 0.90),
-        ],
+        segments: ScoreRingPreviewData.extremeSegments,
         score: 89
     )
     .padding()
@@ -457,7 +440,7 @@ private let scoreRingPreviewNormal: [ScoreSegment] = [
 #Preview("4 · 单段 100%（无缝整圆）") {
     ScoreRingPreviewItem(
         caption: "只有一个组成项：整圆无缺口",
-        segments: [ScoreSegment(weight: 100, progress: 0.75)],
+        segments: ScoreRingPreviewData.singleSegment,
         score: 75
     )
     .padding()
@@ -467,12 +450,12 @@ private let scoreRingPreviewNormal: [ScoreSegment] = [
     HStack(alignment: .bottom, spacing: 24) {
         ScoreRingPreviewItem(
             caption: "满分：全实心",
-            segments: [ScoreSegment(weight: 50, progress: 1.0), ScoreSegment(weight: 50, progress: 1.0)],
+            segments: ScoreRingPreviewData.fullScoreSegments,
             score: 100
         )
         ScoreRingPreviewItem(
             caption: "零分：只有浅色层",
-            segments: [ScoreSegment(weight: 50, progress: 0.0), ScoreSegment(weight: 50, progress: 0.6)],
+            segments: ScoreRingPreviewData.zeroScoreSegments,
             score: 30
         )
     }
@@ -482,7 +465,7 @@ private let scoreRingPreviewNormal: [ScoreSegment] = [
 #Preview("6 · 五段等分 20%×5") {
     ScoreRingPreviewItem(
         caption: "五段等分，每段 72°",
-        segments: (1...5).map { ScoreSegment(weight: 20, progress: Double($0) / 5) },
+        segments: ScoreRingPreviewData.fiveEqualSegments,
         score: 60
     )
     .padding()
@@ -490,20 +473,20 @@ private let scoreRingPreviewNormal: [ScoreSegment] = [
 
 #Preview("7 · 尺寸 80 / 120 / 180") {
     HStack(alignment: .bottom, spacing: 20) {
-        ScoreRingPreviewItem(caption: "80", segments: scoreRingPreviewNormal, score: 93, side: 80)
-        ScoreRingPreviewItem(caption: "120", segments: scoreRingPreviewNormal, score: 93, side: 120)
-        ScoreRingPreviewItem(caption: "180", segments: scoreRingPreviewNormal, score: 93, side: 180)
+        ScoreRingPreviewItem(caption: "80", segments: ScoreRingPreviewData.normalSegments, score: 93, side: 80)
+        ScoreRingPreviewItem(caption: "120", segments: ScoreRingPreviewData.normalSegments, score: 93, side: 120)
+        ScoreRingPreviewItem(caption: "180", segments: ScoreRingPreviewData.normalSegments, score: 93, side: 180)
     }
     .padding()
 }
 
 #Preview("8 · 空数据") {
-    ScoreRingPreviewItem(caption: "空数组：不画环，只保留占位", segments: [], score: 0)
+    ScoreRingPreviewItem(caption: "空数组：不画环，只保留占位", segments: ScoreRingPreviewData.emptySegments, score: 0)
         .padding()
 }
 
 #Preview("9 · 深色模式") {
-    ScoreRingPreviewItem(caption: "浅色层在深色模式下是暗色调，语义不变", segments: scoreRingPreviewNormal, score: 93)
+    ScoreRingPreviewItem(caption: "浅色层在深色模式下是暗色调，语义不变", segments: ScoreRingPreviewData.normalSegments, score: 93)
         .padding()
         .preferredColorScheme(.dark)
 }
@@ -513,7 +496,7 @@ private let scoreRingPreviewNormal: [ScoreSegment] = [
         Text("不传 score 时环心为空")
             .font(.caption)
             .foregroundStyle(.secondary)
-        ScoreRing(segments: scoreRingPreviewNormal)
+        ScoreRing(segments: ScoreRingPreviewData.normalSegments)
             .frame(width: 140, height: 140)
     }
     .padding()

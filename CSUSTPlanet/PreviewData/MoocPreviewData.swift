@@ -1,5 +1,5 @@
 //
-//  MoocCoursesPreviewData.swift
+//  MoocPreviewData.swift
 //  CSUSTPlanet
 //
 //  Created by Codex on 2026/6/21.
@@ -8,8 +8,10 @@
 import CSUSTKit
 import Foundation
 
-enum MoocCoursesPreviewData {
+enum MoocPreviewData {
     static let referenceDate = Date.now
+
+    // MARK: - Courses
 
     static let mobileDevelopmentCourse = MoocHelper.Course(
         id: "10001",
@@ -41,6 +43,8 @@ enum MoocCoursesPreviewData {
         generalEducationCourse,
     ]
 
+    // MARK: - Assignments
+
     static let unsubmittedAssignment = makeAssignment(
         id: 1,
         title: "SwiftUI 列表与状态管理实验报告",
@@ -71,11 +75,38 @@ enum MoocCoursesPreviewData {
         startOffset: -7 * 24 * 60 * 60
     )
 
+    static let requirementAnalysisAssignment = makeAssignment(
+        id: 4,
+        title: "需求分析文档初稿",
+        publisher: "李老师",
+        canSubmit: true,
+        submitStatus: false,
+        deadlineOffset: 8 * 60 * 60,
+        startOffset: -2 * 24 * 60 * 60
+    )
+
+    /// 课程详情页使用的作业列表
     static let assignments = [
         unsubmittedAssignment,
         submittedAssignment,
         expiredAssignment,
     ]
+
+    /// 作业列表页使用的按课程分组数据
+    static let groups = [
+        AssignmentsData(
+            course: mobileDevelopmentCourse,
+            assignments: assignments
+        ),
+        AssignmentsData(
+            course: softwareEngineeringCourse,
+            assignments: [
+                requirementAnalysisAssignment
+            ]
+        ),
+    ]
+
+    // MARK: - Helpers
 
     static func makeAssignment(
         id: Int,

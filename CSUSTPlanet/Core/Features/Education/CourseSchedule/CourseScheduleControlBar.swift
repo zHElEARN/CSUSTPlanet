@@ -103,16 +103,13 @@ struct CourseScheduleControlBar: View {
 }
 
 #Preview("CourseScheduleConflictCard") {
-    @Previewable @State var currentWeek = 8
+    @Previewable @State var currentWeek = CourseSchedulePreviewData.currentWeek
+
     CourseScheduleControlBar(
-        remarks: [
-            "软件系统开发实训 贺紫平 17-19周",
-            "习近平新时代中国特色社会主义思想概论课外实践 刘绍云 27周",
-            "毛泽东思想和中国特色社会主义理论体系概论课外实践 张慧娟 25周",
-        ],
-        subtitle: "2024-2025-1",
-        realCurrentWeek: 16,
+        remarks: CourseSchedulePreviewData.remarks,
+        subtitle: CourseSchedulePreviewData.subtitle,
+        realCurrentWeek: CourseSchedulePreviewData.realCurrentWeek,
         currentWeek: $currentWeek,
-        weekCount: 20
+        weekCount: CourseSchedulePreviewData.weekCount
     )
 }

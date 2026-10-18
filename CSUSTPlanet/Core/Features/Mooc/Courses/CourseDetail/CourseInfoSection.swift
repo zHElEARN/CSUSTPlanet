@@ -90,7 +90,7 @@ private struct CourseInfoRow: View {
 
 #Preview("CourseInfoSection") {
     CustomScrollView {
-        CourseInfoSection(course: MoocCoursesPreviewData.mobileDevelopmentCourse)
+        CourseInfoSection(course: MoocPreviewData.mobileDevelopmentCourse)
             .padding()
     }
 }

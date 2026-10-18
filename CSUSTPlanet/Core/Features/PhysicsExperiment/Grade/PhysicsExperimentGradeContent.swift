@@ -134,33 +134,3 @@ struct GradeCardView: View {
         )
     }
 }
-
-// MARK: - Preview Data
-
-private enum PhysicsExperimentGradePreviewData {
-    static let grades: [PhysicsExperimentHelper.CourseGrade] = [
-        makeGrade("PHYS1001", "大学物理实验", "用示波器观测周期性电信号", 92, 88, 95, 91),
-        makeGrade("PHYS1001", "大学物理实验", "分光计的调节与使用", 85, 90, nil, 87),
-        makeGrade("PHYS1001", "大学物理实验", "光电效应测普朗克常数", nil, nil, nil, 78),
-    ]
-
-    private static func makeGrade(
-        _ courseCode: String,
-        _ courseName: String,
-        _ itemName: String,
-        _ previewGrade: Int?,
-        _ operationGrade: Int?,
-        _ reportGrade: Int?,
-        _ totalGrade: Int
-    ) -> PhysicsExperimentHelper.CourseGrade {
-        PhysicsExperimentHelper.CourseGrade(
-            courseCode: courseCode,
-            courseName: courseName,
-            itemName: itemName,
-            previewGrade: previewGrade,
-            operationGrade: operationGrade,
-            reportGrade: reportGrade,
-            totalGrade: totalGrade
-        )
-    }
-}

@@ -125,7 +125,7 @@ struct CourseScheduleCreateSheet: View {
 #Preview("CourseScheduleCreateContent") {
     CourseScheduleCreateContent(
         isImportFromSchool: false,
-        name: "我的课表 1",
+        name: CourseSchedulePreviewData.scheduleName,
         defaultStartDate: .now,
         onSubmit: { _, _ in }
     )
@@ -134,7 +134,7 @@ struct CourseScheduleCreateSheet: View {
 #Preview("CourseScheduleImportContent") {
     CourseScheduleCreateContent(
         isImportFromSchool: true,
-        name: "我的课表 1",
+        name: CourseSchedulePreviewData.scheduleName,
         defaultStartDate: .now,
         onSubmit: { _, _ in }
     )

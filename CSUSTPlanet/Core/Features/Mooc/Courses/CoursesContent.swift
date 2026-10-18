@@ -95,7 +95,7 @@ struct CoursesContent: View {
 #Preview("Normal") {
     NavigationStack {
         CoursesContent(
-            courses: MoocCoursesPreviewData.courses,
+            courses: MoocPreviewData.courses,
             isLoading: false,
             errorToast: .constant(.errorTitle),
             onRefreshCourses: {}

@@ -138,7 +138,7 @@ struct CourseScheduleTable: View {
 
 #Preview("CourseScheduleTable") {
     CourseScheduleTable(
-        semesterStartDate: .init(timeIntervalSince1970: 1_781_366_400),
+        semesterStartDate: CourseSchedulePreviewData.semesterStartDate,
         targetWeek: 1,
         weeklyCourses: [:],
         courseColors: [:],

@@ -48,8 +48,8 @@ struct CourseDetailContent: View {
 #Preview("CourseDetailContent") {
     NavigationStack {
         CourseDetailContent(
-            course: MoocCoursesPreviewData.mobileDevelopmentCourse,
-            assignments: MoocCoursesPreviewData.assignments,
+            course: MoocPreviewData.mobileDevelopmentCourse,
+            assignments: MoocPreviewData.assignments,
             isLoading: false,
             errorToast: .constant(.errorTitle),
             onRefreshAssignments: {}
@@ -60,7 +60,7 @@ struct CourseDetailContent: View {
 #Preview("CourseDetailContent Empty") {
     NavigationStack {
         CourseDetailContent(
-            course: MoocCoursesPreviewData.generalEducationCourse,
+            course: MoocPreviewData.generalEducationCourse,
             assignments: [],
             isLoading: false,
             errorToast: .constant(.errorTitle),

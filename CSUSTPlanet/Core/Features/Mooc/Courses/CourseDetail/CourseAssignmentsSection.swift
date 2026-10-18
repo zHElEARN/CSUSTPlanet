@@ -101,7 +101,7 @@ struct CourseAssignmentsSection: View {
 #Preview("CourseAssignmentsSection") {
     CustomScrollView {
         CourseAssignmentsSection(
-            assignments: MoocCoursesPreviewData.assignments,
+            assignments: MoocPreviewData.assignments,
             isLoading: false,
             onRefresh: {}
         )

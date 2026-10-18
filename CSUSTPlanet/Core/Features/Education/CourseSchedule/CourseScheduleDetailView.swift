@@ -102,13 +102,10 @@ struct CourseScheduleDetailView: View {
 }
 
 #Preview("CourseScheduleDetailView") {
-    let sessionA = EduHelper.ScheduleSession(weeks: [1], startSection: 1, endSection: 2, dayOfWeek: .monday, classroom: "教室A")
-    let courseA = EduHelper.Course(courseName: "课程A", groupName: nil, teacher: "老师A", sessions: [sessionA])
-
     NavigationStack {
         CourseScheduleDetailView(
-            course: courseA,
-            session: sessionA,
+            course: CourseSchedulePreviewData.courseA,
+            session: CourseSchedulePreviewData.sessionA,
             isToolbarPresented: true
         )
     }

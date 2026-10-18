@@ -104,30 +104,10 @@ struct CourseScheduleOverlay: View {
 }
 
 #Preview("CourseScheduleOverlay") {
-    let sessions = [
-        EduHelper.ScheduleSession(weeks: [1], startSection: 1, endSection: 2, dayOfWeek: .monday, classroom: "教室A"),
-        EduHelper.ScheduleSession(weeks: [1], startSection: 1, endSection: 4, dayOfWeek: .monday, classroom: "教室B"),
-        EduHelper.ScheduleSession(weeks: [1], startSection: 5, endSection: 8, dayOfWeek: .tuesday, classroom: "教室C"),
-        EduHelper.ScheduleSession(weeks: [1], startSection: 7, endSection: 9, dayOfWeek: .tuesday, classroom: "教室D"),
-        EduHelper.ScheduleSession(weeks: [1], startSection: 9, endSection: 10, dayOfWeek: .tuesday, classroom: "教室E"),
-        EduHelper.ScheduleSession(weeks: [1], startSection: 3, endSection: 4, dayOfWeek: .wednesday, classroom: "教室F"),
-        EduHelper.ScheduleSession(weeks: [1], startSection: 5, endSection: 6, dayOfWeek: .wednesday, classroom: "教室G"),
-    ]
-
-    let courses = sessions.enumerated().map { index, session in
-        EduHelper.Course(courseName: "课程\(index + 1)", groupName: nil, teacher: "老师\(index + 1)", sessions: [session])
-    }
-
-    let weeklyCourses: [Int: [CourseDisplayInfo]] = [
-        1: courses.map { CourseDisplayInfo(course: $0, session: $0.sessions[0]) }
-    ]
-
-    let courseColors = ColorUtil.getCourseColors(courses)
-
     CourseScheduleOverlay(
         targetWeek: 1,
-        weeklyCourses: weeklyCourses,
-        courseColors: courseColors,
+        weeklyCourses: CourseSchedulePreviewData.overlayWeeklyCourses,
+        courseColors: CourseSchedulePreviewData.overlayCourseColors,
         isCourseDetailInspectorPresented: .constant(false),
         selectedCourseInfo: .constant(nil)
     )

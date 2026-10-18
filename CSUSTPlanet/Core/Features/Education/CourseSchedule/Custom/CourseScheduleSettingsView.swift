@@ -271,25 +271,8 @@ struct CourseScheduleSettingsView: View {
 #Preview("CourseScheduleSettingsContent") {
     NavigationStack {
         CourseScheduleSettingsContent(
-            schedules: [
-                CustomCourseScheduleGRDB(
-                    id: "1",
-                    name: "我的课表 1",
-                    semesterStartDate: .now,
-                    weekCount: 20,
-                    remarks: "",
-                    createdAt: .now
-                ),
-                CustomCourseScheduleGRDB(
-                    id: "2",
-                    name: "考研冲刺",
-                    semesterStartDate: .now,
-                    weekCount: 20,
-                    remarks: "",
-                    createdAt: .now
-                ),
-            ],
-            currentScheduleID: "2",
+            schedules: CourseSchedulePreviewData.customSchedules,
+            currentScheduleID: CourseSchedulePreviewData.currentCustomScheduleID,
             defaultScheduleStartDate: .now,
             hasSchoolSchedule: true,
             onActivateDefault: {},

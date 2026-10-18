@@ -66,12 +66,9 @@ struct CourseScheduleCard: View {
 }
 
 #Preview("CourseScheduleCard") {
-    let sessionB = EduHelper.ScheduleSession(weeks: [1], startSection: 5, endSection: 6, dayOfWeek: .wednesday, classroom: "教室B")
-    let courseB = EduHelper.Course(courseName: "课程B", groupName: nil, teacher: "老师B", sessions: [sessionB])
-
     CourseScheduleCard(
-        course: courseB,
-        session: sessionB,
+        course: CourseSchedulePreviewData.courseB,
+        session: CourseSchedulePreviewData.sessionB,
         color: .yellow,
         onTap: {}
     )

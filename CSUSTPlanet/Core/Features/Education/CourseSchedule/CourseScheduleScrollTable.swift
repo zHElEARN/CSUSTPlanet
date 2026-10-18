@@ -46,11 +46,11 @@ struct CourseScheduleScrollTable: View {
 
 #Preview("CourseScheduleScrollTable") {
     CourseScheduleScrollTable(
-        semesterStartDate: .init(timeIntervalSince1970: 1_781_366_400),
+        semesterStartDate: CourseSchedulePreviewData.semesterStartDate,
         weeklyCourses: [:],
         courseColors: [:],
         currentWeek: .constant(1),
-        weekCount: 20,
+        weekCount: CourseSchedulePreviewData.weekCount,
         isCourseDetailInspectorPresented: .constant(false),
         selectedCourseInfo: .constant(nil)
     )

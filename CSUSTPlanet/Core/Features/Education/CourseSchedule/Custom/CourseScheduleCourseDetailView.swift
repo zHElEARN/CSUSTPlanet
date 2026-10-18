@@ -458,34 +458,9 @@ struct CourseScheduleCourseDetailView: View {
 #Preview("CourseScheduleCourseDetailContent") {
     NavigationStack {
         CourseScheduleCourseDetailContent(
-            course: CustomCourseGRDB(
-                id: "preview-course",
-                scheduleId: "preview-schedule",
-                courseName: "高等数学",
-                teacher: "刘文正",
-                groupName: "08"
-            ),
-            sessions: [
-                CustomSessionGRDB(
-                    id: "1",
-                    courseId: "preview-course",
-                    dayOfWeek: 1,
-                    startSection: 5,
-                    endSection: 6,
-                    classroom: "金13-106",
-                    weeks: JSONIntArray([1, 2, 3, 4, 5, 6, 7, 8])
-                ),
-                CustomSessionGRDB(
-                    id: "2",
-                    courseId: "preview-course",
-                    dayOfWeek: 3,
-                    startSection: 1,
-                    endSection: 2,
-                    classroom: nil,
-                    weeks: JSONIntArray([1, 2, 3, 4, 5, 6, 7, 8])
-                ),
-            ],
-            weekCount: 20,
+            course: CourseSchedulePreviewData.customCourse,
+            sessions: CourseSchedulePreviewData.customSessions,
+            weekCount: CourseSchedulePreviewData.weekCount,
             onSaveCourseInfo: { _, _, _ in true },
             onDeleteCourse: {},
             onSaveSession: { _, _, _, _, _, _ in true },

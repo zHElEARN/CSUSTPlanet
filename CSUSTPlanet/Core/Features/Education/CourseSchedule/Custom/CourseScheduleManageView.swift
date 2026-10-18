@@ -343,14 +343,7 @@ struct CourseScheduleManageView: View {
 #Preview("CourseScheduleManageContent") {
     NavigationStack {
         CourseScheduleManageContent(
-            schedule: CustomCourseScheduleGRDB(
-                id: "preview-id",
-                name: "我的课表 1",
-                semesterStartDate: .now,
-                weekCount: 20,
-                remarks: "",
-                createdAt: .now
-            ),
+            schedule: CourseSchedulePreviewData.customSchedule,
             isCurrentSchedule: false,
             courseItems: [],
             onActivate: {},

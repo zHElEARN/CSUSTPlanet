@@ -139,7 +139,7 @@ extension MoocHelper.Assignment {
     NavigationStack {
         CustomScrollView {
             AssignmentsCourseSection(
-                group: AssignmentsPreviewData.groups[0]
+                group: MoocPreviewData.groups[0]
             )
             .padding()
         }
