@@ -22,3 +22,7 @@ struct NCREView: View {
         }
     }
 }
+
+#Preview {
+    NCREView()
+}
