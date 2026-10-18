@@ -96,53 +96,49 @@ struct AvailableClassroomContent: View {
 
     private var campusPicker: some View {
         filterChip(
-            Picker(selection: $selectedCampus) {
+            Picker("校区", selection: $selectedCampus) {
                 ForEach(CampusCardHelper.Campus.allCases, id: \.self) { campus in
                     Text(campus.displayName).tag(campus)
                 }
-            } label: {
-                Label(selectedCampus.displayName, systemImage: "building.2")
             }
             .pickerStyle(.menu)
+            .labelsHidden()
         )
     }
 
     private var weekPicker: some View {
         filterChip(
-            Picker(selection: $selectedWeek) {
+            Picker("周数", selection: $selectedWeek) {
                 ForEach(1...20, id: \.self) { week in
                     Text("第 \(week) 周").tag(week)
                 }
-            } label: {
-                Label("第 \(selectedWeek) 周", systemImage: "calendar")
             }
             .pickerStyle(.menu)
+            .labelsHidden()
         )
     }
 
     private var dayPicker: some View {
         filterChip(
-            Picker(selection: $selectedDayOfWeek) {
+            Picker("星期", selection: $selectedDayOfWeek) {
                 ForEach(EduHelper.DayOfWeek.allCases, id: \.self) { dayOfWeek in
                     Text(dayOfWeek.chineseLongString).tag(dayOfWeek)
                 }
-            } label: {
-                Label(selectedDayOfWeek.chineseLongString, systemImage: "sun.max")
             }
             .pickerStyle(.menu)
+            .labelsHidden()
         )
     }
 
     private var sectionPicker: some View {
         filterChip(
-            Picker(selection: $selectedSection) {
+            Picker("节次", selection: $selectedSection) {
                 ForEach(1...5, id: \.self) { section in
                     Text("第\(section)大节 (\(section * 2 - 1)-\(section * 2))").tag(section)
                 }
-            } label: {
-                Label("第\(selectedSection)大节", systemImage: "clock")
             }
             .pickerStyle(.menu)
+            .labelsHidden()
         )
     }
 
