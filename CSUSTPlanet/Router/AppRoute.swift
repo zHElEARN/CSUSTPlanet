@@ -415,11 +415,11 @@ enum AppRoute: Hashable {
             var destinationView: some View {
                 switch self {
                 case .cet:
-                    CETView()
+                    CETQueryView()
                 case .mandarin:
-                    MandarinView()
+                    MandarinQueryView()
                 case .ncre:
-                    NCREView()
+                    NCREQueryView()
                 }
             }
         }

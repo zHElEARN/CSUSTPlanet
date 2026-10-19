@@ -1,5 +1,5 @@
 //
-//  CETView.swift
+//  CETQueryView.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/7/11.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CETView: View {
+struct CETQueryView: View {
     @State private var webViewController = WebViewController()
 
     var body: some View {
@@ -24,5 +24,5 @@ struct CETView: View {
 }
 
 #Preview {
-    CETView()
+    CETQueryView()
 }

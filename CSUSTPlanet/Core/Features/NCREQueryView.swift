@@ -1,5 +1,5 @@
 //
-//  NCREView.swift
+//  NCREQueryView.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2026/5/29.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct NCREView: View {
+struct NCREQueryView: View {
     @State private var webViewController = WebViewController()
 
     var body: some View {
@@ -24,5 +24,5 @@ struct NCREView: View {
 }
 
 #Preview {
-    NCREView()
+    NCREQueryView()
 }

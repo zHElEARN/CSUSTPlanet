@@ -1,5 +1,5 @@
 //
-//  MandarinView.swift
+//  MandarinQueryView.swift
 //  CSUSTPlanet
 //
 //  Created by Zhe_Learn on 2025/7/11.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MandarinView: View {
+struct MandarinQueryView: View {
     @State private var webViewController = WebViewController()
 
     var body: some View {
@@ -24,5 +24,5 @@ struct MandarinView: View {
 }
 
 #Preview {
-    MandarinView()
+    MandarinQueryView()
 }
