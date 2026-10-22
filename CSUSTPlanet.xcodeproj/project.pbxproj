@@ -895,8 +895,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/zHElEARN/CSUSTKit.git";
 			requirement = {
-				branch = "feat/chaoxing-support";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
 			};
 		};
 		00E574A92F1F4F0400440D8D /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */ = {
