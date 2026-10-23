@@ -9,6 +9,8 @@ import SwiftUI
 
 #if os(macOS)
 import AppKit
+#else
+import UIKit
 #endif
 
 struct FeatureItem: Identifiable {
@@ -101,7 +103,11 @@ struct ContentView: View {
     private let isCompactEnv = false
     #else
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    private var isCompactEnv: Bool { horizontalSizeClass == .compact }
+
+    // iPhone Duo适配
+    private var isCompactEnv: Bool {
+        horizontalSizeClass == .compact || UIDevice.current.userInterfaceIdiom == .phone
+    }
     #endif
 
     var body: some View {
