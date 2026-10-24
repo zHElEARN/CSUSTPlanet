@@ -94,8 +94,14 @@ final class GlobalManager {
             return
         }
 
+        #if os(iOS)
+        let platform = "ios"
+        #else
+        let platform = "macos"
+        #endif
+
         do {
-            let result = try await PlanetConfigService.checkAppVersion(currentVersionCode: currentVersionCode)
+            let result = try await PlanetConfigService.checkAppVersion(currentVersionCode: currentVersionCode, platform: platform)
 
             guard result.hasUpdate else {
                 Logger.globalManager.debug("启动版本检查完成：当前已是最新版本 \(currentVersionName, privacy: .public) (\(currentVersionCode))")

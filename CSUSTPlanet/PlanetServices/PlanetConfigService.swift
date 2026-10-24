@@ -127,11 +127,11 @@ enum PlanetConfigService {
         return try await get("/v1/config/announcements")
     }
 
-    static func checkAppVersion(currentVersionCode: Int) async throws -> CheckAppVersionResult {
+    static func checkAppVersion(currentVersionCode: Int, platform: String) async throws -> CheckAppVersionResult {
         return try await get(
             "/v2/config/app-versions/check",
             parameters: [
-                "platform": "ios",
+                "platform": platform,
                 "currentVersionCode": currentVersionCode,
             ]
         )
