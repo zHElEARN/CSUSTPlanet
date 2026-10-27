@@ -114,16 +114,15 @@ struct ContentView: View {
         Group {
             if case .failed(let message) = DatabaseManager.shared.status {
                 VStack(spacing: 16) {
-                    Text("数据库异常，请联系开发者")
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 64))
+                        .foregroundStyle(.yellow)
+
+                    Text("数据库异常")
                         .font(.headline)
                         .multilineTextAlignment(.center)
 
-                    Text("数据库初始化失败：\(message)")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-
-                    Text("你可以复制错误信息并反馈给开发者")
+                    Text("数据库初始化失败：\(message)\n\n请尝试强制关闭 App 后重新打开；若仍然异常，请卸载后重新安装。\n\n如果问题仍然存在，请联系开发者。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
