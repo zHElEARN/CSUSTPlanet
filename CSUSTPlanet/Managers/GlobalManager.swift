@@ -66,8 +66,6 @@ final class GlobalManager {
             MMKVHelper.GlobalManager.isWebVPNModeEnabled = isWebVPNModeEnabled
         }
     }
-    var hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
-    var databaseFatalErrorMessage: String = DatabaseManager.shared.fatalErrorMessage
 
     var latestAppVersion: PlanetConfigService.AppVersion?
     var isAppUpdateSheetPresented: Bool = false

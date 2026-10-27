@@ -83,14 +83,14 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
     }
 
     /// 从本地数据库获取 Dorm 对象
-    private func fetchLocalDorm(dormID: Int64, pool: DatabasePool) async throws -> DormGRDB? {
+    private func fetchLocalDorm(dormID: Int64, pool: any DatabaseWriter) async throws -> DormGRDB? {
         try await pool.read { db in
             try DormGRDB.filter(key: dormID).fetchOne(db)
         }
     }
 
     /// 获取图表所需的最轻量级记录数据
-    private func fetchChartRecords(dormID: Int64, limit: Int = 50, pool: DatabasePool) async throws -> [DormElectricityEntry.Record] {
+    private func fetchChartRecords(dormID: Int64, limit: Int = 50, pool: any DatabaseWriter) async throws -> [DormElectricityEntry.Record] {
         let records = try await pool.read { db in
             try ElectricityRecordGRDB
                 .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
@@ -104,7 +104,7 @@ struct DormElectricityProvider: AppIntentTimelineProvider {
     }
 
     /// 统一构建最终的 Entry
-    private func buildEntry(dorm: DormGRDB, configuration: DormElectricityAppIntent, pool: DatabasePool) async throws -> DormElectricityEntry {
+    private func buildEntry(dorm: DormGRDB, configuration: DormElectricityAppIntent, pool: any DatabaseWriter) async throws -> DormElectricityEntry {
         guard let dormID = dorm.id else {
             return emptyEntry(for: configuration)
         }

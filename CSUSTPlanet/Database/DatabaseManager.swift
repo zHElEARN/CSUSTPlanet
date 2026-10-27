@@ -9,6 +9,7 @@ import Combine
 import Foundation
 import GRDB
 import OSLog
+import Observation
 import os
 
 enum DatabaseManagerError: Error, LocalizedError {
@@ -22,52 +23,73 @@ enum DatabaseManagerError: Error, LocalizedError {
     }
 }
 
+@Observable
 final class DatabaseManager {
+    enum Status: Equatable {
+        case ready
+        case degraded(message: String)
+        case failed(message: String)
+    }
+
     static let shared = DatabaseManager()
 
-    private var databasePool: DatabasePool?
-    var pool: DatabasePool? { databasePool }
-    var poolThrows: DatabasePool {
+    @ObservationIgnored private var databaseWriter: (any DatabaseWriter)?
+    var pool: (any DatabaseWriter)? { databaseWriter }
+    var poolThrows: any DatabaseWriter {
         get throws {
-            guard let databasePool else {
+            guard let databaseWriter else {
                 throw DatabaseManagerError.databaseUnavailable
             }
-            return databasePool
+            return databaseWriter
         }
     }
 
-    private(set) var hasFatalError = false
-    private(set) var fatalErrorMessage: String = ""
+    private(set) var status: Status = .ready
 
     private init() {
-        do {
-            self.databasePool = try Self.openDatabasePool()
-            return
-        } catch {}
+        var lastFileError: Error?
+        for _ in 0..<2 {
+            do {
+                self.databaseWriter = try Self.openFileWriter()
+                return
+            } catch {
+                lastFileError = error
+            }
+        }
 
-        do {
-            self.databasePool = try Self.openDatabasePool()
-        } catch {
-            self.databasePool = nil
-            self.hasFatalError = true
-            self.fatalErrorMessage = "数据库初始化失败：\(error.localizedDescription)"
+        let message = lastFileError?.localizedDescription ?? "未知错误"
+        if let writer = try? Self.openInMemoryWriter() {
+            self.databaseWriter = writer
+            self.status = .degraded(message: message)
+        } else {
+            self.databaseWriter = nil
+            self.status = .failed(message: message)
         }
     }
 
-    private static func openDatabasePool() throws -> DatabasePool {
+    private static func makeConfiguration() -> Configuration {
         var configuration = Configuration()
         configuration.foreignKeysEnabled = true
         configuration.busyMode = .timeout(5)
         configuration.label = "CSUSTPlanet.GRDB"
+        return configuration
+    }
 
-        let databasePool = try DatabasePool(path: Constants.grdbDatabaseURL.path, configuration: configuration)
+    private static func openFileWriter() throws -> any DatabaseWriter {
+        let writer = try DatabasePool(path: Constants.grdbDatabaseURL.path, configuration: makeConfiguration())
         do {
-            try migrator.migrate(databasePool)
+            try migrator.migrate(writer)
         } catch {
-            try? databasePool.close()
+            try? writer.close()
             throw error
         }
-        return databasePool
+        return writer
+    }
+
+    private static func openInMemoryWriter() throws -> any DatabaseWriter {
+        let writer = try DatabaseQueue(configuration: makeConfiguration())
+        try migrator.migrate(writer)
+        return writer
     }
 
     private static var migrator: DatabaseMigrator {

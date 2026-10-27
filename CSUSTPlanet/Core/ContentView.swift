@@ -97,6 +97,7 @@ struct ContentView: View {
     @Bindable var authManager = AuthManager.shared
 
     @State private var router = Router()
+    @State private var databaseDegradedMessage: String?
 
     #if os(macOS)
     private let isCompactEnv = false
@@ -111,13 +112,13 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if globalManager.hasDatabaseFatalError {
+            if case .failed(let message) = DatabaseManager.shared.status {
                 VStack(spacing: 16) {
                     Text("数据库异常，请联系开发者")
                         .font(.headline)
                         .multilineTextAlignment(.center)
 
-                    Text(globalManager.databaseFatalErrorMessage)
+                    Text("数据库初始化失败：\(message)")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -132,7 +133,7 @@ struct ContentView: View {
                     }
 
                     Button("复制错误信息") {
-                        let text = globalManager.databaseFatalErrorMessage
+                        let text = message
                         guard !text.isEmpty else { return }
                         #if os(iOS)
                         PlatformPasteboard.general.string = text
@@ -209,6 +210,17 @@ struct ContentView: View {
         }
         .sheet(isPresented: $globalManager.isAppUpdateSheetPresented) {
             AppUpdateSheetView()
+        }
+
+        .onChange(of: DatabaseManager.shared.status, initial: true) { _, status in
+            if case .degraded(let message) = status {
+                databaseDegradedMessage = message
+            }
+        }
+        .alert("数据库异常", item: $databaseDegradedMessage) { _ in
+            Button("好", role: .cancel) {}
+        } message: { message in
+            Text("数据库初始化失败：\(message)\n\n本次使用临时数据运行，产生的改动不会被保存。请尝试强制关闭 App 后重新打开；若仍然异常，请卸载后重新安装。")
         }
 
         .onOpenURL { url in
