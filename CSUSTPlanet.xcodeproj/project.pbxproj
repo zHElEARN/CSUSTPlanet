@@ -133,6 +133,14 @@
 				Core/AnnualReview/ProfilePage.swift,
 				Core/AnnualReview/SpacePeoplePage.swift,
 				Core/AnnualReview/TimeSchedulePage.swift,
+				Core/Onboarding/OnboardingCompletionPage.swift,
+				Core/Onboarding/OnboardingDormSetupPage.swift,
+				Core/Onboarding/OnboardingLoginPage.swift,
+				Core/Onboarding/OnboardingPlaceholderPage.swift,
+				Core/Onboarding/OnboardingSettingsPage.swift,
+				Core/Onboarding/OnboardingView.swift,
+				Core/Onboarding/OnboardingWelcomePage.swift,
+				Core/Onboarding/OnboardingWidgetPage.swift,
 			);
 			target = 007CF85A2E1BD68900E319F2 /* CSUSTPlanet */;
 		};

@@ -24,7 +24,6 @@ final class GlobalManager {
         appearance = MMKVHelper.GlobalManager.appearance
         isUserAgreementAccepted = MMKVHelper.GlobalManager.isUserAgreementAccepted
         isWebVPNModeEnabled = MMKVHelper.GlobalManager.isWebVPNModeEnabled
-        isOnboardingPresented = !MMKVHelper.GlobalManager.hasCompletedOnboarding
 
         #if os(macOS)
         applyMacOSAppearance(appearance)
@@ -62,19 +61,11 @@ final class GlobalManager {
     var isUserAgreementShowing: Binding<Bool> {
         Binding(get: { !self.isUserAgreementAccepted }, set: { self.isUserAgreementAccepted = !$0 })
     }
-    var isOnboardingSheetShowing: Binding<Bool> {
-        Binding(
-            get: { self.isOnboardingPresented && !self.hasDatabaseFatalError && self.isUserAgreementAccepted && !self.isAppUpdateSheetPresented },
-            set: { self.isOnboardingPresented = $0 }
-        )
-    }
     var isWebVPNModeEnabled: Bool {
         didSet {
             MMKVHelper.GlobalManager.isWebVPNModeEnabled = isWebVPNModeEnabled
         }
     }
-    var isOnboardingPresented: Bool
-
     var hasDatabaseFatalError = DatabaseManager.shared.hasFatalError
     var databaseFatalErrorMessage: String = DatabaseManager.shared.fatalErrorMessage
 
@@ -131,11 +122,6 @@ final class GlobalManager {
     func dismissAppUpdateSheet() {
         guard !isForceUpdateRequired else { return }
         isAppUpdateSheetPresented = false
-    }
-
-    func completeOnboarding() {
-        MMKVHelper.GlobalManager.hasCompletedOnboarding = true
-        isOnboardingPresented = false
     }
 
     #if os(macOS)

@@ -96,7 +96,6 @@ struct ContentView: View {
     @Bindable var globalManager = GlobalManager.shared
     @Bindable var authManager = AuthManager.shared
 
-    @Environment(\.colorScheme) private var colorScheme
     @State private var router = Router()
 
     #if os(macOS)
@@ -202,9 +201,6 @@ struct ContentView: View {
         #if os(iOS)
         .preferredColorScheme(globalManager.preferredColorScheme)
         #endif
-        .sheet(isPresented: globalManager.isOnboardingSheetShowing) {
-            OnboardingView(onSkip: globalManager.completeOnboarding, presentingColorScheme: colorScheme)
-        }
         .sheet(isPresented: globalManager.isUserAgreementShowing) {
             NavigationStack {
                 UserAgreementView(isButtonPresented: true)
