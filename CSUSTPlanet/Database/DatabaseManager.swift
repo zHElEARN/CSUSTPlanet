@@ -41,19 +41,33 @@ final class DatabaseManager {
 
     private init() {
         do {
-            var configuration = Configuration()
-            configuration.foreignKeysEnabled = true
-            configuration.busyMode = .timeout(5)
-            configuration.label = "CSUSTPlanet.GRDB"
+            self.databasePool = try Self.openDatabasePool()
+            return
+        } catch {}
 
-            let databasePool = try DatabasePool(path: Constants.grdbDatabaseURL.path, configuration: configuration)
-            try Self.migrator.migrate(databasePool)
-            self.databasePool = databasePool
+        do {
+            self.databasePool = try Self.openDatabasePool()
         } catch {
             self.databasePool = nil
             self.hasFatalError = true
             self.fatalErrorMessage = "数据库初始化失败：\(error.localizedDescription)"
         }
+    }
+
+    private static func openDatabasePool() throws -> DatabasePool {
+        var configuration = Configuration()
+        configuration.foreignKeysEnabled = true
+        configuration.busyMode = .timeout(5)
+        configuration.label = "CSUSTPlanet.GRDB"
+
+        let databasePool = try DatabasePool(path: Constants.grdbDatabaseURL.path, configuration: configuration)
+        do {
+            try migrator.migrate(databasePool)
+        } catch {
+            try? databasePool.close()
+            throw error
+        }
+        return databasePool
     }
 
     private static var migrator: DatabaseMigrator {
