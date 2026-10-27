@@ -28,20 +28,12 @@ struct CSUSTPlanetApp: App {
 
     @Environment(\.scenePhase) private var scenePhase
 
+    #if os(iOS)
     init() {
-        let databaseManager = DatabaseManager.shared
-        if MMKVHelper.CourseSchedule.currentScheduleID == nil || databaseManager.pool != nil {
-            CustomCourseScheduleHelper.syncActiveCourseSchedule()
-        }
-        _ = TrackHelper.shared
-        _ = NotificationManager.shared
-        _ = GlobalManager.shared
-
-        #if os(iOS)
         _ = BackgroundTaskHelper.shared
         _ = ActivityManager.shared
-        #endif
     }
+    #endif
 
     var body: some Scene {
         Group {
