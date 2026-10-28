@@ -97,7 +97,6 @@ struct ContentView: View {
     @Bindable var authManager = AuthManager.shared
 
     @State private var router = Router()
-    @State private var databaseDegradedMessage: String?
 
     #if os(macOS)
     private let isCompactEnv = false
@@ -111,60 +110,26 @@ struct ContentView: View {
     #endif
 
     var body: some View {
-        Group {
-            if case .failed(let message) = DatabaseManager.shared.status {
-                VStack(spacing: 16) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 64))
-                        .foregroundStyle(.yellow)
-
-                    Text("数据库异常")
-                        .font(.headline)
-                        .multilineTextAlignment(.center)
-
-                    Text("数据库初始化失败：\(message)\n\n请尝试强制关闭 App 后重新打开；若仍然异常，请卸载后重新安装。\n\n如果问题仍然存在，请联系开发者。")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-
-                    if let emailURL = URL(string: "mailto:developer@zhelearn.com") {
-                        Link("联系邮箱：developer@zhelearn.com", destination: emailURL)
-                    }
-
-                    Button("复制错误信息") {
-                        let text = message
-                        guard !text.isEmpty else { return }
-                        #if os(iOS)
-                        PlatformPasteboard.general.string = text
-                        #elseif os(macOS)
-                        PlatformPasteboard.general.clearContents()
-                        PlatformPasteboard.general.setString(text, forType: .string)
-                        #endif
-                    }
-                    .buttonStyle(.bordered)
-                }
-                .padding()
-            } else {
-                Group {
-                    #if os(macOS)
+        DatabaseStatusView {
+            Group {
+                #if os(macOS)
+                legacyLayout
+                #else
+                if #available(iOS 18.0, *) {
+                    modernLayout
+                } else {
                     legacyLayout
-                    #else
-                    if #available(iOS 18.0, *) {
-                        modernLayout
-                    } else {
-                        legacyLayout
-                    }
-                    #endif
                 }
-                .onChange(of: isCompactEnv, initial: true) { oldValue, newValue in
-                    router.isCompact = newValue
-                    if oldValue != newValue {
-                        router.handleSizeClassChange(toCompact: newValue)
-                    }
+                #endif
+            }
+            .onChange(of: isCompactEnv, initial: true) { oldValue, newValue in
+                router.isCompact = newValue
+                if oldValue != newValue {
+                    router.handleSizeClassChange(toCompact: newValue)
                 }
-                .onChange(of: router.currentTrackPath) { oldValue, newValue in
-                    TrackHelper.shared.views(path: newValue)
-                }
+            }
+            .onChange(of: router.currentTrackPath) { oldValue, newValue in
+                TrackHelper.shared.views(path: newValue)
             }
         }
         .environment(router)
@@ -209,17 +174,6 @@ struct ContentView: View {
         }
         .sheet(isPresented: $globalManager.isAppUpdateSheetPresented) {
             AppUpdateSheetView()
-        }
-
-        .onChange(of: DatabaseManager.shared.status, initial: true) { _, status in
-            if case .degraded(let message) = status {
-                databaseDegradedMessage = message
-            }
-        }
-        .alert("数据库异常", item: $databaseDegradedMessage) { _ in
-            Button("好", role: .cancel) {}
-        } message: { message in
-            Text("数据库初始化失败：\(message)\n\n本次使用临时数据运行，产生的改动不会被保存。请尝试强制关闭 App 后重新打开；若仍然异常，请卸载后重新安装。")
         }
 
         .onOpenURL { url in
