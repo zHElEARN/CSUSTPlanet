@@ -93,19 +93,3 @@ struct ScheduleDaySectionView: View {
         return ScheduleDateUtil.isSameDay(day, section.id)
     }
 }
-
-#Preview("ScheduleDaySectionView") {
-    let referenceDate = SchedulePreviewData.referenceDate
-    let section = ScheduleDaySection(
-        id: ScheduleDateUtil.startOfDay(for: referenceDate),
-        events: Array(SchedulePreviewData.events.prefix(3))
-    )
-
-    ScheduleDaySectionView(
-        section: section,
-        referenceDate: referenceDate,
-        currentIndicatorPlacement: .beforeEvent(SchedulePreviewData.events[1].id),
-        onSelectEvent: { _ in }
-    )
-    .fixedSize(horizontal: false, vertical: true)
-}

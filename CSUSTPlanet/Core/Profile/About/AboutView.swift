@@ -61,9 +61,3 @@ struct AboutView: View {
         .navigationTitle("关于")
     }
 }
-
-#Preview {
-    NavigationStack {
-        AboutView()
-    }
-}

@@ -101,16 +101,3 @@ struct ScheduleDateHeader: View {
         .buttonStyle(.plain)
     }
 }
-
-#Preview("ScheduleDateHeader") {
-    let referenceDate = SchedulePreviewData.referenceDate
-    let activeDate = ScheduleDateUtil.startOfDay(for: referenceDate)
-
-    ScheduleDateHeader(
-        dates: ScheduleDateUtil.datesForWeek(containing: referenceDate),
-        activeDate: activeDate,
-        referenceDate: referenceDate,
-        eventDates: Set(SchedulePreviewData.events.map(ScheduleDateUtil.eventDay(for:))),
-        onSelectDate: { _ in }
-    )
-}

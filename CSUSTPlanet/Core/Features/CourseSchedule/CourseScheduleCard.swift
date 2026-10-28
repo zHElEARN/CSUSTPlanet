@@ -64,13 +64,3 @@ struct CourseScheduleCard: View {
         .onTapGesture(perform: onTap)
     }
 }
-
-#Preview("CourseScheduleCard") {
-    CourseScheduleCard(
-        course: CourseSchedulePreviewData.courseB,
-        session: CourseSchedulePreviewData.sessionB,
-        color: .yellow,
-        onTap: {}
-    )
-    .frame(width: 50, height: 150)
-}

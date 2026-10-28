@@ -267,17 +267,3 @@ struct CourseScheduleSettingsView: View {
         )
     }
 }
-
-#Preview("CourseScheduleSettingsContent") {
-    NavigationStack {
-        CourseScheduleSettingsContent(
-            schedules: CourseSchedulePreviewData.customSchedules,
-            currentScheduleID: CourseSchedulePreviewData.currentCustomScheduleID,
-            defaultScheduleStartDate: .now,
-            hasSchoolSchedule: true,
-            onActivateDefault: {},
-            onActivateSchedule: { _ in },
-            onDeleteSchedule: { _ in }
-        )
-    }
-}

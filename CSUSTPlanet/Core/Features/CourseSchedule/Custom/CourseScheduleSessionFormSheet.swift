@@ -139,10 +139,3 @@ struct CourseScheduleSessionFormSheet: View {
         }
     }
 }
-
-#Preview("CourseScheduleSessionFormContent") {
-    CourseScheduleSessionFormContent(
-        weekCount: 20,
-        onSubmit: { _, _, _, _, _ in true }
-    )
-}

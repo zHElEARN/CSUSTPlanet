@@ -121,21 +121,3 @@ struct CourseScheduleCreateSheet: View {
         }
     }
 }
-
-#Preview("CourseScheduleCreateContent") {
-    CourseScheduleCreateContent(
-        isImportFromSchool: false,
-        name: CourseSchedulePreviewData.scheduleName,
-        defaultStartDate: .now,
-        onSubmit: { _, _ in }
-    )
-}
-
-#Preview("CourseScheduleImportContent") {
-    CourseScheduleCreateContent(
-        isImportFromSchool: true,
-        name: CourseSchedulePreviewData.scheduleName,
-        defaultStartDate: .now,
-        onSubmit: { _, _ in }
-    )
-}

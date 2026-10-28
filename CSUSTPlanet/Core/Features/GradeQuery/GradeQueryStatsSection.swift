@@ -78,19 +78,3 @@ private struct GradeQueryStatItem: View {
         .frame(maxWidth: .infinity)
     }
 }
-
-#Preview("GradeQueryStatsSection") {
-    GradeQueryStatsSection(
-        analysis: GradeAnalysisData.fromCourseGrades(GradeQueryPreviewData.grades),
-        isLoading: false
-    )
-    .padding()
-}
-
-#Preview("GradeQueryStatsSection Loading") {
-    GradeQueryStatsSection(
-        analysis: nil,
-        isLoading: true
-    )
-    .padding()
-}

@@ -101,12 +101,3 @@ struct AssignmentsNotificationSettings: View {
         }
     }
 }
-
-#Preview("AssignmentsNotificationSettings") {
-    AssignmentsNotificationSettings(
-        isEnabled: true,
-        selectedHour: 2,
-        selectedMinute: 30,
-        onSave: { _, _, _ in }
-    )
-}

@@ -95,23 +95,3 @@ private struct GradeQueryGradeRowContent: View {
         .padding(.horizontal, 8)
     }
 }
-
-#Preview("GradeQueryGradeRow") {
-    NavigationStack {
-        GradeQueryGradeRow(
-            courseGrade: GradeQueryPreviewData.grades[0],
-            isSelectionMode: false,
-            isSelected: .constant(false)
-        )
-        .padding()
-    }
-}
-
-#Preview("GradeQueryGradeRow Selection") {
-    GradeQueryGradeRow(
-        courseGrade: GradeQueryPreviewData.grades[0],
-        isSelectionMode: true,
-        isSelected: .constant(true)
-    )
-    .padding()
-}

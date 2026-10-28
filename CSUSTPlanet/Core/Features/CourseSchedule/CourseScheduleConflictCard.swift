@@ -137,11 +137,3 @@ struct CourseScheduleConflictCard: View {
     }
     #endif
 }
-
-#Preview("CourseScheduleConflictCard") {
-    CourseScheduleConflictCard(
-        courses: CourseSchedulePreviewData.conflictCourses,
-        onSelect: { _ in }
-    )
-    .frame(width: 50, height: 150)
-}

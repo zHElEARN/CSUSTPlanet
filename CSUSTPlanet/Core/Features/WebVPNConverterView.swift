@@ -244,9 +244,3 @@ struct WebVPNConverterView: View {
         openURL(url)
     }
 }
-
-#Preview {
-    NavigationStack {
-        WebVPNConverterView()
-    }
-}

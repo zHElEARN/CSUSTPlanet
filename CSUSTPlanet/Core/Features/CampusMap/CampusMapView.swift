@@ -326,9 +326,3 @@ struct WillDisappearHandler: UIViewControllerRepresentable {
     }
 }
 #endif
-
-#Preview {
-    NavigationStack {
-        CampusMapView()
-    }
-}

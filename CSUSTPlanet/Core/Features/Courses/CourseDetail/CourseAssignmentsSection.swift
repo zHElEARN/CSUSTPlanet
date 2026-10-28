@@ -97,25 +97,3 @@ struct CourseAssignmentsSection: View {
         }
     }
 }
-
-#Preview("CourseAssignmentsSection") {
-    CustomScrollView {
-        CourseAssignmentsSection(
-            assignments: MoocPreviewData.assignments,
-            isLoading: false,
-            onRefresh: {}
-        )
-        .padding()
-    }
-}
-
-#Preview("CourseAssignmentsSection Empty") {
-    CustomScrollView {
-        CourseAssignmentsSection(
-            assignments: [],
-            isLoading: false,
-            onRefresh: {}
-        )
-        .padding()
-    }
-}

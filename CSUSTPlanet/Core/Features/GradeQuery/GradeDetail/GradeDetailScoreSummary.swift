@@ -48,8 +48,3 @@ private struct GradeDetailScoreItem: View {
         .frame(maxWidth: .infinity)
     }
 }
-
-#Preview("GradeDetailScoreSummary") {
-    GradeDetailScoreSummary(courseGrade: GradeQueryPreviewData.grades[0])
-        .padding()
-}

@@ -43,17 +43,3 @@ struct GradeDetailContent: View {
         }
     }
 }
-
-#Preview("GradeDetailContent") {
-    @Previewable @State var errorToast = ToastState.errorTitle
-
-    NavigationStack {
-        GradeDetailContent(
-            courseGrade: GradeQueryPreviewData.grades[0],
-            detail: GradeQueryPreviewData.detail,
-            isLoadingDetail: false,
-            errorToast: $errorToast,
-            onRefresh: {}
-        )
-    }
-}

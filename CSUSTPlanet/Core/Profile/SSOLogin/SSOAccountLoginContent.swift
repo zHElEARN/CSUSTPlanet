@@ -155,33 +155,3 @@ struct SSOAccountLoginContent: View {
         captchaImageData = await onRefreshCaptcha()
     }
 }
-
-#Preview("SSOAccountLoginContent") {
-    NavigationStack {
-        SSOAccountLoginContent(
-            username: "2025000000",
-            password: "password",
-            captcha: "",
-            isNeedCaptcha: false,
-            isLoggingIn: false,
-            onLogin: { _, _, _ in },
-            onCheckNeedCaptcha: { _ in false },
-            onRefreshCaptcha: { nil }
-        )
-    }
-}
-
-#Preview("SSOAccountLoginContent Captcha Loading") {
-    NavigationStack {
-        SSOAccountLoginContent(
-            username: "2025000000",
-            password: "password",
-            captcha: "1234",
-            isNeedCaptcha: true,
-            isLoggingIn: false,
-            onLogin: { _, _, _ in },
-            onCheckNeedCaptcha: { _ in true },
-            onRefreshCaptcha: { nil }
-        )
-    }
-}

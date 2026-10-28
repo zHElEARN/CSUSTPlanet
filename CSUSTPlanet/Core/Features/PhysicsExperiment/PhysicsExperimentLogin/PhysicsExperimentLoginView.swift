@@ -76,7 +76,3 @@ struct PhysicsExperimentLoginView: View {
         }
     }
 }
-
-#Preview {
-    PhysicsExperimentLoginView()
-}

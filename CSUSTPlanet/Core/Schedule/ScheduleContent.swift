@@ -305,20 +305,3 @@ struct ScheduleContent: View {
         return nil
     }
 }
-
-#Preview("ScheduleContent") {
-    NavigationStack {
-        let referenceDate = SchedulePreviewData.referenceDate
-        let timeline = ScheduleTimelineBuilder.makeData(
-            events: SchedulePreviewData.events,
-            referenceDate: referenceDate
-        )
-
-        ScheduleContent(
-            timeline: timeline,
-            isInitialDataReady: true,
-            selectedEventKinds: .constant(Set(ScheduleEventKind.allCases)),
-            showsEndedEvents: .constant(true)
-        )
-    }
-}

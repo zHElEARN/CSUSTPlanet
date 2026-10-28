@@ -64,17 +64,3 @@ struct ScheduleView: View {
         }
     }
 }
-
-#Preview("ScheduleView") {
-    NavigationStack {
-        ScheduleContent(
-            timeline: ScheduleTimelineBuilder.makeData(
-                events: SchedulePreviewData.events,
-                referenceDate: SchedulePreviewData.referenceDate
-            ),
-            isInitialDataReady: true,
-            selectedEventKinds: .constant(Set(ScheduleEventKind.allCases)),
-            showsEndedEvents: .constant(true)
-        )
-    }
-}

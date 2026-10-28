@@ -135,14 +135,3 @@ struct CourseScheduleTable: View {
         }
     }
 }
-
-#Preview("CourseScheduleTable") {
-    CourseScheduleTable(
-        semesterStartDate: CourseSchedulePreviewData.semesterStartDate,
-        targetWeek: 1,
-        weeklyCourses: [:],
-        courseColors: [:],
-        isCourseDetailInspectorPresented: .constant(false),
-        selectedCourseInfo: .constant(nil)
-    )
-}

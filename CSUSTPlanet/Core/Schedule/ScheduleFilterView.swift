@@ -68,12 +68,3 @@ struct ScheduleFilterView: View {
         .buttonStyle(.plain)
     }
 }
-
-#Preview("ScheduleFilterView") {
-    NavigationStack {
-        ScheduleFilterView(
-            selectedEventKinds: .constant(Set(ScheduleEventKind.allCases)),
-            showsEndedEvents: .constant(true)
-        )
-    }
-}

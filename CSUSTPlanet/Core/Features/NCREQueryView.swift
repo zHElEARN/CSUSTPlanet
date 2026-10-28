@@ -22,7 +22,3 @@ struct NCREQueryView: View {
         }
     }
 }
-
-#Preview {
-    NCREQueryView()
-}

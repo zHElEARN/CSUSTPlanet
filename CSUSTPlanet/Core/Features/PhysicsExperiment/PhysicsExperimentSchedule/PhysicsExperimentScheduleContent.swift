@@ -175,29 +175,3 @@ private struct ScheduleCardView: View {
         return "\(dateStr) 周\(course.dayOfWeek.stringValue) \(startStr)-\(endStr)"
     }
 }
-
-#Preview("Normal") {
-    NavigationStack {
-        PhysicsExperimentScheduleContent(
-            data: Cached(cachedAt: .now, value: PhysicsExperimentSchedulePreviewData.courses),
-            isLoadingSchedules: false,
-            isLoginPresented: .constant(false),
-            errorToast: .constant(.errorTitle),
-            warningToast: .constant(.warningTitle),
-            onRefreshSchedules: {}
-        )
-    }
-}
-
-#Preview("Empty") {
-    NavigationStack {
-        PhysicsExperimentScheduleContent(
-            data: Cached(cachedAt: .now, value: []),
-            isLoadingSchedules: false,
-            isLoginPresented: .constant(false),
-            errorToast: .constant(.errorTitle),
-            warningToast: .constant(.warningTitle),
-            onRefreshSchedules: {}
-        )
-    }
-}

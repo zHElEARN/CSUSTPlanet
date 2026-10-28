@@ -62,26 +62,3 @@ struct ScheduleEmptySectionView: View {
         return "\(start) — \(end)"
     }
 }
-
-#Preview("ScheduleEmptySectionView") {
-    let referenceDate = SchedulePreviewData.referenceDate
-    let today = ScheduleDateUtil.startOfDay(for: referenceDate)
-    let futureStart = ScheduleDateUtil.calendar.date(byAdding: .day, value: 2, to: today)!
-    let futureEnd = ScheduleDateUtil.calendar.date(byAdding: .day, value: 4, to: today)!
-
-    VStack(spacing: 0) {
-        ScheduleEmptySectionView(
-            section: ScheduleEmptySection(startDate: today, endDate: today),
-            referenceDate: referenceDate,
-            showsIndicator: true
-        )
-
-        Divider()
-
-        ScheduleEmptySectionView(
-            section: ScheduleEmptySection(startDate: futureStart, endDate: futureEnd),
-            referenceDate: referenceDate,
-            showsIndicator: false
-        )
-    }
-}

@@ -97,9 +97,3 @@ struct FeedbackView: View {
         .navigationTitle("意见反馈")
     }
 }
-
-#Preview {
-    NavigationStack {
-        FeedbackView()
-    }
-}

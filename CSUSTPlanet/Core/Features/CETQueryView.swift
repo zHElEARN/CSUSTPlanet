@@ -22,7 +22,3 @@ struct CETQueryView: View {
         }
     }
 }
-
-#Preview {
-    CETQueryView()
-}

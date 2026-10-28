@@ -78,24 +78,3 @@ struct GradeDetailDistributionSection: View {
         }
     }
 }
-
-#Preview("GradeDetailDistributionSection") {
-    GradeDetailDistributionSection(detail: GradeQueryPreviewData.detail)
-        .padding()
-}
-
-#Preview("GradeDetailDistributionSection 五段") {
-    GradeDetailDistributionSection(
-        detail: EduHelper.GradeDetail(
-            components: [
-                EduHelper.GradeComponent(type: "考勤", grade: 80, ratio: 5),
-                EduHelper.GradeComponent(type: "平时作业", grade: 70, ratio: 15),
-                EduHelper.GradeComponent(type: "实验成绩", grade: 60, ratio: 20),
-                EduHelper.GradeComponent(type: "课程设计成绩", grade: 90, ratio: 20),
-                EduHelper.GradeComponent(type: "期末成绩", grade: 85, ratio: 40),
-            ],
-            totalGrade: 78
-        )
-    )
-    .padding()
-}

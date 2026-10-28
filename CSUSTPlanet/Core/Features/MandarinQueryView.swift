@@ -22,7 +22,3 @@ struct MandarinQueryView: View {
         }
     }
 }
-
-#Preview {
-    MandarinQueryView()
-}

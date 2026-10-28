@@ -53,25 +53,3 @@ struct SchoolCalendarListContent: View {
         }
     }
 }
-
-#Preview("Normal") {
-    NavigationStack {
-        SchoolCalendarListContent(
-            schoolCalendars: SchoolCalendarListPreviewData.calendars,
-            isLoadingCalendars: false,
-            errorToast: .constant(.errorTitle),
-            onQuery: {}
-        )
-    }
-}
-
-#Preview("Empty") {
-    NavigationStack {
-        SchoolCalendarListContent(
-            schoolCalendars: [],
-            isLoadingCalendars: false,
-            errorToast: .constant(.errorTitle),
-            onQuery: {}
-        )
-    }
-}

@@ -341,29 +341,3 @@ struct GradeAnalysisContent: View {
     }
     #endif
 }
-
-#Preview("Normal") {
-    NavigationStack {
-        GradeAnalysisContent(
-            analysisData: GradeAnalysisData.fromCourseGrades(GradeQueryPreviewData.grades),
-            canShare: true,
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            successToast: .constant(.successTitle),
-            onRefresh: {}
-        )
-    }
-}
-
-#Preview("Empty") {
-    NavigationStack {
-        GradeAnalysisContent(
-            analysisData: nil,
-            canShare: false,
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            successToast: .constant(.successTitle),
-            onRefresh: {}
-        )
-    }
-}

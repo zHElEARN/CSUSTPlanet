@@ -339,17 +339,3 @@ struct CourseScheduleManageView: View {
         )
     }
 }
-
-#Preview("CourseScheduleManageContent") {
-    NavigationStack {
-        CourseScheduleManageContent(
-            schedule: CourseSchedulePreviewData.customSchedule,
-            isCurrentSchedule: false,
-            courseItems: [],
-            onActivate: {},
-            onDelete: {},
-            onDeleteCourse: { _ in },
-            onSaveScheduleInfo: { _, _, _, _ in true }
-        )
-    }
-}

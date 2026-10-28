@@ -110,27 +110,3 @@ struct GradeCardView: View {
         }
     }
 }
-
-#Preview("Normal") {
-    NavigationStack {
-        PhysicsExperimentGradeContent(
-            grades: PhysicsExperimentGradePreviewData.grades,
-            isLoadingGrades: false,
-            isLoginPresented: .constant(false),
-            errorToast: .constant(.errorTitle),
-            onRefreshGrades: {}
-        )
-    }
-}
-
-#Preview("Empty") {
-    NavigationStack {
-        PhysicsExperimentGradeContent(
-            grades: [],
-            isLoadingGrades: false,
-            isLoginPresented: .constant(false),
-            errorToast: .constant(.errorTitle),
-            onRefreshGrades: {}
-        )
-    }
-}

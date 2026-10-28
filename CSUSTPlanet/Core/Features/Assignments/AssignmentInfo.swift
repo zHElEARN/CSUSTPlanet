@@ -93,12 +93,3 @@ struct AssignmentInfo: View {
         }
     }
 }
-
-#Preview("AssignmentInfo") {
-    Form {
-        AssignmentInfo(assignment: MoocPreviewData.unsubmittedAssignment)
-        AssignmentInfo(assignment: MoocPreviewData.submittedAssignment)
-        AssignmentInfo(assignment: MoocPreviewData.expiredAssignment)
-    }
-    .formStyle(.grouped)
-}

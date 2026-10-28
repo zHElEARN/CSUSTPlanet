@@ -24,8 +24,3 @@ struct ScheduleCurrentTimeIndicator: View {
         .accessibilityLabel("当前时间")
     }
 }
-
-#Preview("ScheduleCurrentTimeIndicator") {
-    ScheduleCurrentTimeIndicator()
-        .padding()
-}

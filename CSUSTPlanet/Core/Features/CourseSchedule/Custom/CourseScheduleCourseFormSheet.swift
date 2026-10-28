@@ -95,9 +95,3 @@ struct CourseScheduleCourseFormSheet: View {
         }
     }
 }
-
-#Preview("CourseScheduleCourseFormContent") {
-    CourseScheduleCourseFormContent(
-        onSubmit: { _, _, _ in true }
-    )
-}

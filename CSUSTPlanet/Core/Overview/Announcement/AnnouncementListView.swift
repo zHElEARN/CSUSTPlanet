@@ -110,9 +110,3 @@ struct AnnouncementListView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        AnnouncementListView(viewModel: AnnouncementListViewModel())
-    }
-}

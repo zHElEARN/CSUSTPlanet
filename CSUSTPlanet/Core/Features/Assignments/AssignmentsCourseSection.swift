@@ -134,14 +134,3 @@ extension MoocHelper.Assignment {
         canSubmit && !submitStatus && deadline >= referenceDate
     }
 }
-
-#Preview("AssignmentsCourseSection") {
-    NavigationStack {
-        CustomScrollView {
-            AssignmentsCourseSection(
-                group: MoocPreviewData.groups[0]
-            )
-            .padding()
-        }
-    }
-}

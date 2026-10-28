@@ -101,15 +101,3 @@ struct CourseScheduleControlBar: View {
         #endif
     }
 }
-
-#Preview("CourseScheduleConflictCard") {
-    @Previewable @State var currentWeek = CourseSchedulePreviewData.currentWeek
-
-    CourseScheduleControlBar(
-        remarks: CourseSchedulePreviewData.remarks,
-        subtitle: CourseSchedulePreviewData.subtitle,
-        realCurrentWeek: CourseSchedulePreviewData.realCurrentWeek,
-        currentWeek: $currentWeek,
-        weekCount: CourseSchedulePreviewData.weekCount
-    )
-}

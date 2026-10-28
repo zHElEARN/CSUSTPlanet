@@ -43,15 +43,3 @@ struct CourseScheduleScrollTable: View {
         )
     }
 }
-
-#Preview("CourseScheduleScrollTable") {
-    CourseScheduleScrollTable(
-        semesterStartDate: CourseSchedulePreviewData.semesterStartDate,
-        weeklyCourses: [:],
-        courseColors: [:],
-        currentWeek: .constant(1),
-        weekCount: CourseSchedulePreviewData.weekCount,
-        isCourseDetailInspectorPresented: .constant(false),
-        selectedCourseInfo: .constant(nil)
-    )
-}

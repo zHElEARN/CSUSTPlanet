@@ -91,25 +91,3 @@ struct CoursesContent: View {
         }
     }
 }
-
-#Preview("Normal") {
-    NavigationStack {
-        CoursesContent(
-            courses: MoocPreviewData.courses,
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            onRefreshCourses: {}
-        )
-    }
-}
-
-#Preview("Empty") {
-    NavigationStack {
-        CoursesContent(
-            courses: [],
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            onRefreshCourses: {}
-        )
-    }
-}

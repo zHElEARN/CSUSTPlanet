@@ -76,10 +76,3 @@ struct AnnouncementOverviewView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
-
-#Preview {
-    NavigationStack {
-        AnnouncementOverviewView()
-            .padding()
-    }
-}

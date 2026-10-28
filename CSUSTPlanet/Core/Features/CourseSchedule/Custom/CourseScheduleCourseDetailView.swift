@@ -454,17 +454,3 @@ struct CourseScheduleCourseDetailView: View {
         )
     }
 }
-
-#Preview("CourseScheduleCourseDetailContent") {
-    NavigationStack {
-        CourseScheduleCourseDetailContent(
-            course: CourseSchedulePreviewData.customCourse,
-            sessions: CourseSchedulePreviewData.customSessions,
-            weekCount: CourseSchedulePreviewData.weekCount,
-            onSaveCourseInfo: { _, _, _ in true },
-            onDeleteCourse: {},
-            onSaveSession: { _, _, _, _, _, _ in true },
-            onDeleteSession: { _ in }
-        )
-    }
-}

@@ -102,13 +102,3 @@ struct CourseScheduleOverlay: View {
         isCourseDetailInspectorPresented = true
     }
 }
-
-#Preview("CourseScheduleOverlay") {
-    CourseScheduleOverlay(
-        targetWeek: 1,
-        weeklyCourses: CourseSchedulePreviewData.overlayWeeklyCourses,
-        courseColors: CourseSchedulePreviewData.overlayCourseColors,
-        isCourseDetailInspectorPresented: .constant(false),
-        selectedCourseInfo: .constant(nil)
-    )
-}

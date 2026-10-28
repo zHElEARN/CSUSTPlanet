@@ -74,37 +74,3 @@ struct AssignmentsContent: View {
         }
     }
 }
-
-#Preview("Normal") {
-    NavigationStack {
-        AssignmentsContent(
-            courseGroups: MoocPreviewData.groups,
-            isLoading: false,
-            isNotificationEnabled: false,
-            notificationOffsetHour: 8,
-            notificationOffsetMinute: 20,
-            errorToast: .constant(.errorTitle),
-            isNotificationDeniedAlertPresented: .constant(false),
-            onRefreshAssignments: {},
-            onSaveNotificationSettings: { _, _, _ in },
-            onOpenNotificationSettings: {}
-        )
-    }
-}
-
-#Preview("Empty") {
-    NavigationStack {
-        AssignmentsContent(
-            courseGroups: [],
-            isLoading: false,
-            isNotificationEnabled: false,
-            notificationOffsetHour: 8,
-            notificationOffsetMinute: 20,
-            errorToast: .constant(.errorTitle),
-            isNotificationDeniedAlertPresented: .constant(false),
-            onRefreshAssignments: {},
-            onSaveNotificationSettings: { _, _, _ in },
-            onOpenNotificationSettings: {}
-        )
-    }
-}

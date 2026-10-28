@@ -100,12 +100,3 @@ struct ScheduleEventRow: View {
     }
 
 }
-
-#Preview("ScheduleEventRow") {
-    VStack(spacing: 12) {
-        ScheduleEventRow(event: SchedulePreviewData.events[0], isEnded: true, onTap: {})
-        ScheduleEventRow(event: SchedulePreviewData.events[3], isEnded: false, onTap: {})
-    }
-    .fixedSize(horizontal: false, vertical: true)
-    .padding()
-}

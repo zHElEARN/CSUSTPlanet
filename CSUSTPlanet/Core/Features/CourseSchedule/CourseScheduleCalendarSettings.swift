@@ -77,9 +77,3 @@ struct CourseScheduleCalendarSettings: View {
         .pickerStyle(.menu)
     }
 }
-
-#Preview("CourseScheduleCalendarSettings") {
-    CourseScheduleCalendarSettings {
-        debugPrint($0, $1, $2, $3)
-    }
-}

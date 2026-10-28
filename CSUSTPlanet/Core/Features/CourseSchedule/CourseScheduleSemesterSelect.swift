@@ -68,27 +68,6 @@ private struct CourseScheduleSemesterSelectContent: View {
     }
 }
 
-#Preview("CourseScheduleSemesterSelectContent") {
-    @Previewable @State var availableSemesters: [String] = []
-    @Previewable @State var isLoading = false
-
-    CourseScheduleSemesterSelectContent(
-        selectedSemester: .constant(nil),
-        availableSemesters: availableSemesters,
-        isLoading: isLoading,
-        errorToast: .constant(.errorTitle),
-        onRefresh: {
-            isLoading = true
-            defer { isLoading = false }
-
-            try? await Task.sleep(for: .seconds(1))
-
-            availableSemesters = CourseSchedulePreviewData.semesterOptions
-        },
-        onComplete: {}
-    )
-}
-
 struct CourseScheduleSemesterSelect: View {
     @State private var selectedSemester: String?
     @State private var availableSemesters: [String] = []

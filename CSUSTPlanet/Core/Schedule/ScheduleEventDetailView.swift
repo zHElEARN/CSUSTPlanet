@@ -73,9 +73,3 @@ struct ScheduleEventDetailView: View {
         }
     }
 }
-
-#Preview("ScheduleEventDetailView") {
-    NavigationStack {
-        ScheduleEventDetailView(event: SchedulePreviewData.events[0])
-    }
-}

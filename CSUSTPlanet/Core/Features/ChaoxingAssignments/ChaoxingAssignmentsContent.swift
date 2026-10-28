@@ -155,25 +155,3 @@ struct ChaoxingAssignmentsContent: View {
         #endif
     }
 }
-
-#Preview("Normal") {
-    NavigationStack {
-        ChaoxingAssignmentsContent(
-            assignments: ChaoxingAssignmentsPreviewData.assignments,
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            onRefreshAssignments: {}
-        )
-    }
-}
-
-#Preview("Empty") {
-    NavigationStack {
-        ChaoxingAssignmentsContent(
-            assignments: [],
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            onRefreshAssignments: {}
-        )
-    }
-}

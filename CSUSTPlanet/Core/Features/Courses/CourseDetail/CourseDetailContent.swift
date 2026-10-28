@@ -44,27 +44,3 @@ struct CourseDetailContent: View {
         }
     }
 }
-
-#Preview("CourseDetailContent") {
-    NavigationStack {
-        CourseDetailContent(
-            course: MoocPreviewData.mobileDevelopmentCourse,
-            assignments: MoocPreviewData.assignments,
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            onRefreshAssignments: {}
-        )
-    }
-}
-
-#Preview("CourseDetailContent Empty") {
-    NavigationStack {
-        CourseDetailContent(
-            course: MoocPreviewData.generalEducationCourse,
-            assignments: [],
-            isLoading: false,
-            errorToast: .constant(.errorTitle),
-            onRefreshAssignments: {}
-        )
-    }
-}

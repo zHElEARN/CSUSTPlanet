@@ -100,13 +100,3 @@ struct CourseScheduleDetailView: View {
         }
     }
 }
-
-#Preview("CourseScheduleDetailView") {
-    NavigationStack {
-        CourseScheduleDetailView(
-            course: CourseSchedulePreviewData.courseA,
-            session: CourseSchedulePreviewData.sessionA,
-            isToolbarPresented: true
-        )
-    }
-}

@@ -222,28 +222,3 @@ struct CourseScheduleContent: View {
         }
     }
 }
-
-#Preview("CourseScheduleContent") {
-    NavigationStack {
-        CourseScheduleContent(
-            weeklyCourses: [:],
-            courseColors: [:],
-            semesterStartDate: nil,
-            remarks: [],
-            selectedSemester: nil,
-            isCustomSchedule: false,
-            scheduleName: nil,
-            isCourseScheduleLoading: false,
-            isCalendarExporting: false,
-            currentWeek: .constant(1),
-            realCurrentWeek: 1,
-            weekCount: 20,
-            errorToast: .constant(.errorTitle),
-            loadingToast: .constant(.loadingTitle),
-            successToast: .constant(.successTitle),
-            onRefreshCourses: {},
-            onSelectSemester: { _ in },
-            onAddCalendar: { _, _, _, _ in }
-        )
-    }
-}

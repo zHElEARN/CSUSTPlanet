@@ -42,7 +42,3 @@ struct ElectricityRechargeView: View {
         }
     }
 }
-
-#Preview {
-    ElectricityRechargeView()
-}

@@ -48,8 +48,3 @@ private struct GradeDetailInfoRow: View {
         }
     }
 }
-
-#Preview("GradeDetailInfoSection") {
-    GradeDetailInfoSection(courseGrade: GradeQueryPreviewData.grades[0])
-        .padding()
-}
