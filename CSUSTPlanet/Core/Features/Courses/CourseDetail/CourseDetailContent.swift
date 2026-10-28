@@ -30,9 +30,6 @@ struct CourseDetailContent: View {
             }
             .padding()
         }
-        #if os(iOS)
-        .background(Color(PlatformColor.systemGroupedBackground))
-        #endif
         .errorToast($errorToast)
         .navigationTitle(course.name)
         .apply { view in
