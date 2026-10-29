@@ -51,7 +51,7 @@ private struct CourseScheduleManageContent: View {
                         .foregroundStyle(.secondary)
                 }
                 ForEach(courseItems) { item in
-                    NavigationLink(value: AppRoute.features(.education(.courseSchedule(.courseDetail(item.course))))) {
+                    NavigationLink(value: AppRoute.features(.courseSchedule(.courseDetail(item.course)))) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.course.courseName)
                             Text(courseSubtitle(for: item))

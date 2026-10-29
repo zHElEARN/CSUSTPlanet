@@ -221,7 +221,7 @@ struct DormDetailView: View {
 
     @ViewBuilder
     private var historyEntryButton: some View {
-        NavigationLink(value: AppRoute.features(.campusTool(.dormList(.detail(.history(viewModel)))))) {
+        NavigationLink(value: AppRoute.features(.dormList(.detail(.history(viewModel))))) {
             CustomGroupBox {
                 HStack {
                     Label("查看近三个月历史记录", systemImage: "list.bullet.clipboard")

@@ -58,7 +58,7 @@ struct CourseScheduleSettingsContent: View {
                         .foregroundStyle(.secondary)
                 }
                 ForEach(schedules) { schedule in
-                    NavigationLink(value: AppRoute.features(.education(.courseSchedule(.edit(schedule))))) {
+                    NavigationLink(value: AppRoute.features(.courseSchedule(.edit(schedule)))) {
                         scheduleRow(
                             title: schedule.name,
                             subtitle: CourseScheduleUtil.dateFormatter.string(from: schedule.semesterStartDate),

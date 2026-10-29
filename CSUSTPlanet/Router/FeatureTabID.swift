@@ -110,43 +110,43 @@ enum FeatureTabID: Hashable, CaseIterable {
     var rootRoute: AppRoute {
         switch self {
         case .courseSchedule:
-            return .features(.education(.courseSchedule(.main)))
+            return .features(.courseSchedule(.main))
         case .gradeQuery:
-            return .features(.education(.gradeQuery(.main)))
+            return .features(.gradeQuery(.main))
         case .examSchedule:
-            return .features(.education(.examSchedule))
+            return .features(.examSchedule)
         case .gradeAnalysis:
-            return .features(.education(.gradeAnalysis))
+            return .features(.gradeAnalysis)
         case .courses:
-            return .features(.mooc(.courses(.main)))
+            return .features(.courses(.main))
         case .assignments:
-            return .features(.mooc(.assignments))
+            return .features(.assignments)
         case .chaoxingAssignments:
             return .features(.chaoxingAssignments)
         case .electricityQuery:
-            return .features(.campusTool(.dormList(.main)))
+            return .features(.dormList(.main))
         case .availableClassroom:
-            return .features(.campusTool(.availableClassroom))
+            return .features(.availableClassroom)
         case .campusMap:
-            return .features(.campusTool(.campusMap))
+            return .features(.campusMap)
         case .schoolCalendar:
-            return .features(.campusTool(.schoolCalendarList(.main)))
+            return .features(.schoolCalendarList(.main))
         case .electricityRecharge:
-            return .features(.campusTool(.electricityRecharge))
+            return .features(.electricityRecharge)
         case .webVPNConverter:
-            return .features(.campusTool(.webVPNConverter))
+            return .features(.webVPNConverter)
         case .eval:
-            return .features(.campusTool(.eval))
+            return .features(.eval)
         case .physicsExperimentSchedule:
-            return .features(.physicsExperiment(.schedule))
+            return .features(.physicsExperimentSchedule)
         case .physicsExperimentGrade:
-            return .features(.physicsExperiment(.grade))
+            return .features(.physicsExperimentGrade)
         case .cet:
-            return .features(.examQuery(.cet))
+            return .features(.cetQuery)
         case .mandarin:
-            return .features(.examQuery(.mandarin))
+            return .features(.mandarinQuery)
         case .ncre:
-            return .features(.examQuery(.ncre))
+            return .features(.ncreQuery)
         }
     }
 }

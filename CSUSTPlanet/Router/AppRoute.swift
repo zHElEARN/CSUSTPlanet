@@ -66,363 +66,269 @@ enum AppRoute: Hashable {
     // MARK: - FeaturesRoute
 
     enum FeaturesRoute: Hashable {
-        case education(EducationRoute)
-        case mooc(MoocRoute)
+        case courseSchedule(CourseScheduleRoute)
+        case gradeQuery(GradeQueryRoute)
+        case examSchedule
+        case gradeAnalysis
+        case courses(CoursesRoute)
+        case assignments
         case chaoxingAssignments
-        case campusTool(CampusToolRoute)
-        case physicsExperiment(PhysicsExperimentRoute)
-        case examQuery(ExamQueryRoute)
+        case dormList(DormListRoute)
+        case availableClassroom
+        case campusMap
+        case schoolCalendarList(SchoolCalendarListRoute)
+        case electricityRecharge
+        case webVPNConverter
+        case eval
+        case physicsExperimentSchedule
+        case physicsExperimentGrade
+        case cetQuery
+        case mandarinQuery
+        case ncreQuery
 
         var trackSegment: String {
             switch self {
-            case .education(let route):
+            case .courseSchedule(let route):
                 return route.trackSegment
-            case .mooc(let route):
+            case .gradeQuery(let route):
                 return route.trackSegment
+            case .examSchedule:
+                return "ExamSchedule"
+            case .gradeAnalysis:
+                return "GradeAnalysis"
+            case .courses(let route):
+                return route.trackSegment
+            case .assignments:
+                return "Assignments"
             case .chaoxingAssignments:
                 return "ChaoxingAssignments"
-            case .campusTool(let route):
+            case .dormList(let route):
                 return route.trackSegment
-            case .physicsExperiment(let route):
+            case .availableClassroom:
+                return "AvailableClassroom"
+            case .campusMap:
+                return "CampusMap"
+            case .schoolCalendarList(let route):
                 return route.trackSegment
-            case .examQuery(let route):
-                return route.trackSegment
+            case .electricityRecharge:
+                return "ElectricityRecharge"
+            case .webVPNConverter:
+                return "WebVPNConverter"
+            case .eval:
+                return "Eval"
+            case .physicsExperimentSchedule:
+                return "PhysicsExperimentSchedule"
+            case .physicsExperimentGrade:
+                return "PhysicsExperimentGrade"
+            case .cetQuery:
+                return "CET"
+            case .mandarinQuery:
+                return "Mandarin"
+            case .ncreQuery:
+                return "NCRE"
             }
         }
 
         @ViewBuilder
         var destinationView: some View {
             switch self {
-            case .education(let route):
+            case .courseSchedule(let route):
                 route.destinationView
-            case .mooc(let route):
+            case .gradeQuery(let route):
                 route.destinationView
+            case .examSchedule:
+                ExamScheduleView()
+            case .gradeAnalysis:
+                GradeAnalysisView()
+            case .courses(let route):
+                route.destinationView
+            case .assignments:
+                AssignmentsView()
             case .chaoxingAssignments:
                 ChaoxingAssignmentsView()
-            case .campusTool(let route):
+            case .dormList(let route):
                 route.destinationView
-            case .physicsExperiment(let route):
+            case .availableClassroom:
+                AvailableClassroomView()
+            case .campusMap:
+                CampusMapView()
+            case .schoolCalendarList(let route):
                 route.destinationView
-            case .examQuery(let route):
-                route.destinationView
+            case .electricityRecharge:
+                ElectricityRechargeView()
+            case .webVPNConverter:
+                WebVPNConverterView()
+            case .eval:
+                EvalView()
+            case .physicsExperimentSchedule:
+                PhysicsExperimentScheduleView()
+            case .physicsExperimentGrade:
+                PhysicsExperimentGradeView()
+            case .cetQuery:
+                CETQueryView()
+            case .mandarinQuery:
+                MandarinQueryView()
+            case .ncreQuery:
+                NCREQueryView()
             }
         }
 
-        enum EducationRoute: Hashable {
-            case courseSchedule(CourseScheduleRoute)
-            case gradeQuery(GradeQueryRoute)
-            case examSchedule
-            case gradeAnalysis
+        // MARK: - CourseScheduleRoute
+
+        enum CourseScheduleRoute: Hashable {
+            case main
+            case settings
+            case edit(CustomCourseScheduleGRDB)
+            case courseDetail(CustomCourseGRDB)
 
             var trackSegment: String {
                 switch self {
-                case .courseSchedule(let route):
-                    return route.trackSegment
-                case .gradeQuery(let route):
-                    return route.trackSegment
-                case .examSchedule:
-                    return "ExamSchedule"
-                case .gradeAnalysis:
-                    return "GradeAnalysis"
+                case .main:
+                    return "CourseSchedule"
+                case .settings:
+                    return "CourseScheduleSettings"
+                case .edit:
+                    return "CourseScheduleEdit"
+                case .courseDetail:
+                    return "CourseScheduleCourseDetail"
                 }
             }
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .courseSchedule(let route):
-                    route.destinationView
-                case .gradeQuery(let route):
-                    route.destinationView
-                case .examSchedule:
-                    ExamScheduleView()
-                case .gradeAnalysis:
-                    GradeAnalysisView()
-                }
-            }
-
-            // MARK: - CourseScheduleRoute
-
-            enum CourseScheduleRoute: Hashable {
-                case main
-                case settings
-                case edit(CustomCourseScheduleGRDB)
-                case courseDetail(CustomCourseGRDB)
-
-                var trackSegment: String {
-                    switch self {
-                    case .main:
-                        return "CourseSchedule"
-                    case .settings:
-                        return "CourseScheduleSettings"
-                    case .edit:
-                        return "CourseScheduleEdit"
-                    case .courseDetail:
-                        return "CourseScheduleCourseDetail"
-                    }
-                }
-
-                @ViewBuilder
-                var destinationView: some View {
-                    switch self {
-                    case .main:
-                        CourseScheduleView()
-                    case .settings:
-                        CourseScheduleSettingsView()
-                    case .edit(let schedule):
-                        CourseScheduleManageView(schedule: schedule)
-                    case .courseDetail(let course):
-                        CourseScheduleCourseDetailView(course: course)
-                    }
-                }
-            }
-
-            enum GradeQueryRoute: Hashable {
-                case main
-                case detail(EduHelper.CourseGrade)
-
-                var trackSegment: String {
-                    switch self {
-                    case .main:
-                        return "GradeQuery"
-                    case .detail:
-                        return "GradeDetail"
-                    }
-                }
-
-                @ViewBuilder
-                var destinationView: some View {
-                    switch self {
-                    case .main:
-                        GradeQueryView()
-                    case .detail(let courseGrade):
-                        GradeDetailView(courseGrade: courseGrade)
-                    }
+                case .main:
+                    CourseScheduleView()
+                case .settings:
+                    CourseScheduleSettingsView()
+                case .edit(let schedule):
+                    CourseScheduleManageView(schedule: schedule)
+                case .courseDetail(let course):
+                    CourseScheduleCourseDetailView(course: course)
                 }
             }
         }
 
-        enum MoocRoute: Hashable {
-            case courses(CoursesRoute)
-            case assignments
+        enum GradeQueryRoute: Hashable {
+            case main
+            case detail(EduHelper.CourseGrade)
 
             var trackSegment: String {
                 switch self {
-                case .courses(let route):
+                case .main:
+                    return "GradeQuery"
+                case .detail:
+                    return "GradeDetail"
+                }
+            }
+
+            @ViewBuilder
+            var destinationView: some View {
+                switch self {
+                case .main:
+                    GradeQueryView()
+                case .detail(let courseGrade):
+                    GradeDetailView(courseGrade: courseGrade)
+                }
+            }
+        }
+
+        enum CoursesRoute: Hashable {
+            case main
+            case detail(MoocHelper.Course)
+
+            var trackSegment: String {
+                switch self {
+                case .main:
+                    return "Courses"
+                case .detail:
+                    return "CourseDetail"
+                }
+            }
+
+            @ViewBuilder
+            var destinationView: some View {
+                switch self {
+                case .main:
+                    CoursesView()
+                case .detail(let course):
+                    CourseDetailView(course: course)
+                }
+            }
+        }
+
+        enum DormListRoute: Hashable {
+            case main
+            case detail(DormDetailRoute)
+
+            var trackSegment: String {
+                switch self {
+                case .main:
+                    return "DormList"
+                case .detail(let route):
                     return route.trackSegment
-                case .assignments:
-                    return "Assignments"
                 }
             }
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .courses(let route):
+                case .main:
+                    DormListView()
+                case .detail(let route):
                     route.destinationView
-                case .assignments:
-                    AssignmentsView()
                 }
             }
 
-            enum CoursesRoute: Hashable {
-                case main
-                case detail(MoocHelper.Course)
+            enum DormDetailRoute: Hashable {
+                case main(DormGRDB)
+                case history(DormDetailViewModel)
 
                 var trackSegment: String {
                     switch self {
                     case .main:
-                        return "Courses"
-                    case .detail:
-                        return "CourseDetail"
+                        return "DormDetail"
+                    case .history:
+                        return "DormHistory"
                     }
                 }
 
                 @ViewBuilder
                 var destinationView: some View {
                     switch self {
-                    case .main:
-                        CoursesView()
-                    case .detail(let course):
-                        CourseDetailView(course: course)
+                    case .main(let dorm):
+                        DormDetailView(dorm: dorm)
+                    case .history(let viewModel):
+                        DormHistoryView(viewModel: viewModel)
                     }
                 }
             }
         }
 
-        enum CampusToolRoute: Hashable {
-            case dormList(DormListRoute)
-            case availableClassroom
-            case campusMap
-            case schoolCalendarList(SchoolCalendarListRoute)
-            case electricityRecharge
-            case webVPNConverter
-            case eval
+        enum SchoolCalendarListRoute: Hashable {
+            case main
+            case detail(SchoolCalendar)
 
             var trackSegment: String {
                 switch self {
-                case .dormList(let route):
-                    return route.trackSegment
-                case .availableClassroom:
-                    return "AvailableClassroom"
-                case .campusMap:
-                    return "CampusMap"
-                case .schoolCalendarList(let route):
-                    return route.trackSegment
-                case .electricityRecharge:
-                    return "ElectricityRecharge"
-                case .webVPNConverter:
-                    return "WebVPNConverter"
-                case .eval:
-                    return "Eval"
+                case .main:
+                    return "SchoolCalendarList"
+                case .detail:
+                    return "SchoolCalendar"
                 }
             }
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .dormList(let route):
-                    route.destinationView
-                case .availableClassroom:
-                    AvailableClassroomView()
-                case .campusMap:
-                    CampusMapView()
-                case .schoolCalendarList(let route):
-                    route.destinationView
-                case .electricityRecharge:
-                    ElectricityRechargeView()
-                case .webVPNConverter:
-                    WebVPNConverterView()
-                case .eval:
-                    EvalView()
-                }
-            }
-
-            enum DormListRoute: Hashable {
-                case main
-                case detail(DormDetailRoute)
-
-                var trackSegment: String {
-                    switch self {
-                    case .main:
-                        return "DormList"
-                    case .detail(let route):
-                        return route.trackSegment
-                    }
-                }
-
-                @ViewBuilder
-                var destinationView: some View {
-                    switch self {
-                    case .main:
-                        DormListView()
-                    case .detail(let route):
-                        route.destinationView
-                    }
-                }
-
-                enum DormDetailRoute: Hashable {
-                    case main(DormGRDB)
-                    case history(DormDetailViewModel)
-
-                    var trackSegment: String {
-                        switch self {
-                        case .main:
-                            return "DormDetail"
-                        case .history:
-                            return "DormHistory"
-                        }
-                    }
-
-                    @ViewBuilder
-                    var destinationView: some View {
-                        switch self {
-                        case .main(let dorm):
-                            DormDetailView(dorm: dorm)
-                        case .history(let viewModel):
-                            DormHistoryView(viewModel: viewModel)
-                        }
-                    }
-                }
-            }
-
-            enum SchoolCalendarListRoute: Hashable {
-                case main
-                case detail(SchoolCalendar)
-
-                var trackSegment: String {
-                    switch self {
-                    case .main:
-                        return "SchoolCalendarList"
-                    case .detail:
-                        return "SchoolCalendar"
-                    }
-                }
-
-                @ViewBuilder
-                var destinationView: some View {
-                    switch self {
-                    case .main:
-                        SchoolCalendarListView()
-                    case .detail(let calendar):
-                        SchoolCalendarView(schoolCalendar: calendar)
-                    }
+                case .main:
+                    SchoolCalendarListView()
+                case .detail(let calendar):
+                    SchoolCalendarView(schoolCalendar: calendar)
                 }
             }
         }
 
-        enum PhysicsExperimentRoute: Hashable {
-            case schedule
-            case grade
-
-            var trackSegment: String {
-                switch self {
-                case .schedule:
-                    return "PhysicsExperimentSchedule"
-                case .grade:
-                    return "PhysicsExperimentGrade"
-                }
-            }
-
-            @ViewBuilder
-            var destinationView: some View {
-                switch self {
-                case .schedule:
-                    PhysicsExperimentScheduleView()
-                case .grade:
-                    PhysicsExperimentGradeView()
-                }
-            }
-        }
-
-        enum ExamQueryRoute: Hashable {
-            case cet
-            case mandarin
-            case ncre
-
-            var trackSegment: String {
-                switch self {
-                case .cet:
-                    return "CET"
-                case .mandarin:
-                    return "Mandarin"
-                case .ncre:
-                    return "NCRE"
-                }
-            }
-
-            @ViewBuilder
-            var destinationView: some View {
-                switch self {
-                case .cet:
-                    CETQueryView()
-                case .mandarin:
-                    MandarinQueryView()
-                case .ncre:
-                    NCREQueryView()
-                }
-            }
-        }
     }
 
     // MARK: - ProfileRoute

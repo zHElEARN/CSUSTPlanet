@@ -44,7 +44,7 @@ struct CoursesContent: View {
         ) {
             ForEach(filteredCourses, id: \.id) { course in
                 CustomGroupBox {
-                    NavigationLink(value: AppRoute.features(.mooc(.courses(.detail(course))))) {
+                    NavigationLink(value: AppRoute.features(.courses(.detail(course)))) {
                         courseRow(course)
                             .contentShape(.rect)
                     }

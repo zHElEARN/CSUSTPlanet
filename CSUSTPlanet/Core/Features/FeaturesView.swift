@@ -67,9 +67,9 @@ struct FeaturesView: View {
             sectionHeader(title: "课程学习", color: .purple)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
-                HeroCard(route: .features(.education(.courseSchedule(.main))), title: "我的课表", icon: "calendar", color: .purple)
-                HeroCard(route: .features(.mooc(.courses(.main))), title: "课程", icon: "books.vertical.fill", color: .indigo)
-                HeroCard(route: .features(.mooc(.assignments)), title: "作业", icon: "list.bullet.clipboard", color: .red)
+                HeroCard(route: .features(.courseSchedule(.main)), title: "我的课表", icon: "calendar", color: .purple)
+                HeroCard(route: .features(.courses(.main)), title: "课程", icon: "books.vertical.fill", color: .indigo)
+                HeroCard(route: .features(.assignments), title: "作业", icon: "list.bullet.clipboard", color: .red)
                 HeroCard(route: .features(.chaoxingAssignments), title: "学习通作业", icon: "list.bullet.clipboard", color: .teal)
             }
         }
@@ -81,9 +81,9 @@ struct FeaturesView: View {
             sectionHeader(title: "成绩与考试", color: .blue)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
-                HeroCard(route: .features(.education(.gradeQuery(.main))), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
-                HeroCard(route: .features(.education(.gradeAnalysis)), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
-                HeroCard(route: .features(.education(.examSchedule)), title: "考试安排", icon: "pencil.and.outline", color: .orange)
+                HeroCard(route: .features(.gradeQuery(.main)), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
+                HeroCard(route: .features(.gradeAnalysis), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
+                HeroCard(route: .features(.examSchedule), title: "考试安排", icon: "pencil.and.outline", color: .orange)
             }
         }
         .padding(.horizontal, horizontalPadding)
@@ -95,7 +95,7 @@ struct FeaturesView: View {
 
             VStack(spacing: 0) {
                 ToolRow(
-                    route: .features(.campusTool(.dormList(.main))),
+                    route: .features(.dormList(.main)),
                     title: "电量查询",
                     icon: "bolt.fill",
                     color: .yellow
@@ -104,7 +104,7 @@ struct FeaturesView: View {
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.campusTool(.availableClassroom)),
+                    route: .features(.availableClassroom),
                     title: "空教室查询",
                     icon: "building.2.fill",
                     color: .blue
@@ -113,7 +113,7 @@ struct FeaturesView: View {
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.campusTool(.campusMap)),
+                    route: .features(.campusMap),
                     title: "校园地图",
                     icon: "map.fill",
                     color: .mint
@@ -122,7 +122,7 @@ struct FeaturesView: View {
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.campusTool(.schoolCalendarList(.main))),
+                    route: .features(.schoolCalendarList(.main)),
                     title: "校历",
                     icon: "calendar.badge.clock",
                     color: .pink
@@ -131,7 +131,7 @@ struct FeaturesView: View {
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.campusTool(.electricityRecharge)),
+                    route: .features(.electricityRecharge),
                     title: "电费充值",
                     icon: "creditcard.fill",
                     color: .cyan
@@ -140,7 +140,7 @@ struct FeaturesView: View {
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.campusTool(.webVPNConverter)),
+                    route: .features(.webVPNConverter),
                     title: "WebVPN",
                     icon: "lock.shield",
                     color: .gray
@@ -149,7 +149,7 @@ struct FeaturesView: View {
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.campusTool(.eval)),
+                    route: .features(.eval),
                     title: "评教系统",
                     icon: "pencil.and.list.clipboard",
                     color: .green
@@ -169,13 +169,13 @@ struct FeaturesView: View {
 
             VStack(spacing: 0) {
                 ToolRow(
-                    route: .features(.physicsExperiment(.schedule)),
+                    route: .features(.physicsExperimentSchedule),
                     title: "实验安排", icon: "calendar", color: .purple)
 
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.physicsExperiment(.grade)),
+                    route: .features(.physicsExperimentGrade),
                     title: "实验成绩", icon: "doc.text", color: .purple
                 )
             }
@@ -192,15 +192,15 @@ struct FeaturesView: View {
             sectionHeader(title: "其他考试查询", color: .indigo)
 
             VStack(spacing: 0) {
-                ToolRow(route: .features(.examQuery(.cet)), title: "四六级查询", icon: "character.book.closed", color: .indigo)
+                ToolRow(route: .features(.cetQuery), title: "四六级查询", icon: "character.book.closed", color: .indigo)
 
                 Divider().padding(.leading, 56)
 
-                ToolRow(route: .features(.examQuery(.mandarin)), title: "普通话查询", icon: "mic.circle.fill", color: .indigo)
+                ToolRow(route: .features(.mandarinQuery), title: "普通话查询", icon: "mic.circle.fill", color: .indigo)
 
                 Divider().padding(.leading, 56)
 
-                ToolRow(route: .features(.examQuery(.ncre)), title: "计算机等级查询", icon: "desktopcomputer", color: .indigo)
+                ToolRow(route: .features(.ncreQuery), title: "计算机等级查询", icon: "desktopcomputer", color: .indigo)
             }
             #if os(iOS)
             .background(Color(PlatformColor.secondarySystemGroupedBackground))
