@@ -163,26 +163,26 @@ enum AppRoute: Hashable, RouteNode {
         }
 
         enum DormListRoute: Hashable, RouteNode {
-            case detail(DormGRDB, DormDetailRoute? = nil)
+            case detail(DormParams, DormDetailRoute? = nil)
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .detail(let dorm, nil):
-                    DormDetailView(dorm: dorm)
+                case .detail(let params, nil):
+                    DormDetailView(params: params)
                 case .detail(_, let route?):
                     route.destinationView
                 }
             }
 
             enum DormDetailRoute: Hashable, RouteNode {
-                case history(DormDetailViewModel)
+                case history(DormParams)
 
                 @ViewBuilder
                 var destinationView: some View {
                     switch self {
-                    case .history(let viewModel):
-                        DormHistoryView(viewModel: viewModel)
+                    case .history(let params):
+                        DormHistoryView(params: params)
                     }
                 }
             }

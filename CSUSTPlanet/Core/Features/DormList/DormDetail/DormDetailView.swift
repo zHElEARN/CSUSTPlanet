@@ -5,263 +5,207 @@
 //  Created by Zachary Liu on 2026/3/21.
 //
 
-import Charts
+import Combine
+import GRDB
 import SwiftUI
 
 struct DormDetailView: View {
-    @State private var viewModel: DormDetailViewModel
+    let params: DormParams
 
-    init(dorm: DormGRDB) {
-        _viewModel = State(initialValue: DormDetailViewModel(dorm: dorm))
-    }
+    @State private var dorm: DormGRDB?
+    @State private var sortedRecords: [ElectricityRecordGRDB] = []
+    @State private var chartRecords: [ElectricityRecordGRDB] = []
+    @State private var chartYDomain: ClosedRange<Double> = 0...2
+    @State private var exhaustionInfo: String?
+    @State private var errorToast: ToastState = .errorTitle
+    @State private var isQueryingElectricity = false
+
+    @State private var dormObserver: (any DatabaseCancellable)?
+    @State private var recordsObserver: (any DatabaseCancellable)?
+    @State private var ipcCancellable: AnyCancellable?
+    @State private var hasStartedObservation = false
 
     var body: some View {
-        CustomScrollView {
-            VStack(spacing: 20) {
-                electricityDashboardCard
-                quickActionsGrid
-
-                if !viewModel.sortedRecords.isEmpty {
-                    electricityTrendCard
-                }
-
-                dormInfoCard
-                historyEntryButton
-
-                if !viewModel.sortedRecords.isEmpty {
-                    clearHistoryButton
-                }
-            }
-            .padding()
-        }
-        .task { await viewModel.loadInitial() }
-        .navigationTitle("宿舍详情")
-        .navigationSubtitleCompat("\(viewModel.dorm.buildingName) \(viewModel.dorm.room)")
-        .alert("清除记录", isPresented: $viewModel.isDeleteAllRecordsAlertPresented) {
-            Button("取消", role: .cancel) {}
-            Button("确认清除", role: .destructive) {
-                withAnimation {
-                    viewModel.deleteAllRecords()
-                }
-            }
-        } message: {
-            Text("此操作将删除该宿舍所有的历史电量记录且无法恢复，确定要继续吗？")
-        }
-        .errorToast($viewModel.errorToast)
-    }
-
-    @ViewBuilder
-    private var electricityDashboardCard: some View {
-        CustomGroupBox {
-            VStack(spacing: 12) {
-                HStack {
-                    Text("剩余电量")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    if let lastFetchDate = viewModel.dorm.lastFetchDate {
-                        LastUpdatedDateView(
-                            lastUpdated: lastFetchDate,
-                            font: .caption,
-                            foregroundStyle: .tertiary
-                        )
-                        .contentTransition(.numericText())
-                    }
-                }
-
-                if let electricity = viewModel.dorm.lastFetchElectricity {
-                    VStack {
-                        HStack(alignment: .lastTextBaseline) {
-                            Text(String(format: "%.2f", electricity))
-                                .font(.system(size: 48, weight: .bold, design: .rounded))
-                                .foregroundStyle(ColorUtil.electricityColor(electricity: electricity))
-                                .contentTransition(.numericText())
-
-                            Text("kWh")
-                                .font(.title3)
-                                .foregroundStyle(.secondary)
-                                .fontWeight(.medium)
-                                .padding(.bottom, 6)
-                        }
-
-                        if let info = viewModel.exhaustionInfo {
-                            Text(info)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                } else {
-                    Text("--.--")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .contentTransition(.numericText())
-                }
-            }
-        }
-        .animation(.snappy, value: viewModel.dorm.lastFetchElectricity)
-        .animation(.snappy, value: viewModel.dorm.lastFetchDate)
-    }
-
-    @ViewBuilder
-    private var quickActionsGrid: some View {
-        HStack(spacing: 12) {
-            actionButton(
-                icon: viewModel.isQueryingElectricity ? "bolt.badge.clock" : "bolt.fill",
-                title: viewModel.isQueryingElectricity ? "查询中..." : "刷新电量",
-                titleColor: .white,
-                iconColor: .white,
-                backgroundColor: AnyShapeStyle(Color.accentColor.gradient),
-                asyncAction: { await viewModel.queryElectricity() }
-            )
-            .disabled(viewModel.isQueryingElectricity)
-
-            actionButton(
-                icon: viewModel.dorm.isFavorite ? "star.fill" : "star",
-                title: viewModel.dorm.isFavorite ? "已收藏" : "收藏",
-                titleColor: .primary,
-                iconColor: viewModel.dorm.isFavorite ? .yellow : .primary,
-                asyncAction: { viewModel.toggleFavorite() }
-            )
-            .symbolEffect(.bounce.byLayer, value: viewModel.dorm.isFavorite)
-        }
-    }
-
-    @ViewBuilder
-    private func actionButton(
-        icon: String,
-        title: String,
-        titleColor: Color,
-        iconColor: Color,
-        backgroundColor: AnyShapeStyle? = nil,
-        asyncAction: @escaping () async -> Void
-    ) -> some View {
-        Button(asyncAction: asyncAction) {
-            if let backgroundColor {
-                actionButtonContent(icon: icon, title: title, titleColor: titleColor, iconColor: iconColor)
-                    .frame(maxHeight: .infinity)
-                    .background(RoundedRectangle(cornerRadius: 15).fill(backgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: 15))
+        Group {
+            if let dorm {
+                DormDetailContent(
+                    params: params,
+                    dorm: dorm,
+                    sortedRecords: sortedRecords,
+                    chartRecords: chartRecords,
+                    chartYDomain: chartYDomain,
+                    exhaustionInfo: exhaustionInfo,
+                    isQueryingElectricity: isQueryingElectricity,
+                    errorToast: $errorToast,
+                    onQuery: queryElectricity,
+                    onToggleFavorite: toggleFavorite,
+                    onDeleteRecord: deleteRecord,
+                    onDeleteAllRecords: deleteAllRecords
+                )
             } else {
-                CustomGroupBox {
-                    actionButtonContent(icon: icon, title: title, titleColor: titleColor, iconColor: iconColor)
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .navigationTitle("宿舍详情")
+            }
+        }
+        .task { startObservationIfNeeded() }
+    }
+
+    // MARK: - Observation
+
+    private func startObservationIfNeeded() {
+        guard !hasStartedObservation else { return }
+        hasStartedObservation = true
+
+        setupIPCObservationIfNeeded()
+        restartGRDBObservations()
+    }
+
+    private func setupIPCObservationIfNeeded() {
+        guard ipcCancellable == nil else { return }
+
+        ipcCancellable = GRDBIPCNotifier.shared.dbChangedSubject
+            .receive(on: DispatchQueue.main)
+            .sink { _ in
+                Task { @MainActor in
+                    self.restartGRDBObservations()
                 }
             }
-        }
-        .buttonStyle(.plain)
-        .frame(maxWidth: .infinity)
-        .frame(height: 80)
     }
 
-    @ViewBuilder
-    private func actionButtonContent(icon: String, title: String, titleColor: Color, iconColor: Color) -> some View {
-        VStack(spacing: 6) {
-            Group {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundStyle(iconColor)
+    private func restartGRDBObservations() {
+        observeDormDetail()
+        observeRecords()
+    }
+
+    private func observeDormDetail() {
+        dormObserver?.cancel()
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        let observation = ValueObservation.tracking { db in
+            try DormGRDB.fetchOne(db, key: params.dormID)
+        }
+
+        dormObserver = observation.start(
+            in: pool,
+            scheduling: .immediate,
+            onError: { error in
+                Task { @MainActor in self.errorToast.show(message: error.localizedDescription) }
+            },
+            onChange: { latestDorm in
+                guard let latestDorm else { return }
+                Task { @MainActor in withAnimation { self.dorm = latestDorm } }
             }
-            .frame(height: 28)
-
-            Text(title)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundStyle(titleColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        )
     }
 
-    @ViewBuilder
-    private var dormInfoCard: some View {
-        CustomGroupBox {
-            VStack(spacing: 12) {
-                infoRow(icon: "house.fill", color: .blue, title: "宿舍", value: viewModel.dorm.room)
-                infoRow(icon: "building.2.fill", color: .green, title: "楼栋", value: viewModel.dorm.buildingName)
-                infoRow(icon: "map.fill", color: .orange, title: "校区", value: viewModel.dorm.campusName)
-            }
+    private func observeRecords() {
+        recordsObserver?.cancel()
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        struct ProcessedDetailData {
+            let sortedRecords: [ElectricityRecordGRDB]
+            let chartRecords: [ElectricityRecordGRDB]
+            let chartYDomain: ClosedRange<Double>
+            let exhaustionInfo: String?
         }
-    }
 
-    @ViewBuilder
-    private var electricityTrendCard: some View {
-        CustomGroupBox {
-            VStack(alignment: .leading, spacing: 16) {
-                Label("近三个月电量趋势", systemImage: "chart.xyaxis.line")
-                    .font(.headline)
+        let observation = ValueObservation.tracking { db in
+            let recentStartDate = ElectricityUtil.recentRecordsStartDate()
+            return
+                try ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.dormID == params.dormID)
+                .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
+                .order(ElectricityRecordGRDB.Columns.date.desc)
+                .fetchAll(db)
+        }
+        .map { records -> ProcessedDetailData in
+            let sortedRecords = records
+            let recordsAscending = Array(records.reversed())
+            let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 150)
+            let exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: recordsAscending)
 
-                Chart(viewModel.chartRecords) { record in
-                    LineMark(
-                        x: .value("日期", record.date),
-                        y: .value("电量", record.electricity)
-                    )
-                    .foregroundStyle(.blue)
-                    .interpolationMethod(.linear)
-                    .symbol {
-                        if viewModel.chartRecords.count < 15 {
-                            Circle()
-                                .fill(.blue)
-                                .frame(width: 8)
-                        }
+            return ProcessedDetailData(
+                sortedRecords: sortedRecords,
+                chartRecords: chartRecords,
+                chartYDomain: ElectricityUtil.chartYDomain(for: chartRecords),
+                exhaustionInfo: exhaustionInfo
+            )
+        }
+
+        recordsObserver = observation.start(
+            in: pool,
+            scheduling: .immediate,
+            onError: { error in
+                Task { @MainActor in self.errorToast.show(message: error.localizedDescription) }
+            },
+            onChange: { data in
+                Task { @MainActor in
+                    withAnimation {
+                        self.sortedRecords = data.sortedRecords
+                        self.chartRecords = data.chartRecords
+                        self.chartYDomain = data.chartYDomain
+                        self.exhaustionInfo = data.exhaustionInfo
                     }
                 }
-                .chartYScale(domain: viewModel.chartYDomain)
-                .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: 4)) { _ in
-                        AxisValueLabel(format: .dateTime.month().day())
-                    }
-                }
-                .frame(height: 220)
-                .transaction { transaction in
-                    transaction.animation = nil
-                }
             }
+        )
+    }
+
+    // MARK: - Actions
+
+    private func toggleFavorite() {
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in try DormGRDB.toggleFavorite(dormID: params.dormID, in: db) }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 
-    @ViewBuilder
-    private var historyEntryButton: some View {
-        NavigationLink(value: AppRoute.features(.dormList(.detail(viewModel.dorm, .history(viewModel))))) {
-            CustomGroupBox {
-                HStack {
-                    Label("查看近三个月历史记录", systemImage: "list.bullet.clipboard")
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
+    private func queryElectricity() async {
+        guard let dorm else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        guard !isQueryingElectricity else { return }
+        isQueryingElectricity = true
+        defer { isQueryingElectricity = false }
+
+        do {
+            let electricity = try await ElectricityUtil.getElectricity(
+                AuthManager.shared.campusCardHelper,
+                campusName: dorm.campusName,
+                buildingName: dorm.buildingName,
+                roomName: dorm.room,
+                retryProvider: AuthManager.shared
+            )
+            try await pool.write { db in try DormGRDB.updateElectricity(dormID: params.dormID, electricity: electricity, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
-        .buttonStyle(.plain)
     }
 
-    @ViewBuilder
-    private var clearHistoryButton: some View {
-        Button(role: .destructive) {
-            viewModel.isDeleteAllRecordsAlertPresented = true
-        } label: {
-            Text("清除所有历史记录")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(Color.red)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+    private func deleteRecord(_ record: ElectricityRecordGRDB) {
+        guard let recordID = record.id else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in try DormGRDB.deleteElectricityRecord(dormID: params.dormID, recordID: recordID, in: db) }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
-        .buttonStyle(.plain)
-        .padding(.top, 10)
     }
 
-    private func infoRow(icon: String, color: Color, title: String, value: String) -> some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundStyle(color)
-                .frame(width: 24)
-            Text(title)
-            Spacer()
-            Text(value)
-                .foregroundStyle(.secondary)
+    private func deleteAllRecords() {
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in try DormGRDB.deleteAllElectricityRecords(dormID: params.dormID, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
     }
 }

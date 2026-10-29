@@ -134,11 +134,11 @@ final class Router {
         switch (host, paths.first) {
         case ("features", "electricity"):
             if paths.count > 1,
-                let dormId = Int64(paths[1]),
+                let dormID = Int64(paths[1]),
                 let pool = DatabaseManager.shared.pool,
-                let dorm = try? pool.read({ try DormGRDB.filter(DormGRDB.Columns.id == dormId).fetchOne($0) })
+                (try? pool.read({ try DormGRDB.filter(DormGRDB.Columns.id == dormID).fetchOne($0) })) != nil
             {
-                deepLinkTo(feature: .electricityQuery, path: [.features(.dormList(.detail(dorm)))])
+                deepLinkTo(feature: .electricityQuery, path: [.features(.dormList(.detail(DormParams(dormID: dormID))))])
             } else {
                 deepLinkTo(feature: .electricityQuery)
             }

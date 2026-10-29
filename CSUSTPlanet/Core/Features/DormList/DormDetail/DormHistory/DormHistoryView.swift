@@ -5,54 +5,75 @@
 //  Created by OpenCode on 2026/3/22.
 //
 
+import GRDB
 import SwiftUI
 
 struct DormHistoryView: View {
-    @Bindable var viewModel: DormDetailViewModel
+    let params: DormParams
+
+    @State private var records: [ElectricityRecordGRDB] = []
+    @State private var errorToast: ToastState = .errorTitle
+
+    @State private var recordsObserver: (any DatabaseCancellable)?
+    @State private var hasStartedObservation = false
 
     var body: some View {
-        Form {
-            if viewModel.sortedRecords.isEmpty {
-                ContentUnavailableView("无近三个月历史记录", systemImage: "bolt.slash", description: Text("点击详情页的刷新按钮获取最新电量"))
-            } else {
-                ForEach(viewModel.sortedRecords) { record in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(String(format: "%.2f", record.electricity)) kWh")
-                                .font(.headline)
-                                .monospacedDigit()
-                                .foregroundStyle(ColorUtil.electricityColor(electricity: record.electricity))
+        DormHistoryContent(
+            records: records,
+            errorToast: $errorToast,
+            onDelete: deleteRecord
+        )
+        .task { startObservationIfNeeded() }
+    }
 
-                            Text(record.date.formatted(date: .numeric, time: .standard))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button(role: .destructive) {
-                            withAnimation {
-                                viewModel.deleteRecord(record)
-                            }
-                        } label: {
-                            Label("删除", systemImage: "trash")
-                        }
-                    }
-                    .contextMenu {
-                        Button {
-                            withAnimation {
-                                viewModel.deleteRecord(record)
-                            }
-                        } label: {
-                            Label("删除", systemImage: "trash")
-                        }
+    // MARK: - Observation
+
+    private func startObservationIfNeeded() {
+        guard !hasStartedObservation else { return }
+        hasStartedObservation = true
+
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        let observation = ValueObservation.tracking { db in
+            let recentStartDate = ElectricityUtil.recentRecordsStartDate()
+            return
+                try ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.dormID == params.dormID)
+                .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
+                .order(ElectricityRecordGRDB.Columns.date.desc)
+                .fetchAll(db)
+        }
+
+        recordsObserver = observation.start(
+            in: pool,
+            scheduling: .immediate,
+            onError: { error in
+                Task { @MainActor in
+                    self.errorToast.show(message: error.localizedDescription)
+                }
+            },
+            onChange: { newRecords in
+                Task { @MainActor in
+                    withAnimation {
+                        self.records = newRecords
                     }
                 }
             }
+        )
+    }
+
+    // MARK: - Actions
+
+    private func deleteRecord(_ record: ElectricityRecordGRDB) {
+        guard let recordID = record.id else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in
+                try DormGRDB.deleteElectricityRecord(dormID: params.dormID, recordID: recordID, in: db)
+            }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
         }
-        .formStyle(.grouped)
-        .navigationTitle("近三个月历史记录")
-        .navigationSubtitleCompat("共\(viewModel.sortedRecords.count)条记录")
-        .errorToast($viewModel.errorToast)
     }
 }

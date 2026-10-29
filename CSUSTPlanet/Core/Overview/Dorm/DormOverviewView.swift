@@ -186,10 +186,10 @@ struct DormOverviewView: View {
     }
 
     private var dormNavigationPath: [AppRoute] {
-        guard let dorm = viewModel.primaryDorm else {
+        guard let dorm = viewModel.primaryDorm, let dormID = dorm.id else {
             return []
         }
 
-        return [.features(.dormList(.detail(dorm)))]
+        return [.features(.dormList(.detail(DormParams(dormID: dormID))))]
     }
 }

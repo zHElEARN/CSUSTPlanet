@@ -5,231 +5,192 @@
 //  Created by Zachary Liu on 2026/3/21.
 //
 
+import CSUSTKit
+import Combine
+import GRDB
 import SwiftUI
 
 struct DormListView: View {
-    @State var viewModel = DormListViewModel()
-    @State private var scheduleConfigTargetDorm: DormGRDB?
+    @State private var dorms: [DormGRDB] = []
+    @State private var exhaustionInfoMap: [Int64: String] = [:]
+    @State private var isLoading = true
+    @State private var errorToast: ToastState = .errorTitle
+    @State private var queryingDormIDs: Set<Int64> = []
 
-    // MARK: - Body
+    @State private var listObserver: (any DatabaseCancellable)?
+    @State private var ipcCancellable: AnyCancellable?
+    @State private var isFirstObservation = true
+    @State private var hasStartedObservation = false
 
     var body: some View {
-        Group {
-            if viewModel.isLoading {
-                ProgressView()
-            } else if viewModel.dorms.isEmpty {
-                ContentUnavailableView("暂无宿舍", systemImage: "building.2", description: Text("点击右上角添加宿舍"))
-            } else {
-                #if os(macOS)
-                CustomScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.dorms) { dorm in
-                            dormCard(dorm)
-                                .padding(.horizontal, 16)
-                        }
-                    }
-                    .padding(.vertical, 6)
-                }
-                #elseif os(iOS)
-                List {
-                    ForEach(viewModel.dorms) { dorm in
-                        dormCard(dorm)
-                            .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                    }
-                }
-                .listStyle(.plain)
-                #endif
-            }
-        }
-        .task { await viewModel.loadInitial() }
-        .navigationTitle("宿舍列表")
-        .navigationSubtitleCompat("共\(viewModel.dorms.count)个宿舍")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button(action: { viewModel.isAddDormSheetPresented = true }) {
-                    Label("添加宿舍", systemImage: "plus")
-                }
-            }
-        }
-        .sheet(isPresented: $viewModel.isAddDormSheetPresented) {
-            AddDormView { room in
-                viewModel.addDorm(room: room)
-            }
-            .presentationDetents([.medium, .large])
-        }
-        .alert(
-            "删除宿舍",
-            isPresented: .init(
-                get: { viewModel.targetDeleteDorm != nil },
-                set: { newValue in
-                    if !newValue { viewModel.targetDeleteDorm = nil }
-                }
-            )
-        ) {
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
-                guard let targetDeleteDorm = viewModel.targetDeleteDorm else { return }
-                viewModel.deleteDorm(targetDeleteDorm)
-                viewModel.targetDeleteDorm = nil
-            }
-        } message: {
-            if let targetDeleteDorm = viewModel.targetDeleteDorm {
-                Text("确定要删除 \(targetDeleteDorm.buildingName) \(targetDeleteDorm.room) 吗？")
-            }
-        }
-        .errorToast($viewModel.errorToast)
+        DormListContent(
+            dorms: dorms,
+            exhaustionInfoMap: exhaustionInfoMap,
+            isLoading: isLoading,
+            queryingDormIDs: queryingDormIDs,
+            errorToast: $errorToast,
+            onAddDorm: addDorm,
+            onDeleteDorm: deleteDorm,
+            onToggleFavorite: toggleFavorite,
+            onQuery: queryElectricity
+        )
+        .task { startObservationIfNeeded() }
     }
 
-    // MARK: - Dorm Card
+    // MARK: - Observation
 
-    @ViewBuilder
-    private func dormCard(_ dorm: DormGRDB) -> some View {
-        let electricityColor: Color = {
-            guard let electricity = dorm.lastFetchElectricity else { return .secondary }
-            return ColorUtil.electricityColor(electricity: electricity)
-        }()
+    private func startObservationIfNeeded() {
+        guard !hasStartedObservation else { return }
+        hasStartedObservation = true
 
-        Group {
-            #if os(macOS)
-            NavigationLink(value: AppRoute.features(.dormList(.detail(dorm)))) {
-                CustomGroupBox {
-                    dormCardContent(dorm, electricityColor: electricityColor)
-                }
-            }
-            .buttonStyle(.plain)
-            #elseif os(iOS)
-            ZStack {
-                NavigationLink(value: AppRoute.features(.dormList(.detail(dorm)))) {
-                    EmptyView()
-                }
-                .opacity(0)
-
-                CustomGroupBox {
-                    dormCardContent(dorm, electricityColor: electricityColor)
-                }
-            }
-            #endif
-        }
-        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
-                Label("查询", systemImage: "bolt.fill")
-            }
-            .tint(.yellow)
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(action: { viewModel.targetDeleteDorm = dorm }) {
-                Label("删除", systemImage: "trash")
-            }
-            .tint(.red)
-        }
-        .contextMenu {
-            Button(action: { viewModel.toggleFavorite(dorm) }) {
-                Label(dorm.isFavorite ? "取消收藏" : "收藏宿舍", systemImage: dorm.isFavorite ? "star.slash" : "star")
-            }
-
-            Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
-                Label("查询电量", systemImage: "bolt")
-            }
-            .disabled(viewModel.isQuerying(dorm))
-
-            Button(role: .destructive, action: { viewModel.targetDeleteDorm = dorm }) {
-                Label("删除宿舍", systemImage: "trash")
-            }
-        }
+        setupIPCObservationIfNeeded()
+        restartListObservation()
     }
 
-    // MARK: - Dorm Card Content
+    private func setupIPCObservationIfNeeded() {
+        guard ipcCancellable == nil else { return }
 
-    @ViewBuilder
-    private func dormCardContent(_ dorm: DormGRDB, electricityColor: Color) -> some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 6) {
-                    Text(dorm.room)
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-
-                    if dorm.isFavorite {
-                        Image(systemName: "star.fill")
-                            .font(.caption)
-                            .foregroundStyle(.yellow)
-                    }
+        ipcCancellable = GRDBIPCNotifier.shared.dbChangedSubject
+            .receive(on: DispatchQueue.main)
+            .sink { _ in
+                Task { @MainActor in
+                    self.restartListObservation()
                 }
-
-                if let electricity = dorm.lastFetchElectricity {
-                    HStack(alignment: .lastTextBaseline, spacing: 4) {
-                        Text(String(format: "%.2f", electricity))
-                            .font(.system(.largeTitle, design: .rounded))
-                            .fontWeight(.bold)
-                            .foregroundStyle(electricityColor)
-                            .contentTransition(.numericText())
-
-                        Text("kWh")
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.secondary)
-                            .padding(.bottom, 2)
-                    }
-                } else {
-                    Text("暂无数据")
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                        .padding(.vertical, 4)
-                }
-
-                Text("\(dorm.campusName) · \(dorm.buildingName)")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
             }
+    }
 
-            Spacer()
+    private func restartListObservation() {
+        listObserver?.cancel()
+        guard let pool = DatabaseManager.shared.pool else { return }
 
-            VStack(alignment: .trailing, spacing: 8) {
-                Button(asyncAction: { await viewModel.queryElectricity(for: dorm) }) {
-                    if viewModel.isQuerying(dorm) {
-                        ProgressView()
-                            .smallControlSizeOnMac()
-                            .frame(width: 15, height: 15)
+        let observation = ValueObservation.tracking { db -> ([DormGRDB], [ElectricityRecordGRDB]) in
+            let dorms = try DormGRDB.order(DormGRDB.Columns.id.desc).fetchAll(db)
+            let recentStartDate = ElectricityUtil.recentRecordsStartDate()
+            let records =
+                try ElectricityRecordGRDB
+                .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
+                .order(ElectricityRecordGRDB.Columns.date.asc)
+                .fetchAll(db)
+            return (dorms, records)
+        }
+        .map { (dorms, records) -> ([DormGRDB], [Int64: String]) in
+            let recordsByDormID = Dictionary(grouping: records, by: { $0.dormID })
+            var infoMap: [Int64: String] = [:]
+            infoMap.reserveCapacity(dorms.count)
+
+            for dorm in dorms {
+                guard let dormID = dorm.id else { continue }
+                let dormRecords = recordsByDormID[dormID] ?? []
+                infoMap[dormID] = ElectricityUtil.getExhaustionInfo(from: dormRecords)
+            }
+            return (dorms, infoMap)
+        }
+
+        listObserver = observation.start(
+            in: pool,
+            scheduling: .immediate,
+            onError: { error in
+                Task { @MainActor in
+                    self.errorToast.show(message: error.localizedDescription)
+                }
+            },
+            onChange: { result in
+                Task { @MainActor in
+                    if self.isFirstObservation {
+                        self.isFirstObservation = false
+                        self.dorms = result.0
+                        self.exhaustionInfoMap = result.1
+                        self.isLoading = false
                     } else {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(Color.accentColor)
-                            .frame(width: 15, height: 15)
-                    }
-                }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isQuerying(dorm))
-
-                Spacer()
-
-                if let lastFetchDate = dorm.lastFetchDate {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        LastUpdatedDateView(
-                            lastUpdated: lastFetchDate,
-                            font: .caption,
-                            foregroundStyle: .tertiary
-                        )
-
-                        if let dormID = dorm.id, let info = viewModel.exhaustionInfoMap[dormID] {
-                            Text(info)
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
+                        withAnimation {
+                            self.dorms = result.0
+                            self.exhaustionInfoMap = result.1
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private var scheduleConfigPresentedBinding: Binding<Bool> {
-        .init(
-            get: { scheduleConfigTargetDorm != nil },
-            set: { newValue in
-                if !newValue { scheduleConfigTargetDorm = nil }
             }
         )
+    }
+
+    // MARK: - Actions
+
+    private func addDorm(room: CampusCardHelper.Room) {
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        let building = room.building
+        let campus = building.campus
+
+        do {
+            try pool.write { db in
+                let duplicated =
+                    try DormGRDB
+                    .filter(DormGRDB.Columns.room == room.name)
+                    .filter(DormGRDB.Columns.buildingName == building.name)
+                    .filter(DormGRDB.Columns.campusName == campus.rawValue)
+                    .fetchOne(db) != nil
+                if duplicated {
+                    errorToast.show(message: "该宿舍信息已存在")
+                    return
+                }
+
+                var dorm = DormGRDB(
+                    id: nil,
+                    room: room.name,
+                    buildingName: building.name,
+                    campusName: building.campus.rawValue,
+                    isFavorite: false,
+                    lastFetchDate: nil,
+                    lastFetchElectricity: nil
+                )
+                try dorm.insert(db)
+            }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    private func deleteDorm(_ dorm: DormGRDB) {
+        guard let dormID = dorm.id else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in _ = try DormGRDB.deleteOne(db, key: dormID) }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    private func toggleFavorite(_ dorm: DormGRDB) {
+        guard let dormID = dorm.id else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        do {
+            try pool.write { db in try DormGRDB.toggleFavorite(dormID: dormID, in: db) }
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
+    }
+
+    private func queryElectricity(for dorm: DormGRDB) async {
+        guard let dormID = dorm.id else { return }
+        guard let pool = DatabaseManager.shared.pool else { return }
+
+        guard !queryingDormIDs.contains(dormID) else { return }
+        queryingDormIDs.insert(dormID)
+        defer { queryingDormIDs.remove(dormID) }
+
+        do {
+            let electricity = try await ElectricityUtil.getElectricity(
+                AuthManager.shared.campusCardHelper,
+                campusName: dorm.campusName,
+                buildingName: dorm.buildingName,
+                roomName: dorm.room,
+                retryProvider: AuthManager.shared
+            )
+            try await pool.write { db in try DormGRDB.updateElectricity(dormID: dormID, electricity: electricity, in: db) }
+            WidgetTimelineRefreshHelper.reloadDormElectricity()
+        } catch {
+            errorToast.show(message: error.localizedDescription)
+        }
     }
 }
