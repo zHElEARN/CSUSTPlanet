@@ -24,15 +24,14 @@ struct RootLayoutView: View {
     @Bindable var router: Router
     @Bindable var globalManager = GlobalManager.shared
 
-    #if os(macOS)
-    private let isCompact = false
-    #else
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-
     private var isCompact: Bool {
+        #if os(macOS)
+        false
+        #else
         horizontalSizeClass == .compact || UIDevice.current.userInterfaceIdiom == .phone
+        #endif
     }
-    #endif
 
     var body: some View {
         Group {
@@ -90,7 +89,7 @@ struct RootLayoutView: View {
                         ForEach(featureSections[index].items, id: \.self) { item in
                             Tab(item.name, systemImage: item.systemImage, value: AppTabItem.feature(item)) {
                                 navigationStack(for: .feature(item)) {
-                                    featureRootView(for: item)
+                                    item.rootRoute.destinationView
                                 }
                             }
                         }
@@ -144,12 +143,7 @@ struct RootLayoutView: View {
                     )
                 ) {
                     Section {
-                        sidebarRow(
-                            title: "概览",
-                            systemImage: "rectangle.stack",
-                            tab: .overview,
-                            badgeCount: globalManager.unreadAnnouncementsCount
-                        )
+                        sidebarRow(title: "概览", systemImage: "rectangle.stack", tab: .overview, badgeCount: globalManager.unreadAnnouncementsCount)
                         sidebarRow(title: "日程", systemImage: "calendar", tab: .schedule)
                         sidebarRow(title: "我的", systemImage: "person", tab: .profile)
                     }
@@ -157,11 +151,7 @@ struct RootLayoutView: View {
                     ForEach(featureSections.indices, id: \.self) { index in
                         Section(featureSections[index].title) {
                             ForEach(featureSections[index].items, id: \.self) { item in
-                                sidebarRow(
-                                    title: item.name,
-                                    systemImage: item.systemImage,
-                                    tab: .feature(item)
-                                )
+                                sidebarRow(title: item.name, systemImage: item.systemImage, tab: .feature(item))
                             }
                         }
                     }
@@ -186,7 +176,7 @@ struct RootLayoutView: View {
                     }
                 case .feature(let feature):
                     navigationStack(for: .feature(feature)) {
-                        featureRootView(for: feature)
+                        feature.rootRoute.destinationView
                     }
                 default:
                     ContentUnavailableView("请选择项目", systemImage: "list.bullet")
@@ -203,19 +193,15 @@ struct RootLayoutView: View {
 
     @ViewBuilder
     private func sidebarRow(title: String, systemImage: String, tab: AppTabItem, badgeCount: Int? = nil) -> some View {
-        let baseRow = Label(title, systemImage: systemImage)
+        Label(title, systemImage: systemImage)
             .tag(tab)
             .id(tab)
-
-        if let badgeCount, badgeCount > 0 {
-            baseRow.badge(badgeCount)
-        } else {
-            baseRow
-        }
-    }
-
-    @ViewBuilder
-    private func featureRootView(for feature: FeatureTabID) -> some View {
-        feature.rootRoute.destinationView
+            .apply { view in
+                if let badgeCount, badgeCount > 0 {
+                    view.badge(badgeCount)
+                } else {
+                    view
+                }
+            }
     }
 }
