@@ -59,28 +59,8 @@ enum FeatureTabID: Hashable, CaseIterable {
         }
     }
 
-    var trackSegment: String {
-        switch self {
-        case .courseSchedule: return "CourseSchedule"
-        case .gradeQuery: return "GradeQuery"
-        case .examSchedule: return "ExamSchedule"
-        case .gradeAnalysis: return "GradeAnalysis"
-        case .courses: return "Courses"
-        case .assignments: return "Assignments"
-        case .chaoxingAssignments: return "ChaoxingAssignments"
-        case .electricityQuery: return "DormList"
-        case .availableClassroom: return "AvailableClassroom"
-        case .campusMap: return "CampusMap"
-        case .schoolCalendar: return "SchoolCalendarList"
-        case .electricityRecharge: return "ElectricityRecharge"
-        case .webVPNConverter: return "WebVPNConverter"
-        case .eval: return "Eval"
-        case .physicsExperimentSchedule: return "PhysicsExperimentSchedule"
-        case .physicsExperimentGrade: return "PhysicsExperimentGrade"
-        case .cet: return "CET"
-        case .mandarin: return "Mandarin"
-        case .ncre: return "NCRE"
-        }
+    var pathSegment: String {
+        rootRoute.routePath.dropFirst().first ?? ""
     }
 
     var systemImage: String {
