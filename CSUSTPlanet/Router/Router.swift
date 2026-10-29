@@ -85,7 +85,7 @@ final class Router {
                 let pool = DatabaseManager.shared.pool,
                 let dorm = try? pool.read({ try DormGRDB.filter(DormGRDB.Columns.id == dormId).fetchOne($0) })
             {
-                deepLinkTo(feature: .electricityQuery, path: [.features(.dormList(.detail(.main(dorm))))])
+                deepLinkTo(feature: .electricityQuery, path: [.features(.dormList(.detail(dorm)))])
             } else {
                 deepLinkTo(feature: .electricityQuery)
             }

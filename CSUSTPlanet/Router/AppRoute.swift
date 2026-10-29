@@ -66,17 +66,17 @@ enum AppRoute: Hashable {
     // MARK: - FeaturesRoute
 
     enum FeaturesRoute: Hashable {
-        case courseSchedule(CourseScheduleRoute)
-        case gradeQuery(GradeQueryRoute)
+        case courseSchedule(CourseScheduleRoute? = nil)
+        case gradeQuery(GradeQueryRoute? = nil)
         case examSchedule
         case gradeAnalysis
-        case courses(CoursesRoute)
+        case courses(CoursesRoute? = nil)
         case assignments
         case chaoxingAssignments
-        case dormList(DormListRoute)
+        case dormList(DormListRoute? = nil)
         case availableClassroom
         case campusMap
-        case schoolCalendarList(SchoolCalendarListRoute)
+        case schoolCalendarList(SchoolCalendarListRoute? = nil)
         case electricityRecharge
         case webVPNConverter
         case eval
@@ -89,27 +89,27 @@ enum AppRoute: Hashable {
         var trackSegment: String {
             switch self {
             case .courseSchedule(let route):
-                return route.trackSegment
+                return route?.trackSegment ?? "CourseSchedule"
             case .gradeQuery(let route):
-                return route.trackSegment
+                return route?.trackSegment ?? "GradeQuery"
             case .examSchedule:
                 return "ExamSchedule"
             case .gradeAnalysis:
                 return "GradeAnalysis"
             case .courses(let route):
-                return route.trackSegment
+                return route?.trackSegment ?? "Courses"
             case .assignments:
                 return "Assignments"
             case .chaoxingAssignments:
                 return "ChaoxingAssignments"
             case .dormList(let route):
-                return route.trackSegment
+                return route?.trackSegment ?? "DormList"
             case .availableClassroom:
                 return "AvailableClassroom"
             case .campusMap:
                 return "CampusMap"
             case .schoolCalendarList(let route):
-                return route.trackSegment
+                return route?.trackSegment ?? "SchoolCalendarList"
             case .electricityRecharge:
                 return "ElectricityRecharge"
             case .webVPNConverter:
@@ -132,27 +132,37 @@ enum AppRoute: Hashable {
         @ViewBuilder
         var destinationView: some View {
             switch self {
-            case .courseSchedule(let route):
+            case .courseSchedule(nil):
+                CourseScheduleView()
+            case .courseSchedule(let route?):
                 route.destinationView
-            case .gradeQuery(let route):
+            case .gradeQuery(nil):
+                GradeQueryView()
+            case .gradeQuery(let route?):
                 route.destinationView
             case .examSchedule:
                 ExamScheduleView()
             case .gradeAnalysis:
                 GradeAnalysisView()
-            case .courses(let route):
+            case .courses(nil):
+                CoursesView()
+            case .courses(let route?):
                 route.destinationView
             case .assignments:
                 AssignmentsView()
             case .chaoxingAssignments:
                 ChaoxingAssignmentsView()
-            case .dormList(let route):
+            case .dormList(nil):
+                DormListView()
+            case .dormList(let route?):
                 route.destinationView
             case .availableClassroom:
                 AvailableClassroomView()
             case .campusMap:
                 CampusMapView()
-            case .schoolCalendarList(let route):
+            case .schoolCalendarList(nil):
+                SchoolCalendarListView()
+            case .schoolCalendarList(let route?):
                 route.destinationView
             case .electricityRecharge:
                 ElectricityRechargeView()
@@ -176,15 +186,12 @@ enum AppRoute: Hashable {
         // MARK: - CourseScheduleRoute
 
         enum CourseScheduleRoute: Hashable {
-            case main
             case settings
             case edit(CustomCourseScheduleGRDB)
             case courseDetail(CustomCourseGRDB)
 
             var trackSegment: String {
                 switch self {
-                case .main:
-                    return "CourseSchedule"
                 case .settings:
                     return "CourseScheduleSettings"
                 case .edit:
@@ -197,8 +204,6 @@ enum AppRoute: Hashable {
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .main:
-                    CourseScheduleView()
                 case .settings:
                     CourseScheduleSettingsView()
                 case .edit(let schedule):
@@ -210,13 +215,10 @@ enum AppRoute: Hashable {
         }
 
         enum GradeQueryRoute: Hashable {
-            case main
             case detail(EduHelper.CourseGrade)
 
             var trackSegment: String {
                 switch self {
-                case .main:
-                    return "GradeQuery"
                 case .detail:
                     return "GradeDetail"
                 }
@@ -225,8 +227,6 @@ enum AppRoute: Hashable {
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .main:
-                    GradeQueryView()
                 case .detail(let courseGrade):
                     GradeDetailView(courseGrade: courseGrade)
                 }
@@ -234,13 +234,10 @@ enum AppRoute: Hashable {
         }
 
         enum CoursesRoute: Hashable {
-            case main
             case detail(MoocHelper.Course)
 
             var trackSegment: String {
                 switch self {
-                case .main:
-                    return "Courses"
                 case .detail:
                     return "CourseDetail"
                 }
@@ -249,8 +246,6 @@ enum AppRoute: Hashable {
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .main:
-                    CoursesView()
                 case .detail(let course):
                     CourseDetailView(course: course)
                 }
@@ -258,36 +253,30 @@ enum AppRoute: Hashable {
         }
 
         enum DormListRoute: Hashable {
-            case main
-            case detail(DormDetailRoute)
+            case detail(DormGRDB, DormDetailRoute? = nil)
 
             var trackSegment: String {
                 switch self {
-                case .main:
-                    return "DormList"
-                case .detail(let route):
-                    return route.trackSegment
+                case .detail(_, let route):
+                    return route?.trackSegment ?? "DormDetail"
                 }
             }
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .main:
-                    DormListView()
-                case .detail(let route):
+                case .detail(let dorm, nil):
+                    DormDetailView(dorm: dorm)
+                case .detail(_, let route?):
                     route.destinationView
                 }
             }
 
             enum DormDetailRoute: Hashable {
-                case main(DormGRDB)
                 case history(DormDetailViewModel)
 
                 var trackSegment: String {
                     switch self {
-                    case .main:
-                        return "DormDetail"
                     case .history:
                         return "DormHistory"
                     }
@@ -296,8 +285,6 @@ enum AppRoute: Hashable {
                 @ViewBuilder
                 var destinationView: some View {
                     switch self {
-                    case .main(let dorm):
-                        DormDetailView(dorm: dorm)
                     case .history(let viewModel):
                         DormHistoryView(viewModel: viewModel)
                     }
@@ -306,13 +293,10 @@ enum AppRoute: Hashable {
         }
 
         enum SchoolCalendarListRoute: Hashable {
-            case main
             case detail(SchoolCalendar)
 
             var trackSegment: String {
                 switch self {
-                case .main:
-                    return "SchoolCalendarList"
                 case .detail:
                     return "SchoolCalendar"
                 }
@@ -321,8 +305,6 @@ enum AppRoute: Hashable {
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .main:
-                    SchoolCalendarListView()
                 case .detail(let calendar):
                     SchoolCalendarView(schoolCalendar: calendar)
                 }
@@ -339,7 +321,7 @@ enum AppRoute: Hashable {
         case backgroundTaskSettings
         case notificationSettings
         case widgetSettings
-        case about(AboutRoute)
+        case about(AboutRoute? = nil)
         case feedback
         case userAgreement
 
@@ -356,7 +338,7 @@ enum AppRoute: Hashable {
             case .widgetSettings:
                 return "WidgetSettings"
             case .about(let route):
-                return route.trackSegment
+                return route?.trackSegment ?? "About"
             case .feedback:
                 return "Feedback"
             case .userAgreement:
@@ -381,7 +363,9 @@ enum AppRoute: Hashable {
                 NotificationSettingsView()
             case .widgetSettings:
                 WidgetSettingsView()
-            case .about(let route):
+            case .about(nil):
+                AboutView()
+            case .about(let route?):
                 route.destinationView
             case .feedback:
                 FeedbackView()
@@ -391,36 +375,30 @@ enum AppRoute: Hashable {
         }
 
         enum AboutRoute: Hashable {
-            case main
-            case openSourceLicenses(OpenSourceLicensesRoute)
+            case openSourceLicenses(OpenSourceLicensesRoute? = nil)
 
             var trackSegment: String {
                 switch self {
-                case .main:
-                    return "About"
                 case .openSourceLicenses(let route):
-                    return route.trackSegment
+                    return route?.trackSegment ?? "OpenSourceLicenses"
                 }
             }
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .main:
-                    AboutView()
-                case .openSourceLicenses(let route):
+                case .openSourceLicenses(nil):
+                    OpenSourceLicensesView()
+                case .openSourceLicenses(let route?):
                     route.destinationView
                 }
             }
 
             enum OpenSourceLicensesRoute: Hashable {
-                case main
                 case detail(OpenSourceLicense)
 
                 var trackSegment: String {
                     switch self {
-                    case .main:
-                        return "OpenSourceLicenses"
                     case .detail:
                         return "OpenSourceLicenseDetail"
                     }
@@ -429,8 +407,6 @@ enum AppRoute: Hashable {
                 @ViewBuilder
                 var destinationView: some View {
                     switch self {
-                    case .main:
-                        OpenSourceLicensesView()
                     case .detail(let license):
                         OpenSourceLicenseDetailView(license: license)
                     }

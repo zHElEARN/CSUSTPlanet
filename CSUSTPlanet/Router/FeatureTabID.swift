@@ -110,27 +110,27 @@ enum FeatureTabID: Hashable, CaseIterable {
     var rootRoute: AppRoute {
         switch self {
         case .courseSchedule:
-            return .features(.courseSchedule(.main))
+            return .features(.courseSchedule())
         case .gradeQuery:
-            return .features(.gradeQuery(.main))
+            return .features(.gradeQuery())
         case .examSchedule:
             return .features(.examSchedule)
         case .gradeAnalysis:
             return .features(.gradeAnalysis)
         case .courses:
-            return .features(.courses(.main))
+            return .features(.courses())
         case .assignments:
             return .features(.assignments)
         case .chaoxingAssignments:
             return .features(.chaoxingAssignments)
         case .electricityQuery:
-            return .features(.dormList(.main))
+            return .features(.dormList())
         case .availableClassroom:
             return .features(.availableClassroom)
         case .campusMap:
             return .features(.campusMap)
         case .schoolCalendar:
-            return .features(.schoolCalendarList(.main))
+            return .features(.schoolCalendarList())
         case .electricityRecharge:
             return .features(.electricityRecharge)
         case .webVPNConverter:

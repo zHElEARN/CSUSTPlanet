@@ -100,7 +100,7 @@ struct ProfileView: View {
             }
 
             Section {
-                NavigationLink(value: AppRoute.profile(.about(.main))) {
+                NavigationLink(value: AppRoute.profile(.about())) {
                     Text("关于 云岭星球")
                 }
 

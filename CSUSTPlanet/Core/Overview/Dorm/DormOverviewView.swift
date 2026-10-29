@@ -190,6 +190,6 @@ struct DormOverviewView: View {
             return []
         }
 
-        return [.features(.dormList(.detail(.main(dorm))))]
+        return [.features(.dormList(.detail(dorm)))]
     }
 }

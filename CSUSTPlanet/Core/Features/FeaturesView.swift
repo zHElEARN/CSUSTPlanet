@@ -67,8 +67,8 @@ struct FeaturesView: View {
             sectionHeader(title: "课程学习", color: .purple)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
-                HeroCard(route: .features(.courseSchedule(.main)), title: "我的课表", icon: "calendar", color: .purple)
-                HeroCard(route: .features(.courses(.main)), title: "课程", icon: "books.vertical.fill", color: .indigo)
+                HeroCard(route: .features(.courseSchedule()), title: "我的课表", icon: "calendar", color: .purple)
+                HeroCard(route: .features(.courses()), title: "课程", icon: "books.vertical.fill", color: .indigo)
                 HeroCard(route: .features(.assignments), title: "作业", icon: "list.bullet.clipboard", color: .red)
                 HeroCard(route: .features(.chaoxingAssignments), title: "学习通作业", icon: "list.bullet.clipboard", color: .teal)
             }
@@ -81,7 +81,7 @@ struct FeaturesView: View {
             sectionHeader(title: "成绩与考试", color: .blue)
 
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: spacing), count: 2), spacing: spacing) {
-                HeroCard(route: .features(.gradeQuery(.main)), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
+                HeroCard(route: .features(.gradeQuery()), title: "成绩查询", icon: "doc.text.magnifyingglass", color: .blue)
                 HeroCard(route: .features(.gradeAnalysis), title: "成绩分析", icon: "chart.bar.xaxis", color: .green)
                 HeroCard(route: .features(.examSchedule), title: "考试安排", icon: "pencil.and.outline", color: .orange)
             }
@@ -95,7 +95,7 @@ struct FeaturesView: View {
 
             VStack(spacing: 0) {
                 ToolRow(
-                    route: .features(.dormList(.main)),
+                    route: .features(.dormList()),
                     title: "电量查询",
                     icon: "bolt.fill",
                     color: .yellow
@@ -122,7 +122,7 @@ struct FeaturesView: View {
                 Divider().padding(.leading, 56)
 
                 ToolRow(
-                    route: .features(.schoolCalendarList(.main)),
+                    route: .features(.schoolCalendarList()),
                     title: "校历",
                     icon: "calendar.badge.clock",
                     color: .pink

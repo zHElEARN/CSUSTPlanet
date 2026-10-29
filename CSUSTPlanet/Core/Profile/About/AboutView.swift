@@ -52,7 +52,7 @@ struct AboutView: View {
             }
 
             Section("更多信息") {
-                NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses(.main)))) {
+                NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses()))) {
                     Text("开源许可")
                 }
             }
