@@ -269,26 +269,3 @@ enum AppRoute: Hashable, RouteNode {
         }
     }
 }
-
-enum AppTabItem: Hashable {
-    case overview
-    case schedule
-    case features
-    case profile
-    case feature(FeatureTabID)
-
-    var pathSegment: String {
-        switch self {
-        case .overview:
-            return "overview"
-        case .schedule:
-            return "schedule"
-        case .features:
-            return "features"
-        case .profile:
-            return "profile"
-        case .feature(let feature):
-            return feature.pathSegment
-        }
-    }
-}

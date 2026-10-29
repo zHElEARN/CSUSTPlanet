@@ -1,5 +1,5 @@
 //
-//  FeatureTabID.swift
+//  AppTabItem.swift
 //  CSUSTPlanet
 //
 //  Created by Zachary Liu on 2026/4/12.
@@ -7,6 +7,31 @@
 
 import Foundation
 import SwiftUI
+
+// MARK: - AppTabItem
+
+enum AppTabItem: Hashable {
+    case overview
+    case schedule
+    case features
+    case profile
+    case feature(FeatureTabID)
+
+    var pathSegment: String {
+        switch self {
+        case .overview:
+            return "overview"
+        case .schedule:
+            return "schedule"
+        case .features:
+            return "features"
+        case .profile:
+            return "profile"
+        case .feature(let feature):
+            return feature.pathSegment
+        }
+    }
+}
 
 // MARK: - FeatureTabID
 
