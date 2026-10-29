@@ -18,7 +18,6 @@ xcodebuild \
   -scheme CSUSTPlanet \
   -configuration Debug \
   -destination "generic/platform=iOS" \
-  -derivedDataPath .build/DerivedData \
   CODE_SIGNING_ALLOWED=NO \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGN_IDENTITY= \
@@ -37,4 +36,3 @@ xcodebuild \
 - 主 scheme：`CSUSTPlanet`
 - Widget scheme：`CSUSTPlanetWidgetExtension`
 - 主 `CSUSTPlanet` scheme 已经会构建 widget extension 依赖。
-- 默认产物路径：`.build/DerivedData/Build/Products/Debug-iphoneos/CSUSTPlanet.app`
