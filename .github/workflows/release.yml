@@ -20,7 +20,7 @@ jobs:
   ios:
     name: Release iOS
     if: inputs.platform == 'ios' || inputs.platform == 'both'
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 60
     steps:
       - name: Check out repository
@@ -65,7 +65,7 @@ jobs:
   macos:
     name: Release macOS
     if: inputs.platform == 'macos' || inputs.platform == 'both'
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 60
     steps:
       - name: Check out repository
