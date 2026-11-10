@@ -85,10 +85,10 @@ struct CourseScheduleView: View {
 
         do {
             let (courses, remarks) = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.courseService.getCourseSchedule(academicYearSemester: selectedSemester)
+                try await AuthManager.shared.eduHelper.getCourseSchedule(academicYearSemester: selectedSemester)
             }
             let rawSemesterStartDate = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.semesterService.getSemesterStartDate(academicYearSemester: selectedSemester)
+                try await AuthManager.shared.eduHelper.getSemesterStartDate(academicYearSemester: selectedSemester)
             }
             let semesterStartDate = CourseScheduleUtil.normalizeSemesterStartDate(rawSemesterStartDate)
 

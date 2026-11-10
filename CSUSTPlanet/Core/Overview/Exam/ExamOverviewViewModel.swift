@@ -52,7 +52,7 @@ final class ExamOverviewViewModel {
 
         do {
             let exams = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: nil, semesterType: nil)
+                try await AuthManager.shared.eduHelper.getExamSchedule(academicYearSemester: nil, semesterType: nil)
             }
             let sortedExams = exams.sorted {
                 return $0.examStartTime < $1.examStartTime

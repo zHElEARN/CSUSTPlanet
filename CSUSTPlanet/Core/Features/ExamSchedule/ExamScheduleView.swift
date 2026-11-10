@@ -65,7 +65,7 @@ struct ExamScheduleView: View {
 
         do {
             (availableSemesters, selectedSemester) = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.examService.getAvailableSemestersForExamSchedule()
+                try await AuthManager.shared.eduHelper.getAvailableSemestersForExamSchedule()
             }
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -79,7 +79,7 @@ struct ExamScheduleView: View {
 
         do {
             let exams = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.examService.getExamSchedule(academicYearSemester: self.selectedSemester, semesterType: self.selectedSemesterType)
+                try await AuthManager.shared.eduHelper.getExamSchedule(academicYearSemester: self.selectedSemester, semesterType: self.selectedSemesterType)
             }
             let sortedExams = exams.sorted {
                 return $0.examStartTime < $1.examStartTime

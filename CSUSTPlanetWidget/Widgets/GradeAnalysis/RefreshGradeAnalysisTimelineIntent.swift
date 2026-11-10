@@ -44,7 +44,7 @@ struct RefreshGradeAnalysisTimelineIntent: AppIntent {
                 }
             }
 
-            let courseGrades = try await eduHelper.courseService.getCourseGrades()
+            let courseGrades = try await eduHelper.getCourseGrades()
             MMKVHelper.CourseGrades.cache = Cached<[EduHelper.CourseGrade]>(cachedAt: .now, value: courseGrades)
         } catch {
             return

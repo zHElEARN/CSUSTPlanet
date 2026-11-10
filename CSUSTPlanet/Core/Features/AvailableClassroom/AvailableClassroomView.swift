@@ -15,9 +15,9 @@ struct AvailableClassroomView: View {
 
     @State private var errorToast: ToastState = .errorTitle
 
-    @State private var selectedCampus: CampusCardHelper.Campus = .jinpenling
+    @State private var selectedCampus: Campus = .jinpenling
     @State private var selectedWeek: Int = 1
-    @State private var selectedDayOfWeek: EduHelper.DayOfWeek = .monday
+    @State private var selectedDayOfWeek: DayOfWeek = .monday
     @State private var selectedSection: Int = 1
 
     var body: some View {
@@ -42,7 +42,7 @@ struct AvailableClassroomView: View {
 
         do {
             availableClassrooms = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.courseService.getAvailableClassrooms(
+                try await AuthManager.shared.eduHelper.getAvailableClassrooms(
                     campus: self.selectedCampus,
                     week: self.selectedWeek,
                     dayOfWeek: self.selectedDayOfWeek,

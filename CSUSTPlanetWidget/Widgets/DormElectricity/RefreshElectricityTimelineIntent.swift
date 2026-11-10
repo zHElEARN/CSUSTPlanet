@@ -49,7 +49,7 @@ struct RefreshElectricityTimelineIntent: AppIntent {
 
             if await !campusCardHelper.isLoggedIn() {
                 if await ssoHelper.isLoggedIn() {
-                    let (_, ticket) = try await ssoHelper.loginToCampusCard()
+                    let ticket = try await ssoHelper.loginToCampusCard()
                     try await campusCardHelper.syncToken(ticket: ticket)
 
                     CookieHelper.shared.save()
@@ -61,7 +61,7 @@ struct RefreshElectricityTimelineIntent: AppIntent {
                     let loginForm = try await ssoHelper.getLoginForm()
                     try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)
 
-                    let (_, ticket) = try await ssoHelper.loginToCampusCard()
+                    let ticket = try await ssoHelper.loginToCampusCard()
                     try await campusCardHelper.syncToken(ticket: ticket)
 
                     CookieHelper.shared.save()

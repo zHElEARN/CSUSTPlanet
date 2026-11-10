@@ -121,7 +121,7 @@ struct WeeklyCoursesEntryView: View {
             .frame(width: timeColWidth)
 
             // 星期及日期圆圈
-            ForEach(Array(zip(EduHelper.DayOfWeek.allCases, dates)), id: \.0) { day, date in
+            ForEach(Array(zip(DayOfWeek.allCases, dates)), id: \.0) { day, date in
                 let isToday = isToday(date)
                 VStack(spacing: 0) {
                     Text(day.chineseShortString)
@@ -270,7 +270,7 @@ struct WeeklyCoursesEntryView: View {
         return y * sectionHeight + y * rowSpacing
     }
 
-    func calculateXOffset(for day: EduHelper.DayOfWeek, columnWidth: CGFloat) -> CGFloat {
+    func calculateXOffset(for day: DayOfWeek, columnWidth: CGFloat) -> CGFloat {
         let x = CGFloat(day.rawValue)
         return timeColWidth + colSpacing + (x * columnWidth) + (x * colSpacing)
     }

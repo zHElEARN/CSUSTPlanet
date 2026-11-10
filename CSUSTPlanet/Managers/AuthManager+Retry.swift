@@ -59,27 +59,27 @@ extension AuthManager: AuthRetryProvider {
     private func isNotLoggedInError(error: Error, system: CampusSystem) -> Bool {
         switch system {
         case .sso:
-            if let ssoError = error as? SSOHelper.SSOHelperError, case .notLoggedIn = ssoError {
+            if let ssoError = error as? SSOHelperError, case .notLoggedIn = ssoError {
                 return true
             }
             return false
         case .edu:
-            if let eduError = error as? EduHelper.EduHelperError, case .notLoggedIn = eduError {
+            if let eduError = error as? EduHelperError, case .notLoggedIn = eduError {
                 return true
             }
             return false
         case .mooc:
-            if let moocError = error as? MoocHelper.MoocHelperError, case .notLoggedIn = moocError {
+            if let moocError = error as? MoocHelperError, case .notLoggedIn = moocError {
                 return true
             }
             return false
         case .campusCard:
-            if let campusCardError = error as? CampusCardHelper.CampusCardHelperError, case .notLoggedIn = campusCardError {
+            if let campusCardError = error as? CampusCardHelperError, case .notLoggedIn = campusCardError {
                 return true
             }
             return false
         case .chaoxing:
-            if let chaoxingError = error as? ChaoxingHelper.ChaoxingHelperError, case .notLoggedIn = chaoxingError {
+            if let chaoxingError = error as? ChaoxingHelperError, case .notLoggedIn = chaoxingError {
                 return true
             }
             return false

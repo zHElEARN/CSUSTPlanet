@@ -92,7 +92,7 @@ struct CourseScheduleOverlay: View {
         return y * layoutConfig.sectionHeight + y * layoutConfig.rowSpacing
     }
 
-    private func calculateXOffset(for day: EduHelper.DayOfWeek, columnWidth: CGFloat) -> CGFloat {
+    private func calculateXOffset(for day: DayOfWeek, columnWidth: CGFloat) -> CGFloat {
         let x = CGFloat(day.rawValue)
         return layoutConfig.timeColWidth + layoutConfig.colSpacing + (x * columnWidth) + (x * layoutConfig.colSpacing)
     }

@@ -321,7 +321,7 @@ enum CustomCourseScheduleHelper {
             let sessionsByCourseID = Dictionary(grouping: sessions, by: \.courseId)
             let eduCourses = courses.map { course -> EduHelper.Course in
                 let eduSessions = (sessionsByCourseID[course.id] ?? []).compactMap { session -> EduHelper.ScheduleSession? in
-                    guard let dayOfWeek = EduHelper.DayOfWeek(rawValue: session.dayOfWeek) else {
+                    guard let dayOfWeek = DayOfWeek(rawValue: session.dayOfWeek) else {
                         return nil
                     }
                     return EduHelper.ScheduleSession(

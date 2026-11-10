@@ -102,7 +102,7 @@ struct CourseScheduleSemesterSelect: View {
 
         do {
             (availableSemesters, selectedSemester) = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.courseService.getAvailableSemestersForCourseSchedule()
+                try await AuthManager.shared.eduHelper.getAvailableSemestersForCourseSchedule()
             }
         } catch {
             errorToast.show(message: error.localizedDescription)

@@ -13,9 +13,9 @@ struct AvailableClassroomContent: View {
 
     let isLoading: Bool
 
-    @Binding var selectedCampus: CampusCardHelper.Campus
+    @Binding var selectedCampus: Campus
     @Binding var selectedWeek: Int
-    @Binding var selectedDayOfWeek: EduHelper.DayOfWeek
+    @Binding var selectedDayOfWeek: DayOfWeek
     @Binding var selectedSection: Int
 
     @Binding var errorToast: ToastState
@@ -97,7 +97,7 @@ struct AvailableClassroomContent: View {
     private var campusPicker: some View {
         filterChip(
             Picker("校区", selection: $selectedCampus) {
-                ForEach(CampusCardHelper.Campus.allCases, id: \.self) { campus in
+                ForEach(Campus.allCases, id: \.self) { campus in
                     Text(campus.displayName).tag(campus)
                 }
             }
@@ -121,7 +121,7 @@ struct AvailableClassroomContent: View {
     private var dayPicker: some View {
         filterChip(
             Picker("星期", selection: $selectedDayOfWeek) {
-                ForEach(EduHelper.DayOfWeek.allCases, id: \.self) { dayOfWeek in
+                ForEach(DayOfWeek.allCases, id: \.self) { dayOfWeek in
                     Text(dayOfWeek.chineseLongString).tag(dayOfWeek)
                 }
             }

@@ -29,7 +29,7 @@ struct SSOLoginView: View {
 
     private func login(username: String, password: String, captcha: String) async {
         do {
-            if (try? await AuthManager.shared.ssoHelper.getLoginUser()) != nil {
+            if (try? await AuthManager.shared.ssoHelper.getProfile()) != nil {
                 AuthManager.shared.ssoRelogin()
             } else {
                 let loginForm = try await AuthManager.shared.ssoGetLoginForm()

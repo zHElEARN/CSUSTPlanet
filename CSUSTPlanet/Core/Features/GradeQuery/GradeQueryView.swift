@@ -65,7 +65,7 @@ struct GradeQueryView: View {
 
         do {
             let courseGrades = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.courseService.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
+                try await AuthManager.shared.eduHelper.getCourseGrades(academicYearSemester: nil, courseNature: nil, courseName: "")
             }
             MMKVHelper.CourseGrades.cache = Cached(cachedAt: .now, value: courseGrades)
             WidgetTimelineRefreshHelper.reloadGradeAnalysis()

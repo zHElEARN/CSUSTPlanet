@@ -109,9 +109,9 @@ struct CampusMapView: View {
             ToolbarItemGroup(placement: .primaryAction) {
                 Menu {
                     Picker("校区", selection: $viewModel.selectedCampus) {
-                        Text("全部校区").tag(CampusCardHelper.Campus?.none)
-                        Text("金盆岭校区").tag(Optional(CampusCardHelper.Campus.jinpenling))
-                        Text("云塘校区").tag(Optional(CampusCardHelper.Campus.yuntang))
+                        Text("全部校区").tag(Campus?.none)
+                        Text("金盆岭校区").tag(Optional(Campus.jinpenling))
+                        Text("云塘校区").tag(Optional(Campus.yuntang))
                     }
                     .pickerStyle(.inline)
                 } label: {

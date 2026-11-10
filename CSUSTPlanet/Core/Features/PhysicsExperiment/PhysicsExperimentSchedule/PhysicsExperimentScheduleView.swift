@@ -55,7 +55,7 @@ struct PhysicsExperimentScheduleView: View {
             MMKVHelper.PhysicsExperiment.scheduleCache = cachedData
             data = cachedData
         } catch {
-            if case PhysicsExperimentHelper.PhysicsExperimentError.notLoggedIn = error {
+            if case PhysicsExperimentHelperError.notLoggedIn = error {
                 if let cachedData = MMKVHelper.PhysicsExperiment.scheduleCache {
                     data = cachedData
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

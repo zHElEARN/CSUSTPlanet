@@ -45,7 +45,7 @@ class ProfileDetailViewModel {
 
         do {
             ssoProfile = try await AuthManager.shared.withAuthRetry(system: .sso) {
-                try await AuthManager.shared.ssoHelper.getLoginUser()
+                try await AuthManager.shared.ssoHelper.getProfile()
             }
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -59,7 +59,7 @@ class ProfileDetailViewModel {
 
         do {
             eduProfile = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.profileService.getProfile()
+                try await AuthManager.shared.eduHelper.getProfile()
             }
         } catch {
             errorToast.show(message: error.localizedDescription)

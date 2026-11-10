@@ -132,10 +132,9 @@ struct ChaoxingAssignmentCard: View {
         }
     }
 
-    /// 作业状态，原样展示学习通返回的文本，统一使用中性色，不做状态配色
     private var statusBadge: some View {
         RelativeDateBadge(
-            text: assignment.status,
+            text: assignment.status.rawValue,
             style: .secondary,
             font: .caption2.bold(),
             horizontalPadding: 6,

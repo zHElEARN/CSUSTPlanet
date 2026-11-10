@@ -36,12 +36,12 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
                 let loginForm = try await ssoHelper.getLoginForm()
                 try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: nil)
                 Logger.gradeBackgroundTask.debug("统一身份认证登录成功")
-                _ = try await ssoHelper.loginToEducation()
+                try await ssoHelper.loginToEducation()
                 Logger.gradeBackgroundTask.debug("教务系统登录成功")
             } else {
                 Logger.gradeBackgroundTask.debug("统一身份认证已登录，验证教务系统登录")
                 if await !eduHelper.isLoggedIn() {
-                    _ = try await ssoHelper.loginToEducation()
+                    try await ssoHelper.loginToEducation()
                     Logger.gradeBackgroundTask.debug("教务系统登录成功")
                 }
             }
@@ -55,7 +55,7 @@ struct GradeBackgroundTask: BackgroundTaskProvider {
             for i in 1...3 {
                 try Task.checkCancellation()
                 do {
-                    nowCourseGrades = try await eduHelper.courseService.getCourseGrades()
+                    nowCourseGrades = try await eduHelper.getCourseGrades()
                     if !nowCourseGrades.isEmpty {
                         Logger.gradeBackgroundTask.debug("第 \(i) 次尝试获取成绩成功: \(nowCourseGrades.count)门课程")
                         break

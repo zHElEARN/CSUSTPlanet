@@ -13,7 +13,7 @@ struct AddDormView: View {
 
     var onConfirm: (_ room: CampusCardHelper.Room) -> Void
 
-    @State private var selectedCampus: CampusCardHelper.Campus = .jinpenling
+    @State private var selectedCampus: Campus = .jinpenling
     @State private var selectedBuilding: CampusCardHelper.Building?
     @State private var selectedRoom: CampusCardHelper.Room?
 

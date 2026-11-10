@@ -95,7 +95,7 @@ private struct CourseScheduleSessionFormContent: View {
     }
 
     private func weekdayText(_ dayOfWeek: Int) -> String {
-        guard let day = EduHelper.DayOfWeek(rawValue: dayOfWeek) else {
+        guard let day = DayOfWeek(rawValue: dayOfWeek) else {
             return "未知"
         }
         return "周\(day.stringValue)"

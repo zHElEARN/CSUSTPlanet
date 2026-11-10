@@ -130,7 +130,7 @@ final class AuthManager {
         try await ssoHelper.login(loginForm: loginForm, username: username, password: password, captcha: captcha)
         saveCredentials(credentials: (username, password))
 
-        let profile = try await ssoHelper.getLoginUser()
+        let profile = try await ssoHelper.getProfile()
         updateLocalProfile(with: profile)
 
         allLogin()
@@ -142,7 +142,7 @@ final class AuthManager {
             isSSOLoggingOut = true
             defer { isSSOLoggingOut = false }
 
-            try? await eduHelper.authService.logout()
+            try? await eduHelper.logout()
             try? await moocHelper.logout()
             try? await campusCardHelper.logout()
             try? await ssoHelper.logout()
@@ -157,7 +157,7 @@ final class AuthManager {
     func ssoBrowserLogin(username: String, password: String, shouldPersistCredentials: Bool, cookies: [HTTPCookie]) async throws {
         CookieHelper.shared.updateCookies(cookies)
 
-        let profile = try await ssoHelper.getLoginUser()
+        let profile = try await ssoHelper.getProfile()
         updateLocalProfile(with: profile)
 
         allLogin()
@@ -178,7 +178,7 @@ final class AuthManager {
             isSSOLoggingIn = true
             defer { isSSOLoggingIn = false }
 
-            if let ssoProfile = try? await ssoHelper.getLoginUser() {
+            if let ssoProfile = try? await ssoHelper.getProfile() {
                 Logger.authManager.debug("ssoRelogin: 统一身份认证已登录，无需再登录")
                 updateLocalProfile(with: ssoProfile)
                 return
@@ -186,7 +186,7 @@ final class AuthManager {
 
             guard let username = KeychainUtil.ssoUsername, let password = KeychainUtil.ssoPassword else {
                 Logger.authManager.debug("ssoRelogin: 统一身份认证未登录，密码未保存")
-                throw SSOHelper.SSOHelperError.notLoggedIn
+                throw SSOHelperError.notLoggedIn
             }
 
             do {
@@ -203,12 +203,12 @@ final class AuthManager {
                 throw error
             }
 
-            if let ssoProfile = try? await ssoHelper.getLoginUser() {
+            if let ssoProfile = try? await ssoHelper.getProfile() {
                 Logger.authManager.debug("ssoRelogin: 验证统一身份认证登录成功")
                 updateLocalProfile(with: ssoProfile)
             } else {
                 Logger.authManager.debug("ssoRelogin: 验证统一身份认证登录失败")
-                throw SSOHelper.SSOHelperError.notLoggedIn
+                throw SSOHelperError.notLoggedIn
             }
         }
 
@@ -233,7 +233,7 @@ final class AuthManager {
             }
 
             do {
-                _ = try await ssoHelper.loginToEducation()
+                try await ssoHelper.loginToEducation()
             } catch {
                 Logger.authManager.error("educationLogin: 教务登录请求失败, \(error)")
                 throw error
@@ -245,7 +245,7 @@ final class AuthManager {
                 CookieHelper.shared.save()
             } else {
                 Logger.authManager.debug("educationLogin: 验证教务登录失败")
-                throw EduHelper.EduHelperError.notLoggedIn
+                throw EduHelperError.notLoggedIn
             }
         }
 
@@ -270,7 +270,7 @@ final class AuthManager {
             }
 
             do {
-                _ = try await ssoHelper.loginToMooc()
+                try await ssoHelper.loginToMooc()
             } catch {
                 Logger.authManager.error("moocLogin: 网络课程平台登录请求失败, \(error)")
                 throw error
@@ -282,7 +282,7 @@ final class AuthManager {
                 CookieHelper.shared.save()
             } else {
                 Logger.authManager.debug("moocLogin: 验证网络课程平台登录失败")
-                throw MoocHelper.MoocHelperError.notLoggedIn
+                throw MoocHelperError.notLoggedIn
             }
         }
 
@@ -308,7 +308,7 @@ final class AuthManager {
             }
 
             do {
-                let (_, ticket) = try await ssoHelper.loginToCampusCard()
+                let ticket = try await ssoHelper.loginToCampusCard()
                 try await campusCardHelper.syncToken(ticket: ticket)
             } catch {
                 Logger.authManager.error("campusCardLogin: 校园卡登录请求失败, \(error)")
@@ -321,7 +321,7 @@ final class AuthManager {
                 CookieHelper.shared.save()
             } else {
                 Logger.authManager.debug("campusCardLogin: 验证校园卡登录失败")
-                throw CampusCardHelper.CampusCardHelperError.notLoggedIn
+                throw CampusCardHelperError.notLoggedIn
             }
         }
 
@@ -346,7 +346,7 @@ final class AuthManager {
             }
 
             do {
-                _ = try await ssoHelper.loginToChaoxing()
+                try await ssoHelper.loginToChaoxing()
             } catch {
                 Logger.authManager.error("chaoxingLogin: 学习通登录请求失败, \(error)")
                 throw error
@@ -358,7 +358,7 @@ final class AuthManager {
                 CookieHelper.shared.save()
             } else {
                 Logger.authManager.debug("chaoxingLogin: 验证学习通登录失败")
-                throw ChaoxingHelper.ChaoxingHelperError.notLoggedIn
+                throw ChaoxingHelperError.notLoggedIn
             }
         }
 

@@ -37,7 +37,7 @@ struct GradeDetailView: View {
 
         do {
             detail = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.courseService.getGradeDetail(url: courseGrade.gradeDetailUrl)
+                try await AuthManager.shared.eduHelper.getGradeDetail(url: courseGrade.gradeDetailUrl)
             }
         } catch {
             errorToast.show(message: error.localizedDescription)

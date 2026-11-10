@@ -8,7 +8,7 @@
 import CSUSTKit
 import Foundation
 
-extension EduHelper.DayOfWeek {
+extension DayOfWeek {
     var chineseShortString: String {
         switch self {
         case .monday: return "一"

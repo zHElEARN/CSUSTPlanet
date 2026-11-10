@@ -185,7 +185,7 @@ enum ElectricityUtil {
 
     static func getBuildings(
         _ campusCardHelper: CampusCardHelper,
-        _ campus: CampusCardHelper.Campus,
+        _ campus: Campus,
         useCache: Bool = true,
         retryProvider: AuthRetryProvider? = nil
     ) async throws -> [CampusCardHelper.Building] {
@@ -239,7 +239,7 @@ enum ElectricityUtil {
         useCache: Bool = true,
         retryProvider: AuthRetryProvider? = nil
     ) async throws -> Double {
-        guard let campus = CampusCardHelper.Campus(rawValue: campusName) else {
+        guard let campus = Campus(rawValue: campusName) else {
             throw ElectricityUtilError.campusNotFound
         }
 
@@ -266,7 +266,7 @@ enum ElectricityUtil {
 extension MMKVHelper {
     enum ElectricityUtil {
         @MMKVStorage(key: "ElectricityUtil.buildingsCache", defaultValue: [:])
-        static var buildingsCache: [CampusCardHelper.Campus: [CampusCardHelper.Building]]
+        static var buildingsCache: [Campus: [CampusCardHelper.Building]]
 
         @MMKVStorage(key: "ElectricityUtil.roomsCache", defaultValue: [:])
         static var roomsCache: [CampusCardHelper.Building: [CampusCardHelper.Room]]

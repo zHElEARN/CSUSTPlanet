@@ -57,7 +57,7 @@ struct GradeAnalysisView: View {
 
         do {
             let courseGrades = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.courseService.getCourseGrades()
+                try await AuthManager.shared.eduHelper.getCourseGrades()
             }
             let data = Cached(cachedAt: .now, value: courseGrades)
             MMKVHelper.CourseGrades.cache = data

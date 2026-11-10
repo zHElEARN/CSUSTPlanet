@@ -14,8 +14,8 @@ private let courses = [
         groupName: nil,
         teacher: "胡立辉高级实验师",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: "金6-102"),
-            EduHelper.ScheduleSession(weeks: [3], startSection: 7, endSection: 8, dayOfWeek: EduHelper.DayOfWeek.monday, classroom: "金12-205"),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: DayOfWeek.thursday, classroom: "金6-102"),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 7, endSection: 8, dayOfWeek: DayOfWeek.monday, classroom: "金12-205"),
         ]
     ),
     EduHelper.Course(
@@ -23,7 +23,7 @@ private let courses = [
         groupName: "(24计算机跆拳道男11)",
         teacher: "余新畅无",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: EduHelper.DayOfWeek.monday, classroom: "金西田径场1")
+            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: DayOfWeek.monday, classroom: "金西田径场1")
         ]
     ),
     EduHelper.Course(
@@ -31,7 +31,7 @@ private let courses = [
         groupName: nil,
         teacher: "赵晖(14)讲师",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 9, endSection: 10, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: "金12-215")
+            EduHelper.ScheduleSession(weeks: [3], startSection: 9, endSection: 10, dayOfWeek: DayOfWeek.wednesday, classroom: "金12-215")
         ]
     ),
     EduHelper.Course(
@@ -39,8 +39,8 @@ private let courses = [
         groupName: nil,
         teacher: "张云菲副教授,陈良宇讲师",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 9, endSection: 10, dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: nil),
-            EduHelper.ScheduleSession(weeks: [3], startSection: 9, endSection: 10, dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: nil),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 9, endSection: 10, dayOfWeek: DayOfWeek.tuesday, classroom: nil),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 9, endSection: 10, dayOfWeek: DayOfWeek.thursday, classroom: nil),
         ]
     ),
     EduHelper.Course(
@@ -48,7 +48,7 @@ private let courses = [
         groupName: nil,
         teacher: "张华林讲师",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 5, endSection: 6, dayOfWeek: EduHelper.DayOfWeek.monday, classroom: "金12-106")
+            EduHelper.ScheduleSession(weeks: [3], startSection: 5, endSection: 6, dayOfWeek: DayOfWeek.monday, classroom: "金12-106")
         ]
     ),
     EduHelper.Course(
@@ -56,8 +56,8 @@ private let courses = [
         groupName: nil,
         teacher: "肖红光副教授",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 1, endSection: 2, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: "金12-106"),
-            EduHelper.ScheduleSession(weeks: [3], startSection: 7, endSection: 8, dayOfWeek: EduHelper.DayOfWeek.friday, classroom: "金13-105"),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 1, endSection: 2, dayOfWeek: DayOfWeek.wednesday, classroom: "金12-106"),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 7, endSection: 8, dayOfWeek: DayOfWeek.friday, classroom: "金13-105"),
         ]
     ),
     EduHelper.Course(
@@ -65,7 +65,7 @@ private let courses = [
         groupName: nil,
         teacher: "陈璐（12）副教授",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: "金6-304")
+            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: DayOfWeek.wednesday, classroom: "金6-304")
         ]
     ),
     EduHelper.Course(
@@ -73,8 +73,8 @@ private let courses = [
         groupName: nil,
         teacher: "陈曦(小)副教授",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: EduHelper.DayOfWeek.friday, classroom: "金12-107"),
-            EduHelper.ScheduleSession(weeks: [3], startSection: 5, endSection: 6, dayOfWeek: EduHelper.DayOfWeek.wednesday, classroom: "金12-107"),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 3, endSection: 4, dayOfWeek: DayOfWeek.friday, classroom: "金12-107"),
+            EduHelper.ScheduleSession(weeks: [3], startSection: 5, endSection: 6, dayOfWeek: DayOfWeek.wednesday, classroom: "金12-107"),
         ]
     ),
     EduHelper.Course(
@@ -82,7 +82,7 @@ private let courses = [
         groupName: nil,
         teacher: "胡晋彬副教授",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 1, endSection: 2, dayOfWeek: EduHelper.DayOfWeek.tuesday, classroom: "金12-109")
+            EduHelper.ScheduleSession(weeks: [3], startSection: 1, endSection: 2, dayOfWeek: DayOfWeek.tuesday, classroom: "金12-109")
         ]
     ),
     EduHelper.Course(
@@ -90,7 +90,7 @@ private let courses = [
         groupName: nil,
         teacher: "廖苗副教授",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 5, endSection: 6, dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: "金12-116")
+            EduHelper.ScheduleSession(weeks: [3], startSection: 5, endSection: 6, dayOfWeek: DayOfWeek.thursday, classroom: "金12-116")
         ]
     ),
     EduHelper.Course(
@@ -98,7 +98,7 @@ private let courses = [
         groupName: nil,
         teacher: "李铭副教授",
         sessions: [
-            EduHelper.ScheduleSession(weeks: [3], startSection: 7, endSection: 8, dayOfWeek: EduHelper.DayOfWeek.thursday, classroom: "金6-107")
+            EduHelper.ScheduleSession(weeks: [3], startSection: 7, endSection: 8, dayOfWeek: DayOfWeek.thursday, classroom: "金6-107")
         ]
     ),
 ]

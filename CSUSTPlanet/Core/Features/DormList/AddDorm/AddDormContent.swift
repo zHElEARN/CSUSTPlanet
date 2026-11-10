@@ -12,7 +12,7 @@ extension CampusCardHelper.Building: @retroactive Identifiable {}
 extension CampusCardHelper.Room: @retroactive Identifiable {}
 
 struct AddDormContent: View {
-    @Binding var selectedCampus: CampusCardHelper.Campus
+    @Binding var selectedCampus: Campus
     @Binding var selectedBuilding: CampusCardHelper.Building?
     @Binding var selectedRoom: CampusCardHelper.Room?
 
@@ -29,7 +29,7 @@ struct AddDormContent: View {
             Form {
                 Section {
                     Picker("校区", selection: $selectedCampus) {
-                        ForEach(CampusCardHelper.Campus.allCases, id: \.self) { campus in
+                        ForEach(Campus.allCases, id: \.self) { campus in
                             Text(campus.rawValue).tag(campus)
                         }
                     }

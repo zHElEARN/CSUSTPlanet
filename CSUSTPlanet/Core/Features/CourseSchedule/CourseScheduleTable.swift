@@ -95,7 +95,7 @@ struct CourseScheduleTable: View {
             .frame(width: layoutConfig.timeColWidth)
 
             // "周日" 到 "周六"
-            ForEach(Array(zip(EduHelper.DayOfWeek.allCases, dates)), id: \.0) { day, date in
+            ForEach(Array(zip(DayOfWeek.allCases, dates)), id: \.0) { day, date in
                 let isToday = CourseScheduleUtil.isToday(date)
                 VStack(spacing: 2) {
                     Text(day.stringValue)

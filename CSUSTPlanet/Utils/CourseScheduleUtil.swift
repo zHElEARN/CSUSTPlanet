@@ -287,7 +287,7 @@ enum CourseScheduleUtil {
     /// 获取日期对应的星期
     /// - Parameter date: 目标日期
     /// - Returns: 星期
-    static func getDayOfWeek(_ date: Date) -> EduHelper.DayOfWeek {
+    static func getDayOfWeek(_ date: Date) -> DayOfWeek {
         let weekday = calendar.component(.weekday, from: date)
 
         switch weekday {
@@ -576,7 +576,7 @@ enum CourseScheduleUtil {
 
 // MARK: - DayOfWeek Extension
 
-extension EduHelper.DayOfWeek {
+extension DayOfWeek {
     /// 将周几枚举转换为对应的中文字符串
     var stringValue: String {
         switch self {

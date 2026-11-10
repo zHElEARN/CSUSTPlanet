@@ -387,7 +387,7 @@ final class ScheduleEventStore {
             }
 
             let details = [
-                detail("状态", assignment.status)
+                detail("状态", assignment.status.rawValue)
             ].compactMap { $0 }
 
             return ScheduleEvent(
