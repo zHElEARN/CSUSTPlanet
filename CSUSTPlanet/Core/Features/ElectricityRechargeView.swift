@@ -19,7 +19,7 @@ struct ElectricityRechargeView: View {
         }
     }
 
-    var vpnURL: URL { try! WebVPNHelper.encryptURL(baseURL) }
+    var vpnURL: URL { try! WebVPNUtils.encryptURL(baseURL) }
 
     var url: URL {
         if MMKVHelper.GlobalManager.isWebVPNModeEnabled {

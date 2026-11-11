@@ -15,7 +15,7 @@ struct AssignmentsCoursePage: View {
     var originalURL: URL? { URL(string: "http://pt.csust.edu.cn/meol/jpk/course/layout/newpage/index.jsp?courseId=\(courseID)") }
     var vpnURL: URL? {
         if let originalURL {
-            try? WebVPNHelper.encryptURL(originalURL)
+            try? WebVPNUtils.encryptURL(originalURL)
         } else {
             nil
         }

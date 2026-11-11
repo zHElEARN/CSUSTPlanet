@@ -38,7 +38,7 @@ final class PhysicsExperimentManager {
 
         if physicsExperimentHelper == nil {
             if GlobalManager.shared.isWebVPNModeEnabled && AuthManager.shared.isSSOLoggedIn {
-                physicsExperimentHelper = PhysicsExperimentHelper(mode: .webVpn, session: CookieHelper.shared.session)
+                physicsExperimentHelper = PhysicsExperimentHelper(mode: .webVPN, session: CookieHelper.shared.session)
             } else {
                 physicsExperimentHelper = PhysicsExperimentHelper(mode: .direct, session: CookieHelper.shared.session)
             }

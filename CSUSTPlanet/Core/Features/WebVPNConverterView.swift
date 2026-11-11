@@ -218,9 +218,9 @@ struct WebVPNConverterView: View {
         do {
             switch selectedMode {
             case .convert:
-                resultUrl = try WebVPNHelper.encryptURL(url).absoluteString
+                resultUrl = try WebVPNUtils.encryptURL(url).absoluteString
             case .restore:
-                resultUrl = try WebVPNHelper.decryptURL(url).absoluteString
+                resultUrl = try WebVPNUtils.decryptURL(url).absoluteString
             }
             isErrorPresented = false
         } catch {

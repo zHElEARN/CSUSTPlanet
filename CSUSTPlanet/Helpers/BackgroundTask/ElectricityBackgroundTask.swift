@@ -47,7 +47,7 @@ struct ElectricityBackgroundTask: BackgroundTaskProvider {
                 return true
             }
 
-            let mode: ConnectionMode = MMKVHelper.GlobalManager.isWebVPNModeEnabled ? .webVpn : .direct
+            let mode: ConnectionMode = MMKVHelper.GlobalManager.isWebVPNModeEnabled ? .webVPN : .direct
             let session = CookieHelper.shared.session
 
             let ssoHelper = SSOHelper(mode: mode, session: session)

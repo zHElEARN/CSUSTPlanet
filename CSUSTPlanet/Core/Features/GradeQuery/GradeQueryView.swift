@@ -137,7 +137,7 @@ struct GradeQueryView: View {
                 escapeCSVField(grade.courseName),
                 escapeCSVField(grade.groupName),
                 "\(grade.grade)",
-                escapeCSVField(grade.gradeDetailUrl),
+                escapeCSVField(grade.gradeDetailURL),
                 escapeCSVField(grade.studyMode),
                 escapeCSVField(grade.gradeIdentifier),
                 "\(grade.credit)",

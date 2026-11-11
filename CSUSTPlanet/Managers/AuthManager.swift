@@ -47,7 +47,7 @@ final class AuthManager {
     private(set) var campusCardHelper: CampusCardHelper
     private(set) var chaoxingHelper: ChaoxingHelper
 
-    let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVpn : .direct
+    let mode: ConnectionMode = GlobalManager.shared.isWebVPNModeEnabled ? .webVPN : .direct
     private let session: Session = CookieHelper.shared.session
 
     @ObservationIgnored private var ssoLoginTask: Task<Void, Error>?
