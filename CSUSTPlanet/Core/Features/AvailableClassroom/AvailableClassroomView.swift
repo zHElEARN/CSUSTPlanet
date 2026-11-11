@@ -9,49 +9,49 @@ import CSUSTKit
 import SwiftUI
 
 struct AvailableClassroomView: View {
-    @State private var availableClassrooms: [String]?
-
-    @State private var isLoadingClassrooms: Bool = false
-
+    @State private var schedule: ClassroomScheduleSnapshot?
+    @State private var isLoading = false
+    @State private var updatedAt: Date?
     @State private var errorToast: ToastState = .errorTitle
 
-    @State private var selectedCampus: Campus = .jinpenling
-    @State private var selectedWeek: Int = 1
-    @State private var selectedDayOfWeek: DayOfWeek = .monday
-    @State private var selectedSection: Int = 1
+    init() {
+        if let sessions = MMKVHelper.AvailableClassroom.cache {
+            _schedule = State(initialValue: ClassroomScheduleSnapshot(sessions: sessions))
+        }
+    }
 
     var body: some View {
         AvailableClassroomContent(
-            availableClassrooms: availableClassrooms,
-            isLoading: isLoadingClassrooms,
-            selectedCampus: $selectedCampus,
-            selectedWeek: $selectedWeek,
-            selectedDayOfWeek: $selectedDayOfWeek,
-            selectedSection: $selectedSection,
-            errorToast: $errorToast,
-            onQuery: queryAvailableClassrooms
+            schedule: schedule,
+            isLoading: isLoading,
+            updatedAt: updatedAt,
+            onQuery: queryClassrooms
         )
+        .errorToast($errorToast)
     }
 
-    // MARK: - Methods
-
-    private func queryAvailableClassrooms() async {
-        guard !isLoadingClassrooms else { return }
-        isLoadingClassrooms = true
-        defer { isLoadingClassrooms = false }
+    private func queryClassrooms(campus: Campus) async {
+        guard !isLoading else { return }
+        isLoading = true
+        defer { isLoading = false }
 
         do {
-            availableClassrooms = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.getAvailableClassrooms(
-                    campus: self.selectedCampus,
-                    week: self.selectedWeek,
-                    dayOfWeek: self.selectedDayOfWeek,
-                    section: self.selectedSection
-                )
+            // 获取整学期排课，所有时间和教室条件均在本地筛选。
+            let result = try await AuthManager.shared.withAuthRetry(system: .edu) {
+                try await AuthManager.shared.eduHelper.getClassroomSchedule(campus: campus)
             }
-            .sorted()
+            MMKVHelper.AvailableClassroom.cache = result
+            schedule = ClassroomScheduleSnapshot(sessions: result)
+            updatedAt = .now
         } catch {
             errorToast.show(message: error.localizedDescription)
         }
+    }
+}
+
+extension MMKVHelper {
+    enum AvailableClassroom {
+        @MMKVOptionalStorage(key: "Cached.availableClassroomSchedule")
+        static var cache: [EduHelper.ClassroomScheduleSession]?
     }
 }
