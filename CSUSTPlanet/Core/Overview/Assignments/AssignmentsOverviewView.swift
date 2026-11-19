@@ -13,7 +13,7 @@ struct AssignmentsOverviewView: View {
     @Environment(Router.self) private var router
 
     var body: some View {
-        Button(action: { router.deepLinkTo(feature: .assignments) }) {
+        Button(action: { router.open(AppRoutes.assignments.entry()) }) {
             CustomGroupBox {
                 cardContent(assignments: viewModel.submittableAssignments)
             }

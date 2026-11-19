@@ -27,7 +27,7 @@ struct AssignmentsEntryView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .widgetURL(URL(string: "csustplanet://features/assignments"))
+        .widgetURL(URL(string: "csustplanet://app/features/assignments"))
         .containerBackground(.fill.tertiary, for: .widget)
     }
 

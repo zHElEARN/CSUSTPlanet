@@ -5,24 +5,23 @@
 //  Created by Codex on 2026/6/18.
 //
 
-import CSUSTKit
 import SwiftUI
 
 struct GradeDetailScoreSummary: View {
-    let courseGrade: EduHelper.CourseGrade
+    let params: GradeDetailParams
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text(courseGrade.courseName)
+            Text(params.courseName)
                 .font(.largeTitle)
                 .bold()
                 .padding(.horizontal)
 
             HStack(alignment: .top, spacing: 16) {
-                GradeDetailScoreItem(value: "\(courseGrade.grade)", label: "总成绩", color: ColorUtil.dynamicColor(grade: Double(courseGrade.grade)))
-                GradeDetailScoreItem(value: String(format: "%.1f", courseGrade.gradePoint), label: "绩点", color: ColorUtil.dynamicColor(point: courseGrade.gradePoint))
-                GradeDetailScoreItem(value: String(format: "%.1f", courseGrade.credit), label: "学分", color: .primary)
-                GradeDetailScoreItem(value: "\(courseGrade.totalHours)", label: "学时", color: .primary)
+                GradeDetailScoreItem(value: "\(params.grade)", label: "总成绩", color: ColorUtil.dynamicColor(grade: Double(params.grade)))
+                GradeDetailScoreItem(value: String(format: "%.1f", params.gradePoint), label: "绩点", color: ColorUtil.dynamicColor(point: params.gradePoint))
+                GradeDetailScoreItem(value: String(format: "%.1f", params.credit), label: "学分", color: .primary)
+                GradeDetailScoreItem(value: "\(params.totalHours)", label: "学时", color: .primary)
             }
             .padding(.horizontal)
         }

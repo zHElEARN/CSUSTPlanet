@@ -5,28 +5,27 @@
 //  Created by Codex on 2026/6/18.
 //
 
-import CSUSTKit
 import SwiftUI
 
 struct GradeDetailInfoSection: View {
-    let courseGrade: EduHelper.CourseGrade
+    let params: GradeDetailParams
 
     var body: some View {
         CustomGroupBox {
             VStack(alignment: .leading, spacing: 12) {
-                GradeDetailInfoRow(label: "课程编号", value: courseGrade.courseID)
-                GradeDetailInfoRow(label: "开课学期", value: courseGrade.semester)
-                if !courseGrade.groupName.isEmpty {
-                    GradeDetailInfoRow(label: "分组名", value: courseGrade.groupName)
+                GradeDetailInfoRow(label: "课程编号", value: params.courseID)
+                GradeDetailInfoRow(label: "开课学期", value: params.semester)
+                if !params.groupName.isEmpty {
+                    GradeDetailInfoRow(label: "分组名", value: params.groupName)
                 }
-                GradeDetailInfoRow(label: "修读方式", value: courseGrade.studyMode)
-                GradeDetailInfoRow(label: "课程性质", value: courseGrade.courseNature.rawValue)
-                if !courseGrade.courseCategory.isEmpty {
-                    GradeDetailInfoRow(label: "课程类别", value: courseGrade.courseCategory)
+                GradeDetailInfoRow(label: "修读方式", value: params.studyMode)
+                GradeDetailInfoRow(label: "课程性质", value: params.courseNature.rawValue)
+                if !params.courseCategory.isEmpty {
+                    GradeDetailInfoRow(label: "课程类别", value: params.courseCategory)
                 }
-                GradeDetailInfoRow(label: "课程属性", value: courseGrade.courseAttribute)
-                GradeDetailInfoRow(label: "考核方式", value: courseGrade.assessmentMethod)
-                GradeDetailInfoRow(label: "考试性质", value: courseGrade.examNature)
+                GradeDetailInfoRow(label: "课程属性", value: params.courseAttribute)
+                GradeDetailInfoRow(label: "考核方式", value: params.assessmentMethod)
+                GradeDetailInfoRow(label: "考试性质", value: params.examNature)
             }
         }
     }

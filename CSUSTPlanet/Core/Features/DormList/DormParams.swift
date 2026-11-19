@@ -8,6 +8,6 @@
 import Foundation
 
 /// 宿舍相关页面的路由参数
-struct DormParams: Hashable {
+struct DormParams: RouteParams {
     let dormID: Int64
 }

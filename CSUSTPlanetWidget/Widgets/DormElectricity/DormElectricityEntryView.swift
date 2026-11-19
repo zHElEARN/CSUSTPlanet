@@ -31,8 +31,17 @@ struct DormElectricityEntryView: View {
                 emptyView
             }
         }
-        .widgetURL(entry.configuration.dorm?.dormID != nil ? URL(string: "csustplanet://features/electricity/\(entry.configuration.dorm?.dormID ?? 1)") : URL(string: "csustplanet://features/electricity"))
+        .widgetURL(deepLink)
         .containerBackground(.fill.tertiary, for: .widget)
+    }
+
+    private var deepLink: URL? {
+        if let dormID = entry.configuration.dorm?.dormID {
+            var components = URLComponents(string: "csustplanet://app/features/dorm-list/detail")
+            components?.queryItems = [URLQueryItem(name: "params", value: #"{"dormID":\#(dormID)}"#)]
+            return components?.url
+        }
+        return URL(string: "csustplanet://app/features/dorm-list")
     }
 
     // MARK: - Empty View

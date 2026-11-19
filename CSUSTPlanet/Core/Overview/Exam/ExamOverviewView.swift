@@ -15,7 +15,7 @@ struct ExamOverviewView: View {
     var body: some View {
         let pendingExams = viewModel.pendingExams
 
-        Button(action: { router.deepLinkTo(feature: .examSchedule) }) {
+        Button(action: { router.open(AppRoutes.examSchedule.entry()) }) {
             CustomGroupBox {
                 cardContent(pendingExams: pendingExams)
             }

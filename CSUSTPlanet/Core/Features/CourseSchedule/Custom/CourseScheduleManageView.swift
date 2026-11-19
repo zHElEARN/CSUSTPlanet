@@ -51,7 +51,8 @@ private struct CourseScheduleManageContent: View {
                         .foregroundStyle(.secondary)
                 }
                 ForEach(courseItems) { item in
-                    NavigationLink(value: AppRoute.features(.courseSchedule(.courseDetail(item.course)))) {
+                    let params = CustomCourseDetailParams(courseID: item.id)
+                    NavigationLink(value: AppRoutes.customCourseDetail.entry(params)) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.course.courseName)
                             Text(courseSubtitle(for: item))
@@ -218,10 +219,11 @@ private struct CourseScheduleManageContent: View {
 // MARK: - 业务容器
 
 struct CourseScheduleManageView: View {
-    @State var schedule: CustomCourseScheduleGRDB
+    let params: CustomScheduleEditParams
 
     @Environment(\.dismiss) private var dismiss
 
+    @State private var schedule: CustomCourseScheduleGRDB?
     @State private var isCurrentSchedule: Bool = false
     @State private var errorToast: ToastState = .errorTitle
 
@@ -230,24 +232,28 @@ struct CourseScheduleManageView: View {
     @State private var isInitial: Bool = true
 
     var body: some View {
-        CourseScheduleManageContent(
-            schedule: schedule,
-            isCurrentSchedule: isCurrentSchedule,
-            courseItems: courseItems,
-            onActivate: activate,
-            onDelete: deleteSchedule,
-            onDeleteCourse: deleteCourse,
-            onSaveScheduleInfo: saveScheduleInfo
-        )
+        ZStack {
+            if let schedule {
+                CourseScheduleManageContent(
+                    schedule: schedule,
+                    isCurrentSchedule: isCurrentSchedule,
+                    courseItems: courseItems,
+                    onActivate: activate,
+                    onDelete: deleteSchedule,
+                    onDeleteCourse: deleteCourse,
+                    onSaveScheduleInfo: saveScheduleInfo
+                )
+            }
+        }
         .onReceive(MMKVHelper.CourseSchedule.$currentScheduleID) { scheduleID in
             withAnimation {
-                isCurrentSchedule = (scheduleID == schedule.id)
+                isCurrentSchedule = (scheduleID == params.scheduleID)
             }
         }
         .task {
             guard isInitial else { return }
             isInitial = false
-            isCurrentSchedule = (MMKVHelper.CourseSchedule.currentScheduleID == schedule.id)
+            isCurrentSchedule = (MMKVHelper.CourseSchedule.currentScheduleID == params.scheduleID)
             observeData()
         }
         .errorToast($errorToast)
@@ -256,14 +262,14 @@ struct CourseScheduleManageView: View {
     // MARK: - 切换当前课表
 
     private func activate() {
-        CustomCourseScheduleHelper.activateSchedule(id: schedule.id)
+        CustomCourseScheduleHelper.activateSchedule(id: params.scheduleID)
     }
 
     // MARK: - 删除课表
 
     private func deleteSchedule() {
         do {
-            try CustomCourseScheduleHelper.deleteSchedule(id: schedule.id)
+            try CustomCourseScheduleHelper.deleteSchedule(id: params.scheduleID)
             dismiss()
         } catch {
             errorToast.show(message: error.localizedDescription)
@@ -275,7 +281,7 @@ struct CourseScheduleManageView: View {
     private func saveScheduleInfo(name: String, semesterStartDate: Date, weekCount: Int, remarks: String) -> Bool {
         do {
             try CustomCourseScheduleHelper.updateSchedule(
-                id: schedule.id,
+                id: params.scheduleID,
                 name: name,
                 semesterStartDate: semesterStartDate,
                 weekCount: weekCount,
@@ -303,11 +309,12 @@ struct CourseScheduleManageView: View {
     private func observeData() {
         guard let pool = DatabaseManager.shared.pool else { return }
 
+        let scheduleID = params.scheduleID
         let observation = ValueObservation.tracking { db -> (CustomCourseScheduleGRDB?, [CourseScheduleCourseItem]) in
-            let fetchedSchedule = try CustomCourseScheduleGRDB.fetchOne(db, key: schedule.id)
+            let fetchedSchedule = try CustomCourseScheduleGRDB.fetchOne(db, key: scheduleID)
             let courses =
                 try CustomCourseGRDB
-                .filter(CustomCourseGRDB.Columns.scheduleId == schedule.id)
+                .filter(CustomCourseGRDB.Columns.scheduleId == scheduleID)
                 .fetchAll(db)
             let courseIDs = courses.map(\.id)
             let sessions =
@@ -329,9 +336,7 @@ struct CourseScheduleManageView: View {
             onChange: { result in
                 Task { @MainActor in
                     withAnimation {
-                        if let schedule = result.0 {
-                            self.schedule = schedule
-                        }
+                        schedule = result.0
                         courseItems = result.1
                     }
                 }

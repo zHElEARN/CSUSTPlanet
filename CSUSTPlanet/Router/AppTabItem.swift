@@ -5,9 +5,6 @@
 //  Created by Zachary Liu on 2026/4/12.
 //
 
-import Foundation
-import SwiftUI
-
 // MARK: - AppTabItem
 
 enum AppTabItem: Hashable {
@@ -17,25 +14,25 @@ enum AppTabItem: Hashable {
     case profile
     case feature(FeatureTabID)
 
-    var pathSegment: String {
+    var rootRoute: RouteEntry {
         switch self {
         case .overview:
-            return "overview"
+            return AppRoutes.overview.entry()
         case .schedule:
-            return "schedule"
+            return AppRoutes.schedule.entry()
         case .features:
-            return "features"
+            return AppRoutes.features.entry()
         case .profile:
-            return "profile"
+            return AppRoutes.profile.entry()
         case .feature(let feature):
-            return feature.pathSegment
+            return feature.rootRoute.entry()
         }
     }
 }
 
 // MARK: - FeatureTabID
 
-enum FeatureTabID: Hashable, CaseIterable {
+enum FeatureTabID: Hashable {
     case courseSchedule
     case gradeQuery
     case examSchedule
@@ -84,10 +81,6 @@ enum FeatureTabID: Hashable, CaseIterable {
         }
     }
 
-    var pathSegment: String {
-        rootRoute.routePath.dropFirst().first ?? ""
-    }
-
     var systemImage: String {
         switch self {
         case .courseSchedule: return "calendar"
@@ -112,46 +105,46 @@ enum FeatureTabID: Hashable, CaseIterable {
         }
     }
 
-    var rootRoute: AppRoute {
+    var rootRoute: AppPage<NoParams> {
         switch self {
         case .courseSchedule:
-            return .features(.courseSchedule())
+            return AppRoutes.courseSchedule
         case .gradeQuery:
-            return .features(.gradeQuery())
+            return AppRoutes.gradeQuery
         case .examSchedule:
-            return .features(.examSchedule)
+            return AppRoutes.examSchedule
         case .gradeAnalysis:
-            return .features(.gradeAnalysis)
+            return AppRoutes.gradeAnalysis
         case .courses:
-            return .features(.courses())
+            return AppRoutes.courses
         case .assignments:
-            return .features(.assignments)
+            return AppRoutes.assignments
         case .chaoxingAssignments:
-            return .features(.chaoxingAssignments)
+            return AppRoutes.chaoxingAssignments
         case .electricityQuery:
-            return .features(.dormList())
+            return AppRoutes.dormList
         case .availableClassroom:
-            return .features(.availableClassroom)
+            return AppRoutes.availableClassroom
         case .campusMap:
-            return .features(.campusMap)
+            return AppRoutes.campusMap
         case .schoolCalendar:
-            return .features(.schoolCalendarList())
+            return AppRoutes.schoolCalendarList
         case .electricityRecharge:
-            return .features(.electricityRecharge)
+            return AppRoutes.electricityRecharge
         case .webVPNConverter:
-            return .features(.webVPNConverter)
+            return AppRoutes.webVPNConverter
         case .eval:
-            return .features(.eval)
+            return AppRoutes.eval
         case .physicsExperimentSchedule:
-            return .features(.physicsExperimentSchedule)
+            return AppRoutes.physicsExperimentSchedule
         case .physicsExperimentGrade:
-            return .features(.physicsExperimentGrade)
+            return AppRoutes.physicsExperimentGrade
         case .cet:
-            return .features(.cetQuery)
+            return AppRoutes.cetQuery
         case .mandarin:
-            return .features(.mandarinQuery)
+            return AppRoutes.mandarinQuery
         case .ncre:
-            return .features(.ncreQuery)
+            return AppRoutes.ncreQuery
         }
     }
 }

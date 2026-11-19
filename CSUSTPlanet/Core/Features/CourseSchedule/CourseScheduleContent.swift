@@ -162,7 +162,7 @@ struct CourseScheduleContent: View {
         .inlineToolbarTitle()
         .toolbar {
             ToolbarItem(placement: .secondaryAction) {
-                NavigationLink(value: AppRoute.features(.courseSchedule(.settings))) {
+                NavigationLink(value: AppRoutes.courseScheduleSettings.entry()) {
                     Label("课表设置", systemImage: "gearshape")
                 }
             }

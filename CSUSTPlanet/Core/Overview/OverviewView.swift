@@ -60,7 +60,7 @@ struct OverviewView: View {
         .navigationSubtitleCompat(overviewSubtitle)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                NavigationLink(value: AppRoute.overview(.overviewSettings)) {
+                NavigationLink(value: AppRoutes.overviewSettings.entry()) {
                     Label("设置", systemImage: "gearshape")
                 }
             }

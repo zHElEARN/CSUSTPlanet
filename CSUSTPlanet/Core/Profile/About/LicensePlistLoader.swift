@@ -28,7 +28,13 @@ struct OpenSourceLicense: Identifiable, Hashable {
 }
 
 enum LicensePlistLoader {
-    static func loadLicenses(from bundle: Bundle = .main) throws -> [OpenSourceLicense] {
+    private static let bundledLicenses = Result { try loadLicenses(from: .main) }
+
+    static func loadLicenses() throws -> [OpenSourceLicense] {
+        try bundledLicenses.get()
+    }
+
+    static func loadLicenses(from bundle: Bundle) throws -> [OpenSourceLicense] {
         let rootURL = try locateRootPlist(in: bundle)
         let licenseDirectoryURL = rootURL.deletingLastPathComponent()
         let rootPlist = try readPropertyList(at: rootURL)

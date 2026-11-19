@@ -12,18 +12,19 @@ typealias Announcement = PlanetConfigService.Announcement
 
 @MainActor
 @Observable
-final class AnnouncementListViewModel: Hashable {
+final class AnnouncementListViewModel {
+    static let shared = AnnouncementListViewModel()
+
     var announcements: [Announcement] = []
     var errorToast: ToastState = .errorTitle
-    var isLoadingAnnouncements: Bool = false
+    private(set) var isLoadingAnnouncements = false
     var hasLoadedAnnouncements: Bool = false
     var readAnnouncementIDs: Set<String> = Set(MMKVHelper.Announcement.readIDs)
 
-    @ObservationIgnored private var isInitial = false
+    private init() {}
 
     func loadInitial(showError: Bool = true) async {
-        guard !isInitial else { return }
-        isInitial = true
+        guard !hasLoadedAnnouncements else { return }
         await loadAnnouncements(showError: showError)
     }
 
@@ -37,7 +38,7 @@ final class AnnouncementListViewModel: Hashable {
             GlobalManager.shared.unreadAnnouncementsCount = unreadAnnouncementsCount
             hasLoadedAnnouncements = true
         } catch {
-            if showError {
+            if showError && !Task.isCancelled {
                 errorToast.show(message: error.localizedDescription)
             }
         }
@@ -71,14 +72,6 @@ final class AnnouncementListViewModel: Hashable {
         }
 
         return lhs.id > rhs.id
-    }
-
-    nonisolated static func == (lhs: AnnouncementListViewModel, rhs: AnnouncementListViewModel) -> Bool {
-        return lhs === rhs
-    }
-
-    nonisolated func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
     }
 }
 

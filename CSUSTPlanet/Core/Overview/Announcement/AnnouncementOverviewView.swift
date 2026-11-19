@@ -9,10 +9,10 @@ import CSUSTKit
 import SwiftUI
 
 struct AnnouncementOverviewView: View {
-    @State private var viewModel = AnnouncementListViewModel()
+    private let viewModel = AnnouncementListViewModel.shared
 
     var body: some View {
-        NavigationLink(value: AppRoute.overview(.announcementList(viewModel: viewModel))) {
+        NavigationLink(value: AppRoutes.announcementList.entry()) {
             CustomGroupBox {
                 cardContent
             }
