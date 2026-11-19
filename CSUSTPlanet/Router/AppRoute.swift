@@ -122,18 +122,18 @@ enum AppRoute: Hashable, RouteNode {
 
         enum CourseScheduleRoute: Hashable, RouteNode {
             case settings
-            case edit(CustomCourseScheduleGRDB)
-            case courseDetail(CustomCourseGRDB)
+            case edit(CustomScheduleEditParams)
+            case courseDetail(CustomCourseDetailParams)
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
                 case .settings:
                     CourseScheduleSettingsView()
-                case .edit(let schedule):
-                    CourseScheduleManageView(schedule: schedule)
-                case .courseDetail(let course):
-                    CourseScheduleCourseDetailView(course: course)
+                case .edit(let params):
+                    CourseScheduleManageView(params: params)
+                case .courseDetail(let params):
+                    CourseScheduleCourseDetailView(params: params)
                 }
             }
         }

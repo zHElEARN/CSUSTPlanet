@@ -326,10 +326,11 @@ private struct CourseScheduleCourseDetailContent: View {
 // MARK: - 业务容器
 
 struct CourseScheduleCourseDetailView: View {
-    @State var course: CustomCourseGRDB
+    let params: CustomCourseDetailParams
 
     @Environment(\.dismiss) private var dismiss
 
+    @State private var course: CustomCourseGRDB?
     @State private var sessions: [CustomSessionGRDB] = []
     @State private var weekCount: Int = CourseScheduleUtil.weekCount
     @State private var sessionObserver: (any DatabaseCancellable)?
@@ -338,15 +339,19 @@ struct CourseScheduleCourseDetailView: View {
     @State private var errorToast: ToastState = .errorTitle
 
     var body: some View {
-        CourseScheduleCourseDetailContent(
-            course: course,
-            sessions: sessions,
-            weekCount: weekCount,
-            onSaveCourseInfo: saveCourseInfo,
-            onDeleteCourse: deleteCourse,
-            onSaveSession: saveSession,
-            onDeleteSession: deleteSession
-        )
+        ZStack {
+            if let course {
+                CourseScheduleCourseDetailContent(
+                    course: course,
+                    sessions: sessions,
+                    weekCount: weekCount,
+                    onSaveCourseInfo: saveCourseInfo,
+                    onDeleteCourse: deleteCourse,
+                    onSaveSession: saveSession,
+                    onDeleteSession: deleteSession
+                )
+            }
+        }
         .task {
             guard isInitial else { return }
             isInitial = false
@@ -360,7 +365,7 @@ struct CourseScheduleCourseDetailView: View {
     private func saveCourseInfo(name: String, teacher: String?, groupName: String?) -> Bool {
         do {
             try CustomCourseScheduleHelper.updateCourse(
-                id: course.id,
+                id: params.courseID,
                 name: name,
                 teacher: teacher,
                 groupName: groupName
@@ -376,7 +381,7 @@ struct CourseScheduleCourseDetailView: View {
 
     private func deleteCourse() {
         do {
-            try CustomCourseScheduleHelper.deleteCourse(id: course.id)
+            try CustomCourseScheduleHelper.deleteCourse(id: params.courseID)
             dismiss()
         } catch {
             errorToast.show(message: "删除失败：\(error.localizedDescription)")
@@ -417,12 +422,16 @@ struct CourseScheduleCourseDetailView: View {
     private func observeData() {
         guard let pool = DatabaseManager.shared.pool else { return }
 
+        let courseID = params.courseID
         let observation = ValueObservation.tracking { db -> (CustomCourseGRDB?, Int, [CustomSessionGRDB]) in
-            let fetchedCourse = try CustomCourseGRDB.fetchOne(db, key: course.id)
-            let weekCount = (try CustomCourseScheduleGRDB.fetchOne(db, key: course.scheduleId))?.weekCount ?? CourseScheduleUtil.weekCount
+            let fetchedCourse = try CustomCourseGRDB.fetchOne(db, key: courseID)
+            let weekCount =
+                try fetchedCourse.flatMap { course in
+                    try CustomCourseScheduleGRDB.fetchOne(db, key: course.scheduleId)?.weekCount
+                } ?? CourseScheduleUtil.weekCount
             let sessions =
                 try CustomSessionGRDB
-                .filter(CustomSessionGRDB.Columns.courseId == course.id)
+                .filter(CustomSessionGRDB.Columns.courseId == courseID)
                 .fetchAll(db)
             return (fetchedCourse, weekCount, sessions)
         }
@@ -443,9 +452,7 @@ struct CourseScheduleCourseDetailView: View {
             onChange: { result in
                 Task { @MainActor in
                     withAnimation {
-                        if let course = result.0 {
-                            self.course = course
-                        }
+                        course = result.0
                         weekCount = result.1
                         sessions = result.2
                     }
