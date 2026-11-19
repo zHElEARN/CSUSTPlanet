@@ -29,14 +29,14 @@ enum AppRoute: Hashable, RouteNode {
     // MARK: - OverviewRoute
 
     enum OverviewRoute: Hashable, RouteNode {
-        case announcementList(viewModel: AnnouncementListViewModel)
+        case announcementList
         case overviewSettings
 
         @ViewBuilder
         var destinationView: some View {
             switch self {
-            case .announcementList(let viewModel):
-                AnnouncementListView(viewModel: viewModel)
+            case .announcementList:
+                AnnouncementListView()
             case .overviewSettings:
                 OverviewSettingsView()
             }

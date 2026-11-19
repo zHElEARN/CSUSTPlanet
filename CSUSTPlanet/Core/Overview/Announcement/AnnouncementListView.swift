@@ -9,7 +9,7 @@ import MarkdownUI
 import SwiftUI
 
 struct AnnouncementListView: View {
-    @Bindable var viewModel: AnnouncementListViewModel
+    @Bindable private var viewModel = AnnouncementListViewModel.shared
 
     var body: some View {
         Group {
@@ -35,7 +35,12 @@ struct AnnouncementListView: View {
                 }
             }
         }
-        .onAppear { viewModel.markAllAsRead() }
+        .task { await viewModel.loadInitial() }
+        .onChange(of: viewModel.hasLoadedAnnouncements, initial: true) { _, hasLoaded in
+            if hasLoaded {
+                viewModel.markAllAsRead()
+            }
+        }
         .safeRefreshable { await viewModel.loadAnnouncements() }
         .errorToast($viewModel.errorToast)
         .navigationTitle("App公告")
