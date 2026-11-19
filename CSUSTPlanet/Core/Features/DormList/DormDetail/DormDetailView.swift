@@ -5,6 +5,7 @@
 //  Created by Zachary Liu on 2026/3/21.
 //
 
+import CSUSTKit
 import Combine
 import GRDB
 import SwiftUI
@@ -14,7 +15,7 @@ struct DormDetailView: View {
 
     @State private var dorm: DormGRDB?
     @State private var sortedRecords: [ElectricityRecordGRDB] = []
-    @State private var chartRecords: [ElectricityRecordGRDB] = []
+    @State private var chartRecords: [ElectricityRecord] = []
     @State private var chartYDomain: ClosedRange<Double> = 0...2
     @State private var exhaustionInfo: String?
     @State private var errorToast: ToastState = .errorTitle
@@ -105,7 +106,7 @@ struct DormDetailView: View {
 
         struct ProcessedDetailData {
             let sortedRecords: [ElectricityRecordGRDB]
-            let chartRecords: [ElectricityRecordGRDB]
+            let chartRecords: [ElectricityRecord]
             let chartYDomain: ClosedRange<Double>
             let exhaustionInfo: String?
         }
@@ -116,20 +117,18 @@ struct DormDetailView: View {
                 try ElectricityRecordGRDB
                 .filter(ElectricityRecordGRDB.Columns.dormID == params.dormID)
                 .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
-                .order(ElectricityRecordGRDB.Columns.date.desc)
+                .order(ElectricityRecordGRDB.Columns.date.desc, ElectricityRecordGRDB.Columns.id.desc)
                 .fetchAll(db)
         }
         .map { records -> ProcessedDetailData in
-            let sortedRecords = records
-            let recordsAscending = Array(records.reversed())
-            let chartRecords = ElectricityUtil.downsample(from: recordsAscending, to: 150)
-            let exhaustionInfo = ElectricityUtil.getExhaustionInfo(from: recordsAscending)
+            let readings = records.reversed().map(\.reading)
+            let chartRecords = ElectricityUtils.downsample(from: readings, to: 150)
 
             return ProcessedDetailData(
-                sortedRecords: sortedRecords,
+                sortedRecords: records,
                 chartRecords: chartRecords,
-                chartYDomain: ElectricityUtil.chartYDomain(for: chartRecords),
-                exhaustionInfo: exhaustionInfo
+                chartYDomain: ElectricityUtils.valueRange(for: chartRecords),
+                exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: readings)
             )
         }
 

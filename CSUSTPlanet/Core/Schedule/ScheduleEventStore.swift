@@ -135,7 +135,7 @@ final class ScheduleEventStore {
                 try ElectricityRecordGRDB
                 .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
                 .filter(ElectricityRecordGRDB.Columns.date >= ElectricityUtil.recentRecordsStartDate())
-                .order(ElectricityRecordGRDB.Columns.date.asc)
+                .order(ElectricityRecordGRDB.Columns.date.asc, ElectricityRecordGRDB.Columns.id.asc)
                 .fetchAll(db)
 
             return (dorm, records)
@@ -411,7 +411,7 @@ final class ScheduleEventStore {
         guard
             let dorm,
             let dormID = dorm.id,
-            let predictionDate = ElectricityUtil.predictExhaustionDate(from: records)
+            let predictionDate = ElectricityUtils.predictExhaustionDate(from: records.map(\.reading))
         else {
             return []
         }

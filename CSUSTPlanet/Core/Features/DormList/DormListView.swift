@@ -69,7 +69,7 @@ struct DormListView: View {
             let records =
                 try ElectricityRecordGRDB
                 .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
-                .order(ElectricityRecordGRDB.Columns.date.asc)
+                .order(ElectricityRecordGRDB.Columns.date.asc, ElectricityRecordGRDB.Columns.id.asc)
                 .fetchAll(db)
             return (dorms, records)
         }
@@ -81,7 +81,7 @@ struct DormListView: View {
             for dorm in dorms {
                 guard let dormID = dorm.id else { continue }
                 let dormRecords = recordsByDormID[dormID] ?? []
-                infoMap[dormID] = ElectricityUtil.getExhaustionInfo(from: dormRecords)
+                infoMap[dormID] = ElectricityUtil.getExhaustionInfo(from: dormRecords.map(\.reading))
             }
             return (dorms, infoMap)
         }

@@ -137,8 +137,10 @@ struct DormOverviewView: View {
 
     @ViewBuilder
     private var dormTrendChart: some View {
-        if !viewModel.chartRecords.isEmpty {
-            Chart(viewModel.chartRecords) { record in
+        let chartRecords = viewModel.chartRecords
+        if !chartRecords.isEmpty {
+            Chart(chartRecords.indices, id: \.self) { index in
+                let record = chartRecords[index]
                 AreaMark(
                     x: .value("日期", record.date),
                     yStart: .value("基线", viewModel.chartYDomain.lowerBound),
@@ -160,7 +162,7 @@ struct DormOverviewView: View {
                 .interpolationMethod(.linear)
                 .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
-                if viewModel.chartRecords.count < 3 {
+                if chartRecords.count < 3 {
                     PointMark(
                         x: .value("日期", record.date),
                         y: .value("电量", record.electricity)

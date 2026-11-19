@@ -17,13 +17,13 @@ final class DormOverviewViewModel {
     private struct ProcessedDormOverviewData {
         let dorm: DormGRDB?
         let exhaustionInfo: String?
-        let chartRecords: [ElectricityRecordGRDB]
+        let chartRecords: [ElectricityRecord]
         let chartYDomain: ClosedRange<Double>
     }
 
     var primaryDorm: DormGRDB?
     var electricityExhaustionInfo: String?
-    var chartRecords: [ElectricityRecordGRDB] = []
+    var chartRecords: [ElectricityRecord] = []
     var chartYDomain: ClosedRange<Double> = 0...2
     var isQueryingElectricity: Bool = false
 
@@ -97,19 +97,20 @@ final class DormOverviewViewModel {
                 try ElectricityRecordGRDB
                 .filter(ElectricityRecordGRDB.Columns.dormID == dormID)
                 .filter(ElectricityRecordGRDB.Columns.date >= recentStartDate)
-                .order(ElectricityRecordGRDB.Columns.date.asc)
+                .order(ElectricityRecordGRDB.Columns.date.asc, ElectricityRecordGRDB.Columns.id.asc)
                 .fetchAll(db)
 
             return (dorm, records)
         }
         .map { (dorm, records) -> ProcessedDormOverviewData in
-            let sampledRecords = ElectricityUtil.downsample(from: records, to: 80)
+            let readings = records.map(\.reading)
+            let sampledRecords = ElectricityUtils.downsample(from: readings, to: 80)
 
             return ProcessedDormOverviewData(
                 dorm: dorm,
-                exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: records),
+                exhaustionInfo: ElectricityUtil.getExhaustionInfo(from: readings),
                 chartRecords: sampledRecords,
-                chartYDomain: ElectricityUtil.chartYDomain(for: sampledRecords)
+                chartYDomain: ElectricityUtils.valueRange(for: sampledRecords)
             )
         }
 

@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2026/10/29.
 //
 
+import CSUSTKit
 import Charts
 import SwiftUI
 
@@ -12,7 +13,7 @@ struct DormDetailContent: View {
     let params: DormParams
     let dorm: DormGRDB
     let sortedRecords: [ElectricityRecordGRDB]
-    let chartRecords: [ElectricityRecordGRDB]
+    let chartRecords: [ElectricityRecord]
     let chartYDomain: ClosedRange<Double>
     let exhaustionInfo: String?
     let isQueryingElectricity: Bool
@@ -204,7 +205,8 @@ struct DormDetailContent: View {
                 Label("近三个月电量趋势", systemImage: "chart.xyaxis.line")
                     .font(.headline)
 
-                Chart(chartRecords) { record in
+                Chart(chartRecords.indices, id: \.self) { index in
+                    let record = chartRecords[index]
                     LineMark(
                         x: .value("日期", record.date),
                         y: .value("电量", record.electricity)
