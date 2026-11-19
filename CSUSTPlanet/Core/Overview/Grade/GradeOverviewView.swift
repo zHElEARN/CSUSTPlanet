@@ -72,12 +72,12 @@ struct GradeOverviewView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     } else if let gradeAnalysis = viewModel.gradeAnalysis {
-                        Text(String(format: "%.2f", gradeAnalysis.overallGPA))
+                        Text(String(format: "%.2f", gradeAnalysis.gpa))
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.overallGPA))
+                            .foregroundStyle(ColorUtil.dynamicColor(point: gradeAnalysis.gpa))
                             .contentTransition(.numericText())
 
-                        Text("平均分: \(String(format: "%.1f", gradeAnalysis.overallAverageGrade))")
+                        Text("平均分: \(String(format: "%.1f", gradeAnalysis.averageGrade))")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .contentTransition(.numericText())
@@ -104,8 +104,8 @@ struct GradeOverviewView: View {
 
     @ViewBuilder
     private var gradeTrendChart: some View {
-        if let gradeAnalysis = viewModel.gradeAnalysis, !gradeAnalysis.semesterGPAs.isEmpty {
-            Chart(gradeAnalysis.semesterGPAs, id: \.semester) { item in
+        if let gradeAnalysis = viewModel.gradeAnalysis, !gradeAnalysis.semesters.isEmpty {
+            Chart(gradeAnalysis.semesters, id: \.semester) { item in
                 AreaMark(
                     x: .value("学期", item.semester),
                     yStart: .value("基线", 0),
@@ -130,7 +130,7 @@ struct GradeOverviewView: View {
                 .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
                 .interpolationMethod(.catmullRom)
 
-                if gradeAnalysis.semesterGPAs.count <= 8 {
+                if gradeAnalysis.semesters.count <= 8 {
                     PointMark(
                         x: .value("学期", item.semester),
                         y: .value("GPA", item.gpa)

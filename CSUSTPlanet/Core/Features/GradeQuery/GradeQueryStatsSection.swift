@@ -5,17 +5,18 @@
 //  Created by Codex on 2026/6/18.
 //
 
+import CSUSTKit
 import SwiftUI
 
 struct GradeQueryStatsSection: View {
-    let analysis: GradeAnalysisData?
+    let analysis: GradeStatistics?
     let isLoading: Bool
 
     var body: some View {
         HStack(spacing: 10) {
             if let analysis {
-                GradeQueryStatItem(title: "GPA", value: String(format: "%.2f", analysis.overallGPA), color: ColorUtil.dynamicColor(point: analysis.overallGPA))
-                GradeQueryStatItem(title: "平均成绩", value: String(format: "%.2f", analysis.overallAverageGrade), color: ColorUtil.dynamicColor(grade: analysis.overallAverageGrade))
+                GradeQueryStatItem(title: "GPA", value: String(format: "%.2f", analysis.gpa), color: ColorUtil.dynamicColor(point: analysis.gpa))
+                GradeQueryStatItem(title: "平均成绩", value: String(format: "%.2f", analysis.averageGrade), color: ColorUtil.dynamicColor(grade: analysis.averageGrade))
                 GradeQueryStatItem(title: "加权平均成绩", value: String(format: "%.2f", analysis.weightedAverageGrade), color: ColorUtil.dynamicColor(grade: analysis.weightedAverageGrade))
                 GradeQueryStatItem(title: "已修总学分", value: String(format: "%.1f", analysis.totalCredits), color: .blue)
                 GradeQueryStatItem(title: "课程总数", value: "\(analysis.totalCourses)", color: .purple)

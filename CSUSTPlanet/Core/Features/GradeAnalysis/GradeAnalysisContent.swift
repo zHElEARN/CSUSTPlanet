@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2026/10/18.
 //
 
+import CSUSTKit
 import Charts
 import SwiftUI
 
@@ -13,7 +14,7 @@ import Photos
 #endif
 
 struct GradeAnalysisContent: View {
-    let analysisData: GradeAnalysisData?
+    let analysisData: GradeStatistics?
 
     let canShare: Bool
 
@@ -34,14 +35,9 @@ struct GradeAnalysisContent: View {
         case gradeRange = "成绩"
     }
 
-    // 绩点到成绩段的映射
-    static let gradePointToRangeMap: [Double: String] = {
-        var map: [Double: String] = [:]
-        for range in ColorUtil.gradeRanges {
-            map[range.point] = range.range
-        }
-        return map
-    }()
+    private static let gradePointToRangeMap = Dictionary(
+        uniqueKeysWithValues: GradeScale.standard.map { ($0.gradePoint, $0.displayRange) }
+    )
 
     @State private var selectedChartType: ChartType = .averageGrade
     @State private var selectedDistributionChartType: DistributionChartType = .gradePoint
@@ -115,37 +111,37 @@ struct GradeAnalysisContent: View {
     // MARK: - Summary Card
 
     @ViewBuilder
-    private func summaryCard(_ gradeAnalysisData: GradeAnalysisData) -> some View {
+    private func summaryCard(_ statistics: GradeStatistics) -> some View {
         CustomGroupBox {
             VStack(alignment: .leading, spacing: 12) {
                 Text("学习总览")
                     .font(.headline)
                     .padding(.bottom, 4)
                 HStack {
-                    statisticItem(title: "课程总数", value: "\(gradeAnalysisData.totalCourses)", color: .purple)
+                    statisticItem(title: "课程总数", value: "\(statistics.totalCourses)", color: .purple)
                     Spacer()
-                    statisticItem(title: "总学分", value: String(format: "%.1f", gradeAnalysisData.totalCredits), color: .blue)
+                    statisticItem(title: "总学分", value: String(format: "%.1f", statistics.totalCredits), color: .blue)
                     Spacer()
-                    statisticItem(title: "总学时", value: "\(gradeAnalysisData.totalHours)", color: .red)
+                    statisticItem(title: "总学时", value: "\(statistics.totalHours)", color: .red)
                 }
                 Divider()
                 HStack {
                     statisticItem(
                         title: "平均成绩",
-                        value: String(format: "%.2f", gradeAnalysisData.overallAverageGrade),
-                        color: ColorUtil.dynamicColor(grade: gradeAnalysisData.overallAverageGrade)
+                        value: String(format: "%.2f", statistics.averageGrade),
+                        color: ColorUtil.dynamicColor(grade: statistics.averageGrade)
                     )
                     Spacer()
                     statisticItem(
                         title: "加权平均成绩",
-                        value: String(format: "%.2f", gradeAnalysisData.weightedAverageGrade),
-                        color: ColorUtil.dynamicColor(grade: gradeAnalysisData.weightedAverageGrade)
+                        value: String(format: "%.2f", statistics.weightedAverageGrade),
+                        color: ColorUtil.dynamicColor(grade: statistics.weightedAverageGrade)
                     )
                     Spacer()
                     statisticItem(
                         title: "平均绩点",
-                        value: String(format: "%.2f", gradeAnalysisData.overallGPA),
-                        color: ColorUtil.dynamicColor(point: gradeAnalysisData.overallGPA)
+                        value: String(format: "%.2f", statistics.gpa),
+                        color: ColorUtil.dynamicColor(point: statistics.gpa)
                     )
                 }
             }
@@ -156,7 +152,7 @@ struct GradeAnalysisContent: View {
     // MARK: - Semester Analysis Section
 
     @ViewBuilder
-    private func semesterAnalysisSection(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
+    private func semesterAnalysisSection(_ statistics: GradeStatistics, isShareable: Bool = false) -> some View {
         VStack(spacing: 30) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
@@ -176,23 +172,23 @@ struct GradeAnalysisContent: View {
                 .padding(.horizontal)
 
                 if selectedChartType == .averageGrade {
-                    Chart(gradeAnalysisData.semesterAverageGrades, id: \.semester) { item in
+                    Chart(statistics.semesters, id: \.semester) { item in
                         LineMark(
                             x: .value("学期", item.semester),
-                            y: .value("平均成绩", item.average)
+                            y: .value("平均成绩", item.averageGrade)
                         )
-                        .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
+                        .foregroundStyle(ColorUtil.dynamicColor(grade: item.averageGrade))
                         .lineStyle(StrokeStyle(lineWidth: 3))
                         PointMark(
                             x: .value("学期", item.semester),
-                            y: .value("平均成绩", item.average)
+                            y: .value("平均成绩", item.averageGrade)
                         )
-                        .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
+                        .foregroundStyle(ColorUtil.dynamicColor(grade: item.averageGrade))
                         .annotation(position: .top) {
-                            Text(String(format: "%.1f", item.average))
+                            Text(String(format: "%.1f", item.averageGrade))
                                 .font(.system(size: 10))
                                 .padding(4)
-                                .background(ColorUtil.dynamicColor(grade: item.average).opacity(0.2))
+                                .background(ColorUtil.dynamicColor(grade: item.averageGrade).opacity(0.2))
                                 .cornerRadius(4)
                         }
                     }
@@ -202,7 +198,7 @@ struct GradeAnalysisContent: View {
                     .frame(height: 250)
                     .padding()
                 } else {
-                    Chart(gradeAnalysisData.semesterGPAs, id: \.semester) { item in
+                    Chart(statistics.semesters, id: \.semester) { item in
                         LineMark(
                             x: .value("学期", item.semester),
                             y: .value("GPA", item.gpa)
@@ -247,7 +243,7 @@ struct GradeAnalysisContent: View {
                 }
                 .padding(.horizontal)
 
-                Chart(gradeAnalysisData.gradePointDistribution, id: \.gradePoint) { item in
+                Chart(statistics.gradePointDistribution, id: \.gradePoint) { item in
                     BarMark(
                         x: .value(
                             selectedDistributionChartType == .gradePoint ? "绩点" : "成绩段",
@@ -285,10 +281,10 @@ struct GradeAnalysisContent: View {
     // MARK: - Analysis Content
 
     @ViewBuilder
-    private func analysisContent(_ gradeAnalysisData: GradeAnalysisData, isShareable: Bool = false) -> some View {
+    private func analysisContent(_ statistics: GradeStatistics, isShareable: Bool = false) -> some View {
         VStack(spacing: 20) {
-            summaryCard(gradeAnalysisData)
-            semesterAnalysisSection(gradeAnalysisData, isShareable: isShareable)
+            summaryCard(statistics)
+            semesterAnalysisSection(statistics, isShareable: isShareable)
         }
     }
 

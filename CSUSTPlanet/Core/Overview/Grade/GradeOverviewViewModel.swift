@@ -40,9 +40,9 @@ final class GradeOverviewViewModel {
             .store(in: &cancellables)
     }
 
-    var gradeAnalysis: GradeAnalysisData? {
+    var gradeAnalysis: GradeStatistics? {
         guard let courseGrades = gradeAnalysisData?.value else { return nil }
-        return GradeAnalysisData.fromCourseGrades(courseGrades)
+        return GradeStatistics(courseGrades: courseGrades)
     }
 
     func loadGrades() async {

@@ -18,8 +18,8 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
     func snapshot(for configuration: GradeAnalysisAppIntent, in context: Context) async -> GradeAnalysisEntry {
         if context.isPreview {
             return .mockEntry(configuration: configuration)
-        } else if let gradeAnalysis = MMKVHelper.CourseGrades.cache {
-            return .init(date: .now, configuration: configuration, data: GradeAnalysisData.fromCourseGrades(gradeAnalysis.value), lastUpdated: gradeAnalysis.cachedAt)
+        } else if let cache = MMKVHelper.CourseGrades.cache {
+            return .init(date: .now, configuration: configuration, data: GradeStatistics(courseGrades: cache.value), lastUpdated: cache.cachedAt)
         } else {
             return .mockEntry(configuration: configuration)
         }
@@ -50,7 +50,7 @@ struct GradeAnalysisProvider: AppIntentTimelineProvider {
                 GradeAnalysisEntry(
                     date: .now,
                     configuration: configuration,
-                    data: GradeAnalysisData.fromCourseGrades(cache.value),
+                    data: GradeStatistics(courseGrades: cache.value),
                     lastUpdated: cache.cachedAt
                 )
             ],

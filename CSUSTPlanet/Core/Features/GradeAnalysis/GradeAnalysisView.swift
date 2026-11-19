@@ -18,9 +18,9 @@ struct GradeAnalysisView: View {
 
     @State private var isInitial: Bool = true
 
-    private var analysisData: GradeAnalysisData? {
+    private var analysisData: GradeStatistics? {
         guard let courseGrades = courseGradesData?.value else { return nil }
-        return GradeAnalysisData.fromCourseGrades(courseGrades)
+        return GradeStatistics(courseGrades: courseGrades)
     }
 
     private var canShare: Bool {

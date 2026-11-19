@@ -23,21 +23,9 @@ struct GradeQueryContent: View {
         return grouped.keys.sorted(by: >).map { (semester: $0, grades: grouped[$0] ?? []) }
     }
 
-    private var gradeAnalysis: GradeAnalysisData? {
+    private var selectedGradeAnalysis: GradeStatistics? {
         guard let grades else { return nil }
-
-        if isSelectionMode {
-            return GradeAnalysisData.fromCourseGrades(grades.filter { selectedCourseIDs.contains($0.courseID) })
-        }
-        return GradeAnalysisData.fromCourseGrades(grades)
-    }
-
-    private var semesterGPAs: [String: Double] {
-        Dictionary(grouping: grades ?? [], by: { $0.semester }).reduce(into: [:]) { result, entry in
-            let totalCredits = entry.value.reduce(0) { $0 + $1.credit }
-            let totalGradePoints = entry.value.reduce(0) { $0 + $1.gradePoint * $1.credit }
-            result[entry.key] = totalCredits > 0 ? totalGradePoints / totalCredits : 0.0
-        }
+        return GradeStatistics(courseGrades: grades.filter { selectedCourseIDs.contains($0.courseID) })
     }
 
     private var gradeCount: Int {
@@ -60,6 +48,9 @@ struct GradeQueryContent: View {
     let onExportGrades: () -> Void
 
     var body: some View {
+        let fullGradeAnalysis = grades.map { GradeStatistics(courseGrades: $0) }
+        let semesterGPAs = Dictionary(uniqueKeysWithValues: (fullGradeAnalysis?.semesters ?? []).map { ($0.semester, $0.gpa) })
+
         Group {
             if !groupedFilteredGrades.isEmpty {
                 CustomScrollView {
@@ -82,7 +73,7 @@ struct GradeQueryContent: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .safeAreaInset(edge: .top) {
-            GradeQueryStatsSection(analysis: gradeAnalysis, isLoading: isLoading)
+            GradeQueryStatsSection(analysis: isSelectionMode ? selectedGradeAnalysis : fullGradeAnalysis, isLoading: isLoading)
         }
         #if os(iOS)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜索课程")

@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2025/7/22.
 //
 
+import CSUSTKit
 import Charts
 import SwiftUI
 import WidgetKit
@@ -65,7 +66,7 @@ struct GradeAnalysisEntryView: View {
     // MARK: - Content View
 
     @ViewBuilder
-    func contentView(configuration: GradeAnalysisAppIntent, data: GradeAnalysisData, lastUpdated: Date) -> some View {
+    func contentView(configuration: GradeAnalysisAppIntent, data: GradeStatistics, lastUpdated: Date) -> some View {
         if family == .systemSmall || family == .systemMedium {
             HStack(spacing: 2) {
                 VStack(spacing: 0) {
@@ -112,17 +113,17 @@ struct GradeAnalysisEntryView: View {
     // MARK: - Stats View
 
     @ViewBuilder
-    func statsView(data: GradeAnalysisData, lastUpdated: Date) -> some View {
+    func statsView(data: GradeStatistics, lastUpdated: Date) -> some View {
         if family == .systemSmall || family == .systemMedium {
             VStack(alignment: .center, spacing: 0) {
                 HStack(alignment: .center, spacing: 0) {
-                    statItemView(title: "GPA", value: String(format: "%.2f", data.overallGPA), color: ColorUtil.dynamicColor(point: data.overallGPA))
+                    statItemView(title: "GPA", value: String(format: "%.2f", data.gpa), color: ColorUtil.dynamicColor(point: data.gpa))
                     statItemView(title: "总学分", value: String(format: "%.1f", data.totalCredits), color: .blue)
                     statItemView(title: "课程数", value: "\(data.totalCourses)", color: .purple)
                 }
                 .frame(maxHeight: .infinity)
                 HStack(alignment: .center, spacing: 0) {
-                    statItemView(title: "平均成绩", value: String(format: "%.2f", data.overallAverageGrade), color: ColorUtil.dynamicColor(grade: data.overallAverageGrade))
+                    statItemView(title: "平均成绩", value: String(format: "%.2f", data.averageGrade), color: ColorUtil.dynamicColor(grade: data.averageGrade))
                     statItemView(title: "加权平均", value: String(format: "%.2f", data.weightedAverageGrade), color: ColorUtil.dynamicColor(grade: data.weightedAverageGrade))
                 }
                 .frame(maxHeight: .infinity)
@@ -135,8 +136,8 @@ struct GradeAnalysisEntryView: View {
             }
         } else {
             HStack(spacing: 0) {
-                statItemView(title: "GPA", value: String(format: "%.2f", data.overallGPA), color: ColorUtil.dynamicColor(point: data.overallGPA))
-                statItemView(title: "平均成绩", value: String(format: "%.2f", data.overallAverageGrade), color: ColorUtil.dynamicColor(grade: data.overallAverageGrade))
+                statItemView(title: "GPA", value: String(format: "%.2f", data.gpa), color: ColorUtil.dynamicColor(point: data.gpa))
+                statItemView(title: "平均成绩", value: String(format: "%.2f", data.averageGrade), color: ColorUtil.dynamicColor(grade: data.averageGrade))
                 statItemView(title: "加权平均", value: String(format: "%.2f", data.weightedAverageGrade), color: ColorUtil.dynamicColor(grade: data.weightedAverageGrade))
                 statItemView(title: "总学分", value: String(format: "%.1f", data.totalCredits), color: .blue)
                 statItemView(title: "课程数", value: "\(data.totalCourses)", color: .purple)
@@ -165,41 +166,41 @@ struct GradeAnalysisEntryView: View {
     // MARK: - Chart View
 
     @ViewBuilder
-    func chartView(data: GradeAnalysisData, configuration: GradeAnalysisAppIntent) -> some View {
+    func chartView(data: GradeStatistics, configuration: GradeAnalysisAppIntent) -> some View {
         switch configuration.chartType {
         case .semesterAverage:
-            let min = data.semesterAverageGrades.min(by: { $0.average < $1.average })?.average ?? 0
-            let max = data.semesterAverageGrades.max(by: { $0.average < $1.average })?.average ?? 0
+            let min = data.semesters.min(by: { $0.averageGrade < $1.averageGrade })?.averageGrade ?? 0
+            let max = data.semesters.max(by: { $0.averageGrade < $1.averageGrade })?.averageGrade ?? 0
             let displayMin = min - 5 > 0 ? min - 5 : 0
             let displayMax = max + 5
-            Chart(data.semesterAverageGrades, id: \.semester) { item in
+            Chart(data.semesters, id: \.semester) { item in
                 LineMark(
                     x: .value("学期", item.semester),
-                    y: .value("平均成绩", item.average)
+                    y: .value("平均成绩", item.averageGrade)
                 )
-                .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
+                .foregroundStyle(ColorUtil.dynamicColor(grade: item.averageGrade))
                 .lineStyle(StrokeStyle(lineWidth: 3))
                 PointMark(
                     x: .value("学期", item.semester),
-                    y: .value("平均成绩", item.average)
+                    y: .value("平均成绩", item.averageGrade)
                 )
-                .foregroundStyle(ColorUtil.dynamicColor(grade: item.average))
+                .foregroundStyle(ColorUtil.dynamicColor(grade: item.averageGrade))
                 .annotation(position: .top) {
-                    Text(String(format: "%.1f", item.average))
+                    Text(String(format: "%.1f", item.averageGrade))
                         .font(.system(size: 10))
                         .padding(4)
-                        .background(ColorUtil.dynamicColor(grade: item.average).opacity(0.2))
+                        .background(ColorUtil.dynamicColor(grade: item.averageGrade).opacity(0.2))
                         .cornerRadius(4)
                 }
             }
             .chartXAxis(family == .systemMedium ? .hidden : .automatic)
             .chartYScale(domain: displayMin...displayMax)
         case .semesterGPA:
-            let min = data.semesterGPAs.min(by: { $0.gpa < $1.gpa })?.gpa ?? 0
-            let max = data.semesterGPAs.max(by: { $0.gpa < $1.gpa })?.gpa ?? 0
+            let min = data.semesters.min(by: { $0.gpa < $1.gpa })?.gpa ?? 0
+            let max = data.semesters.max(by: { $0.gpa < $1.gpa })?.gpa ?? 0
             let displayMin = min - 0.5 > 0 ? min - 0.5 : 0
             let displayMax = max + 0.5
-            Chart(data.semesterGPAs, id: \.semester) { item in
+            Chart(data.semesters, id: \.semester) { item in
                 LineMark(
                     x: .value("学期", item.semester),
                     y: .value("GPA", item.gpa)
