@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require 'fileutils'
+require 'plist'
+require 'tmpdir'
+
 default_platform(:ios)
 
 def load_api_key_if_present
@@ -66,34 +70,94 @@ def add_mac_installer_options(params, platform_name, cert_type)
   params[:additional_cert_types] = ['mac_installer_distribution']
 end
 
-def build_and_upload_for_platform(platform_name:, destination:, app_store_platform:, artifact:)
+def release_export_options(platform_name)
   provisioning_profile_suffix = platform_name == 'macos' ? ' macos' : ''
-  provisioning_profiles = {
-    ENV['APP_IDENTIFIER'] => "match AppStore #{ENV['APP_IDENTIFIER']}#{provisioning_profile_suffix}",
-    ENV['WIDGET_IDENTIFIER'] => "match AppStore #{ENV['WIDGET_IDENTIFIER']}#{provisioning_profile_suffix}"
-  }
 
-  build_app(
-    project: File.expand_path('../CSUSTPlanet.xcodeproj', __dir__),
-    scheme: 'CSUSTPlanet',
-    configuration: 'Release',
-    destination: destination,
-    sdk: platform_name == 'macos' ? 'macosx' : nil,
-    export_method: 'app-store',
-    export_options: {
-      provisioningProfiles: provisioning_profiles
-    },
-    output_directory: File.expand_path("builds/#{platform_name}", __dir__)
+  provisioning_profiles = %w[APP_IDENTIFIER WIDGET_IDENTIFIER].to_h do |variable|
+    identifier = ENV[variable]
+    UI.user_error!("#{variable} is required for Release signing") if identifier.to_s.strip.empty?
+
+    [identifier, "match AppStore #{identifier}#{provisioning_profile_suffix}"]
+  end
+
+  {
+    'method' => 'app-store-connect',
+    'destination' => 'export',
+    'signingStyle' => 'manual',
+    'provisioningProfiles' => provisioning_profiles
+  }
+end
+
+def build_release_for_platform(platform_name:, destination:, artifact_extension:, sdk: nil)
+  export_options = release_export_options(platform_name)
+  output_directory = File.expand_path("builds/#{platform_name}", __dir__)
+  FileUtils.mkdir_p(output_directory)
+  build_directory = Dir.mktmpdir('release-', output_directory)
+  archive_path = File.join(build_directory, 'CSUSTPlanet.xcarchive')
+  export_directory = File.join(build_directory, 'export')
+  export_options_path = File.join(build_directory, 'ExportOptions.plist')
+
+  archive_release(archive_path, destination: destination, sdk: sdk)
+  export_options.merge!(mac_release_certificates(archive_path)) if platform_name == 'macos'
+  File.write(export_options_path, Plist::Emit.dump(export_options))
+  export_release(archive_path, export_directory, export_options_path, artifact_extension: artifact_extension)
+end
+
+def mac_release_certificates(archive_path)
+  archive_info = Plist.parse_xml(File.join(archive_path, 'Info.plist'))
+  signing_identity = archive_info&.dig('ApplicationProperties', 'SigningIdentity')
+  team_id = archive_info&.dig('ApplicationProperties', 'Team')
+  if signing_identity.to_s.empty? || team_id.to_s.empty?
+    UI.user_error!("Missing application signing identity or team in #{archive_path}")
+  end
+
+  {
+    'signingCertificate' => signing_identity,
+    'installerSigningCertificate' => mac_installer_certificate(team_id)
+  }
+end
+
+def mac_installer_certificate(team_id)
+  identities = sh('security', 'find-identity', '-v', '-p', 'basic', log: false)
+  installers = identities.scan(/^\s*\d+\)\s+([0-9a-f]{40}) "3rd Party Mac Developer Installer: ([^"]+)"$/i)
+  installer = installers.find { |_, name| name == team_id || name.end_with?(" (#{team_id})") }
+  UI.user_error!("No Mac Installer Distribution signing identity found for team #{team_id}") unless installer
+
+  installer.first
+end
+
+def archive_release(archive_path, destination:, sdk:)
+  project_path = File.expand_path('../CSUSTPlanet.xcodeproj', __dir__)
+  archive_command = [
+    'xcodebuild', '-project', project_path, '-scheme', 'CSUSTPlanet',
+    '-configuration', 'Release', '-destination', destination,
+    '-archivePath', archive_path, '-hideShellScriptEnvironment'
+  ]
+  archive_command += ['-sdk', sdk] if sdk
+  sh(*archive_command, 'archive')
+end
+
+def export_release(archive_path, export_directory, export_options_path, artifact_extension:)
+  sh(
+    'xcodebuild', '-exportArchive', '-archivePath', archive_path,
+    '-exportPath', export_directory, '-exportOptionsPlist', export_options_path
   )
 
-  artifact_path = lane_context[
-    artifact == :ipa ? SharedValues::IPA_OUTPUT_PATH : SharedValues::PKG_OUTPUT_PATH
-  ]
+  artifacts = Dir.glob(File.join(export_directory, "*.#{artifact_extension}"))
+  unless artifacts.one?
+    UI.user_error!("Expected one .#{artifact_extension} in #{export_directory}, found #{artifacts.size}")
+  end
 
+  artifact_path = artifacts.first
+  UI.success("Exported #{artifact_path}")
+  artifact_path
+end
+
+def upload_release(artifact_path, platform:, artifact:)
   upload_to_app_store(
     api_key: load_api_key_if_present,
     app_identifier: ENV['APP_IDENTIFIER'],
-    platform: app_store_platform,
+    platform: platform,
     artifact => artifact_path,
     skip_metadata: true,
     skip_screenshots: true,
@@ -115,14 +179,14 @@ platform :ios do
   end
 
   desc '构建 iOS 正式包并上传到 App Store Connect'
-  lane :release do
+  lane :release do |options|
     setup_ci_keychain
-    build_and_upload_for_platform(
+    artifact_path = build_release_for_platform(
       platform_name: 'ios',
       destination: 'generic/platform=iOS',
-      app_store_platform: 'ios',
-      artifact: :ipa
+      artifact_extension: 'ipa'
     )
+    upload_release(artifact_path, platform: 'ios', artifact: :ipa) unless options[:skip_upload]
   end
 end
 
@@ -139,13 +203,14 @@ platform :mac do
   end
 
   desc '构建 macOS 正式包并上传到 App Store Connect'
-  lane :release do
+  lane :release do |options|
     setup_ci_keychain
-    build_and_upload_for_platform(
+    artifact_path = build_release_for_platform(
       platform_name: 'macos',
       destination: 'generic/platform=macOS',
-      app_store_platform: 'osx',
-      artifact: :pkg
+      artifact_extension: 'pkg',
+      sdk: 'macosx'
     )
+    upload_release(artifact_path, platform: 'osx', artifact: :pkg) unless options[:skip_upload]
   end
 end
