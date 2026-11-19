@@ -165,16 +165,6 @@ struct ScheduleContent: View {
             selectedDayID = nil
             hasPerformedInitialScroll = false
         }
-        .onAppear {
-            if usesInspector {
-                isFilterPresented = true
-            }
-        }
-        .onChange(of: usesInspector) { _, usesInspector in
-            if usesInspector {
-                isFilterPresented = true
-            }
-        }
         .apply { view in
             if usesInspector {
                 view.inspector(isPresented: $isFilterPresented) {
