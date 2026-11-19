@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 struct CourseDetailView: View {
-    let course: MoocHelper.Course
+    let params: MoocCourseDetailParams
 
     @State private var assignments: [MoocHelper.Assignment] = []
 
@@ -23,6 +23,8 @@ struct CourseDetailView: View {
     // MARK: - Body
 
     var body: some View {
+        let course = params.course
+
         CourseDetailContent(
             course: course,
             assignments: assignments,

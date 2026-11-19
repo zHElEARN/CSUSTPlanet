@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct GradeDetailContent: View {
-    let courseGrade: EduHelper.CourseGrade
+    let params: GradeDetailParams
     let detail: EduHelper.GradeDetail?
 
     let isLoadingDetail: Bool
@@ -21,9 +21,9 @@ struct GradeDetailContent: View {
     var body: some View {
         CustomScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                GradeDetailScoreSummary(courseGrade: courseGrade)
+                GradeDetailScoreSummary(params: params)
                 GradeDetailDistributionSection(detail: detail)
-                GradeDetailInfoSection(courseGrade: courseGrade)
+                GradeDetailInfoSection(params: params)
             }
             .padding()
         }

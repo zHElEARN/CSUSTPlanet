@@ -5,7 +5,6 @@
 //  Created by Zachary Liu on 2026/4/12.
 //
 
-import CSUSTKit
 import Foundation
 import SwiftUI
 
@@ -139,25 +138,25 @@ enum AppRoute: Hashable, RouteNode {
         }
 
         enum GradeQueryRoute: Hashable, RouteNode {
-            case detail(EduHelper.CourseGrade)
+            case detail(GradeDetailParams)
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .detail(let courseGrade):
-                    GradeDetailView(courseGrade: courseGrade)
+                case .detail(let params):
+                    GradeDetailView(params: params)
                 }
             }
         }
 
         enum CoursesRoute: Hashable, RouteNode {
-            case detail(MoocHelper.Course)
+            case detail(MoocCourseDetailParams)
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .detail(let course):
-                    CourseDetailView(course: course)
+                case .detail(let params):
+                    CourseDetailView(params: params)
                 }
             }
         }

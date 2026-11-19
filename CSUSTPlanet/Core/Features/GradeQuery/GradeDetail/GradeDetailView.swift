@@ -9,7 +9,7 @@ import CSUSTKit
 import SwiftUI
 
 struct GradeDetailView: View {
-    let courseGrade: EduHelper.CourseGrade
+    let params: GradeDetailParams
 
     @State private var detail: EduHelper.GradeDetail?
     @State private var isLoadingDetail = false
@@ -17,7 +17,7 @@ struct GradeDetailView: View {
 
     var body: some View {
         GradeDetailContent(
-            courseGrade: courseGrade,
+            params: params,
             detail: detail,
             isLoadingDetail: isLoadingDetail,
             errorToast: $errorToast,
@@ -37,7 +37,7 @@ struct GradeDetailView: View {
 
         do {
             detail = try await AuthManager.shared.withAuthRetry(system: .edu) {
-                try await AuthManager.shared.eduHelper.getGradeDetail(url: courseGrade.gradeDetailURL)
+                try await AuthManager.shared.eduHelper.getGradeDetail(url: params.gradeDetailURL)
             }
         } catch {
             errorToast.show(message: error.localizedDescription)
