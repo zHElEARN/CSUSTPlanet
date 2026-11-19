@@ -5,6 +5,7 @@
 //  Created by Zachary Liu on 2026/8/2.
 //
 
+import CSUSTKit
 import Combine
 import Foundation
 import GRDB
@@ -38,7 +39,7 @@ private struct CourseScheduleManageContent: View {
     @State private var isEditingScheduleInfo: Bool = false
     @State private var editableName: String = ""
     @State private var editableStartDate: Date = .now
-    @State private var editableWeekCount: Int = 20
+    @State private var editableWeekCount: Int = ScheduleUtils.defaultWeekCount
     @State private var editableRemarks: String = ""
 
     var body: some View {
@@ -145,6 +146,7 @@ private struct CourseScheduleManageContent: View {
                         .multilineTextAlignment(.trailing)
                 }
                 DatePicker("开学日期", selection: $editableStartDate, displayedComponents: .date)
+                    .environment(\.timeZone, CourseSchedulePresentation.calendar.timeZone)
                 Stepper("总周数：\(editableWeekCount) 周", value: $editableWeekCount, in: 1...40)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("备注")
@@ -155,7 +157,7 @@ private struct CourseScheduleManageContent: View {
                 }
             } else {
                 LabeledContent("名称", value: schedule.name)
-                LabeledContent("开学日期", value: CourseScheduleUtil.dateFormatter.string(from: schedule.semesterStartDate))
+                LabeledContent("开学日期", value: CourseSchedulePresentation.dateFormatter.string(from: schedule.semesterStartDate))
                 LabeledContent("总周数", value: "\(schedule.weekCount) 周")
                 VStack(alignment: .leading, spacing: 4) {
                     Text("备注")

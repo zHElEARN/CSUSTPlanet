@@ -23,7 +23,7 @@ struct CourseScheduleControlBar: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("今日 \(CourseScheduleUtil.dateFormatter.string(from: .now))")
+                Text("今日 \(CourseSchedulePresentation.dateFormatter.string(from: .now))")
                     .font(layoutConfig.isWideSize ? .title3 : .headline)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)

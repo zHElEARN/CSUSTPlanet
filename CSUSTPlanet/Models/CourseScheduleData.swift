@@ -7,18 +7,6 @@
 
 import CSUSTKit
 import Foundation
-import SwiftUI
-
-struct CourseDisplayInfo: Identifiable, Codable {
-    var id = UUID()
-    let course: EduHelper.Course
-    let session: EduHelper.ScheduleSession
-
-    init(course: EduHelper.Course, session: EduHelper.ScheduleSession) {
-        self.course = course
-        self.session = session
-    }
-}
 
 struct CourseScheduleData: Codable, Equatable {
     var semester: String?
@@ -27,6 +15,12 @@ struct CourseScheduleData: Codable, Equatable {
     var remarks: [String]
     /// 课表总周数，nil 表示默认 20 周（学校课表）
     var weekCount: Int?
+
+    var resolvedWeekCount: Int { weekCount ?? ScheduleUtils.defaultWeekCount }
+
+    func semesterStatus(at date: Date) -> SemesterStatus {
+        ScheduleUtils.semesterStatus(semesterStartDate: semesterStartDate, at: date, weekCount: resolvedWeekCount)
+    }
 
     init(
         semester: String?,

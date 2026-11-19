@@ -86,17 +86,12 @@ struct TodayCoursesEntry: TimelineEntry {
         date: String = "2025-09-17 04:00",
         previewCourses: [EduHelper.Course] = defaultPreviewCourses
     ) -> TodayCoursesEntry {
-        let semesterDateFormatter = DateFormatter()
-        semesterDateFormatter.dateFormat = "yyyy-MM-dd"
-        let semesterStartDate = semesterDateFormatter.date(from: semesterStartDate) ?? .now
+        let semesterStartDate = CourseSchedulePresentation.dateFormatter.date(from: semesterStartDate) ?? .now
 
         let data = CourseScheduleData(semester: semester, semesterStartDate: semesterStartDate, courses: previewCourses, remarks: [])
 
-        let timeDateFormatter = DateFormatter()
-        timeDateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-
         return TodayCoursesEntry(
-            date: timeDateFormatter.date(from: date) ?? .now,
+            date: CourseSchedulePresentation.dateTimeFormatter.date(from: date) ?? .now,
             data: data,
             scheduleName: semester
         )

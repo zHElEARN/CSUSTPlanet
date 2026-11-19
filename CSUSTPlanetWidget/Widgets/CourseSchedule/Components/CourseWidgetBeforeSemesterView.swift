@@ -9,24 +9,22 @@ import SwiftUI
 
 struct CourseWidgetBeforeSemesterView: View {
     let date: Date
-    let data: CourseScheduleData
+    let daysUntilStart: Int
 
     var body: some View {
         VStack(spacing: 4) {
-            Text(CourseScheduleUtil.semesterNotStartedText)
+            Text(CourseSchedulePresentation.semesterNotStartedText)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.primary)
-            if let daysUntilStart = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: date) {
-                if daysUntilStart > CourseScheduleUtil.semesterStartThreshold {
-                    Text(CourseScheduleUtil.getHolidayMessage(for: date))
-                        .multilineTextAlignment(.center)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                } else {
-                    Text(CourseScheduleUtil.getSemesterCountdownText(days: daysUntilStart))
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
+            if daysUntilStart > CourseSchedulePresentation.semesterStartThreshold {
+                Text(CourseSchedulePresentation.holidayMessage(for: date))
+                    .multilineTextAlignment(.center)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
+            } else {
+                Text(CourseSchedulePresentation.semesterCountdownText(days: daysUntilStart))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
             }
         }
     }

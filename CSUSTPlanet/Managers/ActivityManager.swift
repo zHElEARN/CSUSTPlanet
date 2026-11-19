@@ -8,6 +8,7 @@
 #if os(iOS)
 
 import ActivityKit
+import CSUSTKit
 import Combine
 import Foundation
 import OSLog
@@ -66,17 +67,19 @@ final class ActivityManager {
             return
         }
 
-        if let courseDisplayInfo = CourseScheduleUtil.getRelevantCourseForStatus(
+        if let occurrence = ScheduleUtils.relevantCourse(
+            at: currentDate,
             semesterStartDate: data.semesterStartDate,
-            now: currentDate,
             courses: data.courses,
-            weekCount: data.weekCount
-        ), let courseDates = getCourseDates(from: courseDisplayInfo.session.startSection, to: courseDisplayInfo.session.endSection, now: currentDate) {
-
+            weekCount: data.resolvedWeekCount
+        ),
+            let weekStart = ScheduleDateUtil.calendar.dateInterval(of: .weekOfYear, for: currentDate)?.start,
+            let courseDates = ScheduleUtils.timeRange(of: occurrence.session, inWeek: 1, semesterStartDate: weekStart)
+        {
             let attributes = CourseStatusWidgetAttributes(
-                courseName: courseDisplayInfo.course.courseName,
-                teacher: courseDisplayInfo.course.teacher,
-                classroom: courseDisplayInfo.session.classroom,
+                courseName: occurrence.course.courseName,
+                teacher: occurrence.course.teacher,
+                classroom: occurrence.session.classroom,
                 startDate: courseDates.startDate,
                 endDate: courseDates.endDate
             )
@@ -130,29 +133,6 @@ final class ActivityManager {
                 Logger.activityManager.info("实时活动已停止")
             }
         }
-    }
-
-    private func getCourseDates(from startSection: Int, to endSection: Int, now: Date) -> (startDate: Date, endDate: Date)? {
-        let calendar = Calendar.current
-        let startIndex = startSection - 1
-        let endIndex = endSection - 1
-        guard startIndex >= 0, startIndex < CourseScheduleUtil.sectionTimeString.count,
-            endIndex >= 0, endIndex < CourseScheduleUtil.sectionTimeString.count
-        else { return nil }
-        let startTimeString = CourseScheduleUtil.sectionTimeString[startIndex].0
-        let endTimeString = CourseScheduleUtil.sectionTimeString[endIndex].1
-        let startComponents = startTimeString.split(separator: ":").compactMap { Int($0) }
-        guard startComponents.count == 2 else { return nil }
-        let startHour = startComponents[0]
-        let startMinute = startComponents[1]
-        let endComponents = endTimeString.split(separator: ":").compactMap { Int($0) }
-        guard endComponents.count == 2 else { return nil }
-        let endHour = endComponents[0]
-        let endMinute = endComponents[1]
-        guard let startDate = calendar.date(bySettingHour: startHour, minute: startMinute, second: 0, of: now),
-            let endDate = calendar.date(bySettingHour: endHour, minute: endMinute, second: 0, of: now)
-        else { return nil }
-        return (startDate, endDate)
     }
 }
 

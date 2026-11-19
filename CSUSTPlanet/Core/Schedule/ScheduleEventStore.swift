@@ -200,7 +200,7 @@ final class ScheduleEventStore {
     private static func makeCourseEvents(from schedule: ActiveCourseSchedule?) -> [ScheduleEvent] {
         guard let schedule, let data = schedule.data else { return [] }
 
-        let weekCount = CourseScheduleUtil.resolveWeekCount(data.weekCount)
+        let weekCount = data.resolvedWeekCount
         guard weekCount > 0 else { return [] }
 
         let scheduleKey: String
@@ -222,15 +222,6 @@ final class ScheduleEventStore {
             ].joined(separator: ":")
 
             for (sessionIndex, session) in course.sessions.enumerated() {
-                let sectionCount = CourseScheduleUtil.sectionTimeString.count
-                guard
-                    session.startSection >= 1,
-                    session.startSection <= session.endSection,
-                    session.endSection <= sectionCount
-                else {
-                    continue
-                }
-
                 let sessionKey = [
                     String(sessionIndex),
                     String(session.dayOfWeek.rawValue),
@@ -241,11 +232,9 @@ final class ScheduleEventStore {
                 ].joined(separator: ":")
 
                 for week in Set(session.weeks).filter({ (1...weekCount).contains($0) }).sorted() {
-                    let dates = CourseScheduleUtil.getCourseEventDates(
-                        session: session,
-                        week: week,
-                        semesterStartDate: data.semesterStartDate
-                    )
+                    guard let dates = ScheduleUtils.timeRange(of: session, inWeek: week, semesterStartDate: data.semesterStartDate) else {
+                        continue
+                    }
 
                     let details = [
                         detail("课表", schedule.scheduleName),

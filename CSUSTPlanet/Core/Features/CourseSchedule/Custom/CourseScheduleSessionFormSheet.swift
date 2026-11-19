@@ -37,14 +37,14 @@ private struct CourseScheduleSessionFormContent: View {
                 .pickerStyle(.menu)
 
                 Picker("开始节次", selection: $startSection) {
-                    ForEach(1...10, id: \.self) { section in
+                    ForEach(1...ScheduleUtils.sectionTimeStrings.count, id: \.self) { section in
                         Text("第 \(section) 节").tag(section)
                     }
                 }
                 .pickerStyle(.menu)
 
                 Picker("结束节次", selection: $endSection) {
-                    ForEach(1...10, id: \.self) { section in
+                    ForEach(1...ScheduleUtils.sectionTimeStrings.count, id: \.self) { section in
                         Text("第 \(section) 节").tag(section)
                     }
                 }
@@ -98,7 +98,7 @@ private struct CourseScheduleSessionFormContent: View {
         guard let day = DayOfWeek(rawValue: dayOfWeek) else {
             return "未知"
         }
-        return "周\(day.stringValue)"
+        return "周\(day.chineseShortString)"
     }
 }
 

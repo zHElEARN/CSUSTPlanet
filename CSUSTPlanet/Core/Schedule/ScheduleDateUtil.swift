@@ -5,13 +5,14 @@
 //  Created by Codex on 2026/9/4.
 //
 
+import CSUSTKit
 import Foundation
 
 enum ScheduleDateUtil {
     static let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "zh_CN")
-        calendar.timeZone = CourseScheduleUtil.courseTimeZone
+        calendar.timeZone = CourseSchedulePresentation.calendar.timeZone
         calendar.firstWeekday = 1
         calendar.minimumDaysInFirstWeek = 1
         return calendar
@@ -32,14 +33,8 @@ enum ScheduleDateUtil {
     }
 
     static func datesForWeek(containing date: Date) -> [Date] {
-        let day = startOfDay(for: date)
-        let weekday = calendar.component(.weekday, from: day)
-        let offset = (weekday - calendar.firstWeekday + 7) % 7
-        let firstDate = calendar.date(byAdding: .day, value: -offset, to: day)!
-
-        return (0..<7).map { offset in
-            calendar.date(byAdding: .day, value: offset, to: firstDate)!
-        }
+        guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: date)?.start else { return [] }
+        return ScheduleUtils.dates(ofWeek: 1, semesterStartDate: weekStart)
     }
 
     static func relativeDayTitle(for date: Date, referenceDate: Date) -> String? {

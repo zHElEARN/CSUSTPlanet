@@ -31,6 +31,7 @@ struct CourseScheduleCreateContent: View {
             if !isImportFromSchool {
                 Section {
                     DatePicker("开学日期", selection: $semesterStartDate, displayedComponents: .date)
+                        .environment(\.timeZone, CourseSchedulePresentation.calendar.timeZone)
                 } header: {
                     Text("开学日期")
                 } footer: {
@@ -41,7 +42,7 @@ struct CourseScheduleCreateContent: View {
                 }
             } else {
                 Section {
-                    LabeledContent("开学日期", value: CourseScheduleUtil.dateFormatter.string(from: defaultStartDate ?? .now))
+                    LabeledContent("开学日期", value: CourseSchedulePresentation.dateFormatter.string(from: defaultStartDate ?? .now))
                 } footer: {
                     Text("开学日期取自学校课表")
                 }

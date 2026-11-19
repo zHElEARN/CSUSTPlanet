@@ -43,14 +43,14 @@ private struct CourseScheduleSessionSection: View {
                     .pickerStyle(.menu)
 
                     Picker("开始节次", selection: $editingStartSection) {
-                        ForEach(1...10, id: \.self) { section in
+                        ForEach(1...ScheduleUtils.sectionTimeStrings.count, id: \.self) { section in
                             Text("第 \(section) 节").tag(section)
                         }
                     }
                     .pickerStyle(.menu)
 
                     Picker("结束节次", selection: $editingEndSection) {
-                        ForEach(1...10, id: \.self) { section in
+                        ForEach(1...ScheduleUtils.sectionTimeStrings.count, id: \.self) { section in
                             Text("第 \(section) 节").tag(section)
                         }
                     }
@@ -158,7 +158,7 @@ private struct CourseScheduleSessionSection: View {
         guard let day = DayOfWeek(rawValue: dayOfWeek) else {
             return "未知"
         }
-        return "周\(day.stringValue)"
+        return "周\(day.chineseShortString)"
     }
 
     private func sessionSubtitle(_ session: CustomSessionGRDB) -> String {
@@ -332,7 +332,7 @@ struct CourseScheduleCourseDetailView: View {
 
     @State private var course: CustomCourseGRDB?
     @State private var sessions: [CustomSessionGRDB] = []
-    @State private var weekCount: Int = CourseScheduleUtil.weekCount
+    @State private var weekCount: Int = ScheduleUtils.defaultWeekCount
     @State private var sessionObserver: (any DatabaseCancellable)?
     @State private var isInitial: Bool = true
 
@@ -428,7 +428,7 @@ struct CourseScheduleCourseDetailView: View {
             let weekCount =
                 try fetchedCourse.flatMap { course in
                     try CustomCourseScheduleGRDB.fetchOne(db, key: course.scheduleId)?.weekCount
-                } ?? CourseScheduleUtil.weekCount
+                } ?? ScheduleUtils.defaultWeekCount
             let sessions =
                 try CustomSessionGRDB
                 .filter(CustomSessionGRDB.Columns.courseId == courseID)

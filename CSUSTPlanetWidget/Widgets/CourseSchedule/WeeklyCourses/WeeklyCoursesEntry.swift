@@ -109,17 +109,12 @@ struct WeeklyCoursesEntry: TimelineEntry {
     let scheduleName: String?
 
     static func mockEntry(semester: String = "2025-2026-1", semesterStartDate: String = "2025-09-07", date: String = "2025-09-21 17:55") -> WeeklyCoursesEntry {
-        let semesterDateFormatter = DateFormatter()
-        semesterDateFormatter.dateFormat = "yyyy-MM-dd"
-        let semesterStartDate = semesterDateFormatter.date(from: semesterStartDate) ?? .now
+        let semesterStartDate = CourseSchedulePresentation.dateFormatter.date(from: semesterStartDate) ?? .now
 
         let data = CourseScheduleData(semester: semester, semesterStartDate: semesterStartDate, courses: courses, remarks: [])
 
-        let timeDateFormatter = DateFormatter()
-        timeDateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-
         return WeeklyCoursesEntry(
-            date: timeDateFormatter.date(from: date) ?? .now,
+            date: CourseSchedulePresentation.dateTimeFormatter.date(from: date) ?? .now,
             data: data,
             scheduleName: semester
         )

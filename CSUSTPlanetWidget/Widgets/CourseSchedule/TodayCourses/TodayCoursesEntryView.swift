@@ -19,13 +19,15 @@ struct TodayCoursesEntryView: View {
     var body: some View {
         Group {
             if let data = entry.data {
-                let dailyCourseDisplayState = resolvedDailyCourseDisplayState(date: entry.date, data: data)
+                let semesterStatus = data.semesterStatus(at: entry.date)
                 VStack(spacing: 0) {
-                    CourseWidgetHeaderView(family: family, title: CourseScheduleUtil.courseScheduleTitle, date: entry.date, data: data, scheduleName: entry.scheduleName)
+                    CourseWidgetHeaderView(
+                        family: family, title: CourseSchedulePresentation.courseScheduleTitle, date: entry.date, data: data, semesterStatus: semesterStatus, scheduleName: entry.scheduleName
+                    )
 
                     Divider().padding(.vertical, 4)
 
-                    contentView(date: entry.date, data: data, dailyCourseDisplayState: dailyCourseDisplayState)
+                    contentView(date: entry.date, data: data, semesterStatus: semesterStatus)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
@@ -39,16 +41,14 @@ struct TodayCoursesEntryView: View {
     // MARK: - Content View
 
     @ViewBuilder
-    func contentView(date: Date, data: CourseScheduleData, dailyCourseDisplayState: DailyCourseDisplayState?) -> some View {
-        switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date, weekCount: data.weekCount) {
-        case .beforeSemester:
-            CourseWidgetBeforeSemesterView(date: date, data: data)
+    func contentView(date: Date, data: CourseScheduleData, semesterStatus: SemesterStatus) -> some View {
+        switch semesterStatus {
+        case .beforeSemester(let days):
+            CourseWidgetBeforeSemesterView(date: date, daysUntilStart: days)
         case .afterSemester:
             CourseWidgetAfterSemesterView()
         case .inSemester:
-            if let dailyCourseDisplayState {
-                inSemesterView(data: data, dailyCourseDisplayState: dailyCourseDisplayState)
-            }
+            inSemesterView(data: data, dailyCourseDisplayState: .resolve(for: data, at: date))
         }
     }
 
@@ -68,10 +68,10 @@ struct TodayCoursesEntryView: View {
                     availableHeight: proxy.size.height,
                     slotCount: displayLimit
                 )
-            case .tomorrowPreview(let reason, let preview):
-                if let preview {
+            case .tomorrowPreview(let reason, let courses):
+                if !courses.isEmpty {
                     tomorrowPreviewView(
-                        preview: preview,
+                        courses: courses,
                         colors: colors,
                         availableHeight: proxy.size.height,
                         displayLimit: displayLimit
@@ -85,7 +85,7 @@ struct TodayCoursesEntryView: View {
 
     @ViewBuilder
     func courseListView(
-        courses: [(course: CourseDisplayInfo, isCurrent: Bool)],
+        courses: [(occurrence: CourseOccurrence, isCurrent: Bool)],
         colors: [String: Color],
         availableHeight: CGFloat,
         slotCount: Int
@@ -94,30 +94,33 @@ struct TodayCoursesEntryView: View {
         let height = max(0, (availableHeight - spacing * CGFloat(max(slotCount - 1, 0))) / CGFloat(max(slotCount, 1)))
 
         VStack(spacing: spacing) {
-            ForEach(courses, id: \.course.id) { course in
-                courseRowView(courseDisplayInfo: course.course, colors: colors, isCurrent: course.isCurrent)
-                    .frame(maxWidth: .infinity, maxHeight: height)
+            ForEach(courses.indices, id: \.self) { index in
+                let (occurrence, isCurrent) = courses[index]
+                if let times = CourseSchedulePresentation.sectionTimes(for: occurrence.session) {
+                    courseRowView(courseDisplayInfo: occurrence, times: times, colors: colors, isCurrent: isCurrent)
+                        .frame(maxWidth: .infinity, maxHeight: height)
+                }
             }
         }
     }
 
     @ViewBuilder
     func tomorrowPreviewView(
-        preview: TomorrowCoursePreview,
+        courses: [CourseOccurrence],
         colors: [String: Color],
         availableHeight: CGFloat,
         displayLimit: Int
     ) -> some View {
-        let visibleCourses = Array(preview.courses.prefix(displayLimit))
+        let visibleCourses = courses.prefix(displayLimit)
         let spacing: CGFloat = family == .systemLarge ? 4 : 3
         let summaryHeight: CGFloat = family == .systemLarge ? 14 : 12
 
         VStack(alignment: .leading, spacing: spacing) {
-            tomorrowSummaryView(courseCount: preview.courses.count)
+            tomorrowSummaryView(courseCount: courses.count)
                 .frame(height: summaryHeight, alignment: .leading)
 
             courseListView(
-                courses: visibleCourses.map { (course: $0, isCurrent: false) },
+                courses: visibleCourses.map { (occurrence: $0, isCurrent: false) },
                 colors: colors,
                 availableHeight: max(0, availableHeight - summaryHeight - spacing),
                 slotCount: displayLimit
@@ -128,7 +131,7 @@ struct TodayCoursesEntryView: View {
     @ViewBuilder
     func tomorrowSummaryView(courseCount: Int) -> some View {
         HStack(spacing: 0) {
-            Text("\(CourseScheduleUtil.tomorrowCoursesTitleText)")
+            Text("\(CourseSchedulePresentation.tomorrowCoursesTitleText)")
                 .foregroundStyle(.red)
                 .padding(.trailing, 4)
             Text("共")
@@ -151,7 +154,7 @@ struct TodayCoursesEntryView: View {
                 .lineLimit(family == .systemSmall ? 2 : 1)
                 .minimumScaleFactor(0.8)
 
-            Text(CourseScheduleUtil.noScheduledCoursesTomorrowText)
+            Text(CourseSchedulePresentation.noScheduledCoursesTomorrowText)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -160,26 +163,11 @@ struct TodayCoursesEntryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func resolvedDailyCourseDisplayState(date: Date, data: CourseScheduleData) -> DailyCourseDisplayState? {
-        guard CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date, weekCount: data.weekCount) == .inSemester else {
-            return nil
-        }
-
-        return CourseScheduleUtil.getDailyCourseDisplayState(
-            semesterStartDate: data.semesterStartDate,
-            now: date,
-            courses: data.courses,
-            weekCount: data.weekCount
-        )
-    }
-
     // MARK: - Course Row View
 
     @ViewBuilder
-    func courseRowView(courseDisplayInfo: CourseDisplayInfo, colors: [String: Color], isCurrent: Bool) -> some View {
+    func courseRowView(courseDisplayInfo: CourseOccurrence, times: (start: String, end: String), colors: [String: Color], isCurrent: Bool) -> some View {
         let color = colors[courseDisplayInfo.course.courseName] ?? .gray
-        let startTime = CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.startSection - 1].0
-        let endTime = CourseScheduleUtil.sectionTimeString[courseDisplayInfo.session.endSection - 1].1
         HStack(spacing: 2) {
             Rectangle()
                 .frame(width: 4)
@@ -208,7 +196,7 @@ struct TodayCoursesEntryView: View {
                                 .font(.system(size: 11))
                                 .lineLimit(1)
                         }
-                        Text("\(startTime) - \(endTime)")
+                        Text("\(times.start) - \(times.end)")
                             .font(.system(size: 11))
                     }
                     .padding(.horizontal, 2)
@@ -237,9 +225,9 @@ struct TodayCoursesEntryView: View {
                     .padding(.leading, 2)
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(startTime)
+                        Text(times.start)
                             .font(.system(size: 15))
-                        Text(endTime)
+                        Text(times.end)
                             .font(.system(size: 15))
                     }
                     .padding(.trailing, 2)

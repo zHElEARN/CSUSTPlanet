@@ -35,11 +35,7 @@ struct OverviewView: View {
             return nil
         }
 
-        if let currentWeek = CourseScheduleUtil.getCurrentWeek(
-            semesterStartDate: data.semesterStartDate,
-            now: .now,
-            weekCount: data.weekCount
-        ) {
+        if case .inSemester(let currentWeek) = data.semesterStatus(at: .now) {
             return "第\(currentWeek)周"
         }
 

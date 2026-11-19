@@ -172,6 +172,6 @@ private struct ScheduleCardView: View {
         let startStr = timeFormatter.string(from: course.startTime)
         let endStr = timeFormatter.string(from: course.endTime)
 
-        return "\(dateStr) 周\(course.dayOfWeek.stringValue) \(startStr)-\(endStr)"
+        return "\(dateStr) 周\(course.dayOfWeek.chineseShortString) \(startStr)-\(endStr)"
     }
 }

@@ -15,7 +15,7 @@ struct TodayCoursesWidget: Widget {
         StaticConfiguration(kind: kind, provider: TodayCoursesProvider()) { entry in
             TodayCoursesEntryView(entry: entry)
         }
-        .configurationDisplayName(CourseScheduleUtil.courseScheduleTitle)
+        .configurationDisplayName(CourseSchedulePresentation.courseScheduleTitle)
         .description("显示我的课表安排")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }

@@ -15,7 +15,7 @@ import SwiftUI
 final class CourseOverviewViewModel {
     enum CourseDisplayState {
         case loading
-        case beforeSemester(days: Int?)
+        case beforeSemester(days: Int)
         case inSemester(dailyCourseState: DailyCourseDisplayState)
         case afterSemester
     }
@@ -35,22 +35,13 @@ final class CourseOverviewViewModel {
     func courseDisplayState(at now: Date) -> CourseDisplayState {
         guard let data = activeCourseSchedule?.value.data else { return .loading }
 
-        let status = CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: now, weekCount: data.weekCount)
-
-        switch status {
-        case .beforeSemester:
-            let days = CourseScheduleUtil.getDaysUntilSemesterStart(semesterStartDate: data.semesterStartDate, currentDate: now)
+        switch data.semesterStatus(at: now) {
+        case .beforeSemester(let days):
             return .beforeSemester(days: days)
         case .afterSemester:
             return .afterSemester
         case .inSemester:
-            let dailyCourseState = CourseScheduleUtil.getDailyCourseDisplayState(
-                semesterStartDate: data.semesterStartDate,
-                now: now,
-                courses: data.courses,
-                weekCount: data.weekCount
-            )
-            return .inSemester(dailyCourseState: dailyCourseState)
+            return .inSemester(dailyCourseState: .resolve(for: data, at: now))
         }
     }
 

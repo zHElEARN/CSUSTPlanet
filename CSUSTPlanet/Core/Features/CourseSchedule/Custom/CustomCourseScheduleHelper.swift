@@ -52,14 +52,14 @@ enum CustomCourseScheduleHelper {
 
     /// 从空白创建课表
     static func insertEmptySchedule(name: String, semesterStartDate: Date) throws {
-        guard CourseScheduleUtil.getDayOfWeek(semesterStartDate) == .sunday else {
+        guard ScheduleUtils.dayOfWeek(of: semesterStartDate) == .sunday else {
             throw CustomCourseScheduleError.invalidSemesterStartDate
         }
         let schedule = CustomCourseScheduleGRDB(
             id: UUID().uuidString,
             name: name,
             semesterStartDate: semesterStartDate,
-            weekCount: CourseScheduleUtil.weekCount,
+            weekCount: ScheduleUtils.defaultWeekCount,
             remarks: "",
             createdAt: .now
         )
@@ -79,7 +79,7 @@ enum CustomCourseScheduleHelper {
             id: scheduleID,
             name: name,
             semesterStartDate: data.semesterStartDate,
-            weekCount: CourseScheduleUtil.resolveWeekCount(data.weekCount),
+            weekCount: data.resolvedWeekCount,
             remarks: data.remarks.joined(separator: "\n"),
             createdAt: .now
         )
@@ -134,7 +134,7 @@ enum CustomCourseScheduleHelper {
         guard !trimmedName.isEmpty else {
             throw CustomCourseScheduleError.invalidScheduleName
         }
-        guard CourseScheduleUtil.getDayOfWeek(semesterStartDate) == .sunday else {
+        guard ScheduleUtils.dayOfWeek(of: semesterStartDate) == .sunday else {
             throw CustomCourseScheduleError.invalidSemesterStartDate
         }
 

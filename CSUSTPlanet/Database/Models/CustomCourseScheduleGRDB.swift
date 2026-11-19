@@ -5,6 +5,7 @@
 //  Created by Zachary Liu on 2026/8/2.
 //
 
+import CSUSTKit
 import Foundation
 import GRDB
 
@@ -14,7 +15,7 @@ struct CustomCourseScheduleGRDB: Codable, FetchableRecord, MutablePersistableRec
     var id: String = UUID().uuidString
     var name: String
     var semesterStartDate: Date
-    var weekCount: Int = 20
+    var weekCount: Int = ScheduleUtils.defaultWeekCount
     var remarks: String = ""
     var createdAt: Date = Date()
 

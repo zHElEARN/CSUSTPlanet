@@ -16,7 +16,7 @@ struct CourseWidgetEmptyView: View {
                 .foregroundStyle(.gray.opacity(0.8))
 
             VStack(spacing: 4) {
-                Text(CourseScheduleUtil.emptyCourseScheduleText)
+                Text(CourseSchedulePresentation.emptyCourseScheduleText)
                     .font(.headline)
                     .foregroundColor(.primary)
 

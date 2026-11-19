@@ -5,6 +5,7 @@
 //  Created by Zhe_Learn on 2026/6/18.
 //
 
+import CSUSTKit
 import SwiftUI
 
 struct CourseScheduleContent: View {
@@ -12,9 +13,9 @@ struct CourseScheduleContent: View {
     @State private var isCalendarSettingsSheetPresented = false
     // 仅控制宽屏课程详情 inspector
     @State private var isCourseDetailInspectorPresented = false
-    @State private var selectedCourseInfo: CourseDisplayInfo?
+    @State private var selectedCourseInfo: CourseOccurrence?
 
-    let weeklyCourses: [Int: [CourseDisplayInfo]]?
+    let weeklyCourses: [Int: [CourseOccurrence]]?
     let courseColors: [String: Color]
     let semesterStartDate: Date?
     let remarks: [String]
@@ -126,13 +127,15 @@ struct CourseScheduleContent: View {
         .environment(\.courseScheduleLayoutConfig, layoutConfig)
         .apply { view in
             if !isWideSize {
-                view.sheet(item: $selectedCourseInfo) { courseInfo in
-                    NavigationStack {
-                        CourseScheduleDetailView(
-                            course: courseInfo.course,
-                            session: courseInfo.session,
-                            isToolbarPresented: true,
-                        )
+                view.sheet(isPresented: courseDetailSheetPresented) { [selectedCourseInfo] in
+                    if let selectedCourseInfo {
+                        NavigationStack {
+                            CourseScheduleDetailView(
+                                course: selectedCourseInfo.course,
+                                session: selectedCourseInfo.session,
+                                isToolbarPresented: true,
+                            )
+                        }
                     }
                 }
             } else {
@@ -207,6 +210,13 @@ struct CourseScheduleContent: View {
             CourseScheduleSemesterSelect(onComplete: onSelectSemester)
                 .presentationDetents([.medium, .large])
         }
+    }
+
+    private var courseDetailSheetPresented: Binding<Bool> {
+        Binding(
+            get: { selectedCourseInfo != nil },
+            set: { if !$0 { selectedCourseInfo = nil } }
+        )
     }
 
     @ViewBuilder

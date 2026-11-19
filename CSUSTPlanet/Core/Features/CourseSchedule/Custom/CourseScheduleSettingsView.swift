@@ -42,7 +42,7 @@ struct CourseScheduleSettingsContent: View {
                 } label: {
                     scheduleRow(
                         title: "默认课表",
-                        subtitle: defaultScheduleStartDate.map { CourseScheduleUtil.dateFormatter.string(from: $0) } ?? CourseScheduleUtil.emptyCourseScheduleText,
+                        subtitle: defaultScheduleStartDate.map { CourseSchedulePresentation.dateFormatter.string(from: $0) } ?? CourseSchedulePresentation.emptyCourseScheduleText,
                         isCurrent: currentScheduleID == nil
                     )
                     .contentShape(.rect)
@@ -62,7 +62,7 @@ struct CourseScheduleSettingsContent: View {
                     NavigationLink(value: AppRoutes.courseScheduleEdit.entry(params)) {
                         scheduleRow(
                             title: schedule.name,
-                            subtitle: CourseScheduleUtil.dateFormatter.string(from: schedule.semesterStartDate),
+                            subtitle: CourseSchedulePresentation.dateFormatter.string(from: schedule.semesterStartDate),
                             isCurrent: currentScheduleID == schedule.id
                         )
                     }

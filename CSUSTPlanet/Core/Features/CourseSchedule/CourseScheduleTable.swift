@@ -11,11 +11,11 @@ import SwiftUI
 struct CourseScheduleTable: View {
     let semesterStartDate: Date
     let targetWeek: Int
-    let weeklyCourses: [Int: [CourseDisplayInfo]]
+    let weeklyCourses: [Int: [CourseOccurrence]]
     let courseColors: [String: Color]
 
     @Binding var isCourseDetailInspectorPresented: Bool
-    @Binding var selectedCourseInfo: CourseDisplayInfo?
+    @Binding var selectedCourseInfo: CourseOccurrence?
 
     @Environment(\.courseScheduleLayoutConfig) private var layoutConfig
 
@@ -43,15 +43,15 @@ struct CourseScheduleTable: View {
         HStack(spacing: layoutConfig.colSpacing) {
             // 左侧时间列
             VStack(spacing: layoutConfig.rowSpacing) {
-                ForEach(1...10, id: \.self) { section in
+                ForEach(1...ScheduleUtils.sectionTimeStrings.count, id: \.self) { section in
                     VStack(spacing: 1) {
                         Text("\(section)")
                             .font(.system(size: layoutConfig.isWideSize ? 18 : 14, weight: .semibold, design: .rounded))
                             .foregroundColor(.primary)
 
                         VStack(spacing: 0) {
-                            Text(CourseScheduleUtil.sectionTimeString[section - 1].0)
-                            Text(CourseScheduleUtil.sectionTimeString[section - 1].1)
+                            Text(ScheduleUtils.sectionTimeStrings[section - 1].start)
+                            Text(ScheduleUtils.sectionTimeStrings[section - 1].end)
                         }
                         .font(.system(size: layoutConfig.isWideSize ? 12 : 9))
                         .foregroundColor(.secondary)
@@ -61,7 +61,7 @@ struct CourseScheduleTable: View {
             }
 
             VStack(spacing: layoutConfig.rowSpacing) {
-                ForEach(1...10, id: \.self) { _ in
+                ForEach(ScheduleUtils.sectionTimeStrings.indices, id: \.self) { _ in
                     HStack(spacing: layoutConfig.colSpacing) {
                         ForEach(1...7, id: \.self) { _ in
                             Rectangle()
@@ -79,13 +79,13 @@ struct CourseScheduleTable: View {
 
     @ViewBuilder
     private var header: some View {
-        let dates = CourseScheduleUtil.getDatesForWeek(semesterStartDate: semesterStartDate, week: targetWeek)
+        let dates = ScheduleUtils.dates(ofWeek: targetWeek, semesterStartDate: semesterStartDate)
 
         HStack(spacing: layoutConfig.colSpacing) {
             // 左上角月份显示区
             VStack(alignment: .center, spacing: 0) {
                 if let firstDate = dates.first {
-                    Text(CourseScheduleUtil.monthFormatter.string(from: firstDate))
+                    Text(CourseSchedulePresentation.monthFormatter.string(from: firstDate))
                         .font(.system(size: layoutConfig.isWideSize ? 18 : 14, weight: .bold))
                     Text("月")
                         .font(.system(size: layoutConfig.isWideSize ? 14 : 10))
@@ -96,9 +96,9 @@ struct CourseScheduleTable: View {
 
             // "周日" 到 "周六"
             ForEach(Array(zip(DayOfWeek.allCases, dates)), id: \.0) { day, date in
-                let isToday = CourseScheduleUtil.isToday(date)
+                let isToday = ScheduleUtils.isToday(date)
                 VStack(spacing: 2) {
-                    Text(day.stringValue)
+                    Text(day.chineseShortString)
                         .font(.system(size: layoutConfig.isWideSize ? 15 : 11))
                         .foregroundColor(isToday ? .accentColor : .secondary)
                         .fontWeight(isToday ? .bold : .medium)
@@ -107,7 +107,7 @@ struct CourseScheduleTable: View {
                         Circle()
                             .fill(isToday ? Color.accentColor : Color.clear)
 
-                        Text(CourseScheduleUtil.dayFormatter.string(from: date))
+                        Text(CourseSchedulePresentation.dayFormatter.string(from: date))
                             .font(.system(size: layoutConfig.isWideSize ? 18 : 14, weight: isToday ? .bold : .medium))
                             .foregroundColor(isToday ? .white : .primary)
                     }

@@ -5,6 +5,7 @@
 //  Created by Zachary Liu on 2026/2/25.
 //
 
+import CSUSTKit
 import SwiftUI
 import WidgetKit
 
@@ -13,6 +14,7 @@ struct CourseWidgetHeaderView: View {
     let title: String
     let date: Date
     let data: CourseScheduleData
+    let semesterStatus: SemesterStatus
     let scheduleName: String?
 
     var body: some View {
@@ -25,31 +27,25 @@ struct CourseWidgetHeaderView: View {
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
             }
-            Text("周\(CourseScheduleUtil.getDayOfWeek(date).stringValue)")
+            Text("周\(ScheduleUtils.dayOfWeek(of: date).chineseShortString)")
                 .font(.system(size: 14))
                 .foregroundStyle(.red)
 
             Spacer()
 
-            switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date, weekCount: data.weekCount) {
+            switch semesterStatus {
             case .beforeSemester:
-                Text(CourseScheduleUtil.semesterNotStartedText)
+                Text(CourseSchedulePresentation.semesterNotStartedText)
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
             case .afterSemester:
-                Text(CourseScheduleUtil.semesterEndedText)
+                Text(CourseSchedulePresentation.semesterEndedText)
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
-            case .inSemester:
-                if let currentWeek = CourseScheduleUtil.getCurrentWeek(semesterStartDate: data.semesterStartDate, now: date, weekCount: data.weekCount) {
-                    Text("第 \(currentWeek) 周")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.primary)
-                } else {
-                    Text("无法计算当前周")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.red)
-                }
+            case .inSemester(let week):
+                Text("第 \(week) 周")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.primary)
             }
         }
     }

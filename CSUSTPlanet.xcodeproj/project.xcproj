@@ -132,7 +132,7 @@
             "Utils/AssetUtil.swift",
             "Utils/ColorUtil.swift",
             "Utils/Constants.swift",
-            "Utils/CourseScheduleUtil.swift",
+            "Utils/CourseSchedulePresentation.swift",
             "Utils/ElectricityUtil.swift",
             "Utils/EnvironmentUtil.swift",
             "Utils/KeychainUtil.swift",

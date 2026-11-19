@@ -12,7 +12,7 @@ import SwiftUI
 
 struct CourseScheduleView: View {
     @State private var courses: [EduHelper.Course]? = nil
-    @State private var weeklyCourses: [Int: [CourseDisplayInfo]]? = nil
+    @State private var weeklyCourses: [Int: [CourseOccurrence]]? = nil
     @State private var courseColors: [String: Color] = [:]
     @State private var semesterStartDate: Date? = nil
     @State private var remarks: [String] = []
@@ -24,7 +24,7 @@ struct CourseScheduleView: View {
 
     @State private var currentWeek: Int = 1
     @State private var realCurrentWeek: Int? = nil
-    @State private var weekCount: Int = CourseScheduleUtil.weekCount
+    @State private var weekCount: Int = ScheduleUtils.defaultWeekCount
 
     @State private var isCustomSchedule: Bool = false
     @State private var scheduleName: String?
@@ -90,7 +90,7 @@ struct CourseScheduleView: View {
             let rawSemesterStartDate = try await AuthManager.shared.withAuthRetry(system: .edu) {
                 try await AuthManager.shared.eduHelper.getSemesterStartDate(academicYearSemester: selectedSemester)
             }
-            let semesterStartDate = CourseScheduleUtil.normalizeSemesterStartDate(rawSemesterStartDate)
+            let semesterStartDate = ScheduleUtils.normalizeSemesterStartDate(rawSemesterStartDate)
 
             let data = Cached<CourseScheduleData>(
                 cachedAt: .now,
@@ -119,21 +119,21 @@ struct CourseScheduleView: View {
             weeklyCourses = nil
             semesterStartDate = nil
             realCurrentWeek = nil
-            weekCount = CourseScheduleUtil.weekCount
+            weekCount = ScheduleUtils.defaultWeekCount
             courseColors = [:]
             remarks = []
             return
         }
 
         courses = data.courses
-        weeklyCourses = CourseScheduleUtil.getWeeklyCourses(data.courses)
+        weeklyCourses = ScheduleUtils.weeklyCourses(data.courses)
         semesterStartDate = data.semesterStartDate
-        weekCount = CourseScheduleUtil.resolveWeekCount(data.weekCount)
-        realCurrentWeek = CourseScheduleUtil.getCurrentWeek(
-            semesterStartDate: data.semesterStartDate,
-            now: .now,
-            weekCount: weekCount
-        )
+        weekCount = data.resolvedWeekCount
+        if case .inSemester(let week) = data.semesterStatus(at: .now) {
+            realCurrentWeek = week
+        } else {
+            realCurrentWeek = nil
+        }
         courseColors = ColorUtil.getCourseColors(data.courses)
         remarks = data.remarks
 
@@ -167,7 +167,7 @@ struct CourseScheduleView: View {
         }
 
         do {
-            let dateRange = CourseScheduleUtil.getSemesterDateRange(semesterStartDate: semesterStartDate, weekCount: weekCount)
+            let dateRange = ScheduleUtils.semesterDateRange(semesterStartDate: semesterStartDate, weekCount: weekCount)
             let drafts = makeCalendarEventDrafts(
                 courses: courses,
                 semesterStartDate: semesterStartDate,
@@ -211,11 +211,9 @@ struct CourseScheduleView: View {
         for course in courses {
             for session in course.sessions {
                 for week in session.weeks {
-                    let dates = CourseScheduleUtil.getCourseEventDates(
-                        session: session,
-                        week: week,
-                        semesterStartDate: semesterStartDate
-                    )
+                    guard week > 0,
+                        let dates = ScheduleUtils.timeRange(of: session, inWeek: week, semesterStartDate: semesterStartDate)
+                    else { continue }
 
                     var notes = "教师: \(course.teacher ?? "未知")"
                     if let groupName = course.groupName { notes += "\n组名: \(groupName)" }
@@ -228,7 +226,7 @@ struct CourseScheduleView: View {
                             endDate: dates.endDate,
                             notes: notes,
                             location: session.classroom,
-                            timeZone: CourseScheduleUtil.courseTimeZone,
+                            timeZone: CourseSchedulePresentation.calendar.timeZone,
                             alarmRelativeOffsets: alarmRelativeOffsets
                         )
                     )

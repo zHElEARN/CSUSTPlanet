@@ -24,12 +24,13 @@ struct WeeklyCoursesEntryView: View {
     var body: some View {
         Group {
             if let data = entry.data {
+                let semesterStatus = data.semesterStatus(at: entry.date)
                 VStack(spacing: 0) {
-                    CourseWidgetHeaderView(family: family, title: "本周课程", date: entry.date, data: data, scheduleName: entry.scheduleName)
+                    CourseWidgetHeaderView(family: family, title: "本周课程", date: entry.date, data: data, semesterStatus: semesterStatus, scheduleName: entry.scheduleName)
 
                     Divider().padding(.vertical, 4)
 
-                    contentView(date: entry.date, data: data)
+                    contentView(date: entry.date, data: data, semesterStatus: semesterStatus)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             } else {
@@ -43,43 +44,28 @@ struct WeeklyCoursesEntryView: View {
     // MARK: - Content View
 
     @ViewBuilder
-    func contentView(date: Date, data: CourseScheduleData) -> some View {
-        switch CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: date, weekCount: data.weekCount) {
-        case .beforeSemester:
-            CourseWidgetBeforeSemesterView(date: date, data: data)
+    func contentView(date: Date, data: CourseScheduleData, semesterStatus: SemesterStatus) -> some View {
+        switch semesterStatus {
+        case .beforeSemester(let days):
+            CourseWidgetBeforeSemesterView(date: date, daysUntilStart: days)
         case .afterSemester:
             CourseWidgetAfterSemesterView()
-        case .inSemester:
-            ZStack {
-                // Color.blue.frame(maxWidth: .infinity, maxHeight: .infinity)
-                inSemesterView(date: date, data: data).frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
+        case .inSemester(let week):
+            inSemesterView(date: date, data: data, week: week)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
     // MARK: - In Semester View
 
     @ViewBuilder
-    func inSemesterView(date: Date, data: CourseScheduleData) -> some View {
-        let currentWeek = CourseScheduleUtil.getCurrentWeek(semesterStartDate: data.semesterStartDate, now: date, weekCount: data.weekCount) ?? 1
+    func inSemesterView(date: Date, data: CourseScheduleData, week: Int) -> some View {
         let firstVisibleSection = firstVisibleSection(for: date)
         let courseColors = ColorUtil.getCourseColors(data.courses)
-
-        let weeklyCourses = {
-            var processedCourses: [Int: [CourseDisplayInfo]] = [:]
-            for course in data.courses {
-                for session in course.sessions {
-                    let displayInfo = CourseDisplayInfo(course: course, session: session)
-                    for week in session.weeks {
-                        processedCourses[week, default: []].append(displayInfo)
-                    }
-                }
-            }
-            return processedCourses
-        }()
+        let courses = ScheduleUtils.weeklyCourses(data.courses)[week] ?? []
 
         VStack(spacing: 4) {
-            scheduleHeaderView(for: currentWeek, semesterStartDate: data.semesterStartDate)
+            scheduleHeaderView(for: week, semesterStartDate: data.semesterStartDate)
 
             GeometryReader { geometry in
                 // 动态计算高度，6小节中间有5个缝隙
@@ -89,7 +75,7 @@ struct WeeklyCoursesEntryView: View {
                 ZStack(alignment: .topLeading) {
                     scheduleBackgroundView(firstVisibleSection: firstVisibleSection, sectionHeight: dynamicSectionHeight)
 
-                    coursesOverlayView(for: currentWeek, weeklyCourses: weeklyCourses, firstVisibleSection: firstVisibleSection, courseColors: courseColors, sectionHeight: dynamicSectionHeight, geometryWidth: geometry.size.width)
+                    coursesOverlayView(courses: courses, firstVisibleSection: firstVisibleSection, courseColors: courseColors, sectionHeight: dynamicSectionHeight, geometryWidth: geometry.size.width)
                 }
             }
         }
@@ -99,19 +85,13 @@ struct WeeklyCoursesEntryView: View {
     // MARK: - Schedule Header View
 
     func scheduleHeaderView(for week: Int, semesterStartDate: Date) -> some View {
-        let dates = CourseScheduleUtil.getDatesForWeek(semesterStartDate: semesterStartDate, week: week)
-
-        let monthFormatter = DateFormatter()
-        monthFormatter.dateFormat = "M"
-
-        let dayFormatter = DateFormatter()
-        dayFormatter.dateFormat = "d"
+        let dates = ScheduleUtils.dates(ofWeek: week, semesterStartDate: semesterStartDate)
 
         return HStack(spacing: colSpacing) {
             // 左上角月份显示区
             VStack(alignment: .center, spacing: 0) {
                 if let firstDate = dates.first {
-                    Text(monthFormatter.string(from: firstDate))
+                    Text(CourseSchedulePresentation.monthFormatter.string(from: firstDate))
                         .font(.system(size: 12, weight: .bold))
                     Text("月")
                         .font(.system(size: 9))
@@ -122,7 +102,7 @@ struct WeeklyCoursesEntryView: View {
 
             // 星期及日期圆圈
             ForEach(Array(zip(DayOfWeek.allCases, dates)), id: \.0) { day, date in
-                let isToday = isToday(date)
+                let isToday = CourseSchedulePresentation.calendar.isDate(date, inSameDayAs: entry.date)
                 VStack(spacing: 0) {
                     Text(day.chineseShortString)
                         .font(.system(size: 10))
@@ -133,7 +113,7 @@ struct WeeklyCoursesEntryView: View {
                         Circle()
                             .fill(isToday ? Color.accentColor : Color.clear)
 
-                        Text(dayFormatter.string(from: date))
+                        Text(CourseSchedulePresentation.dayFormatter.string(from: date))
                             .font(.system(size: 12, weight: isToday ? .bold : .medium))
                             .foregroundColor(isToday ? .white : .primary)
                     }
@@ -157,9 +137,9 @@ struct WeeklyCoursesEntryView: View {
                             .foregroundColor(.primary)
 
                         VStack(spacing: 0) {
-                            if section - 1 < CourseScheduleUtil.sectionTimeString.count {
-                                Text(CourseScheduleUtil.sectionTimeString[section - 1].0)
-                                Text(CourseScheduleUtil.sectionTimeString[section - 1].1)
+                            if section - 1 < ScheduleUtils.sectionTimeStrings.count {
+                                Text(ScheduleUtils.sectionTimeStrings[section - 1].start)
+                                Text(ScheduleUtils.sectionTimeStrings[section - 1].end)
                             }
                         }
                         .font(.system(size: 8))
@@ -187,22 +167,25 @@ struct WeeklyCoursesEntryView: View {
 
     // MARK: - Courses Overlay View
 
-    private func coursesOverlayView(for week: Int, weeklyCourses: [Int: [CourseDisplayInfo]], firstVisibleSection: Int, courseColors: [String: Color], sectionHeight: CGFloat, geometryWidth: CGFloat) -> some View {
+    private func coursesOverlayView(courses: [CourseOccurrence], firstVisibleSection: Int, courseColors: [String: Color], sectionHeight: CGFloat, geometryWidth: CGFloat) -> some View {
         let totalSpacingWidth = colSpacing * 7
         let dayColumnWidth = (geometryWidth - timeColWidth - totalSpacingWidth) / 7
 
         return ZStack(alignment: .topLeading) {
-            if let coursesForWeek = weeklyCourses[week] {
-                ForEach(coursesForWeek) { courseInfo in
-                    if courseInfo.session.endSection >= firstVisibleSection && courseInfo.session.startSection < firstVisibleSection + 6 {
-                        courseCardView(course: courseInfo.course, session: courseInfo.session, color: courseColors[courseInfo.course.courseName] ?? .gray)
-                            .frame(width: dayColumnWidth)
-                            .frame(height: calculateHeight(for: courseInfo.session, firstVisibleSection: firstVisibleSection, sectionHeight: sectionHeight))
-                            .offset(
-                                x: calculateXOffset(for: courseInfo.session.dayOfWeek, columnWidth: dayColumnWidth),
-                                y: calculateYOffset(for: courseInfo.session, firstVisibleSection: firstVisibleSection, sectionHeight: sectionHeight)
-                            )
-                    }
+            ForEach(courses.indices, id: \.self) { index in
+                let courseInfo = courses[index]
+                let session = courseInfo.session
+                if session.endSection >= firstVisibleSection,
+                    session.startSection < firstVisibleSection + 6,
+                    CourseSchedulePresentation.sectionTimes(for: session) != nil
+                {
+                    courseCardView(course: courseInfo.course, session: session, color: courseColors[courseInfo.course.courseName] ?? .gray)
+                        .frame(width: dayColumnWidth)
+                        .frame(height: calculateHeight(for: session, firstVisibleSection: firstVisibleSection, sectionHeight: sectionHeight))
+                        .offset(
+                            x: calculateXOffset(for: session.dayOfWeek, columnWidth: dayColumnWidth),
+                            y: calculateYOffset(for: session, firstVisibleSection: firstVisibleSection, sectionHeight: sectionHeight)
+                        )
                 }
             }
         }
@@ -239,7 +222,7 @@ struct WeeklyCoursesEntryView: View {
     // MARK: - Methods
 
     func firstVisibleSection(for date: Date) -> Int {
-        let calendar = Calendar.current
+        let calendar = CourseSchedulePresentation.calendar
         let hour = calendar.component(.hour, from: date)
         let minute = calendar.component(.minute, from: date)
         let currentTimeInMinutes = hour * 60 + minute
@@ -273,10 +256,5 @@ struct WeeklyCoursesEntryView: View {
     func calculateXOffset(for day: DayOfWeek, columnWidth: CGFloat) -> CGFloat {
         let x = CGFloat(day.rawValue)
         return timeColWidth + colSpacing + (x * columnWidth) + (x * colSpacing)
-    }
-
-    func isToday(_ date: Date) -> Bool {
-        let calendar = Calendar.current
-        return calendar.isDate(date, inSameDayAs: entry.date)
     }
 }

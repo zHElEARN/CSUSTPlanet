@@ -40,7 +40,7 @@ struct WeeklyCoursesProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<WeeklyCoursesEntry>) -> Void) {
         let currentDate = resolveCurrentDate()
-        let calendar = Calendar.current
+        let calendar = CourseSchedulePresentation.calendar
 
         // 无缓存数据时：1小时后重试
         guard let schedule = MMKVHelper.CourseSchedule.activeCourseSchedule?.value,
@@ -53,8 +53,7 @@ struct WeeklyCoursesProvider: TimelineProvider {
         }
 
         // 放假或未开学时：12小时刷新一次
-        let semesterStatus = CourseScheduleUtil.getSemesterStatus(semesterStartDate: data.semesterStartDate, date: currentDate, weekCount: data.weekCount)
-        guard semesterStatus == .inSemester else {
+        guard case .inSemester = data.semesterStatus(at: currentDate) else {
             let entry = WeeklyCoursesEntry(date: currentDate, data: data, scheduleName: schedule.scheduleName)
             let refreshDate = calendar.date(byAdding: .hour, value: 12, to: currentDate) ?? currentDate.addingTimeInterval(12 * 3600)
             completion(Timeline(entries: [entry], policy: .after(refreshDate)))
@@ -87,9 +86,7 @@ struct WeeklyCoursesProvider: TimelineProvider {
     private func resolveCurrentDate() -> Date {
         #if DEBUG
         if Self.shouldMock {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm"
-            return dateFormatter.date(from: Self.mockDate) ?? .now
+            return CourseSchedulePresentation.dateTimeFormatter.date(from: Self.mockDate) ?? .now
         }
         #endif
         return .now

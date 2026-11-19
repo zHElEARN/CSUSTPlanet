@@ -5,17 +5,18 @@
 //  Created by Zachary Liu on 2026/6/18.
 //
 
+import CSUSTKit
 import SwiftUI
 
 struct CourseScheduleScrollTable: View {
     let semesterStartDate: Date
-    let weeklyCourses: [Int: [CourseDisplayInfo]]
+    let weeklyCourses: [Int: [CourseOccurrence]]
     let courseColors: [String: Color]
 
     @Binding var currentWeek: Int
     let weekCount: Int
     @Binding var isCourseDetailInspectorPresented: Bool
-    @Binding var selectedCourseInfo: CourseDisplayInfo?
+    @Binding var selectedCourseInfo: CourseOccurrence?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {

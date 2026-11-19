@@ -164,10 +164,11 @@ final class MockDataGeneratorViewModel {
         let sessionCount = cache.value.courses.reduce(into: 0) { partialResult, course in
             partialResult += course.sessions.count
         }
-        let todayCoursesCount = CourseScheduleUtil.getUnfinishedCourses(
+        let todayCoursesCount = ScheduleUtils.unfinishedCourses(
+            at: .now,
             semesterStartDate: cache.value.semesterStartDate,
-            now: .now,
-            courses: cache.value.courses
+            courses: cache.value.courses,
+            weekCount: cache.value.resolvedWeekCount
         ).count
 
         courseScheduleCacheDescription = "当前状态：\(cache.value.semester ?? "默认学期")，\(courseCount) 门课程，\(sessionCount) 个上课安排，今日可见 \(todayCoursesCount) 门，缓存时间 \(cache.cachedAt.formatted(date: .abbreviated, time: .standard))"
@@ -366,7 +367,7 @@ private enum MockCourseScheduleFactory {
     }
 
     static func makeTodayFilledCourseScheduleData(referenceDate: Date = .now) -> CourseScheduleData {
-        let today = CourseScheduleUtil.getDayOfWeek(referenceDate)
+        let today = ScheduleUtils.dayOfWeek(of: referenceDate)
         let weeks = Array(1...16)
 
         let courses: [EduHelper.Course] = [
@@ -423,16 +424,17 @@ private enum MockCourseScheduleFactory {
     static func makeTwoVisibleCourseScheduleData(referenceDate: Date = .now) throws -> CourseScheduleData {
         let semesterStartDate = semesterStartDate(for: referenceDate)
         guard
-            let currentWeek = CourseScheduleUtil.getCurrentWeek(
+            case .inSemester(let currentWeek) = ScheduleUtils.semesterStatus(
                 semesterStartDate: semesterStartDate,
-                now: referenceDate
+                at: referenceDate,
+                weekCount: ScheduleUtils.defaultWeekCount
             )
         else {
             throw MockCourseScheduleError.currentWeekUnavailable
         }
 
-        let today = CourseScheduleUtil.getDayOfWeek(referenceDate)
-        let visibleSections = (1...CourseScheduleUtil.sectionTimeString.count).filter { section in
+        let today = ScheduleUtils.dayOfWeek(of: referenceDate)
+        let visibleSections = (1...ScheduleUtils.sectionTimeStrings.count).filter { section in
             let session = EduHelper.ScheduleSession(
                 weeks: [currentWeek],
                 startSection: section,
@@ -440,11 +442,9 @@ private enum MockCourseScheduleFactory {
                 dayOfWeek: today,
                 classroom: nil
             )
-            let dates = CourseScheduleUtil.getCourseEventDates(
-                session: session,
-                week: currentWeek,
-                semesterStartDate: semesterStartDate
-            )
+            guard let dates = ScheduleUtils.timeRange(of: session, inWeek: currentWeek, semesterStartDate: semesterStartDate) else {
+                return false
+            }
             return referenceDate < dates.endDate
         }
 
@@ -478,7 +478,7 @@ private enum MockCourseScheduleFactory {
     }
 
     static func makeConflictedCourseScheduleData(referenceDate: Date = .now) -> CourseScheduleData {
-        let today = CourseScheduleUtil.getDayOfWeek(referenceDate)
+        let today = ScheduleUtils.dayOfWeek(of: referenceDate)
         let weeks = Array(1...16)
 
         let courses: [EduHelper.Course] = [
@@ -533,10 +533,9 @@ private enum MockCourseScheduleFactory {
     }
 
     private static func semesterStartDate(for referenceDate: Date) -> Date {
-        let calendar = Calendar.current
+        let calendar = CourseSchedulePresentation.calendar
         let todayStart = calendar.startOfDay(for: referenceDate)
-        let weekday = calendar.component(.weekday, from: todayStart)
-        let daysSinceSunday = weekday - 1
+        let daysSinceSunday = ScheduleUtils.dayOfWeek(of: todayStart).rawValue
         return calendar.date(byAdding: .day, value: -daysSinceSunday, to: todayStart) ?? todayStart
     }
 

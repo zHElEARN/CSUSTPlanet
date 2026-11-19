@@ -18,8 +18,8 @@ struct ClassroomScheduleSnapshot {
     init(sessions: [EduHelper.ClassroomScheduleSession]) {
         sessionsByClassroom = Dictionary(grouping: sessions, by: \.classroom)
         classroomNames = sessionsByClassroom.keys.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
-        sectionCount = max(10, sessions.map(\.endSection).max() ?? 10)
-        weekCount = max(20, sessions.flatMap(\.weeks).max() ?? 20)
+        sectionCount = max(ScheduleUtils.sectionTimeStrings.count, sessions.map(\.endSection).max() ?? 0)
+        weekCount = max(ScheduleUtils.defaultWeekCount, sessions.flatMap(\.weeks).max() ?? 0)
     }
 
     func rooms(week: Int, day: DayOfWeek) -> [ClassroomAvailability] {
@@ -90,9 +90,9 @@ struct ClassroomAvailability: Identifiable {
     }
 
     static func timeLabel(_ range: ClosedRange<Int>) -> String? {
-        let times = CourseScheduleUtil.sectionTimeString
+        let times = ScheduleUtils.sectionTimeStrings
         guard range.lowerBound >= 1, range.upperBound <= times.count else { return nil }
-        return "\(times[range.lowerBound - 1].0)–\(times[range.upperBound - 1].1)"
+        return "\(times[range.lowerBound - 1].start)–\(times[range.upperBound - 1].end)"
     }
 
     static func weeksLabel(_ weeks: [Int]) -> String {

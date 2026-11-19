@@ -15,7 +15,7 @@ struct AvailableClassroomContent: View {
     let onQuery: (Campus) async -> Void
 
     @State private var selectedWeek = 1
-    @State private var selectedDay = CourseScheduleUtil.getDayOfWeek(.now)
+    @State private var selectedDay = ScheduleUtils.dayOfWeek(of: .now)
     @State private var startSection = 1
     @State private var endSection = 2
     @State private var searchText = ""
@@ -23,8 +23,8 @@ struct AvailableClassroomContent: View {
     @State private var isFilterPresented = false
     @State private var selectedRoom: ClassroomAvailability?
 
-    private var sectionCount: Int { schedule?.sectionCount ?? 10 }
-    private var weekCount: Int { schedule?.weekCount ?? 20 }
+    private var sectionCount: Int { schedule?.sectionCount ?? ScheduleUtils.sectionTimeStrings.count }
+    private var weekCount: Int { schedule?.weekCount ?? ScheduleUtils.defaultWeekCount }
     private var selection: ClosedRange<Int> { min(startSection, endSection)...max(startSection, endSection) }
 
     private var rooms: [ClassroomAvailability] {

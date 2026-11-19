@@ -12,11 +12,11 @@ struct CourseScheduleOverlay: View {
     @Environment(\.courseScheduleLayoutConfig) private var layoutConfig
 
     let targetWeek: Int
-    let weeklyCourses: [Int: [CourseDisplayInfo]]
+    let weeklyCourses: [Int: [CourseOccurrence]]
     let courseColors: [String: Color]
 
     @Binding var isCourseDetailInspectorPresented: Bool
-    @Binding var selectedCourseInfo: CourseDisplayInfo?
+    @Binding var selectedCourseInfo: CourseOccurrence?
 
     var body: some View {
         GeometryReader { geometry in
@@ -26,7 +26,7 @@ struct CourseScheduleOverlay: View {
 
             ZStack(alignment: .topLeading) {
                 if let coursesForWeek = weeklyCourses[targetWeek] {
-                    ForEach(groupCourses(coursesForWeek), id: \.first!.id) { group in
+                    ForEach(groupCourses(coursesForWeek), id: \.first) { group in
                         let firstCourseInfo = group[0]
                         let startSection = firstCourseInfo.session.startSection
                         let endSection = group.map(\.session.endSection).max()!
@@ -54,8 +54,8 @@ struct CourseScheduleOverlay: View {
         .padding(.vertical)
     }
 
-    private func groupCourses(_ courses: [CourseDisplayInfo]) -> [[CourseDisplayInfo]] {
-        let sortedCourses = courses.sorted {
+    private func groupCourses(_ courses: [CourseOccurrence]) -> [[CourseOccurrence]] {
+        let sortedCourses = courses.filter { CourseSchedulePresentation.sectionTimes(for: $0.session) != nil }.sorted {
             let lhs = $0.session
             let rhs = $1.session
 
@@ -65,7 +65,7 @@ struct CourseScheduleOverlay: View {
             return $0.course.courseName < $1.course.courseName
         }
 
-        return sortedCourses.reduce(into: [[CourseDisplayInfo]]()) { groups, courseInfo in
+        return sortedCourses.reduce(into: [[CourseOccurrence]]()) { groups, courseInfo in
             if let lastIndex = groups.indices.last {
                 let currentGroup = groups[lastIndex]
                 let currentEndSection = currentGroup.map(\.session.endSection).max()!
@@ -97,7 +97,7 @@ struct CourseScheduleOverlay: View {
         return layoutConfig.timeColWidth + layoutConfig.colSpacing + (x * columnWidth) + (x * layoutConfig.colSpacing)
     }
 
-    private func presentCourseDetail(_ courseInfo: CourseDisplayInfo) {
+    private func presentCourseDetail(_ courseInfo: CourseOccurrence) {
         selectedCourseInfo = courseInfo
         isCourseDetailInspectorPresented = true
     }

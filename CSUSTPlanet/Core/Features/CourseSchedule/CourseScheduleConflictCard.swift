@@ -9,8 +9,8 @@ import CSUSTKit
 import SwiftUI
 
 struct CourseScheduleConflictCard: View {
-    let courses: [CourseDisplayInfo]
-    let onSelect: (CourseDisplayInfo) -> Void
+    let courses: [CourseOccurrence]
+    let onSelect: (CourseOccurrence) -> Void
 
     @State private var isShowingPopover = false
 
@@ -29,7 +29,8 @@ struct CourseScheduleConflictCard: View {
         #else
         Menu {
             Section("存在课程冲突，请选择") {
-                ForEach(courses) { info in
+                ForEach(courses.indices, id: \.self) { index in
+                    let info = courses[index]
                     Button {
                         onSelect(info)
                     } label: {
@@ -91,7 +92,8 @@ struct CourseScheduleConflictCard: View {
 
             ScrollView {
                 VStack(spacing: 0) {
-                    ForEach(courses) { info in
+                    ForEach(courses.indices, id: \.self) { index in
+                        let info = courses[index]
                         Button {
                             isShowingPopover = false
                             onSelect(info)
@@ -123,7 +125,7 @@ struct CourseScheduleConflictCard: View {
                         }
                         .buttonStyle(.plain)
 
-                        if info.id != courses.last?.id {
+                        if index < courses.count - 1 {
                             Divider()
                                 .padding(.leading, 16)
                         }
