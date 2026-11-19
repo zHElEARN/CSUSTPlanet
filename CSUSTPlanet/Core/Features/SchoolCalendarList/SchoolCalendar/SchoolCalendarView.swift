@@ -14,7 +14,7 @@ import AppKit
 #endif
 
 struct SchoolCalendarView: View {
-    let schoolCalendar: SchoolCalendar
+    let params: SchoolCalendarParams
 
     @State private var viewModel = SchoolCalendarViewModel()
 
@@ -131,9 +131,9 @@ struct SchoolCalendarView: View {
                 }
             }
         }
-        .navigationTitle("\(schoolCalendar.semesterCode)学年度校历")
-        .navigationSubtitleCompat(schoolCalendar.subtitle)
-        .task { await viewModel.loadConfig(semester: schoolCalendar.semesterCode) }
+        .navigationTitle("\(params.semesterCode)学年度校历")
+        .navigationSubtitleCompat(viewModel.config?.subtitle ?? "")
+        .task { await viewModel.loadConfig(semester: params.semesterCode) }
         .errorToast($viewModel.errorToast)
     }
 

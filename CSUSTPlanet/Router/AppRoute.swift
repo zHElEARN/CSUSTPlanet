@@ -188,13 +188,13 @@ enum AppRoute: Hashable, RouteNode {
         }
 
         enum SchoolCalendarListRoute: Hashable, RouteNode {
-            case detail(SchoolCalendar)
+            case detail(SchoolCalendarParams)
 
             @ViewBuilder
             var destinationView: some View {
                 switch self {
-                case .detail(let calendar):
-                    SchoolCalendarView(schoolCalendar: calendar)
+                case .detail(let params):
+                    SchoolCalendarView(params: params)
                 }
             }
         }
@@ -255,13 +255,13 @@ enum AppRoute: Hashable, RouteNode {
             }
 
             enum OpenSourceLicensesRoute: Hashable, RouteNode {
-                case detail(OpenSourceLicense)
+                case detail(LicenseDetailParams)
 
                 @ViewBuilder
                 var destinationView: some View {
                     switch self {
-                    case .detail(let license):
-                        OpenSourceLicenseDetailView(license: license)
+                    case .detail(let params):
+                        OpenSourceLicenseDetailView(params: params)
                     }
                 }
             }

@@ -53,7 +53,8 @@ struct OpenSourceLicensesView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(viewModel.licenses) { license in
-                            NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses(.detail(license))))) {
+                            let params = LicenseDetailParams(licenseID: license.id)
+                            NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses(.detail(params))))) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(license.title)
 
@@ -76,32 +77,39 @@ struct OpenSourceLicensesView: View {
 }
 
 struct OpenSourceLicenseDetailView: View {
-    let license: OpenSourceLicense
+    let params: LicenseDetailParams
 
     var body: some View {
+        let license = try? LicensePlistLoader.loadLicenses().first { $0.id == params.licenseID }
+
         Form {
-            Section("项目信息") {
-                FormRow(label: "项目名称", value: license.title)
+            if let license {
+                Section("项目信息") {
+                    FormRow(label: "项目名称", value: license.title)
 
-                if let licenseName = license.licenseName, licenseName.isKnownLicenseName {
-                    FormRow(label: "协议类型", value: licenseName)
+                    if let licenseName = license.licenseName, licenseName.isKnownLicenseName {
+                        FormRow(label: "协议类型", value: licenseName)
+                    }
                 }
-            }
 
-            Section("许可证全文") {
-                if let body = license.body {
-                    Text(verbatim: body)
-                        .font(.system(.footnote, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .textSelection(.enabled)
-                } else {
-                    Text(license.errorMessage ?? "无法加载许可证内容")
-                        .foregroundStyle(.red)
+                Section("许可证全文") {
+                    if let body = license.body {
+                        Text(verbatim: body)
+                            .font(.system(.footnote, design: .monospaced))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                    } else {
+                        Text(license.errorMessage ?? "无法加载许可证内容")
+                            .foregroundStyle(.red)
+                    }
                 }
+            } else {
+                Text("未找到许可证信息")
+                    .foregroundStyle(.secondary)
             }
         }
         .formStyle(.grouped)
-        .navigationTitle(license.title)
+        .navigationTitle(license?.title ?? "开源许可")
     }
 }
