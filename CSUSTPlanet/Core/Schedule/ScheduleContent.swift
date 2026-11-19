@@ -18,6 +18,18 @@ private final class WeakUIScrollViewReference: ObservableObject {
 }
 #endif
 
+private enum ScheduleSheet: Identifiable {
+    case create
+    case detail(ScheduleEvent)
+
+    var id: String {
+        switch self {
+        case .create: "create"
+        case .detail(let event): "detail:\(event.id)"
+        }
+    }
+}
+
 struct ScheduleContent: View {
     let timeline: ScheduleTimelineData
     let isInitialDataReady: Bool
@@ -27,7 +39,7 @@ struct ScheduleContent: View {
 
     @State private var visibleSectionID: ScheduleTimelineSectionID?
     @State private var selectedDayID: Date?
-    @State private var selectedEvent: ScheduleEvent?
+    @State private var presentedSheet: ScheduleSheet?
     @State private var hasPerformedInitialScroll = false
     @State private var isFilterPresented = false
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -46,7 +58,7 @@ struct ScheduleContent: View {
                                 section: daySection,
                                 referenceDate: timeline.referenceDate,
                                 currentIndicatorPlacement: timeline.currentIndicatorPlacement,
-                                onSelectEvent: { selectedEvent = $0 }
+                                onSelectEvent: { presentedSheet = .detail($0) }
                             )
                         case .empty(let emptySection):
                             ScheduleEmptySectionView(
@@ -94,6 +106,14 @@ struct ScheduleContent: View {
                     isFilterPresented.toggle()
                 } label: {
                     FilterToolbarLabel(isActive: hasActiveFilter)
+                }
+            }
+
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    presentedSheet = .create
+                } label: {
+                    Label("新建日程", systemImage: "plus")
                 }
             }
         }
@@ -177,11 +197,22 @@ struct ScheduleContent: View {
                 }
             }
         }
-        .sheet(item: $selectedEvent) { event in
-            NavigationStack {
-                ScheduleEventDetailView(event: event)
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .create:
+                NavigationStack {
+                    CustomScheduleEventFormView {
+                        presentedSheet = nil
+                    }
+                }
+            case .detail(let event):
+                NavigationStack {
+                    ScheduleEventDetailView(event: event) {
+                        presentedSheet = nil
+                    }
+                }
+                .presentationDetents([.medium, .large])
             }
-            .presentationDetents([.medium, .large])
         }
     }
 

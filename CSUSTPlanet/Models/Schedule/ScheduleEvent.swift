@@ -16,6 +16,7 @@ enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
     case assignment
     case chaoxingAssignment
     case electricity
+    case custom
 
     var presentationTitle: String {
         switch self {
@@ -31,6 +32,8 @@ enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
             return "学习通作业"
         case .electricity:
             return "电量"
+        case .custom:
+            return "自定义"
         }
     }
 
@@ -48,6 +51,8 @@ enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
             return .red
         case .electricity:
             return .green
+        case .custom:
+            return .indigo
         }
     }
 
@@ -65,6 +70,8 @@ enum ScheduleEventKind: String, Codable, Hashable, Sendable, CaseIterable {
             return 4
         case .electricity:
             return 5
+        case .custom:
+            return 6
         }
     }
 }

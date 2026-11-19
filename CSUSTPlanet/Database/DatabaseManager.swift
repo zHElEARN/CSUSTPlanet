@@ -189,6 +189,17 @@ final class DatabaseManager {
             try db.create(index: "idx_custom_sessions_courseId", on: CustomSessionGRDB.databaseTableName, columns: [CustomSessionGRDB.Columns.courseId.name])
         }
 
+        migrator.registerMigration("v7_create_custom_schedule_events") { db in
+            try db.create(table: CustomScheduleEventGRDB.databaseTableName) { t in
+                t.column(CustomScheduleEventGRDB.Columns.id.name, .text).notNull().primaryKey()
+                t.column(CustomScheduleEventGRDB.Columns.title.name, .text).notNull()
+                t.column(CustomScheduleEventGRDB.Columns.startDate.name, .datetime).notNull()
+                t.column(CustomScheduleEventGRDB.Columns.endDate.name, .datetime).notNull()
+                t.column(CustomScheduleEventGRDB.Columns.location.name, .text)
+                t.column(CustomScheduleEventGRDB.Columns.notes.name, .text)
+            }
+        }
+
         return migrator
     }
 }

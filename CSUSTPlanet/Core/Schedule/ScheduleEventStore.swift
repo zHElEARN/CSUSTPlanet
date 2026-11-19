@@ -18,6 +18,7 @@ final class ScheduleEventStore {
     private let eventsSubject = CurrentValueSubject<[ScheduleEvent]?, Never>(nil)
     private var cancellables = Set<AnyCancellable>()
     private var electricityObservation: (any DatabaseCancellable)?
+    private var customEventsObservation: (any DatabaseCancellable)?
 
     private var eventsByKind: [ScheduleEventKind: [ScheduleEvent]] = [:]
     private let initialEventKinds: Set<ScheduleEventKind> = [
@@ -27,6 +28,7 @@ final class ScheduleEventStore {
         .assignment,
         .chaoxingAssignment,
         .electricity,
+        .custom,
     ]
     private var receivedInitialEventKinds: Set<ScheduleEventKind> = []
     private var publishedEvents: [ScheduleEvent]?
@@ -40,6 +42,7 @@ final class ScheduleEventStore {
     private init() {
         subscribeToCaches()
         subscribeToElectricity()
+        subscribeToCustomEvents()
     }
 
     // MARK: - Subscriptions
@@ -165,6 +168,30 @@ final class ScheduleEventStore {
         )
     }
 
+    private func subscribeToCustomEvents() {
+        guard let database = DatabaseManager.shared.pool else {
+            replaceEvents(for: .custom, with: [])
+            return
+        }
+
+        customEventsObservation = ValueObservation.tracking { db in
+            try CustomScheduleEventGRDB.fetchAll(db)
+        }.start(
+            in: database,
+            onError: { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    guard let self, !self.receivedInitialEventKinds.contains(.custom) else { return }
+                    self.replaceEvents(for: .custom, with: [])
+                }
+            },
+            onChange: { [weak self] records in
+                Task { @MainActor [weak self] in
+                    self?.replaceEvents(for: .custom, with: records.map(Self.makeCustomEvent))
+                }
+            }
+        )
+    }
+
     // MARK: - Event Updates
 
     private func replaceEvents(for kind: ScheduleEventKind, with events: [ScheduleEvent]) {
@@ -196,6 +223,20 @@ final class ScheduleEventStore {
     }
 
     // MARK: - Event Conversion
+
+    private static func makeCustomEvent(from record: CustomScheduleEventGRDB) -> ScheduleEvent {
+        ScheduleEvent(
+            id: record.id,
+            kind: .custom,
+            timing: .interval(start: record.startDate, end: record.endDate),
+            content: ScheduleEventContent(
+                title: record.title,
+                subtitle: nil,
+                location: record.location,
+                details: [detail("备注", record.notes)].compactMap { $0 }
+            )
+        )
+    }
 
     private static func makeCourseEvents(from schedule: ActiveCourseSchedule?) -> [ScheduleEvent] {
         guard let schedule, let data = schedule.data else { return [] }
