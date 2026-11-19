@@ -17,7 +17,7 @@ struct DormOverviewView: View {
     private let chartHeight: CGFloat = 120
 
     var body: some View {
-        Button(action: { router.deepLinkTo(feature: .electricityQuery, path: dormNavigationPath) }) {
+        Button(action: { router.open(dormRoute) }) {
             CustomGroupBox {
                 cardContent
             }
@@ -185,11 +185,11 @@ struct DormOverviewView: View {
         }
     }
 
-    private var dormNavigationPath: [AppRoute] {
-        guard let dorm = viewModel.primaryDorm, let dormID = dorm.id else {
-            return []
+    private var dormRoute: RouteEntry {
+        guard let dormID = viewModel.primaryDorm?.id else {
+            return AppRoutes.dormList.entry()
         }
 
-        return [.features(.dormList(.detail(DormParams(dormID: dormID))))]
+        return AppRoutes.dormDetail.entry(DormParams(dormID: dormID))
     }
 }

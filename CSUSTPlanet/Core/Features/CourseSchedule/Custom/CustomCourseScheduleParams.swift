@@ -5,10 +5,10 @@
 //  Created by Zhe_Learn on 2026/11/19.
 //
 
-struct CustomScheduleEditParams: Hashable {
+struct CustomScheduleEditParams: RouteParams {
     let scheduleID: String
 }
 
-struct CustomCourseDetailParams: Hashable {
+struct CustomCourseDetailParams: RouteParams {
     let courseID: String
 }

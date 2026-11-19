@@ -20,7 +20,7 @@ struct ProfileView: View {
         Form {
             Section {
                 if let ssoProfile = authManager.ssoProfile {
-                    NavigationLink(value: AppRoute.profile(.profileDetail)) {
+                    NavigationLink(value: AppRoutes.profileDetail.entry()) {
                         HStack {
                             if let avatarUrl = URL(string: ssoProfile.avatar) {
                                 let resource = KF.ImageResource(
@@ -72,21 +72,21 @@ struct ProfileView: View {
                     Text("跟随系统").tag("system")
                 }
 
-                NavigationLink(value: AppRoute.profile(.networkSettings)) {
+                NavigationLink(value: AppRoutes.networkSettings.entry()) {
                     Label("网络设置", systemImage: "network")
                 }
 
                 #if os(iOS)
-                NavigationLink(value: AppRoute.profile(.backgroundTaskSettings)) {
+                NavigationLink(value: AppRoutes.backgroundTaskSettings.entry()) {
                     Label("后台任务设置", systemImage: "gearshape.2")
                 }
                 #endif
 
-                NavigationLink(value: AppRoute.profile(.notificationSettings)) {
+                NavigationLink(value: AppRoutes.notificationSettings.entry()) {
                     Label("通知设置", systemImage: "bell.badge")
                 }
 
-                NavigationLink(value: AppRoute.profile(.widgetSettings)) {
+                NavigationLink(value: AppRoutes.widgetSettings.entry()) {
                     Label("小组件设置", systemImage: "widget.small")
                 }
 
@@ -100,7 +100,7 @@ struct ProfileView: View {
             }
 
             Section {
-                NavigationLink(value: AppRoute.profile(.about())) {
+                NavigationLink(value: AppRoutes.about.entry()) {
                     Text("关于 云岭星球")
                 }
 
@@ -115,11 +115,11 @@ struct ProfileView: View {
                 }
                 .disabled(EnvironmentUtil.environment == .testFlight)
 
-                NavigationLink(value: AppRoute.profile(.feedback)) {
+                NavigationLink(value: AppRoutes.feedback.entry()) {
                     Text("意见反馈")
                 }
 
-                NavigationLink(value: AppRoute.profile(.userAgreement)) {
+                NavigationLink(value: AppRoutes.userAgreement.entry()) {
                     Text("云岭星球 用户协议")
                 }
             } header: {

@@ -15,7 +15,7 @@ struct CourseOverviewView: View {
     @State private var selectedCourse: CourseDisplayInfo?
 
     var body: some View {
-        Button(action: { router.deepLinkTo(feature: .courseSchedule) }) {
+        Button(action: { router.open(AppRoutes.courseSchedule.entry()) }) {
             CustomGroupBox {
                 TimelineView(.periodic(from: .now, by: 60)) { context in
                     cardContent(now: context.date)

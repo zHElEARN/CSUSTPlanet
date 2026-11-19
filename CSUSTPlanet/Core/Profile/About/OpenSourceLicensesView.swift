@@ -54,7 +54,7 @@ struct OpenSourceLicensesView: View {
                     } else {
                         ForEach(viewModel.licenses) { license in
                             let params = LicenseDetailParams(licenseID: license.id)
-                            NavigationLink(value: AppRoute.profile(.about(.openSourceLicenses(.detail(params))))) {
+                            NavigationLink(value: AppRoutes.licenseDetail.entry(params)) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(license.title)
 

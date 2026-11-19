@@ -7,7 +7,7 @@
 
 import CSUSTKit
 
-struct MoocCourseDetailParams: Hashable {
+struct MoocCourseDetailParams: RouteParams {
     let id: String
     let name: String
     let number: String?

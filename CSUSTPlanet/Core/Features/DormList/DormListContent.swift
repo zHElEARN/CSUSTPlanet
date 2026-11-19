@@ -98,7 +98,7 @@ struct DormListContent: View {
         if let dormID = dorm.id {
             Group {
                 #if os(macOS)
-                NavigationLink(value: AppRoute.features(.dormList(.detail(DormParams(dormID: dormID))))) {
+                NavigationLink(value: AppRoutes.dormDetail.entry(DormParams(dormID: dormID))) {
                     CustomGroupBox {
                         dormCardContent(dorm, electricityColor: electricityColor)
                     }
@@ -106,7 +106,7 @@ struct DormListContent: View {
                 .buttonStyle(.plain)
                 #elseif os(iOS)
                 ZStack {
-                    NavigationLink(value: AppRoute.features(.dormList(.detail(DormParams(dormID: dormID))))) {
+                    NavigationLink(value: AppRoutes.dormDetail.entry(DormParams(dormID: dormID))) {
                         EmptyView()
                     }
                     .opacity(0)

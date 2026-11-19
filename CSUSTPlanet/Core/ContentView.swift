@@ -55,8 +55,5 @@ struct ContentView: View {
         .sheet(isPresented: $globalManager.isAppUpdateSheetPresented) {
             AppUpdateSheetView()
         }
-        .onOpenURL { url in
-            router.handleDeepLink(url)
-        }
     }
 }

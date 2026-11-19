@@ -41,11 +41,12 @@ struct RootLayoutView: View {
                 adaptiveLayout
             }
         }
-        .onChange(of: isCompact, initial: true) { oldValue, newValue in
-            router.isCompact = newValue
-            if oldValue != newValue {
-                router.handleSizeClassChange(toCompact: newValue)
-            }
+        .onChange(of: isCompact, initial: true) { _, newValue in
+            router.handleSizeClassChange(toCompact: newValue)
+        }
+        .onOpenURL { url in
+            router.handleSizeClassChange(toCompact: isCompact)
+            router.handleDeepLink(url)
         }
     }
 
@@ -53,44 +54,30 @@ struct RootLayoutView: View {
     private var tabLayout: some View {
         TabView(selection: $router.selectedTab) {
             Tab("概览", systemImage: "rectangle.stack", value: AppTabItem.overview) {
-                navigationStack(for: .overview) {
-                    OverviewView()
-                }
+                navigationStack(for: .overview)
             }
             .badge(globalManager.unreadAnnouncementsCount)
 
             Tab("日程", systemImage: "calendar", value: AppTabItem.schedule) {
-                navigationStack(for: .schedule) {
-                    ScheduleView()
-                }
+                navigationStack(for: .schedule)
             }
 
             if isCompact {
                 Tab("功能", systemImage: "square.grid.2x2", value: AppTabItem.features) {
-                    navigationStack(for: .features) {
-                        FeaturesView()
-                    }
+                    navigationStack(for: .features)
                 }
+            }
 
-                Tab("我的", systemImage: "person", value: AppTabItem.profile) {
-                    navigationStack(for: .profile) {
-                        ProfileView()
-                    }
-                }
-            } else {
-                Tab("我的", systemImage: "person", value: AppTabItem.profile) {
-                    navigationStack(for: .profile) {
-                        ProfileView()
-                    }
-                }
+            Tab("我的", systemImage: "person", value: AppTabItem.profile) {
+                navigationStack(for: .profile)
+            }
 
+            if !isCompact {
                 ForEach(featureSections.indices, id: \.self) { index in
                     TabSection(featureSections[index].title) {
                         ForEach(featureSections[index].items, id: \.self) { item in
                             Tab(item.name, systemImage: item.systemImage, value: AppTabItem.feature(item)) {
-                                navigationStack(for: .feature(item)) {
-                                    item.rootRoute.destinationView
-                                }
+                                navigationStack(for: .feature(item))
                             }
                         }
                     }
@@ -105,30 +92,22 @@ struct RootLayoutView: View {
     private var adaptiveLayout: some View {
         if isCompact {
             TabView(selection: $router.selectedTab) {
-                navigationStack(for: .overview) {
-                    OverviewView()
-                }
-                .tabItem { Label("概览", systemImage: "rectangle.stack") }
-                .tag(AppTabItem.overview)
-                .badge(globalManager.unreadAnnouncementsCount)
+                navigationStack(for: .overview)
+                    .tabItem { Label("概览", systemImage: "rectangle.stack") }
+                    .tag(AppTabItem.overview)
+                    .badge(globalManager.unreadAnnouncementsCount)
 
-                navigationStack(for: .schedule) {
-                    ScheduleView()
-                }
-                .tabItem { Label("日程", systemImage: "calendar") }
-                .tag(AppTabItem.schedule)
+                navigationStack(for: .schedule)
+                    .tabItem { Label("日程", systemImage: "calendar") }
+                    .tag(AppTabItem.schedule)
 
-                navigationStack(for: .features) {
-                    FeaturesView()
-                }
-                .tabItem { Label("功能", systemImage: "square.grid.2x2") }
-                .tag(AppTabItem.features)
+                navigationStack(for: .features)
+                    .tabItem { Label("功能", systemImage: "square.grid.2x2") }
+                    .tag(AppTabItem.features)
 
-                navigationStack(for: .profile) {
-                    ProfileView()
-                }
-                .tabItem { Label("我的", systemImage: "person") }
-                .tag(AppTabItem.profile)
+                navigationStack(for: .profile)
+                    .tabItem { Label("我的", systemImage: "person") }
+                    .tag(AppTabItem.profile)
             }
         } else {
             NavigationSplitView {
@@ -161,34 +140,23 @@ struct RootLayoutView: View {
                 .navigationSplitViewColumnWidth(min: 150, ideal: 200, max: 250)
                 #endif
             } detail: {
-                switch router.selectedTab {
-                case .overview:
-                    navigationStack(for: .overview) {
-                        OverviewView()
-                    }
-                case .schedule:
-                    navigationStack(for: .schedule) {
-                        ScheduleView()
-                    }
-                case .profile:
-                    navigationStack(for: .profile) {
-                        ProfileView()
-                    }
-                case .feature(let feature):
-                    navigationStack(for: .feature(feature)) {
-                        feature.rootRoute.destinationView
-                    }
-                default:
+                if router.selectedTab == .features {
                     ContentUnavailableView("请选择项目", systemImage: "list.bullet")
+                } else {
+                    navigationStack(for: router.selectedTab)
                 }
             }
         }
     }
 
-    private func navigationStack<Root: View>(for tab: AppTabItem, @ViewBuilder root: () -> Root) -> some View {
+    private func navigationStack(for tab: AppTabItem) -> some View {
         NavigationStack(path: $router[pathFor: tab]) {
-            root().withAppRouter()
+            AppRoutes.destination(for: tab.rootRoute)
+                .navigationDestination(for: RouteEntry.self) { entry in
+                    AppRoutes.destination(for: entry)
+                }
         }
+        .id(tab)
     }
 
     @ViewBuilder

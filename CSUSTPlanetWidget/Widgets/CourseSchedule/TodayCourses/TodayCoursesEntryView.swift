@@ -33,7 +33,7 @@ struct TodayCoursesEntryView: View {
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
-        .widgetURL(URL(string: "csustplanet://features/course-schedule"))
+        .widgetURL(URL(string: "csustplanet://app/features/course-schedule"))
     }
 
     // MARK: - Content View

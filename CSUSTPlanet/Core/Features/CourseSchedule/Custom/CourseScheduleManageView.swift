@@ -52,7 +52,7 @@ private struct CourseScheduleManageContent: View {
                 }
                 ForEach(courseItems) { item in
                     let params = CustomCourseDetailParams(courseID: item.id)
-                    NavigationLink(value: AppRoute.features(.courseSchedule(.courseDetail(params)))) {
+                    NavigationLink(value: AppRoutes.customCourseDetail.entry(params)) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.course.courseName)
                             Text(courseSubtitle(for: item))

@@ -28,7 +28,7 @@ struct GradeQueryGradeRow: View {
             .buttonStyle(.plain)
         } else {
             let params = GradeDetailParams(courseGrade: courseGrade)
-            NavigationLink(value: AppRoute.features(.gradeQuery(.detail(params)))) {
+            NavigationLink(value: AppRoutes.gradeDetail.entry(params)) {
                 GradeQueryGradeRowContent(courseGrade: courseGrade)
                     .contentShape(.rect)
             }

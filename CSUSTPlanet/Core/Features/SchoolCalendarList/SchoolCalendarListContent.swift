@@ -30,7 +30,7 @@ struct SchoolCalendarListContent: View {
             ForEach(schoolCalendars) { calendar in
                 CustomGroupBox {
                     let params = SchoolCalendarParams(semesterCode: calendar.semesterCode)
-                    NavigationLink(value: AppRoute.features(.schoolCalendarList(.detail(params)))) {
+                    NavigationLink(value: AppRoutes.schoolCalendarDetail.entry(params)) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(calendar.title)

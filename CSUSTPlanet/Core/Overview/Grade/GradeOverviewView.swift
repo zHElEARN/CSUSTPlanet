@@ -17,7 +17,7 @@ struct GradeOverviewView: View {
     private let chartHeight: CGFloat = 80
 
     var body: some View {
-        Button(action: { router.deepLinkTo(feature: .gradeQuery) }) {
+        Button(action: { router.open(AppRoutes.gradeQuery.entry()) }) {
             CustomGroupBox {
                 cardContent
             }

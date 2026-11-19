@@ -12,7 +12,7 @@ struct AnnouncementOverviewView: View {
     private let viewModel = AnnouncementListViewModel.shared
 
     var body: some View {
-        NavigationLink(value: AppRoute.overview(.announcementList)) {
+        NavigationLink(value: AppRoutes.announcementList.entry()) {
             CustomGroupBox {
                 cardContent
             }

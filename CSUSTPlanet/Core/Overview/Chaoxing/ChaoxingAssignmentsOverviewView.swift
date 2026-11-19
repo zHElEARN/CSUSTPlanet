@@ -39,7 +39,7 @@ struct ChaoxingAssignmentsOverviewView: View {
     }
 
     var body: some View {
-        Button(action: { router.deepLinkTo(feature: .chaoxingAssignments) }) {
+        Button(action: { router.open(AppRoutes.chaoxingAssignments.entry()) }) {
             CustomGroupBox {
                 cardContent
             }

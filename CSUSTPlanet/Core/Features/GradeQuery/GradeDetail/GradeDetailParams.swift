@@ -7,7 +7,7 @@
 
 import CSUSTKit
 
-struct GradeDetailParams: Hashable {
+struct GradeDetailParams: RouteParams {
     let semester: String
     let courseID: String
     let courseName: String

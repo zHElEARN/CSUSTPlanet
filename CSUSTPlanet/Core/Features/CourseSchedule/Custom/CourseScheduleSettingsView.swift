@@ -59,7 +59,7 @@ struct CourseScheduleSettingsContent: View {
                 }
                 ForEach(schedules) { schedule in
                     let params = CustomScheduleEditParams(scheduleID: schedule.id)
-                    NavigationLink(value: AppRoute.features(.courseSchedule(.edit(params)))) {
+                    NavigationLink(value: AppRoutes.courseScheduleEdit.entry(params)) {
                         scheduleRow(
                             title: schedule.name,
                             subtitle: CourseScheduleUtil.dateFormatter.string(from: schedule.semesterStartDate),
