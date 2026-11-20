@@ -75,18 +75,6 @@ final class AssignmentsOverviewViewModel {
             let data = Cached(cachedAt: .now, value: newGroups)
             MMKVHelper.Assignments.cache = data
             WidgetTimelineRefreshHelper.reloadAssignments()
-            let drafts = AssignmentsNotificationHelper.buildLocalNotificationDrafts(
-                groups: data.value,
-                reminderOffsetHour: MMKVHelper.Assignments.notificationOffsetHour,
-                reminderOffsetMinute: MMKVHelper.Assignments.notificationOffsetMinute
-            )
-            await AssignmentsNotificationHelper.syncTodoNotificationsSilently(
-                isNotificationEnabled: MMKVHelper.Assignments.isNotificationEnabled,
-                drafts: drafts,
-                onPermissionDenied: {
-                    MMKVHelper.Assignments.isNotificationEnabled = false
-                }
-            )
         } catch {
             // [INFO] 暂时不处理错误
         }
