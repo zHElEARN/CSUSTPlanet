@@ -74,9 +74,17 @@ struct ScheduleContent: View {
             .scrollTargetLayout()
             #if os(iOS)
             .introspect(.scrollView, on: .iOS(.v17...), scope: .ancestor) { scrollView in
+                scrollView.scrollsToTop = false
                 scheduleScrollViewReference.scrollView = scrollView
             }
             #endif
+        }
+        .apply { view in
+            if #available(iOS 26.0, macOS 26.0, *) {
+                view.scrollEdgeEffectStyle(.soft, for: .top)
+            } else {
+                view
+            }
         }
         .scrollPosition(id: $visibleSectionID, anchor: .top)
         .safeAreaInset(edge: .top, spacing: 0) {
@@ -164,16 +172,6 @@ struct ScheduleContent: View {
             visibleSectionID = nil
             selectedDayID = nil
             hasPerformedInitialScroll = false
-        }
-        .onAppear {
-            if usesInspector {
-                isFilterPresented = true
-            }
-        }
-        .onChange(of: usesInspector) { _, usesInspector in
-            if usesInspector {
-                isFilterPresented = true
-            }
         }
         .apply { view in
             if usesInspector {
