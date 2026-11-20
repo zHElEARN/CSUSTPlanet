@@ -28,12 +28,13 @@ struct CSUSTPlanetApp: App {
 
     @Environment(\.scenePhase) private var scenePhase
 
-    #if os(iOS)
     init() {
+        _ = ScheduleNotificationCoordinator.shared
+        #if os(iOS)
         _ = BackgroundTaskHelper.shared
         _ = ActivityManager.shared
+        #endif
     }
-    #endif
 
     var body: some Scene {
         Group {

@@ -127,6 +127,9 @@ extension AppRoutes {
     static let notificationSettings = AppPage("/profile/notification-settings", tab: .profile) {
         NotificationSettingsView()
     }
+    static let scheduleNotificationSettings = AppPage("/profile/notification-settings/schedule", tab: .profile) {
+        ScheduleNotificationSettingsView()
+    }
     static let widgetSettings = AppPage("/profile/widget-settings", tab: .profile) {
         WidgetSettingsView()
     }
@@ -192,6 +195,7 @@ extension AppRoutes {
             profileDetail.registration,
             networkSettings.registration,
             notificationSettings.registration,
+            scheduleNotificationSettings.registration,
             widgetSettings.registration,
             about.registration,
             openSourceLicenses.registration,

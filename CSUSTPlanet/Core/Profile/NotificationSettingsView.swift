@@ -55,6 +55,14 @@ struct NotificationSettingsView: View {
                 Text("实时活动/灵动岛将会显示：上课前20分钟、上课中和下课后5分钟的课程状态")
             }
             #endif
+
+            Section {
+                NavigationLink(value: AppRoutes.scheduleNotificationSettings.entry()) {
+                    Text("日程通知设置")
+                }
+            } header: {
+                Text("日程通知")
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("通知设置")

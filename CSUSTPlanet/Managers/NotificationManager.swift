@@ -119,18 +119,34 @@ final class NotificationManager {
 // MARK: - Local Notification
 
 extension NotificationManager {
-    func syncLocalNotifications(prefix: String, drafts: [LocalNotificationDraft]) async throws {
+    func syncLocalNotifications(prefix: String, drafts: [LocalNotificationDraft], maxPendingCount: Int) async throws {
         let pendingRequests = await center.pendingNotificationRequests()
-        let pendingIdsToClear =
-            pendingRequests
-            .map(\.identifier)
-            .filter { $0.hasPrefix(prefix) }
+        let managedRequests = pendingRequests.filter { $0.identifier.hasPrefix(prefix) }
+        let pendingByID = Dictionary(uniqueKeysWithValues: managedRequests.map { ($0.identifier, $0) })
 
-        if !pendingIdsToClear.isEmpty {
-            center.removePendingNotificationRequests(withIdentifiers: pendingIdsToClear)
+        let otherPendingCount = pendingRequests.count - managedRequests.count
+        let availableSlots = max(0, maxPendingCount - otherPendingCount)
+        let now = Date.now
+        let desired = Array(drafts.lazy.filter { $0.triggerDate > now }.prefix(availableSlots))
+        let desiredIDs = Set(desired.map(\.identifier))
+        let obsoleteIDs = managedRequests.map(\.identifier).filter { !desiredIDs.contains($0) }
+        if !obsoleteIDs.isEmpty {
+            center.removePendingNotificationRequests(withIdentifiers: obsoleteIDs)
         }
 
-        for draft in drafts where draft.triggerDate > .now {
+        var firstError: Error?
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        for draft in desired where draft.triggerDate > .now {
+            let dateComponents = calendar.dateComponents(
+                [.timeZone, .year, .month, .day, .hour, .minute, .second],
+                from: draft.triggerDate
+            )
+            let existing = pendingByID[draft.identifier]
+            if let existing, matches(existing, draft: draft, dateComponents: dateComponents) {
+                continue
+            }
+
             let content = UNMutableNotificationContent()
             content.title = draft.title
             content.subtitle = draft.subtitle
@@ -139,17 +155,38 @@ extension NotificationManager {
             content.threadIdentifier = draft.threadIdentifier
             content.userInfo = draft.userInfo
 
-            let dateComponents = Calendar.current.dateComponents(
-                [.year, .month, .day, .hour, .minute, .second],
-                from: draft.triggerDate
-            )
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
             let request = UNNotificationRequest(identifier: draft.identifier, content: content, trigger: trigger)
-            try await center.add(request)
+            do {
+                try await center.add(request)
+            } catch {
+                if existing != nil {
+                    center.removePendingNotificationRequests(withIdentifiers: [draft.identifier])
+                }
+                firstError = firstError ?? error
+            }
+        }
+
+        if let firstError {
+            throw firstError
         }
     }
 
-    func clearLocalNotifications(prefix: String) async {
+    private func matches(_ request: UNNotificationRequest, draft: LocalNotificationDraft, dateComponents: DateComponents) -> Bool {
+        guard let trigger = request.trigger as? UNCalendarNotificationTrigger,
+            !trigger.repeats, trigger.dateComponents == dateComponents
+        else { return false }
+
+        let content = request.content
+        return content.title == draft.title
+            && content.subtitle == draft.subtitle
+            && content.body == draft.body
+            && content.threadIdentifier == draft.threadIdentifier
+            && (content.userInfo as NSDictionary).isEqual(to: draft.userInfo)
+    }
+
+    static func clearLocalNotifications(prefix: String) async {
+        let center = UNUserNotificationCenter.current()
         let pendingRequests = await center.pendingNotificationRequests()
         let pendingIdentifiers =
             pendingRequests
