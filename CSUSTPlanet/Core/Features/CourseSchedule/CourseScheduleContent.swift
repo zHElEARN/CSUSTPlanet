@@ -25,19 +25,17 @@ struct CourseScheduleContent: View {
     let scheduleName: String?
 
     let isCourseScheduleLoading: Bool
-    let isCalendarExporting: Bool
 
     @Binding var currentWeek: Int
     let realCurrentWeek: Int?
     let weekCount: Int
 
     @Binding var errorToast: ToastState
-    @Binding var loadingToast: ToastState
     @Binding var successToast: ToastState
 
     var onRefreshCourses: () async -> Void
     var onSelectSemester: (String?) async -> Void
-    var onAddCalendar: (Bool, CourseScheduleReminderOffset, Bool, CourseScheduleReminderOffset) async -> Void
+    var onAddCalendar: (String, [TimeInterval]) async throws -> Void
 
     @Environment(\.horizontalSizeClass) private var sizeClass
 
@@ -174,12 +172,12 @@ struct CourseScheduleContent: View {
                     Button(action: { isSemestersSheetPresented = true }) {
                         Label("学期选择", systemImage: "slider.horizontal.3")
                     }
-                    .disabled(isCourseScheduleLoading || isCalendarExporting)
+                    .disabled(isCourseScheduleLoading)
 
                     Button(action: { isCalendarSettingsSheetPresented = true }) {
                         Label("添加课表到系统日历", systemImage: "calendar.badge.plus")
                     }
-                    .disabled(isCourseScheduleLoading || isCalendarExporting)
+                    .disabled(isCourseScheduleLoading)
                 }
 
                 ToolbarItem(placement: .primaryAction) {
@@ -190,7 +188,7 @@ struct CourseScheduleContent: View {
                             Label("刷新", systemImage: "arrow.clockwise")
                         }
                     }
-                    .disabled(isCourseScheduleLoading || isCalendarExporting)
+                    .disabled(isCourseScheduleLoading)
                 }
             }
         }
@@ -200,7 +198,6 @@ struct CourseScheduleContent: View {
             }
         }
         .errorToast($errorToast)
-        .loadingToast($loadingToast)
         .successToast($successToast)
         .sheet(isPresented: $isCalendarSettingsSheetPresented) {
             CourseScheduleCalendarSettings(onAdd: onAddCalendar)

@@ -21,7 +21,6 @@ struct ExamScheduleView: View {
 
     @State private var errorToast: ToastState = .errorTitle
     @State private var successToast: ToastState = .successTitle
-    @State private var loadingToast: ToastState = .init(title: "添加中")
 
     @State private var isInitial: Bool = true
 
@@ -37,7 +36,6 @@ struct ExamScheduleView: View {
             isLoadingSemesters: isLoadingSemesters,
             errorToast: $errorToast,
             successToast: $successToast,
-            loadingToast: $loadingToast,
             onQuery: loadExams,
             onRefreshSemesters: loadAvailableSemesters,
             onApplyFilter: loadExams,
@@ -92,29 +90,24 @@ struct ExamScheduleView: View {
         }
     }
 
-    private func addToCalendar() async {
+    private func addToCalendar(accountID: String) async throws {
         guard let exams = examData?.value, !exams.isEmpty else {
-            errorToast.show(message: "考试安排为空，无法添加到日历")
-            return
+            throw CalendarUtilError.noEventsToExport
         }
-        loadingToast.show(message: "正在添加到日历...")
-        defer { loadingToast.hide() }
-        do {
-            let calendar = try await CalendarUtil.getOrCreateEventCalendar(suffix: "考试")
-            for exam in exams {
-                try await CalendarUtil.addEvent(
-                    calendar: calendar,
-                    title: "考试：\(exam.courseName)",
-                    startDate: exam.examStartTime,
-                    endDate: exam.examEndTime,
-                    notes: "课程老师：\(exam.teacher)",
-                    location: exam.examRoom
-                )
-            }
-            successToast.show(message: "全部添加到日历成功")
-        } catch {
-            errorToast.show(message: error.localizedDescription)
+
+        let drafts = exams.map { exam in
+            CalendarEventDraft(
+                title: "考试：\(exam.courseName)",
+                startDate: exam.examStartTime,
+                endDate: exam.examEndTime,
+                notes: "课程老师：\(exam.teacher)",
+                location: exam.examRoom,
+                timeZone: nil,
+                alarmRelativeOffsets: []
+            )
         }
+        try await CalendarUtil.shared.addEvents(drafts, suffix: "考试", accountID: accountID)
+        successToast.show(message: "全部添加到日历成功")
     }
 }
 

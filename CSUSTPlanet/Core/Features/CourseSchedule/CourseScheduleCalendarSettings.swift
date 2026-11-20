@@ -8,14 +8,16 @@
 import SwiftUI
 
 struct CourseScheduleCalendarSettings: View {
+    @Environment(\.dismiss) private var dismiss
+
     @State private var isFirstReminderEnabled: Bool = true
     @State private var firstReminderOffset: CourseScheduleReminderOffset = .tenMinutes
     @State private var isSecondReminderEnabled: Bool = false
     @State private var secondReminderOffset: CourseScheduleReminderOffset = .atTime
+    @State private var isChoosingAccount = false
+    @State private var didExport = false
 
-    @Environment(\.dismiss) private var dismiss
-
-    let onAdd: (Bool, CourseScheduleReminderOffset, Bool, CourseScheduleReminderOffset) async -> Void
+    let onAdd: (String, [TimeInterval]) async throws -> Void
 
     var body: some View {
         NavigationStack {
@@ -47,28 +49,44 @@ struct CourseScheduleCalendarSettings: View {
             .inlineToolbarTitle()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
-                        dismiss()
-                    }
+                    Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("添加") {
-                        dismiss()
-                        await onAdd(
-                            isFirstReminderEnabled,
-                            firstReminderOffset,
-                            isSecondReminderEnabled,
-                            secondReminderOffset
-                        )
-                    }
-                    .disabled(isFirstReminderEnabled && isSecondReminderEnabled && firstReminderOffset == secondReminderOffset)
+                    Button("添加") { isChoosingAccount = true }
+                        .disabled(hasDuplicateReminders)
                 }
+            }
+        }
+        .sheet(
+            isPresented: $isChoosingAccount,
+            onDismiss: {
+                if didExport { dismiss() }
+            }
+        ) {
+            CalendarExportSheet { accountID in
+                try await onAdd(accountID, alarmRelativeOffsets)
+                didExport = true
             }
         }
     }
 
+    private var hasDuplicateReminders: Bool {
+        isFirstReminderEnabled && isSecondReminderEnabled && firstReminderOffset == secondReminderOffset
+    }
+
+    private var alarmRelativeOffsets: [TimeInterval] {
+        var offsets: [TimeInterval] = []
+        if isFirstReminderEnabled {
+            offsets.append(-firstReminderOffset.rawValue)
+        }
+        if isSecondReminderEnabled {
+            offsets.append(-secondReminderOffset.rawValue)
+        }
+        return offsets
+    }
+
     @ViewBuilder
-    func reminderPicker(title: String, selection: Binding<CourseScheduleReminderOffset>) -> some View {
+    private func reminderPicker(title: String, selection: Binding<CourseScheduleReminderOffset>) -> some View {
         Picker(title, selection: selection) {
             ForEach(CourseScheduleReminderOffset.allCases) { offset in
                 Text(offset.title).tag(offset)

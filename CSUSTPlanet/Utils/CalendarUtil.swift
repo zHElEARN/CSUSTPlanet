@@ -5,7 +5,6 @@
 //  Created by Zhe_Learn on 2025/7/11.
 //
 
-import CSUSTKit
 import EventKit
 import Foundation
 
@@ -15,6 +14,9 @@ enum CalendarUtilError: Error, LocalizedError {
     case eventPermissionDenied
     case reminderPermissionDenied
     case noAvailableSource
+    case eventSourceUnavailable
+    case eventCalendarCreationDenied(account: String)
+    case noEventsToExport
     case fetchRemindersFailed
 
     var errorDescription: String? {
@@ -25,6 +27,12 @@ enum CalendarUtilError: Error, LocalizedError {
             return "提醒事项权限被拒绝，请在设置中开启权限。"
         case .noAvailableSource:
             return "未找到可用的日历账户，请前往系统设置添加 iCloud 或其他日历账户。"
+        case .eventSourceUnavailable:
+            return "所选日历账户已不可用，请重新打开导出窗口选择账户。"
+        case .eventCalendarCreationDenied(let account):
+            return "「\(account)」不允许新建日历，请选择另一个日历账户。"
+        case .noEventsToExport:
+            return "没有可导出的日历事件。"
         case .fetchRemindersFailed:
             return "获取提醒事项失败。"
         }
@@ -33,29 +41,34 @@ enum CalendarUtilError: Error, LocalizedError {
 
 // MARK: - CalendarUtil
 
-enum CalendarUtil {
-    private static let eventStore = EKEventStore()
-    private static let calendarTitlePrefix = "云岭星球 - "
+actor CalendarUtil {
+    static let shared = CalendarUtil()
+
+    private let eventStore = EKEventStore()
+    private let calendarTitlePrefix = "云岭星球 - "
+
+    private init() {}
+
+    struct EventAccount: Identifiable, Sendable {
+        let id: String
+        let title: String
+    }
 }
 
-struct CalendarEventDraft {
+struct CalendarEventDraft: Sendable {
     let title: String
     let startDate: Date
     let endDate: Date
     let notes: String?
     let location: String?
-    let timeZone: TimeZone
+    let timeZone: TimeZone?
     let alarmRelativeOffsets: [TimeInterval]
 }
 
 // MARK: - Permission
 
 extension CalendarUtil {
-    static func requestEventAccess() async throws -> Bool {
-        return try await eventStore.requestFullAccessToEvents()
-    }
-
-    static func requestReminderAccess() async throws -> Bool {
+    func requestReminderAccess() async throws -> Bool {
         return try await eventStore.requestFullAccessToReminders()
     }
 }
@@ -63,74 +76,65 @@ extension CalendarUtil {
 // MARK: - Event
 
 extension CalendarUtil {
-    static func getOrCreateEventCalendar(suffix: String) async throws -> EKCalendar {
-        let title = calendarTitlePrefix + suffix
-        guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
+    func eventAccounts() async throws -> [EventAccount] {
+        try await requireEventAccess()
+        let sources = eventStore.sources
+        guard !sources.isEmpty else { throw CalendarUtilError.noAvailableSource }
 
-        if let existingCalendar = eventStore.calendars(for: .event).first(where: { $0.title == title }) {
+        return
+            sources
+            .map { EventAccount(id: $0.sourceIdentifier, title: $0.title) }
+            .sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+    }
+
+    private func getOrCreateEventCalendar(suffix: String, accountID: String) throws -> EKCalendar {
+        guard let source = eventStore.source(withIdentifier: accountID) else {
+            throw CalendarUtilError.eventSourceUnavailable
+        }
+
+        let title = calendarTitlePrefix + suffix
+        if let existingCalendar = source.calendars(for: .event).first(where: { $0.title == title }) {
             return existingCalendar
         }
 
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
         newCalendar.title = title
+        newCalendar.source = source
 
-        if let defaultListSource = eventStore.defaultCalendarForNewEvents?.source {
-            newCalendar.source = defaultListSource
-        } else if let iCloudSource = eventStore.sources.first(where: { $0.sourceType == .calDAV && $0.title.contains("iCloud") }) {
-            newCalendar.source = iCloudSource
-        } else if let localSource = eventStore.sources.first(where: { $0.sourceType == .local }) {
-            newCalendar.source = localSource
-        } else {
-            throw CalendarUtilError.noAvailableSource
+        do {
+            try eventStore.saveCalendar(newCalendar, commit: true)
+        } catch let error as EKError where error.code == .sourceDoesNotAllowCalendarAddDelete {
+            throw CalendarUtilError.eventCalendarCreationDenied(account: source.title)
         }
 
-        try eventStore.saveCalendar(newCalendar, commit: true)
         return newCalendar
     }
 
-    static func addEvent(
-        calendar: EKCalendar,
-        title: String,
-        startDate: Date,
-        endDate: Date,
-        notes: String? = nil,
-        location: String? = nil,
-        alarms: [EKAlarm]? = nil
-    ) async throws {
-        guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
-        guard try await !eventExists(calendar: calendar, title: title, startDate: startDate, endDate: endDate) else { return }
-
-        let event = EKEvent(eventStore: eventStore)
-        event.title = title
-        event.startDate = startDate
-        event.endDate = endDate
-        event.notes = notes
-        event.location = location
-        event.calendar = calendar
-
-        if let alarms = alarms {
-            for alarm in alarms {
-                event.addAlarm(alarm)
-            }
+    private func requireEventAccess() async throws {
+        guard try await eventStore.requestFullAccessToEvents() else {
+            throw CalendarUtilError.eventPermissionDenied
         }
-
-        try eventStore.save(event, span: .thisEvent)
     }
 
-    static private func eventExists(calendar: EKCalendar, title: String, startDate: Date, endDate: Date) async throws -> Bool {
-        let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
-        let events = eventStore.events(matching: predicate)
-        return events.contains { $0.title == title && $0.startDate == startDate && $0.endDate == endDate }
+    func addEvents(_ drafts: [CalendarEventDraft], suffix: String, accountID: String) async throws {
+        try await requireEventAccess()
+        let calendar = try getOrCreateEventCalendar(suffix: suffix, accountID: accountID)
+        for draft in drafts {
+            guard !eventExists(draft, in: calendar) else { continue }
+            try eventStore.save(makeEvent(from: draft, in: calendar), span: .thisEvent)
+        }
     }
 
     /// 原子替换指定时间范围内的全部事件
-    static func replaceEvents(
-        calendar: EKCalendar,
+    func replaceEvents(
+        _ drafts: [CalendarEventDraft],
+        suffix: String,
+        accountID: String,
         from startDate: Date,
-        to endDate: Date,
-        with drafts: [CalendarEventDraft]
+        to endDate: Date
     ) async throws {
-        guard try await requestEventAccess() else { throw CalendarUtilError.eventPermissionDenied }
+        try await requireEventAccess()
+        let calendar = try getOrCreateEventCalendar(suffix: suffix, accountID: accountID)
 
         do {
             let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: [calendar])
@@ -139,20 +143,7 @@ extension CalendarUtil {
             }
 
             for draft in drafts {
-                let event = EKEvent(eventStore: eventStore)
-                event.title = draft.title
-                event.startDate = draft.startDate
-                event.endDate = draft.endDate
-                event.notes = draft.notes
-                event.location = draft.location
-                event.timeZone = draft.timeZone
-                event.calendar = calendar
-
-                for offset in draft.alarmRelativeOffsets {
-                    event.addAlarm(EKAlarm(relativeOffset: offset))
-                }
-
-                try eventStore.save(event, span: .thisEvent, commit: false)
+                try eventStore.save(makeEvent(from: draft, in: calendar), span: .thisEvent, commit: false)
             }
 
             try eventStore.commit()
@@ -161,12 +152,35 @@ extension CalendarUtil {
             throw error
         }
     }
+
+    private func eventExists(_ draft: CalendarEventDraft, in calendar: EKCalendar) -> Bool {
+        let predicate = eventStore.predicateForEvents(withStart: draft.startDate, end: draft.endDate, calendars: [calendar])
+        let events = eventStore.events(matching: predicate)
+        return events.contains { $0.title == draft.title && $0.startDate == draft.startDate && $0.endDate == draft.endDate }
+    }
+
+    private func makeEvent(from draft: CalendarEventDraft, in calendar: EKCalendar) -> EKEvent {
+        let event = EKEvent(eventStore: eventStore)
+        event.title = draft.title
+        event.startDate = draft.startDate
+        event.endDate = draft.endDate
+        event.notes = draft.notes
+        event.location = draft.location
+        if let timeZone = draft.timeZone {
+            event.timeZone = timeZone
+        }
+        event.calendar = calendar
+        for offset in draft.alarmRelativeOffsets {
+            event.addAlarm(EKAlarm(relativeOffset: offset))
+        }
+        return event
+    }
 }
 
 // MARK: - Reminder
 
 extension CalendarUtil {
-    static func getOrCreateReminderCalendar(suffix: String) async throws -> EKCalendar {
+    func getOrCreateReminderCalendar(suffix: String) async throws -> EKCalendar {
         let title = calendarTitlePrefix + suffix
         guard try await requestReminderAccess() else { throw CalendarUtilError.reminderPermissionDenied }
 
@@ -191,7 +205,7 @@ extension CalendarUtil {
         return newCalendar
     }
 
-    static func addReminder(
+    func addReminder(
         calendar: EKCalendar,
         title: String,
         dueDate: Date?,
@@ -213,7 +227,7 @@ extension CalendarUtil {
         try eventStore.save(reminder, commit: true)
     }
 
-    static private func reminderExists(calendar: EKCalendar, title: String, dueDate: Date?) async throws -> Bool {
+    private func reminderExists(calendar: EKCalendar, title: String, dueDate: Date?) async throws -> Bool {
         let reminders = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[EKReminder], Error>) in
             let predicate = eventStore.predicateForReminders(in: [calendar])
             eventStore.fetchReminders(matching: predicate) { fetchedReminders in

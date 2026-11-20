@@ -20,7 +20,6 @@ struct CourseScheduleView: View {
     @State private var selectedSemester: String? = nil
 
     @State private var isCourseScheduleLoading: Bool = false
-    @State private var isCalendarExporting: Bool = false
 
     @State private var currentWeek: Int = 1
     @State private var realCurrentWeek: Int? = nil
@@ -30,7 +29,6 @@ struct CourseScheduleView: View {
     @State private var scheduleName: String?
 
     @State private var errorToast: ToastState = .errorTitle
-    @State private var loadingToast: ToastState = .loadingTitle
     @State private var successToast: ToastState = .successTitle
 
     @State private var isInitial: Bool = true
@@ -45,12 +43,10 @@ struct CourseScheduleView: View {
             isCustomSchedule: isCustomSchedule,
             scheduleName: scheduleName,
             isCourseScheduleLoading: isCourseScheduleLoading,
-            isCalendarExporting: isCalendarExporting,
             currentWeek: $currentWeek,
             realCurrentWeek: realCurrentWeek,
             weekCount: weekCount,
             errorToast: $errorToast,
-            loadingToast: $loadingToast,
             successToast: $successToast,
             onRefreshCourses: {
                 await loadCourses(selectedSemester: selectedSemester)
@@ -147,66 +143,33 @@ struct CourseScheduleView: View {
         }
     }
 
-    private func addToCalendar(
-        isFirstReminderEnabled: Bool,
-        firstReminderOffset: CourseScheduleReminderOffset,
-        isSecondReminderEnabled: Bool,
-        secondReminderOffset: CourseScheduleReminderOffset
-    ) async {
-        guard !isCalendarExporting else { return }
+    private func addToCalendar(accountID: String, alarmRelativeOffsets: [TimeInterval]) async throws {
         guard let courses, let semesterStartDate else {
-            errorToast.show(message: "课表数据未加载，无法导出")
-            return
+            throw CalendarUtilError.noEventsToExport
         }
 
-        isCalendarExporting = true
-        loadingToast.show(message: "正在将课表添加到日历")
-        defer {
-            isCalendarExporting = false
-            loadingToast.hide()
-        }
+        let dateRange = ScheduleUtils.semesterDateRange(semesterStartDate: semesterStartDate, weekCount: weekCount)
+        let drafts = makeCalendarEventDrafts(
+            courses: courses,
+            semesterStartDate: semesterStartDate,
+            alarmRelativeOffsets: alarmRelativeOffsets
+        )
+        try await CalendarUtil.shared.replaceEvents(
+            drafts,
+            suffix: "课表",
+            accountID: accountID,
+            from: dateRange.startDate,
+            to: dateRange.endDate
+        )
 
-        do {
-            let dateRange = ScheduleUtils.semesterDateRange(semesterStartDate: semesterStartDate, weekCount: weekCount)
-            let drafts = makeCalendarEventDrafts(
-                courses: courses,
-                semesterStartDate: semesterStartDate,
-                isFirstReminderEnabled: isFirstReminderEnabled,
-                firstReminderOffset: firstReminderOffset,
-                isSecondReminderEnabled: isSecondReminderEnabled,
-                secondReminderOffset: secondReminderOffset
-            )
-
-            let calendar = try await CalendarUtil.getOrCreateEventCalendar(suffix: "课表")
-            try await CalendarUtil.replaceEvents(
-                calendar: calendar,
-                from: dateRange.startDate,
-                to: dateRange.endDate,
-                with: drafts
-            )
-
-            successToast.show(message: "课表已成功添加到日历")
-        } catch {
-            errorToast.show(message: "导出失败: \(error.localizedDescription)")
-        }
+        successToast.show(message: "课表已成功添加到日历")
     }
 
     private func makeCalendarEventDrafts(
         courses: [EduHelper.Course],
         semesterStartDate: Date,
-        isFirstReminderEnabled: Bool,
-        firstReminderOffset: CourseScheduleReminderOffset,
-        isSecondReminderEnabled: Bool,
-        secondReminderOffset: CourseScheduleReminderOffset
+        alarmRelativeOffsets: [TimeInterval]
     ) -> [CalendarEventDraft] {
-        var alarmRelativeOffsets: [TimeInterval] = []
-        if isFirstReminderEnabled {
-            alarmRelativeOffsets.append(-firstReminderOffset.rawValue)
-        }
-        if isSecondReminderEnabled {
-            alarmRelativeOffsets.append(-secondReminderOffset.rawValue)
-        }
-
         var drafts: [CalendarEventDraft] = []
         for course in courses {
             for session in course.sessions {

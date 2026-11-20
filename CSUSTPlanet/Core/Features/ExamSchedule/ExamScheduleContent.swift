@@ -21,15 +21,14 @@ struct ExamScheduleContent: View {
 
     @Binding var errorToast: ToastState
     @Binding var successToast: ToastState
-    @Binding var loadingToast: ToastState
 
     let onQuery: () async -> Void
     let onRefreshSemesters: () async -> Void
     let onApplyFilter: () async -> Void
-    let onAddToCalendar: () async -> Void
+    let onAddToCalendar: (String) async throws -> Void
 
     @State private var isFilterPresented: Bool = false
-    @State private var isAddToCalendarAlertPresented: Bool = false
+    @State private var isCalendarExportPresented = false
 
     private var exams: [EduHelper.Exam] {
         examData?.value ?? []
@@ -46,7 +45,6 @@ struct ExamScheduleContent: View {
             emptyNoun: "考试安排",
             errorToast: $errorToast,
             successToast: $successToast,
-            loadingToast: $loadingToast,
             onQuery: onQuery
         ) {
             ForEach(exams, id: \.courseID) { exam in
@@ -54,13 +52,8 @@ struct ExamScheduleContent: View {
             }
         }
         .sheet(isPresented: $isFilterPresented) { filterView.presentationDetents([.medium, .large]) }
-        .alert("添加日历", isPresented: $isAddToCalendarAlertPresented) {
-            Button(asyncAction: onAddToCalendar) {
-                Text("确认添加")
-            }
-            Button("取消", role: .cancel) {}
-        } message: {
-            Text("是否将所有考试安排添加到系统日历？")
+        .sheet(isPresented: $isCalendarExportPresented) {
+            CalendarExportSheet(onExport: onAddToCalendar)
         }
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
@@ -69,7 +62,7 @@ struct ExamScheduleContent: View {
                 }
                 .disabled(isLoadingExams)
 
-                Button(action: { isAddToCalendarAlertPresented = true }) {
+                Button(action: { isCalendarExportPresented = true }) {
                     Label("全部添加到日历", systemImage: "calendar.badge.plus")
                 }
                 .disabled(exams.isEmpty || isLoadingExams)
