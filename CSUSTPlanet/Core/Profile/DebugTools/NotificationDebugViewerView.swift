@@ -91,13 +91,34 @@ struct NotificationDebugViewerView: View {
         let pending = await center.debugPendingNotificationRequests()
         let delivered = await center.debugDeliveredNotifications()
 
-        pendingRequests = pending.sorted { lhs, rhs in
-            lhs.identifier.localizedCaseInsensitiveCompare(rhs.identifier) == .orderedAscending
-        }
+        let refreshedAt = Date.now
+        pendingRequests =
+            pending
+            .map { (request: $0, date: pendingSortDate(for: $0.trigger, now: refreshedAt)) }
+            .sorted { lhs, rhs in
+                if lhs.date != rhs.date {
+                    return lhs.date < rhs.date
+                }
+                return lhs.request.identifier.localizedCaseInsensitiveCompare(rhs.request.identifier) == .orderedAscending
+            }
+            .map { $0.request }
         deliveredNotifications = delivered.sorted { lhs, rhs in
             lhs.date > rhs.date
         }
-        lastUpdated = .now
+        lastUpdated = refreshedAt
+    }
+
+    private func pendingSortDate(for trigger: UNNotificationTrigger?, now: Date) -> Date {
+        guard let trigger else { return now }
+
+        switch trigger {
+        case let trigger as UNCalendarNotificationTrigger:
+            return trigger.nextTriggerDate() ?? .distantFuture
+        case let trigger as UNTimeIntervalNotificationTrigger:
+            return trigger.nextTriggerDate() ?? .distantFuture
+        default:
+            return .distantFuture
+        }
     }
 
     @ViewBuilder
