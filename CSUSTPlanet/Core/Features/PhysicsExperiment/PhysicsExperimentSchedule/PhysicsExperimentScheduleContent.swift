@@ -72,16 +72,22 @@ private struct ScheduleCardView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Header
                 HStack(alignment: .top, spacing: 12) {
-                    Text(course.name)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(isFinished ? .secondary : .primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineLimit(2)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(course.name)
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(isFinished ? .secondary : .primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineLimit(2)
+
+                        Spacer()
+
+                        detailRow(icon: "mappin.and.ellipse", color: .red, text: course.location, finished: isFinished)
+                    }
 
                     Spacer()
 
-                    VStack(alignment: .trailing, spacing: 6) {
+                    VStack(alignment: .trailing, spacing: 10) {
                         if isFinished {
                             Text("已结束")
                                 .font(.caption.bold())
@@ -130,9 +136,12 @@ private struct ScheduleCardView: View {
 
                 // Info Rows
                 VStack(alignment: .leading, spacing: 10) {
-                    detailRow(icon: "calendar", color: .blue, text: formatTime(course: course), finished: isFinished)
+                    HStack(alignment: .top, spacing: 5) {
+                        detailRow(icon: "calendar", color: .blue, text: formatDate(course: course), finished: isFinished)
+                        Spacer()
 
-                    detailRow(icon: "mappin.and.ellipse", color: .red, text: course.location, finished: isFinished)
+                        detailRow(icon: "calendar.day", color: .green, text: "第\(course.week)周 周\(course.dayOfWeek.chineseShortString)", finished: isFinished)
+                    }
 
                     HStack(spacing: 0) {
                         detailRow(icon: "person.fill", color: .purple, text: course.teacher, finished: isFinished)
@@ -162,7 +171,7 @@ private struct ScheduleCardView: View {
         }
     }
 
-    private func formatTime(course: PhysicsExperimentHelper.Course) -> String {
+    private func formatDate(course: PhysicsExperimentHelper.Course) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateStr = dateFormatter.string(from: course.startTime)
@@ -172,6 +181,6 @@ private struct ScheduleCardView: View {
         let startStr = timeFormatter.string(from: course.startTime)
         let endStr = timeFormatter.string(from: course.endTime)
 
-        return "\(dateStr) 周\(course.dayOfWeek.chineseShortString) \(startStr)-\(endStr)"
+        return "\(dateStr) \(startStr)-\(endStr)"
     }
 }
