@@ -80,9 +80,10 @@ private struct ScheduleCardView: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .lineLimit(2)
 
-                        Spacer()
-
-                        detailRow(icon: "mappin.and.ellipse", color: .red, text: course.location, finished: isFinished)
+                        Text(course.location)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Spacer()
