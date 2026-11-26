@@ -65,5 +65,17 @@ extension MMKVHelper {
             get { OverviewCard.sanitized(cardOrder) }
             set { cardOrder = newValue.map(\.rawValue) }
         }
+        
+        @MMKVStorage(key: "OverviewSettings.hiddenCards", defaultValue: [])
+        static var hiddenCardIDs: [String]
+
+        static var hiddenCards: Set<OverviewCard> {
+            get { Set(hiddenCardIDs.compactMap(OverviewCard.init(rawValue: ))) }
+            set { hiddenCardIDs = newValue.map(\.rawValue) }
+        }
+        
+        static var visibleCards: [OverviewCard] {
+            orderedCards.filter { !hiddenCards.contains($0) }
+        }
     }
 }
