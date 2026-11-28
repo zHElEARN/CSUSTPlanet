@@ -12,7 +12,7 @@ struct OverviewView: View {
     @Bindable var globalManager = GlobalManager.shared
     @State private var activeCourseSchedule = MMKVHelper.CourseSchedule.activeCourseSchedule
     @State private var isAutoSortEnabled = MMKVHelper.OverviewSettings.isAutoSortEnabled
-    @State private var cardOrder = MMKVHelper.OverviewSettings.orderedCards
+    @State private var visibleCards = MMKVHelper.OverviewSettings.visibleCards
 
     private let overviewSpacing: CGFloat = 24
     private let minimumColumnWidth: CGFloat = 320
@@ -47,7 +47,16 @@ struct OverviewView: View {
             VStack(spacing: 24) {
                 legacyOverviewHeader
 
-                responsiveOverviewContent
+                if visibleCards.isEmpty {
+                    ContentUnavailableView(
+                        "暂无显示的卡片",
+                        systemImage: "square.stack.3d.up.slash",
+                        description: Text("可在右上角概览设置中重新开启卡片")
+                    )
+                    .padding(.top, 40)
+                } else {
+                    responsiveOverviewContent
+                }
 
                 Spacer(minLength: 40)
             }
@@ -68,7 +77,14 @@ struct OverviewView: View {
             isAutoSortEnabled = newValue
         }
         .onReceive(MMKVHelper.OverviewSettings.$cardOrder) { newValue in
-            cardOrder = OverviewCard.sanitized(newValue)
+            let ordered = OverviewCard.sanitized(newValue)
+            let hidden = MMKVHelper.OverviewSettings.hiddenCards
+            visibleCards = ordered.filter { !hidden.contains($0) }
+        }
+        .onReceive(MMKVHelper.OverviewSettings.$hiddenCardIDs) { newValue in
+            let ordered = MMKVHelper.OverviewSettings.orderedCards
+            let hidden = Set(newValue.compactMap(OverviewCard.init(rawValue:)))
+            visibleCards = ordered.filter { !hidden.contains($0) }
         }
     }
 
@@ -97,13 +113,13 @@ struct OverviewView: View {
     private var manualColumnsLayout: some View {
         HStack(alignment: .top, spacing: overviewSpacing) {
             overviewColumn {
-                ForEach(stride(from: 0, to: cardOrder.count, by: 2).map { cardOrder[$0] }, id: \.self) { card in
+                ForEach(stride(from: 0, to: visibleCards.count, by: 2).map { visibleCards[$0] }, id: \.self) { card in
                     overviewCardView(for: card)
                 }
             }
 
             overviewColumn {
-                ForEach(stride(from: 1, to: cardOrder.count, by: 2).map { cardOrder[$0] }, id: \.self) { card in
+                ForEach(stride(from: 1, to: visibleCards.count, by: 2).map { visibleCards[$0] }, id: \.self) { card in
                     overviewCardView(for: card)
                 }
             }
@@ -112,7 +128,7 @@ struct OverviewView: View {
 
     @ViewBuilder
     private var overviewCards: some View {
-        ForEach(cardOrder, id: \.self) { card in
+        ForEach(visibleCards, id: \.self) { card in
             overviewCardView(for: card)
         }
     }

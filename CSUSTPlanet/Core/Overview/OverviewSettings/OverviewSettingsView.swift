@@ -10,6 +10,7 @@ import SwiftUI
 struct OverviewSettingsView: View {
     @State private var isAutoSortEnabled = MMKVHelper.OverviewSettings.isAutoSortEnabled
     @State private var cardOrder = MMKVHelper.OverviewSettings.orderedCards
+    @State private var hiddenCards = MMKVHelper.OverviewSettings.hiddenCards
     @State private var isResetAlertPresented = false
     @State private var isGradeHidden = MMKVHelper.OverviewSettings.isGradeHidden
     @State private var isDormHidden = MMKVHelper.OverviewSettings.isDormHidden
@@ -26,7 +27,7 @@ struct OverviewSettingsView: View {
                 }
                 #else
                 ForEach(cardOrder, id: \.self) { card in
-                    Label(card.title, systemImage: card.systemImage)
+                    cardRowContent(card)
                 }
                 .onMove { fromOffsets, toOffset in
                     cardOrder.move(fromOffsets: fromOffsets, toOffset: toOffset)
@@ -35,7 +36,7 @@ struct OverviewSettingsView: View {
             } header: {
                 Text("卡片顺序")
             } footer: {
-                Text("拖动可调整卡片在概览页中的顺序")
+                Text("拖动可调整卡片在概览页中的顺序，点击眼睛图标可隐藏卡片")
             }
 
             Section {
@@ -69,6 +70,9 @@ struct OverviewSettingsView: View {
         .onChange(of: cardOrder) { _, newValue in
             MMKVHelper.OverviewSettings.orderedCards = newValue
         }
+        .onChange(of: hiddenCards) { _, newValue in
+            MMKVHelper.OverviewSettings.hiddenCards = newValue
+        }
         .onChange(of: isAutoSortEnabled) { _, newValue in
             MMKVHelper.OverviewSettings.isAutoSortEnabled = newValue
         }
@@ -88,16 +92,39 @@ struct OverviewSettingsView: View {
             Button("取消", role: .cancel) {}
             Button("恢复", role: .destructive, action: resetToDefault)
         } message: {
-            Text("将卡片顺序、自动排序、隐藏成绩与隐藏宿舍电量恢复为默认设置。")
+            Text("将卡片顺序、卡片显示状态、自动排序、隐藏成绩与隐藏宿舍电量恢复为默认设置。")
+        }
+    }
+
+    @ViewBuilder
+    private func cardRowContent(_ card: OverviewCard) -> some View {
+        let isHidden = hiddenCards.contains(card)
+        HStack {
+            Label(card.title, systemImage: card.systemImage)
+                .foregroundStyle(isHidden ? .secondary : .primary)
+
+            Spacer()
+
+            Button {
+                withAnimation {
+                    if isHidden {
+                        hiddenCards.remove(card)
+                    } else {
+                        hiddenCards.insert(card)
+                    }
+                }
+            } label: {
+                Image(systemName: isHidden ? "eye.slash" : "eye")
+                    .foregroundStyle(isHidden ? .secondary : .primary)
+            }
+            .buttonStyle(.borderless)
         }
     }
 
     #if os(macOS)
     private func cardOrderRow(_ card: OverviewCard) -> some View {
         HStack {
-            Label(card.title, systemImage: card.systemImage)
-
-            Spacer()
+            cardRowContent(card)
 
             Image(systemName: "line.3.horizontal")
                 .foregroundStyle(.secondary)
@@ -133,6 +160,7 @@ struct OverviewSettingsView: View {
     private func resetToDefault() {
         withAnimation {
             cardOrder = OverviewCard.allCases
+            hiddenCards = []
             isAutoSortEnabled = true
             isGradeHidden = false
             isDormHidden = false
