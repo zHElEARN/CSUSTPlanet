@@ -18,52 +18,25 @@ struct OverviewSettingsView: View {
     @State private var targetedCard: OverviewCard?
     #endif
 
-    private var visibleCards: [OverviewCard] {
-        cardOrder.filter { !hiddenCards.contains($0) }
-    }
-
-    private var hiddenCardsList: [OverviewCard] {
-        OverviewCard.allCases.filter { hiddenCards.contains($0) }
-    }
-
     var body: some View {
         Form {
             Section {
-                if visibleCards.isEmpty {
-                    Text("暂无显示的卡片")
-                        .foregroundStyle(.secondary)
-                } else {
-                    #if os(macOS)
-                    ForEach(visibleCards, id: \.self) { card in
-                        cardOrderRow(card)
-                    }
-                    #else
-                    ForEach(visibleCards, id: \.self) { card in
-                        cardRowContent(card, isHidden: false, showDragHandle: false)
-                    }
-                    .onMove { fromOffsets, toOffset in
-                        var updated = visibleCards
-                        updated.move(fromOffsets: fromOffsets, toOffset: toOffset)
-                        cardOrder = updated + hiddenCardsList
-                    }
-                    #endif
+                #if os(macOS)
+                ForEach(cardOrder, id: \.self) { card in
+                    cardOrderRow(card)
                 }
+                #else
+                ForEach(cardOrder, id: \.self) { card in
+                    cardRowContent(card)
+                }
+                .onMove { fromOffsets, toOffset in
+                    cardOrder.move(fromOffsets: fromOffsets, toOffset: toOffset)
+                }
+                #endif
             } header: {
                 Text("卡片顺序")
             } footer: {
                 Text("拖动可调整卡片在概览页中的顺序，点击眼睛图标可隐藏卡片")
-            }
-
-            if !hiddenCardsList.isEmpty {
-                Section {
-                    ForEach(hiddenCardsList, id: \.self) { card in
-                        cardRowContent(card, isHidden: true, showDragHandle: false)
-                    }
-                } header: {
-                    Text("已隐藏的卡片")
-                } footer: {
-                    Text("点击眼睛图标可恢复显示，并回到默认位置")
-                }
             }
 
             Section {
@@ -124,7 +97,8 @@ struct OverviewSettingsView: View {
     }
 
     @ViewBuilder
-    private func cardRowContent(_ card: OverviewCard, isHidden: Bool, showDragHandle: Bool) -> some View {
+    private func cardRowContent(_ card: OverviewCard) -> some View {
+        let isHidden = hiddenCards.contains(card)
         HStack {
             Label(card.title, systemImage: card.systemImage)
                 .foregroundStyle(isHidden ? .secondary : .primary)
@@ -132,35 +106,56 @@ struct OverviewSettingsView: View {
             Spacer()
 
             Button {
-                toggleVisibility(for: card)
+                withAnimation {
+                    if isHidden {
+                        hiddenCards.remove(card)
+                    } else {
+                        hiddenCards.insert(card)
+                    }
+                }
             } label: {
                 Image(systemName: isHidden ? "eye.slash" : "eye")
                     .foregroundStyle(isHidden ? .secondary : .primary)
             }
             .buttonStyle(.borderless)
-
-            if showDragHandle {
-                Image(systemName: "line.3.horizontal")
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 
-    private func toggleVisibility(for card: OverviewCard) {
+    #if os(macOS)
+    private func cardOrderRow(_ card: OverviewCard) -> some View {
+        HStack {
+            cardRowContent(card)
+
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(.secondary)
+        }
+        .contentShape(.rect)
+        .draggable(card.rawValue) {
+            Label(card.title, systemImage: card.systemImage)
+        }
+        .dropDestination(for: String.self) { items, _ in
+            guard let rawValue = items.first, let dragged = OverviewCard(rawValue: rawValue) else { return false }
+            moveCard(dragged, to: card)
+            return true
+        } isTargeted: { isTargeted in
+            withAnimation {
+                targetedCard = isTargeted ? card : (targetedCard == card ? nil : targetedCard)
+            }
+        }
+        .background(targetedCard == card ? Color.accentColor.opacity(0.15) : .clear, in: .rect(cornerRadius: 3))
+    }
+
+    private func moveCard(_ dragged: OverviewCard, to target: OverviewCard) {
+        guard let source = cardOrder.firstIndex(of: dragged),
+            let destination = cardOrder.firstIndex(of: target),
+            source != destination
+        else { return }
+
         withAnimation {
-            if hiddenCards.contains(card) {
-                var updatedVisible = visibleCards
-                hiddenCards.remove(card)
-                let defaultIndex = OverviewCard.allCases.firstIndex(of: card) ?? updatedVisible.count
-                let targetIndex = min(defaultIndex, updatedVisible.count)
-                updatedVisible.insert(card, at: targetIndex)
-                cardOrder = updatedVisible + hiddenCardsList
-            } else {
-                hiddenCards.insert(card)
-                cardOrder = visibleCards + hiddenCardsList
-            }
+            cardOrder.move(fromOffsets: IndexSet(integer: source), toOffset: destination > source ? destination + 1 : destination)
         }
     }
+    #endif
 
     private func resetToDefault() {
         withAnimation {
@@ -171,37 +166,4 @@ struct OverviewSettingsView: View {
             isDormHidden = false
         }
     }
-
-    #if os(macOS)
-    private func cardOrderRow(_ card: OverviewCard) -> some View {
-        cardRowContent(card, isHidden: false, showDragHandle: true)
-            .contentShape(.rect)
-            .draggable(card.rawValue) {
-                Label(card.title, systemImage: card.systemImage)
-            }
-            .dropDestination(for: String.self) { items, _ in
-                guard let rawValue = items.first, let dragged = OverviewCard(rawValue: rawValue) else { return false }
-                moveCard(dragged, to: card)
-                return true
-            } isTargeted: { isTargeted in
-                withAnimation {
-                    targetedCard = isTargeted ? card : (targetedCard == card ? nil : targetedCard)
-                }
-            }
-            .background(targetedCard == card ? Color.accentColor.opacity(0.15) : .clear, in: .rect(cornerRadius: 3))
-    }
-
-    private func moveCard(_ dragged: OverviewCard, to target: OverviewCard) {
-        var updated = visibleCards
-        guard let source = updated.firstIndex(of: dragged),
-            let destination = updated.firstIndex(of: target),
-            source != destination
-        else { return }
-
-        withAnimation {
-            updated.move(fromOffsets: IndexSet(integer: source), toOffset: destination > source ? destination + 1 : destination)
-            cardOrder = updated + hiddenCardsList
-        }
-    }
-    #endif
 }
